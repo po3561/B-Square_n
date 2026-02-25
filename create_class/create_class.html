@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>클래스 개설하기 | B-Square</title>
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style.css">
+    <link rel="stylesheet" href="create_class.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <h1 class="logo">
+                <a href="../bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a>
+            </h1>
+            <div class="header-utils">
+                <div class="user-menu" id="userMenu">
+                    <!-- JS에서 동적으로 채워짐 -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="create-layout">
+        <aside class="create-sidebar">
+            <h2 class="sidebar-title">클래스 개설</h2>
+            <nav class="create-steps">
+                <div class="step-item active" data-step="1">
+                    <span class="step-num">1</span>
+                    <span class="step-text">기본 정보</span>
+                </div>
+                <div class="step-item" data-step="2">
+                    <span class="step-num">2</span>
+                    <span class="step-text">제목 및 이미지</span>
+                </div>
+                <div class="step-item" data-step="3">
+                    <span class="step-num">3</span>
+                    <span class="step-text">상세 소개</span>
+                </div>
+                <div class="step-item" data-step="4">
+                    <span class="step-num">4</span>
+                    <span class="step-text">커리큘럼</span>
+                </div>
+                <div class="step-item" data-step="5">
+                    <span class="step-num">5</span>
+                    <span class="step-text">가격 및 옵션</span>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="create-content">
+            <form id="createClassForm" class="create-form">
+
+                <!-- Step 1: 기본 정보 -->
+                <section id="section1" class="form-section active">
+                    <h3 class="section-title">어떤 클래스를 만들고 싶으신가요?</h3>
+                    <div class="input-group">
+                        <label>카테고리</label>
+                        <select id="classCategory" required>
+                            <option value="">카테고리를 선택해주세요</option>
+                            <option value="디자인">디자인</option>
+                            <option value="생산성">생산성</option>
+                            <option value="스포츠">스포츠</option>
+                            <option value="디지털 드로잉">디지털 드로잉</option>
+                            <option value="음악">음악</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>핵심 키워드 (쉼표로 구분)</label>
+                        <input type="text" id="classKeywords" placeholder="예: 포토샵, 기초, 디자인">
+                    </div>
+                </section>
+
+                <!-- Step 2: 제목 및 이미지 -->
+                <section id="section2" class="form-section">
+                    <h3 class="section-title">클래스의 첫인상을 완성해주세요</h3>
+                    <div class="input-group">
+                        <label>클래스 제목</label>
+                        <input type="text" id="classTitle" placeholder="매력적인 제목을 지어주세요" maxlength="50" required>
+                        <small class="char-count">0/50</small>
+                    </div>
+                    <div class="input-group">
+                        <label>커버 이미지 (최소 3장 ~ 최대 6장)</label>
+                        <div class="image-upload-grid" id="imageUploadGrid">
+                            <div class="upload-slot" id="btnUploadImage">
+                                <input type="file" id="classImage" accept="image/*" multiple hidden>
+                                <div class="upload-placeholder">
+                                    <span>📸</span>
+                                    <p>클릭하여 추가</p>
+                                </div>
+                            </div>
+                            <!-- 동적으로 업로드된 이미지 슬롯 추가됨 -->
+                        </div>
+                        <p class="help-text">JPG, PNG 파일 (첫 번째 이미지가 대표 썸네일로 사용됩니다)</p>
+                    </div>
+                </section>
+
+                <!-- Step 3: 상세 소개 -->
+                <section id="section3" class="form-section">
+                    <h3 class="section-title">당신의 클래스를 소개해주세요</h3>
+                    <div class="input-group">
+                        <label>클래스 한 줄 요약</label>
+                        <input type="text" id="classSummary" placeholder="클래스를 한 문장으로 정의해주세요" required>
+                    </div>
+                    <div class="input-group">
+                        <label>상세 설명</label>
+                        <textarea id="classDescription" rows="10"
+                            placeholder="클래스에 대해 자세히 설명해주세요. 수강생이 얻을 수 있는 것은 무엇인가요?" required></textarea>
+                    </div>
+                </section>
+
+                <!-- Step 4: 커리큘럼 -->
+                <section id="section4" class="form-section">
+                    <h3 class="section-title">커리큘럼을 구성해 주세요</h3>
+                    <p class="section-desc" style="color: var(--text-secondary); margin-bottom: 2rem;">수강생이 배우게 될 핵심
+                        챕터들을 추가해 주세요.</p>
+                    <div id="curriculumList" class="curriculum-list" style="margin-bottom: 2rem;">
+                        <!-- 동적으로 추가됨 -->
+                    </div>
+                    <button type="button" class="btn-secondary" id="btnAddChapter"
+                        style="width: auto; padding: 0.8rem 1.5rem;">+ 챕터 추가하기</button>
+                </section>
+
+                <!-- Step 5: 가격 및 옵션 -->
+                <section id="section5" class="form-section">
+                    <h3 class="section-title">클래스의 가치를 설정해주세요</h3>
+                    <div class="input-group">
+                        <label>클래스 금액 (원)</label>
+                        <input type="number" id="classPrice" placeholder="0" min="0" required>
+                    </div>
+                    <div class="input-group">
+                        <label>할인율 (%)</label>
+                        <input type="number" id="classDiscount" placeholder="0" min="0" max="100">
+                    </div>
+                    <div class="input-group">
+                        <label>쿠폰 발행</label>
+                        <div style="display: flex; gap: 20px; align-items: center; padding: 10px 0;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="classCoupon" style="width: auto;"> 쿠폰팩 발행하기
+                            </label>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>클래스 유형</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="classType" value="VOD" checked> VOD 클래스</label>
+                            <label><input type="radio" name="classType" value="LIVE"> LIVE 클래스</label>
+                            <label><input type="radio" name="classType" value="OFFLINE"> 오프라인 클래스</label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bottom Buttons -->
+                <div class="create-actions">
+                    <button type="button" class="btn-prev" id="btnPrev" disabled>이전</button>
+                    <button type="button" class="btn-next" id="btnNext">다음</button>
+                    <button type="submit" class="btn-submit" id="btnSubmit" hidden>클래스 개설하기</button>
+                </div>
+
+            </form>
+        </main>
+    </div>
+
+    <script src="create_class.js"></script>
+</body>
+
+</html>

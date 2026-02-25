@@ -1,0 +1,224 @@
+/* view_chat.css - Modern Community Style */
+.chat-tab-container {
+    padding: 0 !important;
+    overflow: hidden;
+    background: #0d0d0d;
+    border-radius: 32px;
+    border: 1px solid #222;
+}
+
+.participants-section {
+    padding: 3.5rem;
+    text-align: center;
+    border-bottom: 1px solid #222;
+    background: linear-gradient(to bottom, #151515, #0d0d0d);
+}
+
+.community-welcome p {
+    color: #888;
+    font-size: 1.1rem;
+}
+
+.community-welcome strong {
+    color: var(--accent-color);
+    font-weight: 800;
+}
+
+.participants-list {
+    display: flex;
+    justify-content: center;
+    gap: -12px;
+    /* Overlap effect */
+    margin-top: 2.5rem;
+}
+
+.p-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 3px solid #0d0d0d;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    background: #222;
+    margin-left: -12px;
+}
+
+.p-avatar:first-child {
+    margin-left: 0;
+}
+
+.p-avatar:hover {
+    transform: translateY(-8px) scale(1.15);
+    z-index: 10;
+}
+
+.chat-section {
+    display: flex;
+    flex-direction: column;
+    height: 650px;
+}
+
+.chat-header {
+    padding: 1.2rem 2.5rem;
+    background: #111;
+    border-bottom: 1px solid #222;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-title {
+    font-weight: 700;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.online-count {
+    font-size: 0.8rem;
+    color: #4CAF50;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 2.5rem;
+    overflow-y: auto;
+    background: #0d0d0d;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.chat-msg {
+    display: flex;
+    gap: 12px;
+    max-width: 85%;
+    animation: chatSlideIn 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+@keyframes chatSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chat-msg.mine {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.msg-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: #222;
+    flex-shrink: 0;
+}
+
+.msg-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-msg.mine .msg-wrapper {
+    align-items: flex-end;
+}
+
+.sender-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #888;
+    margin-bottom: 6px;
+}
+
+.msg-bubble {
+    padding: 12px 18px;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    word-break: break-all;
+}
+
+.chat-msg.mine .msg-bubble {
+    background: var(--accent-color);
+    color: #000;
+    border-top-right-radius: 4px;
+    font-weight: 500;
+}
+
+.chat-msg:not(.mine) .msg-bubble {
+    background: rgba(255, 255, 255, 0.06);
+    color: #eee;
+    border-top-left-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.msg-time {
+    font-size: 0.7rem;
+    color: #444;
+    margin-top: 6px;
+}
+
+.chat-input-row {
+    padding: 1.5rem 2.5rem;
+    background: #111;
+    border-top: 1px solid #222;
+    display: flex;
+    gap: 15px;
+}
+
+#chatInput {
+    flex: 1;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 12px 20px;
+    color: #fff;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#chatInput:focus {
+    border-color: var(--accent-color);
+}
+
+.btn-chat-send {
+    background: var(--accent-color);
+    color: #000;
+    border: none;
+    padding: 0 25px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-chat-send:hover {
+    transform: scale(1.05);
+}
+
+.chat-lock-container {
+    margin-top: 2rem;
+    background: rgba(255, 77, 77, 0.05);
+    border: 1px dashed rgba(255, 77, 77, 0.3);
+    padding: 2rem;
+    border-radius: 20px;
+}
+
+.chat-lock-notice p {
+    color: #ff4d4d;
+    font-weight: 600;
+}
+
+.lock-icon {
+    font-size: 1.5rem;
+    margin-top: 10px;
+    display: block;
+}

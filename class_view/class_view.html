@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>클래스 상세 정보 | B-Square</title>
+    <!-- Corrected Path for Global Style -->
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style.css">
+    <link rel="stylesheet" href="class_view.css">
+    <link rel="stylesheet" href="view_intro.css">
+    <link rel="stylesheet" href="view_curriculum.css">
+    <link rel="stylesheet" href="view_reviews.css">
+    <link rel="stylesheet" href="view_chat.css">
+
+    <!-- 결제 SDK 추가 (PortOne) -->
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+
+    <!-- SDKs -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <h1 class="logo">
+                <a href="../bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a>
+            </h1>
+
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="../create_class/create_class.html">등록</a></li>
+                    <li><a href="#">공지사항</a></li>
+                    <li><a href="#">문의</a></li>
+                    <li><a href="#">커뮤니티</a></li>
+                </ul>
+            </nav>
+
+            <div class="header-utils">
+                <div class="search-bar">
+                    <input type="text" placeholder="검색어를 입력하세요">
+                    <button type="button">🔍</button>
+                </div>
+
+                <div class="user-menu" id="userMenu" style="display: flex; gap: 10px; align-items: center;">
+                    <!-- JS에서 동적 렌더링 -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="view-container">
+        <!-- Premium Hero Section -->
+        <section class="premium-hero">
+            <div class="hero-bg-wrapper">
+                <div class="hero-overlay"></div>
+            </div>
+            <div class="hero-content-wrapper">
+                <div class="hero-slider-area">
+                    <div class="slider-section">
+                        <div class="slider-wrapper" id="imageSlider">
+                            <div class="slider-item">
+                                <img src="https://via.placeholder.com/1200x800" id="mainImg" alt="클래스 대표 이미지">
+                            </div>
+                        </div>
+                        <button class="slider-btn prev">❮</button>
+                        <button class="slider-btn next">❯</button>
+                        <div class="slider-counter">1 / 1</div>
+                    </div>
+                </div>
+                <div class="hero-text-overlay">
+                    <span class="hero-badge" id="viewCategory">카테고리</span>
+                    <h1 class="hero-title" id="viewTitle">클래스 제목 가이드</h1>
+                    <div class="hero-meta">
+                        <span class="creator">BY 수퍼 크리에이터</span>
+                        <span class="hero-separator">|</span>
+                        <span class="rating">⭐ 4.9 (후기 <span id="heroReviewCount">0</span>개)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="view-grid">
+            <div class="view-main-content">
+                <!-- 탭 메뉴 -->
+                <nav class="view-tabs">
+                    <button class="tab-btn active" data-target="tabIntro">클래스 소개</button>
+                    <button class="tab-btn" data-target="tabCurriculum">커리큘럼</button>
+                    <button class="tab-btn" data-target="tabReview">수강생 후기</button>
+                    <button class="tab-btn" data-target="tabChat">크루 채널</button>
+                </nav>
+
+                <!-- TAB: Intro -->
+                <div id="tabIntro" class="tab-content active">
+                    <section class="content-card">
+                        <h3 class="section-title">이런 분들을 위한 클래스입니다</h3>
+                        <ul class="target-list" id="targetList"></ul>
+                    </section>
+                    <section class="content-card">
+                        <h3 class="section-title">이런 것들을 배울 거예요</h3>
+                        <div class="objective-grid" id="objectiveGrid"></div>
+                    </section>
+                    <section class="content-card">
+                        <h3 class="section-title">클래스 상세 소개</h3>
+                        <div class="intro-description" id="viewDescription"></div>
+                    </section>
+                </div>
+
+                <!-- TAB: Curriculum -->
+                <div id="tabCurriculum" class="tab-content">
+                    <section class="content-card">
+                        <div class="curriculum-header-row">
+                            <h3 style="font-size: 1.5rem;">학습 커리큘럼 <span id="chapCount"
+                                    style="color:#666; font-size:1rem; margin-left:10px;">챕터 0개</span></h3>
+                            <button id="btnToggleAll"
+                                style="background:none; border:1px solid #444; color:#aaa; padding:6px 12px; border-radius:6px; cursor:pointer;">전체
+                                열기</button>
+                        </div>
+                        <div id="viewCurriculum" class="curriculum-container"></div>
+                    </section>
+                </div>
+
+                <!-- TAB: Review -->
+                <div id="tabReview" class="tab-content">
+                    <section class="content-card">
+                        <div class="review-header-premium">
+                            <div class="rating-main-summary">
+                                <span id="avgStarsLarge" class="rating-stars-large">☆☆☆☆☆</span>
+                                <div class="rating-text-group">
+                                    <span id="avgRatingVal" class="rating-value">0.0</span>
+                                    <span class="rating-count">총 <span id="reviewTotalCount">0</span>개 후기</span>
+                                </div>
+                            </div>
+                        </div>
+                        <h4 style="margin-bottom: 1.5rem;">수강생 리얼 포토 후기</h4>
+                        <div class="photo-review-grid" id="photoReviewGrid"></div>
+                        <div id="reviewsList" class="reviews-container"></div>
+                        <div class="review-form-area"
+                            style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #222;">
+                            <h4>후기 작성하기</h4>
+                            <div class="rating-select" style="margin: 1rem 0;">
+                                <input type="radio" name="rating" value="5" id="r5"><label for="r5">★★★★★</label>
+                                <input type="radio" name="rating" value="4" id="r4"><label for="r4">★★★★</label>
+                                <input type="radio" name="rating" value="3" id="r3"><label for="r3">★★★</label>
+                            </div>
+                            <textarea id="reviewText" placeholder="수강하며 느낀 점을 자유롭게 남겨주세요."
+                                style="width:100%; height:100px; background:#1a1a1a; border:1px solid #333; color:#fff; padding:1rem; border-radius:12px;"></textarea>
+                            <button id="btnSubmitReview"
+                                style="margin-top:10px; background:#ff4d4d; border:none; color:white; padding:10px 20px; border-radius:8px; cursor:pointer;">후기
+                                등록</button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- TAB: Chat (Crew Channel) -->
+                <div id="tabChat" class="tab-content">
+                    <section class="content-card chat-premium-card">
+                        <div class="chat-header">
+                            <div class="chat-title-info">
+                                <h3>크루 전용 실시간 채널</h3>
+                                <p>함께 공부하는 수강생들과 실시간으로 소통하세요.</p>
+                            </div>
+                            <div class="chat-participants" id="participantsList"></div>
+                        </div>
+                        <div id="chatMessages" class="chat-feed-box"></div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chatInput" placeholder="공부 질문이나 이야기를 나눠보세요!">
+                            <button id="btnSendChat">전송</button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Sticky Sidebar -->
+            <aside class="view-sidebar">
+                <div class="sticky-card-premium">
+                    <div class="creator-box">
+                        <div class="creator-img-mini"></div>
+                        <span class="creator-name-txt">크리에이터 님</span>
+                    </div>
+                    <h2 class="side-main-title" id="sidebarTitle">클래스 제목</h2>
+                    <div class="side-category-line">
+                        <span id="sidebarCategory">카테고리</span>
+                        <span>|</span>
+                        <span>입문자</span>
+                    </div>
+                    <div class="side-price-section">
+                        <span class="side-final-price" id="viewPrice">0원</span>
+                        <p class="side-installment" id="priceInstallment">월 0원 (5개월 할부 시)</p>
+                    </div>
+                    <div class="incentive-badges">
+                        <div class="incentive-item timer">⏰ 7일 후 얼리버드 마감</div>
+                        <div class="incentive-item coupon">🎫 신규 가입 1만원 쿠폰 적용 가능</div>
+                    </div>
+                    <div class="sidebar-cta-area">
+                        <button class="btn-cta-start" id="btnEnroll">지금 바로 시작하기</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>© Bisquare. All rights reserved.</p>
+    </footer>
+
+    <!-- Scripts Load -->
+    <script src="view_intro.js"></script>
+    <script src="view_curriculum.js"></script>
+    <script src="view_reviews.js"></script>
+    <script src="view_chat.js"></script>
+    <script src="class_view.js"></script>
+</body>
+
+</html>

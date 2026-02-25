@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지 | 클래스 플랫폼</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="mypage.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <h1 class="logo"><a href="../bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a></h1>
+            <div class="header-utils">
+                <button type="button" class="btn-logout" id="btnLogout"
+                    style="background:none; color:#888; border:none; cursor:pointer;">로그아웃</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mypage-layout">
+        <aside class="mypage-sidebar">
+            <div class="profile-summary">
+                <div class="profile-img-placeholder" id="profileImg">👤</div>
+                <h3 id="displayNickname">사용자님</h3>
+                <p id="displayEmail" style="font-size: 0.85rem; opacity: 0.7;">이메일 로딩중...</p>
+                <p id="displayUsername" style="font-size: 0.85rem; opacity: 0.5; margin-top: 4px;">ID: -</p>
+            </div>
+            <nav class="mypage-nav">
+                <button class="nav-btn active" data-target="tabClasses">내 클래스</button>
+                <button class="nav-btn" data-target="tabProfile">프로필 설정</button>
+                <button class="nav-btn" data-target="tabSecurity">보안 및 결제</button>
+                <button class="nav-btn bordered" data-target="tabChatSub">채팅 및 구독 관리</button>
+            </nav>
+        </aside>
+
+        <main class="mypage-content">
+
+            <section id="tabClasses" class="mypage-tab active">
+                <h2 class="tab-title">나의 클래스 현황</h2>
+                <div class="class-section">
+                    <h3>📚 수강 중인 클래스</h3>
+                    <div class="my-class-list" id="enrolledClasses">
+                        <div class="empty-state">신청하신 클래스를 불러오는 중입니다...</div>
+                    </div>
+                </div>
+                <div class="class-section" style="margin-top: 2rem;">
+                    <h3>🛠️ 내가 등록(개설)한 클래스</h3>
+                    <div class="my-class-list" id="classList">
+                        <div class="empty-state">아직 등록한 클래스가 없습니다.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tabProfile" class="mypage-tab">
+                <h2 class="tab-title">프로필 설정</h2>
+                <form id="profileForm" class="mypage-form">
+                    <!-- Profile Image Section -->
+                    <div class="profile-upload-wrapper">
+                        <div class="profile-image-container" id="profileImagePreview">
+                            <span class="placeholder-icon">👤</span>
+                        </div>
+                        <div class="profile-image-actions">
+                            <label for="profileImage" class="btn-image-upload">사진 변경</label>
+                            <input type="file" id="profileImage" accept="image/*" hidden>
+                            <p class="upload-tip">추천 사이즈: 400x400px</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label>이름</label>
+                            <input type="text" id="profileName" placeholder="성함을 입력하세요" required>
+                        </div>
+                        <div class="input-group">
+                            <label>아이디 (수정불가)</label>
+                            <input type="text" id="profileUsername" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label>전화번호</label>
+                            <input type="tel" id="profilePhone" placeholder="010-0000-0000" required>
+                        </div>
+                        <div class="input-group">
+                            <label>SNS 링크 (인스타그램)</label>
+                            <input type="url" id="profileSns" placeholder="@your_id">
+                        </div>
+                    </div>
+
+                    <div class="input-group full-width">
+                        <label>나의 선호 카데고리 (다중 선택 가능)</label>
+                        <div class="category-chips" id="categoryChips">
+                            <button type="button" class="category-chip" data-category="디자인">💻 디자인</button>
+                            <button type="button" class="category-chip" data-category="생산성">📈 생산성</button>
+                            <button type="button" class="category-chip" data-category="스포츠">⚽ 스포츠</button>
+                            <button type="button" class="category-chip" data-category="디지털 드로잉">🎨 디지털 드로잉</button>
+                            <button type="button" class="category-chip" data-category="성공 마인드">💡 성공 마인드</button>
+                            <button type="button" class="category-chip" data-category="음악">🎵 음악</button>
+                            <button type="button" class="category-chip" data-category="베이킹">🥐 베이킹</button>
+                            <button type="button" class="category-chip" data-category="사진">📸 사진</button>
+                            <button type="button" class="category-chip" data-category="영상">🎬 영상</button>
+                            <button type="button" class="category-chip" data-category="공예">🧶 공예</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">기본 정보 저장</button>
+                </form>
+            </section>
+
+            <section id="tabSecurity" class="mypage-tab">
+                <h2 class="tab-title">보안 및 결제 정보</h2>
+
+                <div class="security-card">
+                    <h3>비밀번호 변경</h3>
+                    <form id="passwordForm" class="mypage-form">
+                        <div class="input-group">
+                            <label>새 비밀번호</label>
+                            <input type="password" id="newPassword" placeholder="새로운 비밀번호 (6자리 이상)" required
+                                minlength="6">
+                        </div>
+                        <div class="input-group">
+                            <label>새 비밀번호 확인</label>
+                            <input type="password" id="confirmPassword" placeholder="비밀번호를 다시 입력하세요" required
+                                minlength="6">
+                        </div>
+                        <button type="submit" class="btn-submit" style="width: auto; padding: 0.8rem 2rem;">비밀번호
+                            변경하기</button>
+                    </form>
+                </div>
+
+                <div class="security-card" style="margin-top: 2rem;">
+                    <h3>🔐 보안 설정</h3>
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:center; padding:1rem 0; border-bottom:1px solid var(--glass-border);">
+                        <div>
+                            <p style="font-weight:600;">2단계 인증 (MFA)</p>
+                            <p style="font-size:0.85rem; color:var(--text-secondary);">로그인 시 추가 인증을 진행합니다.</p>
+                        </div>
+                        <input type="checkbox" id="mfaToggle" style="width:40px; height:20px; cursor:pointer;">
+                    </div>
+                </div>
+
+                <div class="security-card" style="margin-top: 2rem;">
+                    <h3>💳 결제 수단 관리</h3>
+                    <div id="paymentMethodsList" style="display:flex; flex-direction:column; gap:10px;">
+                        <!-- JS에서 동적으로 생성됨 -->
+                        <p style="color:var(--text-secondary); text-align:center; padding:2rem 0;">등록된 결제가 수단이 없습니다.</p>
+                    </div>
+                    <button type="button" class="btn-secondary" id="btnAddCard" style="width:100%; margin-top:1rem;">+ 새
+                        카드 등록</button>
+                </div>
+            </section>
+
+            <section id="tabChatSub" class="mypage-tab">
+                <h2 class="tab-title">채팅 및 서비스 관리</h2>
+
+                <div class="chat-manage-card">
+                    <h3>💬 진행 중인 채팅</h3>
+                    <ul class="chat-list" id="chatList">
+                        <!-- JS에서 동적으로 생성됨 -->
+                    </ul>
+                </div>
+
+                <div class="sub-card" style="margin-top: 2rem;">
+                    <!-- JS에서 동적으로 플랜 선택 UI가 생성됨 -->
+                    <div class="loader">구독 정보를 불러오는 중...</div>
+                </div>
+            </section>
+
+            <section id="tabEditClass" class="mypage-tab">
+                <h2 class="tab-title">클래스 정보 수정</h2>
+                <form id="editClassForm" class="mypage-form">
+                    <input type="hidden" id="editClassId">
+                    <div class="input-group">
+                        <label>클래스 제목</label>
+                        <input type="text" id="editClassTitle" required>
+                    </div>
+                    <div class="input-group">
+                        <label>카테고리</label>
+                        <select id="editClassCategory" required>
+                            <option value="디자인">💻 디자인</option>
+                            <option value="생산성">📈 생산성</option>
+                            <option value="스포츠">⚽ 스포츠</option>
+                            <option value="디지털 드로잉">🎨 디지털 드로잉</option>
+                            <option value="성공 마인드">💡 성공 마인드</option>
+                            <option value="음악">🎵 음악</option>
+                            <option value="베이킹">🥐 베이킹</option>
+                            <option value="사진">📸 사진</option>
+                            <option value="영상">🎬 영상</option>
+                            <option value="공예">🧶 공예</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>클래스 요약</label>
+                        <input type="text" id="editClassSummary" required>
+                    </div>
+                    <div class="input-group">
+                        <label>상세 설명</label>
+                        <textarea id="editClassDescription" rows="5" required></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>가격 (원)</label>
+                        <input type="number" id="editClassPrice" required>
+                    </div>
+                    <div class="input-group">
+                        <label>할인율 (%)</label>
+                        <input type="number" id="editClassDiscount" placeholder="0" min="0" max="100">
+                    </div>
+                    <div class="input-group">
+                        <label>쿠폰 발행</label>
+                        <div style="display: flex; gap: 20px; align-items: center; padding: 10px 0;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="editClassCoupon" style="width: auto;"> 쿠폰팩 발행하기
+                            </label>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>클래스 유형</label>
+                        <div style="display: flex; gap: 20px; align-items: center; padding: 10px 0;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="radio" name="editClassType" value="VOD" checked style="width: auto;"> VOD
+                                (녹화 강의)
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="radio" name="editClassType" value="LIVE" style="width: auto;"> LIVE (실시간
+                                강의)
+                            </label>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 2rem;">
+                        <button type="submit" class="btn-submit">정보 수정 완료</button>
+                        <button type="button" class="btn-secondary"
+                            onclick="document.querySelector('[data-target=tabClasses]').click()"
+                            style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-secondary); padding: 0.8rem 2rem; border-radius: 8px;">취소</button>
+                    </div>
+                </form>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="mypage.js"></script>
+    <script src="tab_classes.js"></script>
+    <script src="tab_profile.js"></script>
+    <script src="tab_security.js"></script>
+    <script src="tab_chat_sub.js"></script>
+</body>
+
+</html>
