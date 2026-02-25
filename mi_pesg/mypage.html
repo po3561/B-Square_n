@@ -149,10 +149,17 @@
                     <h3>💳 결제 수단 관리</h3>
                     <div id="paymentMethodsList" style="display:flex; flex-direction:column; gap:10px;">
                         <!-- JS에서 동적으로 생성됨 -->
-                        <p style="color:var(--text-secondary); text-align:center; padding:2rem 0;">등록된 결제가 수단이 없습니다.</p>
+                        <p style="color:var(--text-secondary); text-align:center; padding:2rem 0;">등록된 결제 수단이 없습니다.</p>
                     </div>
                     <button type="button" class="btn-secondary" id="btnAddCard" style="width:100%; margin-top:1rem;">+ 새
                         카드 등록</button>
+                </div>
+
+                <div class="security-card" style="margin-top: 2rem;">
+                    <h3>🧾 결제 내역</h3>
+                    <div id="paymentHistoryList" class="payment-history-list">
+                        <p style="color:var(--text-secondary); text-align:center; padding:2rem 0;">결제 내역을 불러오는 중...</p>
+                    </div>
                 </div>
             </section>
 

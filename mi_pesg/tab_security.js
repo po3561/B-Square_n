@@ -1,5 +1,5 @@
 // tab_security.js - 보안 및 결제 설정 로직
-window.initSecurityTab = function (supabase, userId) {
+window.initSecurityTab = function (supabase, userId, firebaseApp) {
     const passwordForm = document.getElementById('passwordForm');
 
     if (passwordForm) {
@@ -83,4 +83,75 @@ window.initSecurityTab = function (supabase, userId) {
     }
 
     renderCards();
+
+    // ===== 결제 내역 관리 =====
+    loadPaymentHistory(firebaseApp, userId);
 };
+
+// 결제 내역 로드 함수
+async function loadPaymentHistory(firebaseApp, userId) {
+    const historyList = document.getElementById('paymentHistoryList');
+    if (!historyList || !firebaseApp) return;
+
+    try {
+        const db = firebaseApp.database();
+        const snapshot = await db.ref(`enrollments/${userId}`).once('value');
+        const data = snapshot.val();
+
+        if (!data) {
+            historyList.innerHTML = '<p style="color:var(--text-secondary); text-align:center; padding:2rem 0;">결제 내역이 없습니다.</p>';
+            return;
+        }
+
+        const entries = Object.entries(data);
+
+        // 결제일 기준 내림차순 정렬
+        entries.sort((a, b) => (b[1].enrolled_at || 0) - (a[1].enrolled_at || 0));
+
+        historyList.innerHTML = entries.map(([classId, info]) => {
+            const date = info.enrolled_at ? new Date(info.enrolled_at).toLocaleDateString('ko-KR', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            }) : '-';
+
+            const amount = info.amount || 0;
+            const amountText = amount === 0 ? '무료' : `${amount.toLocaleString()}원`;
+
+            const statusMap = {
+                'paid': { label: '결제완료', color: '#10b981' },
+                'enrolled': { label: '수강중', color: '#3b82f6' },
+                'refunded': { label: '환불완료', color: '#f59e0b' },
+                'cancelled': { label: '취소됨', color: '#ef4444' }
+            };
+            const status = statusMap[info.status] || { label: info.status || '확인중', color: '#888' };
+
+            const payMethodMap = {
+                'card': '💳 카드',
+                'free': '🎁 무료',
+                'trans': '🏦 계좌이체',
+                'vbank': '🏦 가상계좌'
+            };
+            const payMethod = payMethodMap[info.pay_method] || info.pay_method || '-';
+
+            const classTitle = info.class_title || classId;
+
+            return `
+                <div class="payment-history-item">
+                    <div class="payment-history-left">
+                        <p class="payment-history-title">${classTitle}</p>
+                        <p class="payment-history-date">${date}</p>
+                        <p class="payment-history-method">${payMethod}${info.card_name ? ` (${info.card_name})` : ''}</p>
+                    </div>
+                    <div class="payment-history-right">
+                        <span class="payment-history-amount">${amountText}</span>
+                        <span class="payment-history-status" style="color:${status.color}">${status.label}</span>
+                        <a href="../class_view/class_view.html?id=${classId}" class="payment-history-link">클래스 보기 →</a>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error("Payment history load error:", err);
+        historyList.innerHTML = '<p style="color:#ef4444; text-align:center; padding:2rem 0;">결제 내역을 불러오는 중 오류가 발생했습니다.</p>';
+    }
+}

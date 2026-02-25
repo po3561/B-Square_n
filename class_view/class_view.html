@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="view_curriculum.css">
     <link rel="stylesheet" href="view_reviews.css">
     <link rel="stylesheet" href="view_chat.css">
+    <link rel="stylesheet" href="payment_toast.css">
 
     <!-- 결제 SDK 추가 (PortOne) -->
     <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
@@ -202,6 +203,28 @@
             </aside>
         </div>
     </main>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Payment Loading Overlay -->
+    <div class="payment-overlay" id="paymentOverlay">
+        <div class="payment-spinner"></div>
+        <p class="payment-overlay-text">결제창을 불러오는 중...</p>
+        <p class="payment-overlay-sub">잠시만 기다려 주세요</p>
+    </div>
+
+    <!-- Free Class Confirm Modal -->
+    <div class="free-enroll-modal" id="freeEnrollModal">
+        <div class="free-modal-card">
+            <h3>🎉 무료 클래스 수강 신청</h3>
+            <p id="freeModalText">이 클래스는 무료입니다. 바로 수강을 시작하시겠습니까?</p>
+            <div class="free-modal-actions">
+                <button class="btn-free-cancel" id="btnFreeCancel">취소</button>
+                <button class="btn-free-confirm" id="btnFreeConfirm">수강 시작하기</button>
+            </div>
+        </div>
+    </div>
 
     <footer class="site-footer">
         <p>© Bisquare. All rights reserved.</p>

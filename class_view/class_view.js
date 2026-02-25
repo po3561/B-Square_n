@@ -21,6 +21,56 @@ let classData = null;
 let isEnrolled = false;
 let supabaseClient = null;
 
+// ===== Toast Notification System =====
+function showToast(type, title, message, duration = 3500) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+
+    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+        <div class="toast-body">
+            <div class="toast-title">${title}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 350);
+    }, duration);
+}
+
+// ===== Payment Overlay Control =====
+function showPaymentOverlay() {
+    const overlay = document.getElementById('paymentOverlay');
+    if (overlay) overlay.classList.add('active');
+}
+
+function hidePaymentOverlay() {
+    const overlay = document.getElementById('paymentOverlay');
+    if (overlay) overlay.classList.remove('active');
+}
+
+// ===== CTA Button Loading State =====
+function setButtonLoading(loading) {
+    const btn = document.getElementById('btnEnroll');
+    if (!btn) return;
+    if (loading) {
+        btn.classList.add('loading');
+        btn.dataset.originalText = btn.textContent;
+        btn.textContent = '처리 중...';
+    } else {
+        btn.classList.remove('loading');
+        if (btn.dataset.originalText) btn.textContent = btn.dataset.originalText;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     if (!classId) {
         alert("잘못된 접근입니다.");
@@ -114,44 +164,133 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 5. 결제 버튼 이벤트 연결
     document.getElementById('btnEnroll')?.addEventListener('click', handlePayment);
+
+    // 6. 무료 클래스 모달 이벤트
+    document.getElementById('btnFreeCancel')?.addEventListener('click', () => {
+        document.getElementById('freeEnrollModal')?.classList.remove('active');
+    });
+    document.getElementById('btnFreeConfirm')?.addEventListener('click', handleFreeEnrollment);
 });
 
+// ===== 무료 클래스 수강 등록 =====
+async function handleFreeEnrollment() {
+    const modal = document.getElementById('freeEnrollModal');
+    modal?.classList.remove('active');
+
+    setButtonLoading(true);
+
+    try {
+        const db = firebase.database();
+        await db.ref(`enrollments/${userId}/${classId}`).set({
+            enrolled_at: firebase.database.ServerValue.TIMESTAMP,
+            payment_id: 'FREE',
+            merchant_uid: `free_${new Date().getTime()}`,
+            amount: 0,
+            status: 'enrolled',
+            class_title: classData?.title || '',
+            pay_method: 'free'
+        });
+
+        isEnrolled = true;
+        updateEnrollmentUI();
+
+        showToast('success', '수강 신청 완료! 🎉', `"${classData?.title}" 클래스를 무료로 시작합니다.`);
+    } catch (err) {
+        console.error("Free enrollment error:", err);
+        showToast('error', '수강 신청 실패', '문제가 발생했습니다. 다시 시도해 주세요.');
+    } finally {
+        setButtonLoading(false);
+    }
+}
+
+// ===== 결제 처리 (PortOne) =====
 async function handlePayment() {
     if (!userId) {
-        alert("로그인이 필요한 서비스입니다.");
-        window.location.href = '../login/login.html';
+        showToast('info', '로그인이 필요합니다', '결제를 진행하려면 먼저 로그인해 주세요.');
+        setTimeout(() => {
+            window.location.href = '../login/login.html';
+        }, 1500);
         return;
     }
-    if (isEnrolled) { alert("이미 수강 중인 클래스입니다."); return; }
+    if (isEnrolled) {
+        showToast('info', '이미 수강 중', '이미 수강 중인 클래스입니다.');
+        return;
+    }
 
     const price = classData.price || 0;
 
+    // 무료 클래스: 결제창 대신 확인 모달 표시
+    if (price === 0) {
+        const modalText = document.getElementById('freeModalText');
+        if (modalText) {
+            modalText.textContent = `"${classData.title}" 클래스는 무료입니다. 바로 수강을 시작하시겠습니까?`;
+        }
+        document.getElementById('freeEnrollModal')?.classList.add('active');
+        return;
+    }
+
+    // 유료 클래스: PortOne 결제창 호출
+    setButtonLoading(true);
+    showPaymentOverlay();
+
     const { IMP } = window;
+    if (!IMP) {
+        hidePaymentOverlay();
+        setButtonLoading(false);
+        showToast('error', '결제 모듈 오류', '결제 모듈을 불러올 수 없습니다. 페이지를 새로고침 해주세요.');
+        return;
+    }
+
     IMP.init('imp00052118');
+
+    const merchantUid = `order_${classId}_${new Date().getTime()}`;
 
     IMP.request_pay({
         pg: "html5_inicis.INIpayTest",
         pay_method: "card",
-        merchant_uid: `order_${new Date().getTime()}`,
+        merchant_uid: merchantUid,
         name: classData.title,
         amount: price,
         buyer_email: userProfile?.email || "",
         buyer_name: userProfile?.name || "구매자",
         buyer_tel: userProfile?.phone || "010-0000-0000",
     }, async function (rsp) {
+        hidePaymentOverlay();
+
         if (rsp.success) {
-            const db = firebase.database();
-            await db.ref(`enrollments/${userId}/${classId}`).set({
-                enrolled_at: firebase.database.ServerValue.TIMESTAMP,
-                payment_id: rsp.imp_uid,
-                amount: price,
-                status: 'paid'
-            });
-            alert("결제 및 수강 신청이 완료되었습니다!");
-            location.reload();
+            try {
+                const db = firebase.database();
+                await db.ref(`enrollments/${userId}/${classId}`).set({
+                    enrolled_at: firebase.database.ServerValue.TIMESTAMP,
+                    payment_id: rsp.imp_uid,
+                    merchant_uid: rsp.merchant_uid,
+                    amount: rsp.paid_amount || price,
+                    paid_at: rsp.paid_at || null,
+                    receipt_url: rsp.receipt_url || null,
+                    pay_method: rsp.pay_method || 'card',
+                    card_name: rsp.card_name || '',
+                    status: 'paid',
+                    class_title: classData?.title || ''
+                });
+
+                isEnrolled = true;
+                updateEnrollmentUI();
+
+                showToast('success', '결제 완료! 🎉', `"${classData.title}" 클래스 수강이 시작됩니다.`);
+            } catch (err) {
+                console.error("Enrollment save error:", err);
+                showToast('error', '등록 오류', '결제는 완료되었으나 수강 등록에 문제가 발생했습니다. 고객센터에 문의해 주세요.');
+            }
         } else {
-            alert("결제 실패: " + rsp.error_msg);
+            // 사용자가 결제를 취소한 경우 별도 처리
+            if (rsp.error_msg && rsp.error_msg.includes('취소')) {
+                showToast('info', '결제 취소', '결제가 취소되었습니다.');
+            } else {
+                showToast('error', '결제 실패', rsp.error_msg || '알 수 없는 오류가 발생했습니다.');
+            }
         }
+
+        setButtonLoading(false);
     });
 }
 
@@ -162,8 +301,14 @@ function renderCorePageInfo(data) {
     document.getElementById('sidebarCategory').textContent = data.category || '기타';
 
     const price = data.price || 0;
-    document.getElementById('viewPrice').textContent = price.toLocaleString() + '원';
-    document.getElementById('priceInstallment').textContent = `월 ${(Math.floor(price / 5)).toLocaleString()}원 (5개월 할부 시)`;
+
+    if (price === 0) {
+        document.getElementById('viewPrice').textContent = '무료';
+        document.getElementById('priceInstallment').textContent = '';
+    } else {
+        document.getElementById('viewPrice').textContent = price.toLocaleString() + '원';
+        document.getElementById('priceInstallment').textContent = `월 ${(Math.floor(price / 5)).toLocaleString()}원 (5개월 할부 시)`;
+    }
 
     const mainImg = document.getElementById('mainImg');
     if (mainImg && data.image_url) {
@@ -177,6 +322,8 @@ function updateEnrollmentUI() {
         btn.textContent = "✓ 수강 중인 클래스";
         btn.style.background = "#2a2a2a";
         btn.style.color = "#888";
+        btn.style.boxShadow = "none";
         btn.disabled = true;
+        btn.style.cursor = "default";
     }
 }

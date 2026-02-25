@@ -675,3 +675,96 @@ body {
         padding: 2rem;
     }
 }
+
+/* ===== 결제 내역 스타일 ===== */
+.payment-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.payment-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.3rem 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    transition: all 0.25s ease;
+}
+
+.payment-history-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.payment-history-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.payment-history-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.payment-history-date {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+
+.payment-history-method {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.payment-history-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: 1.5rem;
+}
+
+.payment-history-amount {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.payment-history-status {
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.payment-history-link {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.payment-history-link:hover {
+    color: var(--text-primary);
+}
+
+@media (max-width: 600px) {
+    .payment-history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .payment-history-right {
+        align-items: flex-start;
+        margin-left: 0;
+    }
+}

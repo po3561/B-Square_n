@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Note: ensure tab_*.js files are loaded via HTML
     if (window.initProfileTab) window.initProfileTab(supabaseClient, userId, userEmail);
     if (window.initClassesTab) window.initClassesTab(firebase, userId);
-    if (window.initSecurityTab) window.initSecurityTab(supabaseClient, userId);
+    if (window.initSecurityTab) window.initSecurityTab(supabaseClient, userId, firebase);
     if (window.initChatSubTab) window.initChatSubTab(supabaseClient, userId);
 
     // 4. Tab Switching Logic
