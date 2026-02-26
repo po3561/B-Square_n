@@ -8,10 +8,6 @@
     <!-- Corrected Path for Global Style -->
     <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style.css">
     <link rel="stylesheet" href="class_view.css">
-    <link rel="stylesheet" href="view_intro.css">
-    <link rel="stylesheet" href="view_curriculum.css">
-    <link rel="stylesheet" href="view_reviews.css">
-    <link rel="stylesheet" href="view_chat.css">
     <link rel="stylesheet" href="payment_toast.css">
 
     <!-- 결제 SDK 추가 (PortOne) -->
@@ -78,7 +74,8 @@
                     <div class="hero-meta">
                         <span class="creator">BY 수퍼 크리에이터</span>
                         <span class="hero-separator">|</span>
-                        <span class="rating">⭐ 4.9 (후기 <span id="heroReviewCount">0</span>개)</span>
+                        <span class="rating"><span id="heroAvgStars">⭐</span> <span id="heroAvgRating">0.0</span> (후기
+                            <span id="heroReviewCount">0</span>개)</span>
                     </div>
                 </div>
             </div>
@@ -91,7 +88,9 @@
                     <button class="tab-btn active" data-target="tabIntro">클래스 소개</button>
                     <button class="tab-btn" data-target="tabCurriculum">커리큘럼</button>
                     <button class="tab-btn" data-target="tabReview">수강생 후기</button>
-                    <button class="tab-btn" data-target="tabChat">크루 채널</button>
+                    <button class="tab-btn" data-target="tabChat">클래스 채널</button>
+                    <button class="tab-btn tab-edit-btn" data-target="tabEdit" id="tabEditBtn" style="display:none;">페이지
+                        수정</button>
                 </nav>
 
                 <!-- TAB: Intro -->
@@ -139,37 +138,60 @@
                         <h4 style="margin-bottom: 1.5rem;">수강생 리얼 포토 후기</h4>
                         <div class="photo-review-grid" id="photoReviewGrid"></div>
                         <div id="reviewsList" class="reviews-container"></div>
-                        <div class="review-form-area"
-                            style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #222;">
-                            <h4>후기 작성하기</h4>
-                            <div class="rating-select" style="margin: 1rem 0;">
-                                <input type="radio" name="rating" value="5" id="r5"><label for="r5">★★★★★</label>
-                                <input type="radio" name="rating" value="4" id="r4"><label for="r4">★★★★</label>
-                                <input type="radio" name="rating" value="3" id="r3"><label for="r3">★★★</label>
+                        <div class="review-form-card" id="reviewFormCard">
+                            <div class="review-form-locked" id="reviewFormLocked">
+                                <p>🔒 수강 신청 후 후기를 작성할 수 있습니다.</p>
                             </div>
-                            <textarea id="reviewText" placeholder="수강하며 느낀 점을 자유롭게 남겨주세요."
-                                style="width:100%; height:100px; background:#1a1a1a; border:1px solid #333; color:#fff; padding:1rem; border-radius:12px;"></textarea>
-                            <button id="btnSubmitReview"
-                                style="margin-top:10px; background:#ff4d4d; border:none; color:white; padding:10px 20px; border-radius:8px; cursor:pointer;">후기
-                                등록</button>
+                            <div class="review-form-unlocked" id="reviewFormUnlocked" style="display:none;">
+                                <h4>후기 작성하기</h4>
+                                <div class="star-rating">
+                                    <input type="radio" name="rating" value="1" id="r1"><label for="r1">★</label>
+                                    <input type="radio" name="rating" value="2" id="r2"><label for="r2">★</label>
+                                    <input type="radio" name="rating" value="3" id="r3"><label for="r3">★</label>
+                                    <input type="radio" name="rating" value="4" id="r4"><label for="r4">★</label>
+                                    <input type="radio" name="rating" value="5" id="r5"><label for="r5">★</label>
+                                </div>
+                                <textarea id="reviewText" placeholder="수강하며 느낀 점을 자유롭게 남겨주세요."></textarea>
+                                <button id="btnSubmitReview" class="btn-submit-review">후기 등록</button>
+                            </div>
                         </div>
                     </section>
                 </div>
 
-                <!-- TAB: Chat (Crew Channel) -->
+                <!-- TAB: Chat (Class Channel) -->
                 <div id="tabChat" class="tab-content">
-                    <section class="content-card chat-premium-card">
-                        <div class="chat-header">
-                            <div class="chat-title-info">
-                                <h3>크루 전용 실시간 채널</h3>
-                                <p>함께 공부하는 수강생들과 실시간으로 소통하세요.</p>
-                            </div>
-                            <div class="chat-participants" id="participantsList"></div>
+                    <!-- 채팅 잠금 UI (미수강자) -->
+                    <div class="chat-locked-overlay" id="chatLockedOverlay">
+                        <div class="chat-locked-card">
+                            <span class="lock-emoji">🔒</span>
+                            <h3>클래스 전용 채널</h3>
+                            <p>수강 신청 후 클래스 채널에 참여할 수 있습니다.</p>
                         </div>
-                        <div id="chatMessages" class="chat-feed-box"></div>
-                        <div class="chat-input-area">
-                            <input type="text" id="chatInput" placeholder="공부 질문이나 이야기를 나눠보세요!">
-                            <button id="btnSendChat">전송</button>
+                    </div>
+                    <!-- 채팅 해제 UI (수강자/강사) -->
+                    <div class="chat-unlocked" id="chatUnlocked" style="display:none;">
+                        <section class="chat-container">
+                            <div class="chat-top-bar">
+                                <div class="chat-top-info">
+                                    <h3>💬 클래스 채널</h3>
+                                    <span class="chat-member-count" id="chatMemberCount">0명 참여</span>
+                                </div>
+                                <div class="chat-participants-row" id="participantsList"></div>
+                            </div>
+                            <div id="chatMessages" class="chat-messages-area"></div>
+                            <div class="chat-input-bar">
+                                <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
+                                <button id="btnSendChat" class="btn-chat-send">전송</button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- TAB: Edit (강사 전용) -->
+                <div id="tabEdit" class="tab-content">
+                    <section class="content-card">
+                        <div class="edit-tab-container" id="editTabContainer">
+                            <!-- view_edit.js에서 동적 생성 -->
                         </div>
                     </section>
                 </div>
@@ -235,6 +257,7 @@
     <script src="view_curriculum.js"></script>
     <script src="view_reviews.js"></script>
     <script src="view_chat.js"></script>
+    <script src="view_edit.js"></script>
     <script src="class_view.js"></script>
 </body>
 

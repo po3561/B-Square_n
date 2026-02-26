@@ -153,8 +153,8 @@ function renderClassCards(classes, container) {
                 <h4 class="title">${cls.title}</h4>
                 <span class="creator">작성자: ${cls.creator_name || '크리에이터'}</span>
                 <div class="meta">
-                    <span class="rating">⭐ 4.8</span>
-                    <span class="reviews">(516)</span>
+                    <span class="rating" id="rating-${cls.id}">⭐ -</span>
+                    <span class="reviews" id="reviews-${cls.id}">(-)</span>
                 </div>
                 <div class="price-area">
                     ${discountRate > 0 ? `<span class="original-price">${originalPrice.toLocaleString()}원</span>` : ''}
@@ -163,4 +163,29 @@ function renderClassCards(classes, container) {
             </div>
         </div>
     `}).join('');
+
+    // 각 클래스 카드에 실시간 별점/후기수 로드
+    const db = firebase.database();
+    classes.forEach(cls => {
+        db.ref(`reviews/${cls.id}`).on('value', (snap) => {
+            const ratingEl = document.getElementById(`rating-${cls.id}`);
+            const reviewsEl = document.getElementById(`reviews-${cls.id}`);
+            if (!ratingEl || !reviewsEl) return;
+
+            const reviews = snap.val();
+            if (!reviews) {
+                ratingEl.textContent = '⭐ 0.0';
+                reviewsEl.textContent = '(0)';
+                return;
+            }
+
+            const items = Object.values(reviews);
+            const count = items.length;
+            const sum = items.reduce((a, b) => a + parseInt(b.rating || 5), 0);
+            const avg = (sum / count).toFixed(1);
+
+            ratingEl.textContent = `⭐ ${avg}`;
+            reviewsEl.textContent = `(${count})`;
+        });
+    });
 }

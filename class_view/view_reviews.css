@@ -162,3 +162,99 @@
 .star-rating input:checked~label {
     color: var(--accent-color);
 }
+
+/* Review Form Card */
+.review-form-card {
+    margin-top: 3rem;
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 16px;
+    padding: 2rem;
+}
+
+.review-form-locked {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.review-form-locked p {
+    color: #888;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.review-form-unlocked h4 {
+    margin-bottom: 1.2rem;
+    font-size: 1.1rem;
+    color: #fff;
+}
+
+.review-form-unlocked textarea {
+    width: 100%;
+    height: 100px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.review-form-unlocked textarea:focus {
+    border-color: var(--accent-color);
+}
+
+.btn-submit-review {
+    margin-top: 12px;
+    background: var(--accent-color);
+    border: none;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-submit-review:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 77, 77, 0.3);
+}
+
+/* Instructor Badge in Reviews */
+.rip-instructor-badge {
+    font-size: 0.65rem;
+    background: rgba(110, 142, 251, 0.2);
+    color: #6e8efb;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    margin-right: 4px;
+}
+
+.rip-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-delete-review {
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.btn-delete-review:hover {
+    color: #ff4d4d;
+    background: rgba(255, 77, 77, 0.1);
+}

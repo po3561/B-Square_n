@@ -117,6 +117,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 3. 클래스 데이터 로드 및 모듈 초기화
+    let isInstructor = false;
+
     try {
         const fbSnap = await db.ref(`classes/${classId}`).once('value');
         classData = fbSnap.val();
@@ -127,21 +129,34 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (classData) {
+            // 강사 판별 (클래스 생성자 = 강사)
+            isInstructor = (userId === classData.creator_id);
+
             renderCorePageInfo(classData);
 
-            // 모듈형 스크립트 호출 (ID 기반 렌더링)
+            // 모듈형 스크립트 호출
             if (window.BSquareModules) {
                 if (window.BSquareModules.initIntro) window.BSquareModules.initIntro(classData);
                 if (window.BSquareModules.initCurriculum) window.BSquareModules.initCurriculum(classData);
 
-                // 수강 신청 여부 확인 후 리뷰/채팅 초기화
+                // 수강 신청 여부 확인
                 const enrollSnap = await db.ref(`enrollments/${userId}/${classId}`).once('value');
                 isEnrolled = enrollSnap.exists();
 
-                if (window.BSquareModules.initReviews) window.BSquareModules.initReviews(db, classId, userId, supabaseClient);
-                if (window.BSquareModules.initChat) window.BSquareModules.initChat(db, classId, userId, supabaseClient, isEnrolled);
+                // 강사는 자동으로 모든 권한 부여
+                const hasAccess = isEnrolled || isInstructor;
+
+                if (window.BSquareModules.initReviews) window.BSquareModules.initReviews(db, classId, userId, supabaseClient, hasAccess, isInstructor);
+                if (window.BSquareModules.initChat) window.BSquareModules.initChat(db, classId, userId, supabaseClient, hasAccess, isInstructor);
 
                 updateEnrollmentUI();
+
+                // 강사 전용: '페이지 수정' 탭 표시 + 모듈 초기화
+                if (isInstructor) {
+                    const editTabBtn = document.getElementById('tabEditBtn');
+                    if (editTabBtn) editTabBtn.style.display = 'inline-block';
+                    if (window.BSquareModules.initEdit) window.BSquareModules.initEdit(db, classId, classData, supabaseClient, userId);
+                }
             }
         } else {
             alert("클래스 정보를 찾을 수 없습니다.");
@@ -150,16 +165,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Initialization Error:", err);
     }
 
-    // 4. 탭 전환 이벤트
+    // 4. 탭 전환 (마이페이지와 동일 방식 - 새로고침 없음)
     const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
     tabBtns.forEach(btn => {
-        btn.onclick = () => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-target');
+            if (!targetId) return;
+
+            // 탭 버튼 활성화 전환
             tabBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            const target = btn.dataset.target;
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(target).classList.add('active');
-        };
+
+            // 탭 콘텐츠 활성화 전환
+            tabContents.forEach(t => t.classList.remove('active'));
+            document.getElementById(targetId).classList.add('active');
+        });
     });
 
     // 5. 결제 버튼 이벤트 연결
