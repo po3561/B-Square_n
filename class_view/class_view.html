@@ -32,7 +32,7 @@
                     <li><a href="../create_class/create_class.html">등록</a></li>
                     <li><a href="#">공지사항</a></li>
                     <li><a href="#">문의</a></li>
-                    <li><a href="#">커뮤니티</a></li>
+                    <li><a href="../community/community.html">커뮤니티</a></li>
                 </ul>
             </nav>
 
@@ -55,7 +55,7 @@
             <div class="hero-bg-wrapper">
                 <div class="hero-overlay"></div>
             </div>
-            <div class="hero-content-wrapper">
+            <div class="hero-content-wrapper hero-full-slider">
                 <div class="hero-slider-area">
                     <div class="slider-section">
                         <div class="slider-wrapper" id="imageSlider">
@@ -68,17 +68,13 @@
                         <div class="slider-counter">1 / 1</div>
                     </div>
                 </div>
-                <div class="hero-text-overlay">
-                    <span class="hero-badge" id="viewCategory">카테고리</span>
-                    <h1 class="hero-title" id="viewTitle">클래스 제목 가이드</h1>
-                    <div class="hero-meta">
-                        <span class="creator">BY 수퍼 크리에이터</span>
-                        <span class="hero-separator">|</span>
-                        <span class="rating"><span id="heroAvgStars">⭐</span> <span id="heroAvgRating">0.0</span> (후기
-                            <span id="heroReviewCount">0</span>개)</span>
-                    </div>
-                </div>
             </div>
+            <!-- 히어로 숨김 요소 (JS 호환용) -->
+            <span id="viewCategory" style="display:none;">카테고리</span>
+            <h1 id="viewTitle" style="display:none;">클래스 제목</h1>
+            <span id="heroAvgStars" style="display:none;">⭐</span>
+            <span id="heroAvgRating" style="display:none;">0.0</span>
+            <span id="heroReviewCount" style="display:none;">0</span>
         </section>
 
         <div class="view-grid">
@@ -210,6 +206,11 @@
                         <span>|</span>
                         <span>입문자</span>
                     </div>
+                    <div class="side-review-line">
+                        <span class="side-stars" id="sideAvgStars">⭐</span>
+                        <span class="side-rating" id="sideAvgRating">0.0</span>
+                        <span class="side-review-count">(후기 <span id="sideReviewCount">0</span>개)</span>
+                    </div>
                     <div class="side-price-section">
                         <span class="side-final-price" id="viewPrice">0원</span>
                         <p class="side-installment" id="priceInstallment">월 0원 (5개월 할부 시)</p>
@@ -259,6 +260,7 @@
     <script src="view_chat.js"></script>
     <script src="view_edit.js"></script>
     <script src="class_view.js"></script>
+    <script src="../dev_mode.js"></script>
 </body>
 
 </html>

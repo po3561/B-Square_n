@@ -8,7 +8,7 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     if (!container) return;
 
     // ========================
-    // 1. Supabase에서 강사 프로필 + 수강생 통계 로드
+    // 1. Supabase 강사 프로필 로드
     // ========================
     let instructorName = '강사';
     let instructorEmail = '';
@@ -21,36 +21,20 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
             instructorEmail = profile.email || '';
             instructorAvatar = profile.profile_image_url || '';
         }
-    } catch (e) {
-        console.warn("Instructor profile load failed:", e);
-    }
+    } catch (e) { console.warn("Instructor profile load failed:", e); }
 
-    // Firebase에서 수강생 수 / 리뷰 수 / 채팅 수 집계
-    let enrollCount = 0;
-    let reviewCount = 0;
-    let chatCount = 0;
-    let avgRating = 0;
-
+    // Firebase 통계 로드
+    let enrollCount = 0, reviewCount = 0, chatCount = 0, avgRating = 0;
     try {
-        const enrollSnap = await db.ref('enrollments').once('value');
-        const enrollData = enrollSnap.val() || {};
-        for (const uid in enrollData) {
-            if (enrollData[uid][classId]) enrollCount++;
-        }
-
         const reviewSnap = await db.ref(`reviews/${classId}`).once('value');
         const reviewData = reviewSnap.val() || {};
         const reviews = Object.values(reviewData);
         reviewCount = reviews.length;
-        if (reviewCount > 0) {
-            avgRating = (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviewCount).toFixed(1);
-        }
+        if (reviewCount > 0) avgRating = (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviewCount).toFixed(1);
 
         const chatSnap = await db.ref(`chats/${classId}`).once('value');
         chatCount = chatSnap.numChildren();
-    } catch (e) {
-        console.warn("Stats load failed:", e);
-    }
+    } catch (e) { console.warn("Stats load failed:", e); }
 
     // ========================
     // 2. 데이터 준비
@@ -64,22 +48,23 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
             <div class="edit-chapter-row">
                 <span class="edit-chapter-num">챕터 ${i + 1}</span>
                 <input type="text" class="edit-chapter-title" value="${ch.title || ''}" placeholder="챕터 제목">
-                <button type="button" class="btn-remove-chapter" data-index="${i}">✕</button>
+                <button type="button" class="btn-remove-chapter">✕</button>
             </div>
         </div>
     `).join('');
 
     const keywords = Array.isArray(classData.keywords) ? classData.keywords.join(', ') : (classData.keywords || '');
-    const imageUrls = classData.image_urls || (classData.image_url ? [classData.image_url] : []);
-    const imageUrlsStr = imageUrls.join('\n');
     const createdDate = classData.created_at ? new Date(classData.created_at).toLocaleDateString('ko-KR') : '-';
+
+    // 기존 이미지 배열 (base64 또는 URL)
+    let editImages = classData.image_urls ? [...classData.image_urls] : (classData.image_url ? [classData.image_url] : []);
 
     // ========================
     // 3. UI 렌더링
     // ========================
     container.innerHTML = `
         <div class="edit-panel">
-            <!-- 강사 정보 + 통계 -->
+            <!-- 강사 프로필 + 통계 -->
             <div class="edit-instructor-header">
                 <div class="edit-instructor-profile">
                     <div class="edit-avatar" style="${instructorAvatar ? `background-image:url(${instructorAvatar})` : ''}">
@@ -91,22 +76,10 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                     </div>
                 </div>
                 <div class="edit-stats-row">
-                    <div class="edit-stat-card">
-                        <span class="stat-num">${enrollCount}</span>
-                        <span class="stat-label">수강생</span>
-                    </div>
-                    <div class="edit-stat-card">
-                        <span class="stat-num">${avgRating}</span>
-                        <span class="stat-label">평점</span>
-                    </div>
-                    <div class="edit-stat-card">
-                        <span class="stat-num">${reviewCount}</span>
-                        <span class="stat-label">후기</span>
-                    </div>
-                    <div class="edit-stat-card">
-                        <span class="stat-num">${chatCount}</span>
-                        <span class="stat-label">채팅</span>
-                    </div>
+                    <div class="edit-stat-card"><span class="stat-num">${enrollCount}</span><span class="stat-label">수강생</span></div>
+                    <div class="edit-stat-card"><span class="stat-num">${avgRating}</span><span class="stat-label">평점</span></div>
+                    <div class="edit-stat-card"><span class="stat-num">${reviewCount}</span><span class="stat-label">후기</span></div>
+                    <div class="edit-stat-card"><span class="stat-num">${chatCount}</span><span class="stat-label">채팅</span></div>
                 </div>
             </div>
 
@@ -121,7 +94,7 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                     <h4 class="edit-section-title">📋 기본 정보</h4>
                     <div class="edit-field">
                         <label>클래스명</label>
-                        <input type="text" id="editTitle" value="${classData.title || ''}" placeholder="클래스 제목을 입력하세요">
+                        <input type="text" id="editTitle" value="${classData.title || ''}" placeholder="클래스 제목">
                     </div>
                     <div class="edit-field-row">
                         <div class="edit-field">
@@ -143,16 +116,35 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                     </div>
                 </div>
 
-                <!-- 이미지 -->
+                <!-- 이미지 (드래그앤드롭) -->
                 <div class="edit-section">
                     <h4 class="edit-section-title">🖼️ 클래스 이미지</h4>
-                    <div class="edit-image-preview" id="editImagePreview">
-                        ${imageUrls.map((url, i) => `<div class="edit-img-thumb"><img src="${url}" alt="이미지 ${i + 1}"><span class="img-badge">${i === 0 ? '대표' : i + 1}</span></div>`).join('')}
-                        ${imageUrls.length === 0 ? '<p class="edit-empty-msg">등록된 이미지가 없습니다</p>' : ''}
+                    <div class="edit-image-grid" id="editImageGrid"></div>
+                    <div class="edit-dropzone" id="editDropzone">
+                        <input type="file" id="editImageFile" accept="image/*" multiple hidden>
+                        <div class="dropzone-inner">
+                            <span class="dropzone-icon">📂</span>
+                            <p>이미지를 드래그하거나 클릭하여 업로드</p>
+                            <span class="dropzone-hint">최대 6장 · JPG, PNG, WEBP</span>
+                        </div>
                     </div>
+                </div>
+
+                <!-- 대상 수강생 -->
+                <div class="edit-section">
+                    <h4 class="edit-section-title">🎯 대상 수강생</h4>
                     <div class="edit-field">
-                        <label>이미지 URL (줄바꿈으로 구분, 첫 번째 = 대표 이미지)</label>
-                        <textarea id="editImageUrls" rows="3" placeholder="https://example.com/image1.jpg">${imageUrlsStr}</textarea>
+                        <label>이런 분들을 위한 클래스입니다 (줄바꿈으로 구분)</label>
+                        <textarea id="editTargetAudience" rows="4" placeholder="관련 분야 기초를 다지고 싶은 분&#10;실무 기술을 배우고 싶은 분">${(classData.target_audience || []).join('\n')}</textarea>
+                    </div>
+                </div>
+
+                <!-- 학습 목표 -->
+                <div class="edit-section">
+                    <h4 class="edit-section-title">🎓 학습 목표</h4>
+                    <p class="edit-section-hint">각 목표를 아이콘|제목|설명 형식으로 입력 (줄바꿈으로 구분)</p>
+                    <div class="edit-field">
+                        <textarea id="editObjectives" rows="4" placeholder="💡|기초 개념 이해|복잡한 개념도 쉽게 설명합니다&#10;🛠️|실전 프로젝트|직접 결과물을 만들어봅니다">${(classData.objectives || []).map(o => `${o.icon}|${o.title}|${o.desc}`).join('\n')}</textarea>
                     </div>
                 </div>
 
@@ -206,21 +198,73 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     `;
 
     // ========================
-    // 4. 이벤트 핸들러
+    // 4. 이미지 드래그앤드롭 시스템
     // ========================
+    const dropzone = document.getElementById('editDropzone');
+    const fileInput = document.getElementById('editImageFile');
+    const imageGrid = document.getElementById('editImageGrid');
 
-    // 이미지 미리보기 업데이트
-    document.getElementById('editImageUrls')?.addEventListener('input', () => {
-        const urls = document.getElementById('editImageUrls').value.split('\n').map(u => u.trim()).filter(u => u);
-        const previewEl = document.getElementById('editImagePreview');
-        if (previewEl) {
-            previewEl.innerHTML = urls.length > 0
-                ? urls.map((url, i) => `<div class="edit-img-thumb"><img src="${url}" alt="이미지 ${i + 1}" onerror="this.parentElement.classList.add('img-error')"><span class="img-badge">${i === 0 ? '대표' : i + 1}</span></div>`).join('')
-                : '<p class="edit-empty-msg">이미지 URL을 입력하세요</p>';
+    function renderImageGrid() {
+        imageGrid.innerHTML = editImages.map((src, i) => `
+            <div class="edit-img-card">
+                <img src="${src}" alt="이미지 ${i + 1}">
+                <span class="img-badge">${i === 0 ? '대표' : i + 1}</span>
+                <button type="button" class="btn-remove-img" data-index="${i}">✕</button>
+            </div>
+        `).join('');
+
+        if (editImages.length === 0) {
+            imageGrid.innerHTML = '<p class="edit-empty-msg">등록된 이미지가 없습니다</p>';
         }
+
+        // 삭제 버튼 이벤트
+        imageGrid.querySelectorAll('.btn-remove-img').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.index);
+                editImages.splice(idx, 1);
+                renderImageGrid();
+            });
+        });
+
+        // 드롭존 표시/숨김
+        dropzone.style.display = editImages.length >= 6 ? 'none' : 'block';
+    }
+
+    function processFiles(files) {
+        Array.from(files).forEach(file => {
+            if (editImages.length >= 6) return;
+            if (!file.type.startsWith('image/')) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                editImages.push(e.target.result);
+                renderImageGrid();
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // 클릭으로 파일 선택
+    dropzone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => processFiles(e.target.files));
+
+    // 드래그앤드롭
+    dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+        processFiles(e.dataTransfer.files);
     });
 
-    // 가격 미리보기
+    renderImageGrid();
+
+    // ========================
+    // 5. 가격 미리보기
+    // ========================
     function updatePricePreview() {
         const price = parseInt(document.getElementById('editPrice').value) || 0;
         const discount = parseInt(document.getElementById('editDiscount').value) || 0;
@@ -236,15 +280,15 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
             }
         }
     }
-
     document.getElementById('editPrice')?.addEventListener('input', updatePricePreview);
     document.getElementById('editDiscount')?.addEventListener('input', updatePricePreview);
     updatePricePreview();
 
-    // 챕터 추가
+    // ========================
+    // 6. 커리큘럼 관리
+    // ========================
     document.getElementById('btnAddEditChapter')?.addEventListener('click', () => {
         const list = document.getElementById('editCurriculumList');
-        // 비어있는 안내 메시지 제거
         const emptyMsg = list.querySelector('.edit-empty-msg');
         if (emptyMsg) emptyMsg.remove();
 
@@ -254,7 +298,7 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
         div.innerHTML = `
             <div class="edit-chapter-row">
                 <span class="edit-chapter-num">챕터 ${count + 1}</span>
-                <input type="text" class="edit-chapter-title" value="" placeholder="새 챕터 제목을 입력하세요">
+                <input type="text" class="edit-chapter-title" value="" placeholder="새 챕터 제목">
                 <button type="button" class="btn-remove-chapter">✕</button>
             </div>
         `;
@@ -263,7 +307,6 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
         div.querySelector('.edit-chapter-title').focus();
     });
 
-    // 챕터 삭제
     function attachRemoveEvent(btn) {
         btn.addEventListener('click', () => {
             btn.closest('.edit-chapter-item').remove();
@@ -275,7 +318,7 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     document.querySelectorAll('.btn-remove-chapter').forEach(attachRemoveEvent);
 
     // ========================
-    // 5. 폼 제출 → Firebase 실시간 업데이트
+    // 7. 폼 제출 → Firebase 실시간 업데이트
     // ========================
     document.getElementById('editForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -286,59 +329,62 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
         saveBtn.disabled = true;
 
         try {
-            // 커리큘럼
             const chapters = Array.from(document.querySelectorAll('#editCurriculumList .edit-chapter-title'))
                 .map(input => ({ title: input.value.trim() }))
                 .filter(ch => ch.title);
 
-            // 키워드
             const keywordsArr = document.getElementById('editKeywords').value.split(',').map(k => k.trim()).filter(k => k);
 
-            // 이미지 URL 파싱
-            const imgUrls = document.getElementById('editImageUrls').value.split('\n').map(u => u.trim()).filter(u => u);
+            // 대상 수강생 파싱
+            const targetAudience = document.getElementById('editTargetAudience').value
+                .split('\n').map(l => l.trim()).filter(l => l);
 
-            // Firebase 업데이트 데이터
+            // 학습 목표 파싱 (아이콘|제목|설명 형식)
+            const objectives = document.getElementById('editObjectives').value
+                .split('\n').map(l => l.trim()).filter(l => l)
+                .map(line => {
+                    const parts = line.split('|');
+                    return {
+                        icon: parts[0] || '💡',
+                        title: parts[1] || '',
+                        desc: parts[2] || ''
+                    };
+                }).filter(o => o.title);
+
             const updates = {
                 title: document.getElementById('editTitle').value.trim(),
                 category: document.getElementById('editCategory').value,
                 class_type: document.getElementById('editClassType').value,
                 keywords: keywordsArr,
+                target_audience: targetAudience,
+                objectives: objectives,
                 summary: document.getElementById('editSummary').value.trim(),
                 description: document.getElementById('editDescription').value.trim(),
                 price: parseInt(document.getElementById('editPrice').value) || 0,
                 discount_rate: parseInt(document.getElementById('editDiscount').value) || 0,
                 curriculum: chapters,
-                image_url: imgUrls[0] || '',
-                image_urls: imgUrls
+                image_url: editImages[0] || '',
+                image_urls: editImages
             };
 
-            // Firebase RTDB에 실시간 반영
+            console.log("📤 Saving to Firebase:", `classes/${classId}`, Object.keys(updates));
             await db.ref(`classes/${classId}`).update(updates);
+            console.log("✅ Firebase update successful");
 
             // 현재 페이지 UI 실시간 반영
             Object.assign(classData, updates);
-            if (typeof renderCorePageInfo === 'function') {
-                renderCorePageInfo(classData);
-            }
-
-            // 소개/커리큘럼 탭 재렌더링
+            if (typeof renderCorePageInfo === 'function') renderCorePageInfo(classData);
             if (window.BSquareModules.initIntro) window.BSquareModules.initIntro(classData);
             if (window.BSquareModules.initCurriculum) window.BSquareModules.initCurriculum(classData);
 
             // 히어로 이미지 업데이트
             const mainImg = document.getElementById('mainImg');
-            if (mainImg && updates.image_url) {
-                mainImg.src = updates.image_url;
-            }
+            if (mainImg && updates.image_url) mainImg.src = updates.image_url;
 
-            if (typeof showToast === 'function') {
-                showToast('success', '수정 완료 ✅', '클래스 정보가 Firebase에 실시간 반영되었습니다.');
-            }
+            if (typeof showToast === 'function') showToast('success', '수정 완료 ✅', '클래스 정보가 Firebase에 실시간 반영되었습니다.');
         } catch (err) {
-            console.error("Edit Save Error:", err);
-            if (typeof showToast === 'function') {
-                showToast('error', '저장 실패 ❌', '오류: ' + err.message);
-            }
+            console.error("▶ Edit Save Error:", err);
+            if (typeof showToast === 'function') showToast('error', '저장 실패 ❌', err.message || '클래스 정보 저장에 실패했습니다.');
         } finally {
             saveBtn.innerHTML = originalHTML;
             saveBtn.disabled = false;

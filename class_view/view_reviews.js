@@ -15,6 +15,10 @@ function loadReviews(db, classId, userId, isInstructor) {
     const heroAvgRating = document.getElementById('heroAvgRating');
     const heroAvgStars = document.getElementById('heroAvgStars');
     const heroReviewCount = document.getElementById('heroReviewCount');
+    // 사이드바 리뷰 요소
+    const sideAvgStars = document.getElementById('sideAvgStars');
+    const sideAvgRating = document.getElementById('sideAvgRating');
+    const sideReviewCount = document.getElementById('sideReviewCount');
 
     try {
         db.ref(`reviews/${classId}`).on('value', (snapshot) => {
@@ -45,6 +49,10 @@ function loadReviews(db, classId, userId, isInstructor) {
             if (heroAvgRating) heroAvgRating.textContent = avg;
             if (heroReviewCount) heroReviewCount.textContent = count;
             if (heroAvgStars) heroAvgStars.textContent = '⭐';
+            // 사이드바 리뷰 업데이트
+            if (sideAvgStars) sideAvgStars.textContent = '⭐';
+            if (sideAvgRating) sideAvgRating.textContent = avg;
+            if (sideReviewCount) sideReviewCount.textContent = count;
 
             if (photoGrid) {
                 const reviewImages = items.filter(r => r.image_url).map(r => r.image_url);

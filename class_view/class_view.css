@@ -61,6 +61,11 @@
     align-items: center;
 }
 
+.hero-content-wrapper.hero-full-slider {
+    grid-template-columns: 1fr;
+    max-width: 1400px;
+}
+
 .hero-slider-area {
     width: 100%;
 }
@@ -68,7 +73,7 @@
 .slider-section {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 11;
+    aspect-ratio: 16 / 7;
     background: #111;
     border-radius: 24px;
     overflow: hidden;
@@ -1126,7 +1131,26 @@
     font-size: 0.95rem;
     color: #888;
     font-weight: 600;
-    margin-bottom: 2.5rem;
+    margin-bottom: 0.8rem;
+}
+
+.side-review-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-bottom: 2rem;
+}
+
+.side-rating {
+    color: #ffb100;
+    font-weight: 700;
+}
+
+.side-review-count {
+    color: #666;
+    font-size: 0.85rem;
 }
 
 .side-price-section {
@@ -1690,4 +1714,105 @@
     border-radius: 4px;
     font-size: 0.75rem;
     color: #888;
+}
+
+/* Drag & Drop Zone */
+.edit-dropzone {
+    border: 2px dashed #333;
+    border-radius: 14px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 1rem;
+}
+
+.edit-dropzone:hover,
+.edit-dropzone.dragover {
+    border-color: #6e8efb;
+    background: rgba(110, 142, 251, 0.05);
+}
+
+.dropzone-inner {
+    pointer-events: none;
+}
+
+.dropzone-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.dropzone-inner p {
+    color: #aaa;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.dropzone-hint {
+    color: #555;
+    font-size: 0.8rem;
+}
+
+/* Image Grid Cards */
+.edit-image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+}
+
+.edit-img-card {
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    transition: transform 0.2s;
+}
+
+.edit-img-card:hover {
+    transform: scale(1.03);
+}
+
+.edit-img-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.edit-img-card .img-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+.btn-remove-img {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(255, 77, 77, 0.9);
+    color: #fff;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.edit-img-card:hover .btn-remove-img {
+    opacity: 1;
 }
