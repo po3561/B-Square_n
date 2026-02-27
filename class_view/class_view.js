@@ -130,7 +130,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (classData) {
             // 강사 판별 (클래스 생성자 = 강사)
-            isInstructor = (userId === classData.creator_id);
+            isInstructor = !!(userId && classData.creator_id && userId === classData.creator_id);
+            console.log("👨‍🏫 강사 판별:", { userId, creator_id: classData.creator_id, isInstructor });
 
             renderCorePageInfo(classData);
 
@@ -139,12 +140,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (window.BSquareModules.initIntro) window.BSquareModules.initIntro(classData);
                 if (window.BSquareModules.initCurriculum) window.BSquareModules.initCurriculum(classData);
 
-                // 수강 신청 여부 확인
-                const enrollSnap = await db.ref(`enrollments/${userId}/${classId}`).once('value');
-                isEnrolled = enrollSnap.exists();
+                // 수강 신청 여부 확인 (userId가 있을 때만)
+                if (userId) {
+                    try {
+                        const enrollSnap = await db.ref(`enrollments/${userId}/${classId}`).once('value');
+                        isEnrolled = enrollSnap.exists();
+                    } catch (enrollErr) {
+                        console.warn("수강 상태 확인 실패:", enrollErr);
+                        isEnrolled = false;
+                    }
+                }
 
                 // 강사는 자동으로 모든 권한 부여
                 const hasAccess = isEnrolled || isInstructor;
+                console.log("🔑 권한 상태:", { isEnrolled, isInstructor, hasAccess });
 
                 if (window.BSquareModules.initReviews) window.BSquareModules.initReviews(db, classId, userId, supabaseClient, hasAccess, isInstructor);
                 if (window.BSquareModules.initChat) window.BSquareModules.initChat(db, classId, userId, supabaseClient, hasAccess, isInstructor);
@@ -153,6 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // 강사 전용: '페이지 수정' 탭 표시 + 모듈 초기화
                 if (isInstructor) {
+                    console.log("✅ 강사 모드 활성화 - 수정 탭 표시");
                     const editTabBtn = document.getElementById('tabEditBtn');
                     if (editTabBtn) editTabBtn.style.display = 'inline-block';
                     if (window.BSquareModules.initEdit) window.BSquareModules.initEdit(db, classId, classData, supabaseClient, userId);

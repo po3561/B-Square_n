@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Firebase Rules Updater</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+
+<body style="background:#111;color:#fff;font-family:monospace;padding:2rem;">
+    <h2>Firebase RTDB 보안 규칙 업데이트</h2>
+    <p>Firebase Console에서 아래 규칙을 적용해주세요:</p>
+    <pre style="background:#222;padding:1rem;border-radius:8px;font-size:0.9rem;white-space:pre-wrap;">
+{
+  "rules": {
+    "classes": {
+      ".read": true,
+      "$classId": {
+        ".write": "auth != null && (data.child('creator_id').val() === auth.uid || !data.exists())"
+      }
+    },
+    "reviews": {
+      ".read": true,
+      "$classId": {
+        ".write": true
+      }
+    },
+    "chats": {
+      ".read": true,
+      "$classId": {
+        ".write": true
+      }
+    },
+    "enrollments": {
+      ".read": true,
+      "$userId": {
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    }
+  }
+}
+    </pre>
+    <p><strong>방법:</strong></p>
+    <ol>
+        <li><a href="https://console.firebase.google.com/project/b-square-39b11/database/b-square-39b11-default-rtdb/rules"
+                target="_blank" style="color:#6e8efb;">Firebase Console → Realtime Database → Rules 클릭</a></li>
+        <li>위 JSON을 복사하여 기존 규칙을 덮어쓰기</li>
+        <li>Publish 버튼 클릭</li>
+    </ol>
+</body>
+
+</html>
