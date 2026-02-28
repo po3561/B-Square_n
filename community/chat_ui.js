@@ -454,7 +454,7 @@ window.CommunityModules.ChatUI = (function () {
                 const msgData = {
                     sender_id: currentUserId,
                     content: content,
-                    type: roomType === 'dm' ? undefined : 'text',
+                    type: currentRoomType === 'dm' ? undefined : 'text',
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
                     edited: false,
                     reactions: {}
