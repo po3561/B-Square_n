@@ -19,6 +19,8 @@ window.CommunityModules.SyncBridge = (function () {
     // ---- 온라인 상태 관리 ----
     function setupPresence() {
         if (!userId) return;
+        if (window.__BSQ_DEV_MODE__) return; // 운영자는 흔적을 남기지 않음
+
         const presenceRef = db.ref(`presence/${userId}`);
         presenceRef.set({ online: true, last_seen: firebase.database.ServerValue.TIMESTAMP });
         presenceRef.onDisconnect().set({ online: false, last_seen: firebase.database.ServerValue.TIMESTAMP });
@@ -57,8 +59,12 @@ window.CommunityModules.SyncBridge = (function () {
 
     // ---- Supabase 프로필 로드 ----
     async function getUserProfile(uid) {
+        if (uid === 'OPERATOR_GHOST') {
+            return { name: '운영자', profile_image_url: 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png', is_operator: true };
+        }
+
         try {
-            const { data } = await supabase.from('users').select('name, email, profile_image_url').eq('id', uid).maybeSingle();
+            const { data } = await supabase.from('users').select('name, email, profile_image_url, status_message').eq('id', uid).maybeSingle();
             return data || { name: '사용자', profile_image_url: '' };
         } catch (e) {
             return { name: '사용자', profile_image_url: '' };

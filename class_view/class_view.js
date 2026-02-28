@@ -86,16 +86,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 2. 세션 및 프로필 확인
     const { data: { session } } = await supabaseClient.auth.getSession();
     const userMenu = document.getElementById('userMenu');
+    const isOperator = window.__BSQ_DEV_MODE__ === true;
 
-    if (session) {
-        userId = session.user.id;
-        const { data: profile } = await supabaseClient.from('users').select('*').eq('id', userId).maybeSingle();
-        userProfile = profile;
+    if (session || isOperator) {
+        userId = isOperator ? 'OPERATOR_GHOST' : session.user.id;
+
+        if (isOperator) {
+            userProfile = { name: '운영자', profile_image_url: 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png' };
+        } else {
+            const { data: profile } = await supabaseClient.from('users').select('*').eq('id', userId).maybeSingle();
+            userProfile = profile;
+        }
 
         if (userMenu) {
             // [SYNC] Header UI with main.js
-            const profileImgUrl = profile?.profile_image_url;
-            const userName = profile?.name || '사용자';
+            const profileImgUrl = userProfile?.profile_image_url;
+            const userName = userProfile?.name || '사용자';
 
             userMenu.innerHTML = `
                 <a href="../mi_pesg/mypage.html" class="user-profile-btn">
@@ -151,8 +157,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
 
-                // 강사는 자동으로 모든 권한 부여
-                const hasAccess = isEnrolled || isInstructor;
+                // 강사 및 운영자(개발자 모드)는 자동으로 모든 권한 부여
+                const hasAccess = isEnrolled || isInstructor || window.__BSQ_DEV_MODE__;
                 console.log("🔑 권한 상태:", { isEnrolled, isInstructor, hasAccess });
 
                 if (window.BSquareModules.initReviews) window.BSquareModules.initReviews(db, classId, userId, supabaseClient, hasAccess, isInstructor);
@@ -237,6 +243,14 @@ async function handleFreeEnrollment() {
 
 // ===== 결제 처리 (PortOne) =====
 async function handlePayment() {
+    // 🛡️ 운영자 ফ্রি패스 (DB에 기록을 남기지 않고 로컬 화면만 수강완료 처리)
+    if (window.__BSQ_DEV_MODE__) {
+        isEnrolled = true;
+        updateEnrollmentUI();
+        showToast('success', '👨‍💻 운영자 프리패스 적용', 'DB 기록 없이 수강 권한이 즉시 부여되었습니다.');
+        return;
+    }
+
     if (!userId) {
         showToast('info', '로그인이 필요합니다', '결제를 진행하려면 먼저 로그인해 주세요.');
         setTimeout(() => {

@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>클래스 상세 정보 | B-Square</title>
-    <!-- Corrected Path for Global Style -->
     <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style.css">
     <link rel="stylesheet" href="class_view.css">
     <link rel="stylesheet" href="payment_toast.css">
+    <link rel="stylesheet" href="../community/community.css">
 
     <!-- 결제 SDK 추가 (PortOne) -->
     <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
@@ -155,9 +155,9 @@
                 </div>
 
                 <!-- TAB: Chat (Class Channel) -->
-                <div id="tabChat" class="tab-content">
+                <div id="tabChat" class="tab-content" style="border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; height: 600px; display: flex; flex-direction: column;">
                     <!-- 채팅 잠금 UI (미수강자) -->
-                    <div class="chat-locked-overlay" id="chatLockedOverlay">
+                    <div class="chat-locked-overlay" id="chatLockedOverlay" style="flex: 1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
                         <div class="chat-locked-card">
                             <span class="lock-emoji">🔒</span>
                             <h3>클래스 전용 채널</h3>
@@ -165,21 +165,75 @@
                         </div>
                     </div>
                     <!-- 채팅 해제 UI (수강자/강사) -->
-                    <div class="chat-unlocked" id="chatUnlocked" style="display:none;">
-                        <section class="chat-container">
-                            <div class="chat-top-bar">
-                                <div class="chat-top-info">
-                                    <h3>💬 클래스 채널</h3>
-                                    <span class="chat-member-count" id="chatMemberCount">0명 참여</span>
+                    <div class="chat-unlocked" id="chatUnlocked" style="display:none; flex: 1; position: relative;">
+                        <section class="comm-main" id="commMain" style="height: 100%; display: flex; flex-direction: column;">
+                            <div class="chat-active-area" id="chatActiveArea" style="height: 100%; display: flex; flex-direction: column;">
+                                <div class="chat-top-header" id="chatTopHeader">
+                                    <div class="chat-header-info">
+                                        <span class="chat-header-name" id="chatHeaderName">클래스 채널</span>
+                                        <span class="chat-header-status" id="chatHeaderStatus">온라인</span>
+                                    </div>
+                                    <div class="chat-header-actions">
+                                        <button class="btn-header-action" id="btnChatSearch" title="메시지 검색">🔍</button>
+                                        <button class="btn-header-action" id="btnThemeToggle" title="테마 전환">🌙</button>
+                                        <button class="btn-header-action" id="btnChatInfo" title="참여자 정보">👥</button>
+                                    </div>
                                 </div>
-                                <div class="chat-participants-row" id="participantsList"></div>
-                            </div>
-                            <div id="chatMessages" class="chat-messages-area"></div>
-                            <div class="chat-input-bar">
-                                <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
-                                <button id="btnSendChat" class="btn-chat-send">전송</button>
+
+                                <!-- 메시지 내 검색바 -->
+                                <div class="chat-search-bar" id="chatSearchBar" style="display:none;">
+                                    <input type="text" id="msgSearchInput" placeholder="메시지에서 검색...">
+                                    <span id="msgSearchCount" class="search-count"></span>
+                                    <button id="msgSearchPrev" class="btn-search-nav">▲</button>
+                                    <button id="msgSearchNext" class="btn-search-nav">▼</button>
+                                    <button id="msgSearchClose" class="btn-search-close">✕</button>
+                                </div>
+
+                                <div class="chat-messages-container" id="chatMessagesContainer" style="flex: 1; overflow-y: auto;"></div>
+
+                                <!-- 답장 미리보기 -->
+                                <div class="reply-preview" id="replyPreview" style="display:none;">
+                                    <div class="reply-preview-content">
+                                        <span class="reply-label">답장</span>
+                                        <span class="reply-text" id="replyText"></span>
+                                    </div>
+                                    <button class="btn-reply-cancel" id="btnReplyCancel">✕</button>
+                                </div>
+
+                                <!-- 파일 드롭 오버레이 -->
+                                <div class="file-drop-overlay" id="fileDropOverlay">
+                                    <div class="file-drop-inner">
+                                        <span>📎</span>
+                                        <p>파일을 여기에 드롭하세요</p>
+                                    </div>
+                                </div>
+
+                                <!-- 입력 UI -->
+                                <div class="chat-input-area" style="padding: 12px; background: var(--comm-card-bg); border-top: 1px solid var(--comm-border);">
+                                    <div class="input-main-row" style="display: flex; gap: 8px; align-items: flex-end;">
+                                        <button class="btn-input-icon" id="btnAttach" title="파일 첨부">📎</button>
+                                        <input type="file" id="fileInput" multiple hidden>
+                                        <textarea id="msgInput" placeholder="메시지 작성..." rows="1" style="flex: 1; resize: none; overflow-y: hidden;"></textarea>
+                                        <button class="btn-input-icon" id="btnEmoji" title="이모지">😊</button>
+                                        <button class="btn-send" id="btnSend">
+                                            <span>➤</span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </section>
+
+                        <!-- 정보 패널 (참여자 목록 등) -->
+                        <aside class="comm-info-panel" id="commInfoPanel" style="display:none; position: absolute; right: 0; top: 0; height: 100%; border-left: 1px solid var(--comm-border); background: var(--comm-sidebar-bg); z-index: 10;">
+                            <div class="info-panel-header">
+                                <h3>클래스 정보</h3>
+                                <button class="btn-close-panel" id="btnClosePanel">✕</button>
+                            </div>
+                            <div class="info-panel-body" id="infoPanelBody" style="padding: 16px;">
+                                <div id="participantsList" class="chat-participants-row"></div>
+                                <div id="chatMemberCount" style="margin-top:10px; font-size: 0.85rem; color: var(--comm-text2);">0명 참여</div>
+                            </div>
+                        </aside>
                     </div>
                 </div>
 
@@ -254,6 +308,9 @@
     </footer>
 
     <!-- Scripts Load -->
+    <script src="../community/sync_bridge.js"></script>
+    <script src="../community/dm_private.js"></script>
+    <script src="../community/chat_ui.js"></script>
     <script src="view_intro.js"></script>
     <script src="view_curriculum.js"></script>
     <script src="view_reviews.js"></script>

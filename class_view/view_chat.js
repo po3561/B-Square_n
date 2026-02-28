@@ -1,111 +1,86 @@
-// view_chat.js - Class Channel with Lock/Unlock + Instructor Controls
+// view_chat.js - Class Channel with Lock/Unlock + CommunityModules Intgeration
 window.BSquareModules = window.BSquareModules || {};
 window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAccess, isInstructor) {
     console.log("💬 Chat Module Initializing... | Access:", hasAccess, "| Instructor:", isInstructor);
 
+    // 총괄 개발자 모드 무적 패스
+    if (window.__BSQ_DEV_MODE__) {
+        hasAccess = true;
+    }
+
     const lockedOverlay = document.getElementById('chatLockedOverlay');
     const unlockedArea = document.getElementById('chatUnlocked');
 
-    if (hasAccess && userId) {
-        // 수강자 / 강사: 채팅 해제
+    if (hasAccess && (userId || window.__BSQ_DEV_MODE__)) {
+        // 수강자 / 강사 / 운영자: 채팅 해제
         if (lockedOverlay) lockedOverlay.style.display = 'none';
-        if (unlockedArea) unlockedArea.style.display = 'block';
-        setupChatFeed(db, classId, userId, supabase, isInstructor);
+        if (unlockedArea) unlockedArea.style.display = 'flex'; // flex for comm-main layout
+
+        // 1. 커뮤니티 모듈 연결
+        const SyncBridge = window.CommunityModules.SyncBridge;
+        const DM = window.CommunityModules.DM;
+        const ChatUI = window.CommunityModules.ChatUI;
+
+        // 운영자 고스트 계정 처리
+        const currentUserId = window.__BSQ_DEV_MODE__ ? 'OPERATOR_GHOST' : userId;
+
+        // 초기화
+        SyncBridge.init(db, supabase, currentUserId);
+        ChatUI.init();
+
+        // 2. 클래스 채팅방 열기 (타이틀 가져오기)
+        const classTitle = document.getElementById('sidebarTitle')?.textContent || '클래스';
+        ChatUI.openRoom(classId, 'class', {
+            class_name: classTitle
+        });
+
+        // 3. 전송 이벤트 바인딩
+        const btnSend = document.getElementById('btnSend');
+        const msgInput = document.getElementById('msgInput');
+
+        if (btnSend) {
+            // 중복 리스너 방지 클론 트릭
+            const newBtn = btnSend.cloneNode(true);
+            btnSend.parentNode.replaceChild(newBtn, btnSend);
+            newBtn.addEventListener('click', () => ChatUI.sendCurrentMessage());
+        }
+
+        if (msgInput) {
+            const newInput = msgInput.cloneNode(true);
+            msgInput.parentNode.replaceChild(newInput, msgInput);
+            newInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    ChatUI.sendCurrentMessage();
+                }
+            });
+        }
+
+        // 4. 정보 패널 열기/닫기 이벤트 바인딩
+        const btnChatInfo = document.getElementById('btnChatInfo');
+        const commInfoPanel = document.getElementById('commInfoPanel');
+        const btnClosePanel = document.getElementById('btnClosePanel');
+
+        if (btnChatInfo && commInfoPanel) {
+            btnChatInfo.addEventListener('click', () => {
+                commInfoPanel.style.display = commInfoPanel.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+        if (btnClosePanel && commInfoPanel) {
+            btnClosePanel.addEventListener('click', () => {
+                commInfoPanel.style.display = 'none';
+            });
+        }
+
+        // 5. 참여자 목록 로드
+        loadParticipants(db, classId, supabase);
+
     } else {
         // 미수강자: 채팅 잠금
-        if (lockedOverlay) lockedOverlay.style.display = 'block';
+        if (lockedOverlay) lockedOverlay.style.display = 'flex';
         if (unlockedArea) unlockedArea.style.display = 'none';
     }
-
-    loadParticipants(db, classId, supabase);
 };
-
-function setupChatFeed(db, classId, userId, supabase, isInstructor) {
-    const chatMessages = document.getElementById('chatMessages');
-    const chatInput = document.getElementById('chatInput');
-    const btnSend = document.getElementById('btnSendChat');
-
-    if (!chatMessages) return;
-
-    // 실시간 메시지 로드
-    db.ref(`chats/${classId}`).limitToLast(100).on('child_added', (snapshot) => {
-        const msg = snapshot.val();
-        const msgKey = snapshot.key;
-        const div = document.createElement('div');
-        const isMine = msg.user_id === userId;
-        const isMsgInstructor = msg.is_instructor;
-        div.className = `chat-msg ${isMine ? 'mine' : ''}`;
-        div.id = `msg-${msgKey}`;
-
-        const avatarUrl = msg.user_avatar || '';
-        const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        div.innerHTML = `
-            ${!isMine ? `<div class="msg-avatar-wrap"><img src="${avatarUrl}" class="msg-avatar" onerror="this.textContent='👤'; this.style.fontSize='1.2rem'; this.style.display='flex'; this.style.alignItems='center'; this.style.justifyContent='center';"></div>` : ''}
-            <div class="msg-wrapper">
-                ${!isMine ? `<div class="msg-sender-row">
-                    <span class="sender-name">${msg.user_name}</span>
-                    ${isMsgInstructor ? '<span class="chat-instructor-badge">강사</span>' : ''}
-                </div>` : ''}
-                <div class="msg-content-row">
-                    <div class="msg-bubble">${msg.content}</div>
-                    ${isInstructor && !isMine ? `<button class="btn-delete-msg" data-key="${msgKey}" title="삭제">✕</button>` : ''}
-                </div>
-                <span class="msg-time">${timeStr}</span>
-            </div>
-        `;
-
-        chatMessages.appendChild(div);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        // 강사 메시지 삭제 이벤트
-        if (isInstructor) {
-            const deleteBtn = div.querySelector('.btn-delete-msg');
-            if (deleteBtn) {
-                deleteBtn.addEventListener('click', async () => {
-                    try {
-                        await db.ref(`chats/${classId}/${msgKey}`).remove();
-                        div.remove();
-                    } catch (err) {
-                        console.error("Chat delete error:", err);
-                    }
-                });
-            }
-        }
-    });
-
-    // 메시지 전송
-    const sendMsg = async () => {
-        const val = chatInput.value.trim();
-        if (!val) return;
-
-        let userName = "익명";
-        let userAvatar = '';
-
-        try {
-            const { data: profile } = await supabase.from('users').select('name, profile_image_url').eq('id', userId).maybeSingle();
-            if (profile) {
-                userName = profile.name || "익명";
-                userAvatar = profile.profile_image_url || '';
-            }
-        } catch (e) {
-            console.warn("Profile fetch failed", e);
-        }
-
-        db.ref(`chats/${classId}`).push({
-            user_id: userId,
-            user_name: userName,
-            user_avatar: userAvatar,
-            content: val,
-            timestamp: firebase.database.ServerValue.TIMESTAMP,
-            is_instructor: isInstructor
-        });
-        chatInput.value = '';
-    };
-
-    btnSend?.addEventListener('click', sendMsg);
-    chatInput?.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMsg(); });
-}
 
 async function loadParticipants(db, classId, supabase) {
     const pList = document.getElementById('participantsList');
@@ -125,17 +100,14 @@ async function loadParticipants(db, classId, supabase) {
                         try {
                             const { data: user } = await supabase.from('users').select('name, profile_image_url').eq('id', uid).maybeSingle();
                             if (user) {
-                                html += `<img src="${user.profile_image_url || ''}" class="p-avatar" title="${user.name}" onerror="this.style.display='none'">`;
+                                html += `<div class="p-avatar" style="${user.profile_image_url ? `background-image:url(${user.profile_image_url})` : ''}" title="${user.name}">${!user.profile_image_url ? '👤' : ''}</div>`;
                             }
                         } catch (e) { /* skip */ }
                     }
                 }
             }
-            pList.innerHTML = html || '<span style="color:#666; font-size:0.85rem;">아직 참여자가 없습니다</span>';
+            pList.innerHTML = html || '<span style="color:var(--comm-text2); font-size:0.85rem;">아직 참여자가 없습니다</span>';
             if (countEl) countEl.textContent = `${count}명 참여`;
-        }, (err) => {
-            console.warn("Participants fetch denied", err.message);
-            pList.innerHTML = '<span style="color:#666; font-size:0.85rem;">참여자 정보 로딩중...</span>';
         });
     } catch (err) {
         console.error("Chat Participants Error:", err);

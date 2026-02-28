@@ -47,11 +47,11 @@ window.CommunityModules.DM = (function () {
     }
 
     // 메시지 전송
-    async function sendMessage(roomId, content, type = 'text', replyTo = null, fileData = null) {
+    async function sendMessage(roomId, content, type = 'text', replyTo = null, fileData = null, customMsgData = null) {
         const db = bridge().getDb();
         const userId = bridge().getUserId();
 
-        const msgData = {
+        const msgData = customMsgData || {
             sender_id: userId,
             content: content,
             type: type, // text, image, file, voice, video

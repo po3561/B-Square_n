@@ -21,7 +21,6 @@
             <h1 class="logo">
                 <a href="../bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a>
             </h1>
-
             <nav class="main-nav">
                 <ul>
                     <li><a href="../create_class/create_class.html">등록</a></li>
@@ -30,15 +29,12 @@
                     <li><a href="community.html" class="nav-active">커뮤니티</a></li>
                 </ul>
             </nav>
-
             <div class="header-utils">
                 <div class="search-bar">
                     <input type="text" placeholder="검색어를 입력하세요">
                     <button type="button">🔍</button>
                 </div>
-
-                <div class="user-menu" id="userMenu" style="display: flex; gap: 10px; align-items: center;">
-                </div>
+                <div class="user-menu" id="userMenu" style="display: flex; gap: 10px; align-items: center;"></div>
             </div>
         </div>
     </header>
@@ -47,19 +43,35 @@
         <!-- 왼쪽: 채팅 목록 사이드바 -->
         <aside class="comm-sidebar" id="commSidebar">
             <div class="sidebar-header">
-                <h2 class="sidebar-title">💬 채팅</h2>
+                <button class="btn-hamburger" id="btnHamburger" title="메뉴">☰</button>
+                <h2 class="sidebar-title">채팅</h2>
                 <button class="btn-new-chat" id="btnNewChat" title="새 대화">✏️</button>
             </div>
+
+            <!-- 햄버거 메뉴 드롭다운 -->
+            <div class="hamburger-menu" id="hamburgerMenu" style="display:none;">
+                <div class="hm-item" id="hmGroupChat"><span>👥</span>단체 채팅 만들기</div>
+                <div class="hm-item" id="hmCreateClass"><span>📚</span>클래스 만들기</div>
+                <div class="hm-item" id="hmContacts"><span>📇</span>연락처</div>
+                <div class="hm-item" id="hmFolders"><span>📂</span>폴더 관리</div>
+            </div>
+
             <div class="sidebar-search">
                 <input type="text" id="chatSearchInput" placeholder="대화 검색...">
             </div>
-            <div class="sidebar-tabs">
+
+            <!-- 폴더 탭 -->
+            <div class="sidebar-tabs" id="sidebarTabs">
                 <button class="stab active" data-filter="all">전체</button>
                 <button class="stab" data-filter="dm">1:1</button>
                 <button class="stab" data-filter="class">클래스</button>
+                <button class="stab" data-filter="group">그룹</button>
             </div>
+
+            <!-- 사용자 폴더 탭 (동적 생성) -->
+            <div class="folder-tabs" id="folderTabs" style="display:none;"></div>
+
             <div class="chat-room-list" id="chatRoomList">
-                <!-- chat_list.js에서 동적 생성 -->
                 <div class="chat-list-empty">
                     <span>💭</span>
                     <p>채팅이 없습니다</p>
@@ -69,7 +81,7 @@
 
         <!-- 가운데: 메시지 영역 -->
         <section class="comm-main" id="commMain">
-            <!-- 채팅방 미선택 상태 -->
+            <!-- 채팅방 미선택 -->
             <div class="no-chat-selected" id="noChatSelected">
                 <div class="no-chat-inner">
                     <span class="no-chat-icon">💬</span>
@@ -78,7 +90,7 @@
                 </div>
             </div>
 
-            <!-- 채팅방 선택됨 -->
+            <!-- 채팅방 활성 -->
             <div class="chat-active-area" id="chatActiveArea" style="display:none;">
                 <div class="chat-top-header" id="chatTopHeader">
                     <button class="btn-back-mobile" id="btnBackMobile">←</button>
@@ -88,14 +100,22 @@
                         <span class="chat-header-status" id="chatHeaderStatus">오프라인</span>
                     </div>
                     <div class="chat-header-actions">
-                        <button class="btn-header-action" id="btnChatSearch" title="검색">🔍</button>
+                        <button class="btn-header-action" id="btnChatSearch" title="메시지 검색">🔍</button>
+                        <button class="btn-header-action" id="btnThemeToggle" title="테마 전환">🌙</button>
                         <button class="btn-header-action" id="btnChatInfo" title="정보">ℹ️</button>
                     </div>
                 </div>
 
-                <div class="chat-messages-container" id="chatMessagesContainer">
-                    <!-- 메시지들이 여기에 렌더링됩니다 -->
+                <!-- 메시지 내 검색바 -->
+                <div class="chat-search-bar" id="chatSearchBar" style="display:none;">
+                    <input type="text" id="msgSearchInput" placeholder="메시지에서 검색...">
+                    <span id="msgSearchCount" class="search-count"></span>
+                    <button id="msgSearchPrev" class="btn-search-nav">▲</button>
+                    <button id="msgSearchNext" class="btn-search-nav">▼</button>
+                    <button id="msgSearchClose" class="btn-search-close">✕</button>
                 </div>
+
+                <div class="chat-messages-container" id="chatMessagesContainer"></div>
 
                 <!-- 답장 미리보기 -->
                 <div class="reply-preview" id="replyPreview" style="display:none;">
@@ -114,31 +134,28 @@
                     </div>
                 </div>
 
+                <!-- 입력 UI -->
                 <div class="chat-input-area">
-                    <div class="input-tools-row">
-                        <button class="btn-tool" id="btnEmoji" title="이모지">😀</button>
-                        <button class="btn-tool" id="btnAttach" title="파일 첨부">📎</button>
-                        <input type="file" id="fileInput" multiple hidden>
-                    </div>
                     <div class="input-main-row">
-                        <textarea id="msgInput" placeholder="메시지를 입력하세요..." rows="1"></textarea>
+                        <button class="btn-input-icon" id="btnAttach" title="파일 첨부">📎</button>
+                        <input type="file" id="fileInput" multiple hidden>
+                        <textarea id="msgInput" placeholder="메시지 작성..." rows="1"></textarea>
+                        <button class="btn-input-icon" id="btnEmoji" title="이모지">😊</button>
                         <button class="btn-send" id="btnSend">
-                            <span>전송</span>
+                            <span>➤</span>
                         </button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- 오른쪽: 유저 검색 / 프로필 패널 -->
+        <!-- 오른쪽: 정보 패널 -->
         <aside class="comm-info-panel" id="commInfoPanel" style="display:none;">
             <div class="info-panel-header">
                 <h3 id="infoPanelTitle">프로필</h3>
                 <button class="btn-close-panel" id="btnClosePanel">✕</button>
             </div>
-            <div class="info-panel-body" id="infoPanelBody">
-                <!-- 동적 콘텐츠 -->
-            </div>
+            <div class="info-panel-body" id="infoPanelBody"></div>
         </aside>
 
         <!-- 새 대화 모달 -->
@@ -149,15 +166,75 @@
                     <button class="btn-close-modal" id="btnCloseModal">✕</button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="userSearchInput" placeholder="사용자 이름으로 검색...">
+                    <input type="text" id="userSearchInput" placeholder="이름 또는 이메일로 검색...">
                     <div class="user-search-results" id="userSearchResults"></div>
                 </div>
             </div>
         </div>
 
+        <!-- 단체 채팅 만들기 모달 -->
+        <div class="new-chat-modal" id="groupChatModal" style="display:none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>👥 단체 채팅 만들기</h3>
+                    <button class="btn-close-modal" id="btnCloseGroupModal">✕</button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="groupNameInput" placeholder="그룹 이름" style="margin-bottom:8px;">
+                    <input type="text" id="groupSearchInput" placeholder="멤버 추가 (이름 검색)">
+                    <div class="selected-members" id="selectedMembers"></div>
+                    <div class="user-search-results" id="groupSearchResults"></div>
+                    <button class="btn-create-group" id="btnCreateGroup">그룹 만들기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 폴더 관리 모달 -->
+        <div class="new-chat-modal" id="folderModal" style="display:none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>📂 폴더 관리</h3>
+                    <button class="btn-close-modal" id="btnCloseFolderModal">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="folder-list" id="folderList"></div>
+                    <div class="folder-create-row">
+                        <input type="text" id="newFolderInput" placeholder="새 폴더 이름">
+                        <button class="btn-create-folder" id="btnCreateFolder">+ 추가</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 채팅방 컨텍스트 메뉴 (우클릭/롱프레스) -->
+        <div class="room-context-menu" id="roomContextMenu" style="display:none;">
+            <div class="ctx-item" data-action="open-new"><span>🔲</span>새창에서 열기</div>
+            <div class="ctx-item" data-action="pin"><span>📌</span>고정</div>
+            <div class="ctx-item" data-action="mute"><span>🔕</span>알림 끄기</div>
+            <div class="ctx-item" data-action="mark-read"><span>👁️</span>읽음으로 표시</div>
+            <div class="ctx-item" data-action="add-folder"><span>📂</span>폴더에 추가</div>
+            <div class="ctx-item" data-action="clear-chat"><span>🧹</span>대화 내용 비우기</div>
+            <div class="ctx-item danger" data-action="delete-chat"><span>🗑️</span>대화 삭제</div>
+        </div>
+
         <!-- 이모지 피커 -->
         <div class="emoji-picker" id="emojiPicker" style="display:none;">
             <div class="emoji-grid" id="emojiGrid"></div>
+        </div>
+
+        <!-- 연락처 모달 -->
+        <div class="new-chat-modal" id="contactModal" style="display:none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>📇 연락처</h3>
+                    <button class="btn-close-modal" id="btnCloseContactModal">✕</button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="contactSearchInput" placeholder="연락처 추가 (이름 검색)">
+                    <div class="contact-list" id="contactList"></div>
+                    <div class="user-search-results" id="contactSearchResults"></div>
+                </div>
+            </div>
         </div>
     </main>
 
