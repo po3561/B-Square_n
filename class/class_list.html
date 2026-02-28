@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>클래스 모음 | B-Square</title>
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style.css">
+    <link rel="stylesheet" href="class_list.css">
+
+    <!-- SDKs -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <h1 class="logo"><a href="../bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a></h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="class_list.html" class="nav-active">클래스</a></li>
+                    <li><a href="../create_class/create_class.html">등록</a></li>
+                    <li><a href="../notice/notice.html">공지사항</a></li>
+                    <li><a href="#">문의</a></li>
+                    <li><a href="../community/community.html">커뮤니티</a></li>
+                </ul>
+            </nav>
+            <div class="header-utils">
+                <div class="search-bar">
+                    <input type="text" placeholder="검색어를 입력하세요">
+                    <button type="button">🔍</button>
+                </div>
+                <div class="user-menu" id="userMenu" style="display: flex; gap: 10px; align-items: center;"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="class-list-main">
+        <section class="category-header-section">
+            <div class="section-inner">
+                <nav class="category-grid" id="categoryFilter">
+                    <ul>
+                        <li><a href="#" data-cat="all" class="active"><span class="icon">🌐</span>전체</a></li>
+                        <li><a href="#" data-cat="디자인"><span class="icon">💻</span>디자인</a></li>
+                        <li><a href="#" data-cat="생산성"><span class="icon">📈</span>생산성</a></li>
+                        <li><a href="#" data-cat="스포츠"><span class="icon">⚽</span>스포츠</a></li>
+                        <li><a href="#" data-cat="디지털 드로잉"><span class="icon">🎨</span>디지털 드로잉</a></li>
+                        <li><a href="#" data-cat="성공 마인드"><span class="icon">💡</span>성공 마인드</a></li>
+                        <li><a href="#" data-cat="음악"><span class="icon">🎵</span>음악</a></li>
+                        <li><a href="#" data-cat="베이킹"><span class="icon">🥐</span>베이킹</a></li>
+                        <li><a href="#" data-cat="사진"><span class="icon">📸</span>사진</a></li>
+                        <li><a href="#" data-cat="영상"><span class="icon">🎬</span>영상</a></li>
+                        <li><a href="#" data-cat="공예"><span class="icon">🧶</span>공예</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </section>
+
+        <section class="class-lists-section class-page-overrides">
+            <div class="section-inner">
+                <div class="class-grid-header">
+                    <h3 class="group-title">전체 클래스 목록</h3>
+                    <div class="list-controls">
+                        <span id="totalClassCount">총 0개</span>
+                    </div>
+                </div>
+                <div class="card-grid" id="allClassGrid">
+                    <!-- JS에서 동적 렌더링 -->
+                    <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 4rem; color:#888;">
+                        데이터를 불러오는 중입니다...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="class_list.js"></script>
+    <script src="../dev_mode.js"></script>
+</body>
+
+</html>

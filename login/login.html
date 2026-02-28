@@ -11,14 +11,32 @@
 </head>
 
 <body class="auth-body">
-
-    <div class="auth-container">
-        <div class="auth-header">
+    <header class="site-header">
+        <div class="header-inner">
             <h1 class="logo">
-                <a href="/bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a>
+                <a href="../bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a>
             </h1>
-            <p class="auth-subtitle">편리하고 스마트한 클래스의 시작</p>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="../class/class_list.html">클래스</a></li>
+                    <li><a href="../create_class/create_class.html">등록</a></li>
+                    <li><a href="../notice/notice.html">공지사항</a></li>
+                    <li><a href="#">문의</a></li>
+                    <li><a href="../community/community.html">커뮤니티</a></li>
+                </ul>
+            </nav>
+            <div class="header-utils">
+                <div class="search-bar">
+                    <input type="text" placeholder="검색어를 입력하세요">
+                    <button type="button">🔍</button>
+                </div>
+                <div class="user-menu" id="userMenu" style="display: flex; gap: 10px; align-items: center;">
+                </div>
+            </div>
         </div>
+    </header>
+
+    <div class="auth-container" style="margin-top: 60px;">
 
         <form id="loginForm" class="auth-form active">
             <div class="input-group">
