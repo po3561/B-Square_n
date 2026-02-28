@@ -4,14 +4,17 @@
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
 :root {
-    --bg-color: #0d0d0d;
-    --card-bg: rgba(30, 30, 30, 0.6);
+    --bg-color: #000000;
+    --card-bg: rgba(30, 30, 30, 0.4);
     --border-color: rgba(255, 255, 255, 0.1);
     --accent-color: #ffffff;
     --text-primary: #ffffff;
     --text-secondary: #a0a0a0;
-    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-bg: rgba(255, 255, 255, 0.05);
     --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur: blur(15px) saturate(180%);
+    --card-radius: 20px;
+    --btn-radius: 24px;
     --primary-font: 'Inter', 'Pretendard', sans-serif;
 }
 
@@ -47,12 +50,22 @@ button {
     transition: all 0.2s ease;
 }
 
+/* 터치 대상 최소 크기 보장 (모바일 최적화) */
+button,
+input,
+select,
+.btn-link {
+    min-height: 44px;
+    min-width: 44px;
+}
+
 /* ==========================================
    1. HEADER
 =========================================== */
 .site-header {
-    background: rgba(13, 13, 13, 0.8);
-    backdrop-filter: blur(15px);
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border-bottom: 1px solid var(--glass-border);
     position: sticky;
     top: 0;
@@ -104,14 +117,17 @@ button {
     align-items: center;
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
-    border-radius: 24px;
+    border-radius: var(--btn-radius);
     padding: 0.5rem 1.2rem;
-    transition: all 0.3s;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .search-bar:focus-within {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
 }
 
 .search-bar input {
@@ -124,7 +140,7 @@ button {
 }
 
 .search-bar input::placeholder {
-    color: #666;
+    color: #888;
 }
 
 /* 드롭다운 시인성 해결 */
@@ -132,8 +148,11 @@ select {
     background-color: var(--card-bg);
     color: var(--text-primary);
     border: 1px solid var(--glass-border);
-    padding: 8px;
-    border-radius: 8px;
+    padding: 10px;
+    border-radius: var(--btn-radius);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    outline: none;
 }
 
 option {
@@ -628,10 +647,12 @@ option {
     font-size: 0.8rem;
 }
 
-/* 반응형 */
+/* ==========================================
+   반응형 (Responsive) 및 Apple UX 최적화
+=========================================== */
 @media (max-width: 1024px) {
     .category-grid ul {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
     }
 
     .card-grid {
@@ -656,7 +677,55 @@ option {
         display: none;
     }
 
-    .card-grid {
+    .card-grid,
+    .large-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .category-grid ul {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .footer-inner,
+    .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .footer-nav {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .card-grid,
+    .large-grid {
+        grid-template-columns: 1fr;
+        /* 모바일 세로 모드에서는 1열 */
+    }
+
+    .category-grid ul {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hero-content h1 {
+        font-size: 2.2rem;
+    }
+
+    .hero-content p {
+        font-size: 1rem;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+        font-size: 16px;
+        /* iOS 자동 확대 방지 */
     }
 }

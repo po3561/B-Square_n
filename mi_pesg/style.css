@@ -38,9 +38,11 @@ button {
    1. HEADER
 =========================================== */
 .site-header {
-    background-color: rgba(18, 18, 18, 0.95);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid #2a2a2a;
+    background-color: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    /* glass-border */
     position: sticky;
     top: 0;
     z-index: 100;
@@ -84,9 +86,14 @@ button {
 .search-bar {
     display: flex;
     align-items: center;
-    background-color: #2a2a2a;
-    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.05);
+    /* glass-bg */
+    border-radius: 24px;
     padding: 0.4rem 1rem;
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* glass-border */
 }
 
 .search-bar input {
@@ -199,11 +206,15 @@ button {
 }
 
 .class-card {
-    background-color: #1e1e1e;
-    border-radius: 12px;
+    background-color: rgba(30, 30, 30, 0.4);
+    /* card-bg */
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border-radius: 20px;
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border: 1px solid #2a2a2a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* glass-border */
 }
 
 .class-card:hover {
@@ -384,4 +395,61 @@ button {
 .copyright {
     margin-top: 1.5rem;
     color: #555;
+}
+
+/* ==========================================
+   반응형 (Responsive) 및 Apple UX 최적화
+=========================================== */
+@media (max-width: 1024px) {
+    .category-grid ul {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    .card-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .recommend-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-inner {
+        padding: 1rem;
+    }
+
+    .main-nav,
+    .search-bar {
+        display: none;
+    }
+
+    .card-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .category-grid ul {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .footer-top {
+        flex-direction: column;
+        gap: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .category-grid ul {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .main-ad-banner h2 {
+        font-size: 2rem;
+    }
 }

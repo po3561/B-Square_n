@@ -32,10 +32,13 @@
 
 .curriculum-chapter {
     margin-bottom: 1rem;
-    border-radius: 12px;
-    background: #1a1a1a;
-    border: 1px solid #333;
+    border-radius: var(--card-radius, 16px);
+    background: var(--card-bg, rgba(30, 30, 30, 0.4));
+    backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
+    -webkit-backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
     overflow: hidden;
+    transition: all 0.3s ease;
 }
 
 .chapter-header {
@@ -48,7 +51,7 @@
 }
 
 .chapter-header:hover {
-    background: #252525;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .chapter-num {
@@ -143,4 +146,54 @@
     font-size: 0.7rem;
     color: #888;
     transition: transform 0.3s;
-}
+
+    /* 모바일 반응형 지원 */
+    @media (max-width: 768px) {
+        .curriculum-header-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .chapter-header {
+            padding: 1.2rem 1.5rem;
+        }
+
+        .lesson-item {
+            padding: 1rem 1.5rem;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
+
+    /* 모바일 반응형 지원 */
+    @media (max-width: 768px) {
+        .curriculum-header-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .chapter-header {
+            padding: 1.2rem 1.5rem;
+        }
+
+        .lesson-item {
+            padding: 1rem 1.5rem;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .lesson-item .item-meta {
+            align-self: flex-start;
+        }
+
+        .lesson-title {
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+    }
+
+    ```

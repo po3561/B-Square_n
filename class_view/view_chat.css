@@ -10,9 +10,11 @@
 
 .chat-locked-card {
     text-align: center;
-    background: #111;
-    border: 1px dashed #333;
-    border-radius: 20px;
+    background: var(--card-bg, rgba(30, 30, 30, 0.4));
+    backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
+    -webkit-backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: var(--card-radius, 20px);
     padding: 3rem 2rem;
     max-width: 400px;
     width: 100%;
@@ -25,21 +27,23 @@
 }
 
 .chat-locked-card h3 {
-    color: #fff;
+    color: var(--text-primary, #fff);
     font-size: 1.3rem;
     margin-bottom: 0.5rem;
 }
 
 .chat-locked-card p {
-    color: #888;
+    color: var(--text-secondary, #888);
     font-size: 0.95rem;
 }
 
 /* Chat Container */
 .chat-container {
-    background: #0d0d0d;
-    border-radius: 20px;
-    border: 1px solid #222;
+    background: var(--card-bg, rgba(30, 30, 30, 0.4));
+    backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
+    -webkit-backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
+    border-radius: var(--card-radius, 20px);
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -277,4 +281,25 @@
 .btn-chat-send:hover {
     transform: scale(1.03);
     box-shadow: 0 4px 12px rgba(110, 142, 251, 0.3);
+
+    /* === 모바일 반응형 지원 === */
+    @media (max-width: 768px) {
+        .chat-container {
+            height: 500px;
+            border-radius: 12px;
+        }
+
+        .chat-top-bar {
+            padding: 1rem;
+        }
+
+        .chat-locked-card {
+            padding: 2rem 1.5rem;
+            margin: 0 1rem;
+        }
+
+        .lock-emoji {
+            font-size: 2.5rem;
+        }
+    }
 }

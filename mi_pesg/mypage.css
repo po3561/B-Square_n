@@ -6,8 +6,11 @@
     --accent-color: #ffffff;
     --text-primary: #ffffff;
     --text-secondary: #a0a0a0;
-    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-bg: rgba(255, 255, 255, 0.05);
     --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur: blur(15px) saturate(180%);
+    --card-radius: 20px;
+    --btn-radius: 24px;
 }
 
 body {
@@ -116,10 +119,11 @@ body {
 /* 우측 콘텐츠 영역 */
 .mypage-content {
     flex-grow: 1;
-    background: var(--card-bg);
-    backdrop-filter: blur(10px);
+    background: var(--card-bg, rgba(30, 30, 30, 0.4));
+    backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
+    -webkit-backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
     padding: 3.5rem;
-    border-radius: 24px;
+    border-radius: var(--card-radius, 24px);
     border: 1px solid var(--glass-border);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
@@ -464,10 +468,12 @@ body {
 }
 
 .plan-card {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--card-bg, rgba(30, 30, 30, 0.4));
     border: 1px solid var(--glass-border);
+    backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
+    -webkit-backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
     padding: 2.5rem 1.5rem;
-    border-radius: 20px;
+    border-radius: var(--card-radius, 20px);
     text-align: center;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: pointer;
@@ -669,10 +675,56 @@ body {
 
     .mypage-sidebar {
         width: 100%;
+        display: flex;
+        gap: 1rem;
+        flex-direction: column;
+    }
+
+    .mypage-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 0.5rem;
+    }
+
+    .nav-btn.bordered {
+        margin-top: 0;
     }
 
     .mypage-content {
         padding: 2rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .input-group.full-width {
+        grid-column: 1;
+    }
+
+    .plan-selector {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .mypage-content {
+        padding: 1.5rem;
+    }
+
+    .profile-upload-wrapper {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .my-class-card {
+        flex-direction: column;
+    }
+
+    .class-thumb {
+        width: 100%;
     }
 }
 

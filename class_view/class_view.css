@@ -4,12 +4,13 @@
    ============================================================ */
 
 :root {
-    --bg-deep: #000;
-    --card-bg: #111;
+    --bg-deep: var(--bg-color, #000);
+    --card-bg: var(--card-bg, rgba(30, 30, 30, 0.4));
     --accent-color: #ff4d4d;
-    --text-primary: #fff;
-    --text-secondary: #888;
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-primary: var(--text-primary, #fff);
+    --text-secondary: var(--text-secondary, #888);
+    --glass-border: var(--glass-border, rgba(255, 255, 255, 0.08));
+    --glass-blur: blur(15px) saturate(180%);
 }
 
 .view-container {
@@ -74,11 +75,11 @@
     position: relative;
     width: 100%;
     aspect-ratio: 16 / 7;
-    background: #111;
-    border-radius: 24px;
+    background: #000;
+    border-radius: var(--card-radius, 20px);
     overflow: hidden;
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
 }
 
 .slider-wrapper {
@@ -1815,4 +1816,96 @@
 
 .edit-img-card:hover .btn-remove-img {
     opacity: 1;
+}
+
+/* ==========================================
+   반응형 (Responsive) 및 Apple UX 최적화
+=========================================== */
+@media (max-width: 1024px) {
+    .hero-content-wrapper {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 0 1.5rem;
+    }
+
+    .hero-text-area {
+        order: 2;
+    }
+
+    .hero-slider-area {
+        order: 1;
+        margin-bottom: 1rem;
+    }
+
+    .course-main {
+        grid-template-columns: 1fr;
+        padding: 0 1.5rem;
+    }
+
+    .floating-card-wrapper {
+        position: relative;
+        top: 0;
+        margin-top: 2rem;
+    }
+
+    .class-header {
+        align-items: flex-start;
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .premium-hero {
+        padding: 2rem 0;
+    }
+
+    .title-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .title-row h1 {
+        font-size: 1.8rem;
+    }
+
+    .class-nav {
+        gap: 1rem;
+        padding-bottom: 2px;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .class-nav button {
+        padding: 12px 16px;
+        font-size: 0.95rem;
+    }
+
+    .creator-profile {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .price-block {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .title-row h1 {
+        font-size: 1.5rem;
+    }
+
+    .info-metrics {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .btn-buy-now {
+        padding: 14px;
+        font-size: 1rem;
+    }
 }

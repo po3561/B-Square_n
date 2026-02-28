@@ -18,9 +18,11 @@
 }
 
 .target-list li {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--card-bg, rgba(30, 30, 30, 0.4));
+    backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
+    -webkit-backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
     padding: 1.5rem;
-    border-radius: 16px;
+    border-radius: var(--card-radius, 16px);
     display: flex;
     align-items: center;
     gap: 15px;
@@ -54,9 +56,11 @@
 }
 
 .objective-card {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--card-bg, rgba(30, 30, 30, 0.4));
+    backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
+    -webkit-backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
     padding: 2rem;
-    border-radius: 20px;
+    border-radius: var(--card-radius, 20px);
     display: flex;
     gap: 20px;
     border: 1px solid var(--glass-border);
@@ -91,5 +95,14 @@
     .target-list,
     .objective-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .target-list li {
+        padding: 1.2rem;
+    }
+
+    .objective-card {
+        padding: 1.5rem;
     }
 }
