@@ -94,24 +94,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isNew = cls.created_at && (now - cls.created_at < FORTY_EIGHT_HOURS);
             const newBadgeHtml = isNew ? `<div class="badge-new">NEW</div>` : '';
 
-            // 썸네일 스타일 처리
-            const bgStyle = cls.thumbnail_url
-                ? `background-image: url('${cls.thumbnail_url}');`
-                : '';
+            const discountRate = parseInt(cls.discount_rate) || 0;
+            const originalPrice = parseInt(cls.price) || 0;
+            const currentPrice = discountRate > 0 ? originalPrice * (1 - discountRate / 100) : originalPrice;
+            const imageUrl = cls.image_url || 'https://via.placeholder.com/400x250';
 
             return `
-                <div class="class-card template-card" onclick="location.href='../class_view/class_view.html?id=${cls.id}'" style="cursor:pointer; position:relative; overflow:visible;">
+                <div class="class-card" onclick="location.href='../class_view/class_view.html?id=${cls.id}'" style="cursor:pointer; position:relative; overflow:visible;">
                     ${newBadgeHtml}
-                    <div class="card-thumbnail" style="${bgStyle}">
-                        <!-- 이미지가 없는 경우 표시할 예비용 컨텐츠 -->
-                        ${!cls.thumbnail_url ? '<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#555;">No Image</div>' : ''}
+                    <div class="card-thumbnail">
+                        <img src="${imageUrl}" alt="${cls.title || '제목 없음'}" style="width:100%; height:180px; object-fit:cover; border-radius:16px;">
+                        <div class="card-badges">
+                            ${cls.coupon_pack ? '<span class="badge-coupon">쿠폰팩</span>' : ''}
+                            ${discountRate > 0 ? `<span class="badge-discount">${discountRate}% 할인</span>` : ''}
+                        </div>
                     </div>
-                    <div class="card-info" style="padding: 10px 0;">
-                        <span class="category" style="color: var(--text-secondary); font-size: 0.8rem; display: block; margin-bottom: 4px;">${cls.category || '미분류'}</span>
-                        <h4 class="title" style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 8px;">${cls.title || '제목 없음'}</h4>
-                        <div class="stats" style="display:flex; gap: 10px; font-size: 0.85rem; color:#888;">
-                            <span class="likes">❤️ ${cls.likes || 0}</span>
-                            <span class="rating">⭐ 5.0</span>
+                    <div class="card-info" style="padding-top: 10px;">
+                        <span class="category">${cls.category || '미분류'}</span>
+                        <h4 class="title">${cls.title || '제목 없음'}</h4>
+                        <span class="creator">작성자: ${cls.creator_name || '크리에이터'}</span>
+                        <div class="meta" style="margin-top:4px;">
+                            <span class="rating">⭐ ${cls.rating || '5.0'}</span>
+                        </div>
+                        <div class="price-area" style="margin-top:8px;">
+                            ${discountRate > 0 ? `<span class="original-price" style="text-decoration:line-through; color:#888; font-size:0.85rem; margin-right:6px;">${originalPrice.toLocaleString()}원</span>` : ''}
+                            <span class="current-price" style="font-weight:700; color:var(--text-primary);">${currentPrice.toLocaleString()}원</span>
                         </div>
                     </div>
                 </div>

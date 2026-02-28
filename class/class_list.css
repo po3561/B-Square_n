@@ -5,6 +5,12 @@
     min-height: 80vh;
 }
 
+.section-inner {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
 .category-header-section {
     margin-bottom: 3rem;
     display: flex;
