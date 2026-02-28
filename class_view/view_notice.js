@@ -32,10 +32,20 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
     let notices = [];
     let currentOpenNoticeId = null;
 
-    // 1. 강사일 경우 작성 버튼 노출
-    if (isInstructor || window.__BSQ_DEV_MODE__) {
-        if (btnCreate) btnCreate.style.display = 'block';
+    // 1. 강사일 경우 작성 버튼 노출 (레이스 컨디션 대응)
+    function applyAdminUI() {
+        if (isInstructor || window.__BSQ_DEV_MODE__) {
+            if (btnCreate) btnCreate.style.display = 'block';
+        } else {
+            if (btnCreate) btnCreate.style.display = 'none';
+        }
     }
+
+    applyAdminUI();
+
+    window.addEventListener('bsq_dev_mode_activated', () => {
+        applyAdminUI();
+    });
 
     // 2. 공지사항 데이터 불러오기
     function loadClassNotices() {
@@ -61,11 +71,15 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
         listContainer.innerHTML = notices.map(n => {
             const dateStr = new Date(n.created_at).toLocaleDateString('ko-KR');
             return `
-                <div class="notice-item" data-id="${n.id}" style="display:grid; grid-template-columns: 1fr 100px 100px 60px; padding: 16px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor:pointer; align-items:center; transition: background 0.2s;">
-                    <div style="font-weight: 500; color: #fff;">${n.title}</div>
-                    <div style="color: var(--comm-text2); font-size: 0.85rem; text-align:center;">${n.author_name || '강사'}</div>
-                    <div style="color: var(--comm-text2); font-size: 0.85rem; text-align:center;">${dateStr}</div>
-                    <div style="color: var(--comm-text2); font-size: 0.85rem; text-align:center;">${n.views || 0}</div>
+                <div class="notice-item card-block" data-id="${n.id}" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; cursor:pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem;">
+                        <h4 style="font-size: 1.2rem; font-weight: 700; color: var(--text-color); margin: 0;">${n.title}</h4>
+                        <span style="background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; color: var(--comm-text2);">${dateStr}</span>
+                    </div>
+                    <div style="display: flex; gap: 15px; font-size: 0.85rem; color: var(--comm-text2);">
+                        <span>👤 ${n.author_name || '강사'}</span>
+                        <span>👁️ ${n.views || 0}</span>
+                    </div>
                 </div>
             `;
         }).join('');

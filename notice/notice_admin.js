@@ -2,13 +2,23 @@
 document.addEventListener('DOMContentLoaded', () => {
     const db = firebase.database();
 
-    // Admin Check
-    const isAdmin = window.__BSQ_DEV_MODE__ === true;
-
-    if (isAdmin) {
-        document.getElementById('btnWriteNotice').style.display = 'inline-block';
-        document.getElementById('btnWriteFaq').style.display = 'inline-block';
+    // Admin Check Logic
+    function applyAdminUI() {
+        const isAdmin = window.__BSQ_DEV_MODE__ === true;
+        if (isAdmin) {
+            document.getElementById('btnWriteNotice').style.display = 'inline-block';
+            document.getElementById('btnWriteFaq').style.display = 'inline-block';
+        }
+        return isAdmin;
     }
+
+    // 초기 로드 시 체크
+    let isAdmin = applyAdminUI();
+
+    // Dev Mode 레이스 컨디션 대응 (이벤트 리스너)
+    window.addEventListener('bsq_dev_mode_activated', () => {
+        isAdmin = applyAdminUI();
+    });
 
     // Modal Elements
     const editorModal = document.getElementById('editorModal');
@@ -155,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         onViewerOpen: (noticeData) => {
             currentViewerItem = noticeData;
             const actionDiv = document.getElementById('adminViewerActions');
-            if (isAdmin) {
+            if (window.__BSQ_DEV_MODE__ === true) {
                 actionDiv.style.display = 'flex';
                 actionDiv.style.gap = '10px';
             } else {

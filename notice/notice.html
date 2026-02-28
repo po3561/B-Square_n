@@ -6,32 +6,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>B-Square 공지사항</title>
 
-    <!-- Google Fonts -->
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
     <!-- Core CSS -->
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style.css">
     <link rel="stylesheet" href="notice.css">
 
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- SDKs -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 
 <body>
-    <!-- HEADER -->
-    <header class="navbar" id="mainHeader">
-        <div class="nav-container">
-            <a href="../index.html" class="logo">B-Square</a>
-            <nav class="nav-links">
-                <a href="../class/class_list.html">클래스</a>
-                <a href="../create_class/create_class.html">새 클래스 만들기</a>
-                <a href="../community/community.html">커뮤니티</a>
-                <a href="notice.html" class="active">공지사항</a>
+    <header class="site-header">
+        <div class="header-inner">
+            <h1 class="logo">
+                <a href="../bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a>
+            </h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="../create_class/create_class.html">등록</a></li>
+                    <li><a href="notice.html" class="nav-active">공지사항</a></li>
+                    <li><a href="#">문의</a></li>
+                    <li><a href="../community/community.html">커뮤니티</a></li>
+                </ul>
             </nav>
-            <div class="user-menu" id="userMenu">
-                <a href="../login/login.html" class="btn-login" id="btnLogin">로그인</a>
+            <div class="header-utils">
+                <div class="search-bar">
+                    <input type="text" placeholder="검색어를 입력하세요">
+                    <button type="button">🔍</button>
+                </div>
+                <div class="user-menu" id="userMenu" style="display: flex; gap: 10px; align-items: center;">
+                </div>
             </div>
         </div>
     </header>
@@ -175,10 +186,10 @@
         </div>
     </div>
 
-    <!-- Firebase + Supabase Setup Script -->
-    <script type="module" src="../api/supabase_config.js"></script>
+    <!-- Scripts -->
     <script src="notice.js"></script>
     <script src="notice_admin.js"></script>
+    <script src="../dev_mode.js"></script>
 </body>
 
 </html>
