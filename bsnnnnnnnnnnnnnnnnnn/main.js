@@ -65,6 +65,90 @@ document.addEventListener('DOMContentLoaded', async () => {
             link.style.color = 'var(--accent-color)';
         });
     });
+
+    // 추천 클래스 좌우 스크롤 버튼 (기존)
+    const btnPrev = document.querySelector('.btn-prev');
+    const btnNext = document.querySelector('.btn-next');
+    const bannerContent = document.querySelector('.banner-content');
+
+    if (btnPrev && btnNext && bannerContent) {
+        btnPrev.addEventListener('click', () => {
+            bannerContent.scrollBy({ left: -200, behavior: 'smooth' });
+        });
+
+        btnNext.addEventListener('click', () => {
+            bannerContent.scrollBy({ left: 200, behavior: 'smooth' });
+        });
+
+        const hideShowButtons = () => {
+            if (bannerContent.scrollLeft <= 0) {
+                btnPrev.style.opacity = '0.5';
+                btnPrev.style.pointerEvents = 'none';
+            } else {
+                btnPrev.style.opacity = '1';
+                btnPrev.style.pointerEvents = 'auto';
+            }
+
+            if (bannerContent.scrollLeft + bannerContent.clientWidth >= bannerContent.scrollWidth) {
+                btnNext.style.opacity = '0.5';
+                btnNext.style.pointerEvents = 'none';
+            } else {
+                btnNext.style.opacity = '1';
+                btnNext.style.pointerEvents = 'auto';
+            }
+        };
+
+        bannerContent.addEventListener('scroll', hideShowButtons);
+        window.addEventListener('resize', hideShowButtons);
+        setTimeout(hideShowButtons, 100);
+    }
+
+    // ==========================================
+    // 6. Hamburger Drawer Menu 제어 로직 (White Concept V4)
+    // ==========================================
+    const btnHamburger = document.getElementById('btnHamburger');
+    const btnCloseDrawer = document.getElementById('btnCloseDrawer');
+    const drawerOverlay = document.getElementById('drawerOverlay');
+    const drawerMenu = document.getElementById('drawerMenu');
+
+    if (btnHamburger && btnCloseDrawer && drawerOverlay && drawerMenu) {
+        const toggleDrawer = (force) => {
+            if (typeof force === 'boolean') {
+                if (force) {
+                    drawerMenu.classList.add('active');
+                    drawerOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+                } else {
+                    drawerMenu.classList.remove('active');
+                    drawerOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            } else {
+                drawerMenu.classList.toggle('active');
+                drawerOverlay.classList.toggle('active');
+                if (drawerMenu.classList.contains('active')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            }
+        };
+
+        btnHamburger.addEventListener('click', toggleDrawer);
+        btnCloseDrawer.addEventListener('click', () => toggleDrawer(false));
+        drawerOverlay.addEventListener('click', () => toggleDrawer(false));
+
+        // Drawer 내부 카테고리 탭 임시 전환 효과
+        const drawerCats = document.querySelectorAll('.drawer-main-categories li:not(.divider)');
+        drawerCats.forEach(li => {
+            li.addEventListener('click', function () {
+                drawerCats.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                // 실제 서비스에서는 여기서 우측 Sub Category 컨텐츠를 교체함
+            });
+        });
+    }
+
 });
 
 let globalAllClasses = []; // 필터링을 위한 전역 변수
