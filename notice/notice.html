@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B-Square 공지사항</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="notice.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header class="navbar" id="mainHeader">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">B-Square</a>
+            <nav class="nav-links">
+                <a href="../class/class_list.html">클래스</a>
+                <a href="../create_class/create_class.html">새 클래스 만들기</a>
+                <a href="../community/community.html">커뮤니티</a>
+                <a href="notice.html" class="active">공지사항</a>
+            </nav>
+            <div class="user-menu" id="userMenu">
+                <a href="../login/login.html" class="btn-login" id="btnLogin">로그인</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="notice-main">
+        <!-- Hero Banner -->
+        <section class="notice-hero">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <h1>공지사항 & FAQ</h1>
+                <p>B-Square의 새로운 소식과 자주 묻는 질문을 확인하세요.</p>
+            </div>
+        </section>
+
+        <!-- Notice Board Layout -->
+        <section class="notice-container">
+            <!-- Left: Notices (2/3) -->
+            <div class="notice-left-panel">
+                <div class="panel-header">
+                    <h2>공지사항</h2>
+                    <div class="header-actions">
+                        <input type="text" id="noticeSearchIP" placeholder="검색어를 입력하세요..." class="search-input">
+                        <button id="btnSearchNotice" class="btn-search">🔍</button>
+                        <!-- Admin Only -->
+                        <button id="btnWriteNotice" class="btn-admin primary" style="display:none;">새 공지사항</button>
+                    </div>
+                </div>
+
+                <div class="notice-list-header">
+                    <span class="col-type">구분</span>
+                    <span class="col-title">제목</span>
+                    <span class="col-author">작성자</span>
+                    <span class="col-date">공지일자</span>
+                    <span class="col-views">조회수</span>
+                </div>
+
+                <div id="noticeList" class="notice-list">
+                    <!-- Notices will be rendered here -->
+                    <div class="empty-state">로딩 중...</div>
+                </div>
+
+                <!-- Pagination (Optional) -->
+                <div class="pagination" id="noticePagination"></div>
+            </div>
+
+            <!-- Right: FAQs (1/3) -->
+            <div class="notice-right-panel">
+                <div class="panel-header">
+                    <h2>자주 묻는 질문</h2>
+                    <!-- Admin Only -->
+                    <button id="btnWriteFaq" class="btn-admin secondary" style="display:none;">+ FAQ 등록</button>
+                </div>
+
+                <div id="faqList" class="faq-list">
+                    <!-- FAQs will be rendered here -->
+                    <div class="empty-state">로딩 중...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for Notice/FAQ Editor (Admin Only) -->
+    <div id="editorModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3 id="editorModalTitle">새 공지사항 작성</h3>
+                <button class="btn-close" id="btnEditorClose">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editTargetId">
+                <input type="hidden" id="editDataType"> <!-- 'notice' or 'faq' -->
+
+                <div class="form-group" id="groupType">
+                    <label>구분</label>
+                    <div class="radio-group">
+                        <input type="radio" id="typeNormal" name="noticeType" value="normal" checked> <label
+                            for="typeNormal">일반 코멘트</label>
+                        <input type="radio" id="typeImportant" name="noticeType" value="important"> <label
+                            for="typeImportant">필독/중요</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editTitle">제목/질문</label>
+                    <input type="text" id="editTitle" placeholder="제목을 입력하세요">
+                </div>
+
+                <div class="form-group">
+                    <label for="editContent" id="editContentLabel">본문/답변</label>
+                    <textarea id="editContent" placeholder="내용을 입력하세요" rows="10"></textarea>
+                </div>
+
+                <div class="form-group row-align" id="groupHidden">
+                    <label for="editIsHidden">숨김 처리</label>
+                    <input type="checkbox" id="editIsHidden">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="btnEditorCancel">취소</button>
+                <button class="btn-submit" id="btnEditorSubmit">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Notice Viewer (All Users) -->
+    <div id="viewerModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content large">
+            <div class="modal-header-viewer">
+                <div class="viewer-meta-top">
+                    <span id="viewerTypeBadge" class="badge-normal">일반</span>
+                    <h3 id="viewerTitle">공지사항 제목</h3>
+                </div>
+                <button class="btn-close" id="btnViewerClose">✕</button>
+            </div>
+            <div class="viewer-meta-info">
+                <span id="viewerAuthor">작성자: 운영자</span>
+                <span id="viewerDate">날짜: 2024.01.01</span>
+                <span id="viewerViews">조회수: 0</span>
+            </div>
+            <div class="modal-body viewer-body">
+                <div id="viewerContent" class="viewer-content"></div>
+
+                <div class="viewer-actions">
+                    <button id="btnLikeNotice" class="btn-like">👍 좋아요 <span id="likeCount">0</span></button>
+                    <!-- Admin Only Actions inside Viewer -->
+                    <div id="adminViewerActions" style="display:none;">
+                        <button id="btnEditNoticeItem" class="btn-admin secondary">수정</button>
+                        <button id="btnDeleteNoticeItem" class="btn-admin danger">삭제</button>
+                    </div>
+                </div>
+
+                <div class="comments-section">
+                    <h4>댓글 <span id="commentCount">0</span></h4>
+                    <div class="comment-input-area">
+                        <textarea id="commentInput" placeholder="댓글을 입력하세요..."></textarea>
+                        <button id="btnSubmitComment" class="btn-submit">등록</button>
+                    </div>
+                    <div id="commentsList" class="comments-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase + Supabase Setup Script -->
+    <script type="module" src="../api/supabase_config.js"></script>
+    <script src="notice.js"></script>
+    <script src="notice_admin.js"></script>
+</body>
+
+</html>

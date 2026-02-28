@@ -163,6 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (window.BSquareModules.initReviews) window.BSquareModules.initReviews(db, classId, userId, supabaseClient, hasAccess, isInstructor);
                 if (window.BSquareModules.initChat) window.BSquareModules.initChat(db, classId, userId, supabaseClient, hasAccess, isInstructor);
+                if (window.BSquareModules.initNotice) window.BSquareModules.initNotice(db, classId, userId, supabaseClient, hasAccess, isInstructor);
 
                 updateEnrollmentUI();
 

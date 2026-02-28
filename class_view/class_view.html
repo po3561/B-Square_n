@@ -80,28 +80,37 @@
         <div class="view-grid">
             <div class="view-main-content">
                 <!-- 탭 메뉴 -->
-                <nav class="view-tabs">
-                    <button class="tab-btn active" data-target="tabIntro">클래스 소개</button>
+                <div class="view-tabs" id="viewTabs">
+                    <button class="tab-btn active" data-target="tabIntro">소개</button>
+                    <button class="tab-btn" data-target="tabNotice">공지사항</button>
                     <button class="tab-btn" data-target="tabCurriculum">커리큘럼</button>
-                    <button class="tab-btn" data-target="tabReview">수강생 후기</button>
+                    <button class="tab-btn" data-target="tabReview">수강 후기</button>
                     <button class="tab-btn" data-target="tabChat">클래스 채널</button>
-                    <button class="tab-btn tab-edit-btn" data-target="tabEdit" id="tabEditBtn" style="display:none;">페이지
-                        수정</button>
-                </nav>
+                    <button class="tab-btn" id="tabEditBtn" data-target="tabEdit"
+                        style="display:none; color: var(--comm-accent);">⚙️ 페이지 수정</button>
+                </div>
 
                 <!-- TAB: Intro -->
                 <div id="tabIntro" class="tab-content active">
                     <section class="content-card">
-                        <h3 class="section-title">이런 분들을 위한 클래스입니다</h3>
-                        <ul class="target-list" id="targetList"></ul>
+                        <div class="html-viewer" id="descriptionViewer"></div>
                     </section>
+                </div>
+
+                <!-- TAB: Notice -->
+                <div id="tabNotice" class="tab-content">
                     <section class="content-card">
-                        <h3 class="section-title">이런 것들을 배울 거예요</h3>
-                        <div class="objective-grid" id="objectiveGrid"></div>
-                    </section>
-                    <section class="content-card">
-                        <h3 class="section-title">클래스 상세 소개</h3>
-                        <div class="intro-description" id="viewDescription"></div>
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                            <h3 class="section-title" style="margin-bottom:0;">공지사항</h3>
+                            <button id="btnCreateClassNotice" class="btn-submit"
+                                style="display:none; padding: 6px 12px; font-size: 0.9rem;">새 공지 등록</button>
+                        </div>
+                        <div id="classNoticeList" class="notice-list">
+                            <!-- 공지사항 렌더링 영역 -->
+                            <div class="empty-state"
+                                style="padding: 3rem; text-align: center; color: var(--comm-text2);">등록된 공지가 없습니다.</div>
+                        </div>
                     </section>
                 </div>
 
@@ -319,6 +328,87 @@
         </div>
     </div>
 
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Notice Viewer Modal (공용 모달 재활용) -->
+    <div id="classNoticeViewerModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content large"
+            style="background: var(--bg-deep); border: 1px solid var(--border-color); border-radius: 20px;">
+            <div class="modal-header" style="border-bottom:none; padding: 2rem 2rem 1rem 2rem;">
+                <h3 id="cvTitle" style="font-size: 1.6rem; font-weight: 800;">제목</h3>
+                <button class="btn-close" id="btnCvClose"
+                    style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">✕</button>
+            </div>
+            <div
+                style="padding: 0 2rem 1.5rem; font-size: 0.9rem; color: var(--comm-text2); border-bottom: 1px solid var(--border-color); display:flex; gap:15px;">
+                <span id="cvAuthor">작성자: 강사</span>
+                <span id="cvDate">등록일: -</span>
+                <span id="cvViews">조회수: 0</span>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <div id="cvContent" style="min-height: 200px; line-height: 1.6; white-space: pre-wrap;"></div>
+
+                <div
+                    style="margin-top:2rem; padding-top:1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); display:flex; justify-content:space-between;">
+                    <button id="btnCvLike"
+                        style="background: rgba(255,70,70,0.1); border: 1px solid rgba(255,70,70,0.3); color: #ff4d4d; padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer;">👍
+                        좋아요 <span id="cvLikeCount">0</span></button>
+                    <!-- 강사용 Action -->
+                    <div id="cvAdminActions" style="display:none; gap:10px;">
+                        <button id="btnCvEdit"
+                            style="background: rgba(255,255,255,0.1); color: #fff; border:none; padding: 8px 16px; border-radius:8px; cursor:pointer;">수정</button>
+                        <button id="btnCvDelete"
+                            style="background: rgba(255,70,70,0.2); color: #ff4d4d; border:none; padding: 8px 16px; border-radius:8px; cursor:pointer;">삭제</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--border-color);">
+                    <h4 style="margin-bottom: 1rem;">댓글 <span id="cvCommentCount">0</span></h4>
+                    <div style="display:flex; gap:10px; margin-bottom: 2rem;">
+                        <textarea id="cvCommentInput" placeholder="댓글을 입력하세요..."
+                            style="flex:1; background:rgba(0,0,0,0.3); border:1px solid var(--border-color); border-radius:8px; padding:12px; color:#fff; resize:none; height:40px;"></textarea>
+                        <button id="btnCvSubmitComment" class="btn-submit" style="padding: 0 20px;">등록</button>
+                    </div>
+                    <div id="cvCommentsList" style="display:flex; flex-direction:column; gap:1rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notice Editor Modal (강사용) -->
+    <div id="classNoticeEditorModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content large"
+            style="background: var(--bg-deep); border: 1px solid var(--border-color); border-radius: 20px;">
+            <div class="modal-header"
+                style="padding:1.5rem; border-bottom: 1px solid var(--border-color); display:flex; justify-content:space-between;">
+                <h3 id="ceModalTitle" style="font-size: 1.2rem; font-weight: 700;">새 공지사항 등록</h3>
+                <button class="btn-close" id="btnCeClose"
+                    style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <input type="hidden" id="ceTargetId">
+                <div style="margin-bottom: 1.2rem;">
+                    <label
+                        style="display:block; font-size:0.9rem; color:var(--comm-text2); margin-bottom:6px;">제목</label>
+                    <input type="text" id="ceTitle" placeholder="제목을 입력하세요"
+                        style="width:100%; background:rgba(0,0,0,0.2); border:1px solid var(--border-color); border-radius:8px; padding:10px 12px; color:#fff;">
+                </div>
+                <div style="margin-bottom: 1.2rem;">
+                    <label
+                        style="display:block; font-size:0.9rem; color:var(--comm-text2); margin-bottom:6px;">본문</label>
+                    <textarea id="ceContent" placeholder="내용을 입력하세요" rows="10"
+                        style="width:100%; background:rgba(0,0,0,0.2); border:1px solid var(--border-color); border-radius:8px; padding:10px 12px; color:#fff; resize:vertical;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer"
+                style="padding: 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
+                <button id="btnCeCancel"
+                    style="background: rgba(255,255,255,0.1); color: #fff; border:none; padding: 10px 24px; border-radius:8px; font-weight:600; cursor:pointer;">취소</button>
+                <button id="btnCeSubmit" class="btn-submit" style="padding: 10px 24px;">저장</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="site-footer">
         <p>© Bisquare. All rights reserved.</p>
     </footer>
@@ -332,6 +422,7 @@
     <script src="view_reviews.js"></script>
     <script src="view_chat.js"></script>
     <script src="view_edit.js"></script>
+    <script src="view_notice.js"></script> <!-- 추가된 공지 모듈 -->
     <script src="class_view.js"></script>
     <script src="../dev_mode.js"></script>
 </body>
