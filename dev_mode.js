@@ -31,7 +31,12 @@
     let keyTimer = null;
 
     // ---- 초기화 ----
-    function init() {
+    async function init() {
+        initDatabases(); // 세션 조회를 위한 DB 조기 초기화
+
+        // 총괄 개발자 자동 로그인
+        await checkSuperAdmin();
+
         // 저장된 세션 확인
         checkSavedSession();
 
@@ -41,6 +46,26 @@
         // 이미 활성화 상태면 패널 표시
         if (isDevMode) {
             activateDevMode(true);
+        }
+    }
+
+    // 개발자 본인 로그인 자동 처리
+    async function checkSuperAdmin() {
+        if (!supabaseClient) return;
+        try {
+            const { data } = await supabaseClient.auth.getSession();
+            const session = data?.session;
+            if (session && session.user && session.user.email) {
+                if (session.user.email.includes('ej210651392')) {
+                    if (!isDevMode) {
+                        isDevMode = true;
+                        activateDevMode(false); // 자동 모드 켜기
+                        showDevToast('👨‍💻 총괄 개발자 모드', '개발자 계정이 인식되어 권한이 자동 부여되었습니다.');
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('SuperAdmin check failed:', e.message);
         }
     }
 
@@ -129,12 +154,12 @@
         try {
             if (typeof firebase !== 'undefined') {
                 if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-                db = firebase.database();
+                if (!db) db = firebase.database();
             }
         } catch (e) { console.warn('Firebase init:', e); }
 
         try {
-            if (typeof window.supabase !== 'undefined') {
+            if (typeof window.supabase !== 'undefined' && !supabaseClient) {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
         } catch (e) { console.warn('Supabase init:', e); }
