@@ -11,7 +11,8 @@
         rel="stylesheet">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style.css">
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_mobile.css" media="(max-width: 768px)">
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css" media="(min-width: 769px)">
     <link rel="stylesheet" href="class_list.css">
 
     <!-- SDKs -->
@@ -24,8 +25,16 @@
 <body>
     <header class="site-header">
         <div class="header-inner">
-            <h1 class="logo"><a href="../bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a></h1>
-            <nav class="main-nav">
+            <div class="header-left" style="display: flex; align-items: center; gap: 10px;">
+                <button class="btn-hamburger mobile-only-flex" id="btnHamburger">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <h1 class="logo"><a href="../bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a>
+                </h1>
+            </div>
+            <nav class="main-nav desktop-only-flex">
                 <ul>
                     <li><a href="class_list.html" class="nav-active">클래스</a></li>
                     <li><a href="../create_class/create_class.html">등록</a></li>
@@ -34,7 +43,7 @@
                     <li><a href="../community/community.html">커뮤니티</a></li>
                 </ul>
             </nav>
-            <div class="header-utils">
+            <div class="header-utils desktop-only-flex">
                 <div class="search-bar">
                     <input type="text" placeholder="검색어를 입력하세요">
                     <button type="button">🔍</button>
@@ -119,6 +128,7 @@
 
     <!-- Scripts -->
     <script src="class_list.js"></script>
+    <script src="../bsnnnnnnnnnnnnnnnnnn/header.js"></script>
     <script src="../dev_mode.js"></script>
 </body>
 

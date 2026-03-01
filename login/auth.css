@@ -24,11 +24,18 @@ body.auth-body {
     background-color: var(--bg-main);
     color: var(--text-main);
     font-family: var(--font-family);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-main {
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    padding: 2rem 1rem;
+    padding: 6rem 1rem 4rem;
+    /* 헤더 공간 등 여백 확보 */
     background-image: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 100%);
 }
 
@@ -37,12 +44,13 @@ body.auth-body {
     backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
     -webkit-backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
     width: 100%;
-    max-width: 520px;
+    max-width: 480px;
+    /* 조금 더 슬림한 Class101 트렌드 */
     padding: 3rem 2.5rem;
-    border-radius: var(--card-radius, 24px);
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+    border-radius: 12px;
+    /* 둥글기 완화로 모던하게 */
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    /* glass-border */
 }
 
 /* 헤더 & 로고 */
@@ -147,6 +155,15 @@ body.auth-body {
     color: var(--text-sub);
     margin-top: 0.4rem;
     margin-left: 2rem;
+}
+
+.login-utils {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    font-size: 0.9rem;
+    color: var(--text-sub);
 }
 
 .term-item {
@@ -262,7 +279,25 @@ body.auth-body {
     margin-bottom: 0.6rem;
 }
 
-.input-group input,
+.input-group input {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.03);
+    color: var(--text-main);
+    font-size: 1rem;
+    font-family: var(--font-family);
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--point-color);
+    background-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+}
+
 .input-group select {
     width: 100%;
     padding: 1.1rem;
@@ -275,7 +310,6 @@ body.auth-body {
     transition: border-color 0.2s, background-color 0.2s;
 }
 
-.input-group input:focus,
 .input-group select:focus {
     border-color: #555;
     background-color: #2a2a2a;
@@ -365,7 +399,7 @@ body.auth-body {
 
 .btn-next,
 .btn-submit {
-    flex: 1.8;
+    width: 100%;
     padding: 1.2rem;
     background-color: #fff;
     color: #000;
@@ -375,11 +409,40 @@ body.auth-body {
     font-size: 1.1rem;
     cursor: pointer;
     box-shadow: 0 10px 20px rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.btn-row .btn-next,
+.btn-row .btn-submit {
+    flex: 1.8;
+    width: auto;
+    margin-bottom: 0;
 }
 
 .btn-next:hover,
 .btn-submit:hover {
-    background-color: #eee;
+    background-color: #e6e6e6;
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(255, 255, 255, 0.15);
+}
+
+.btn-next:active,
+.btn-submit:active {
+    transform: translateY(0);
+}
+
+.auth-link {
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--text-sub);
+    margin-top: 1.5rem;
+}
+
+.auth-link a {
+    color: var(--text-main);
+    text-decoration: underline;
+    font-weight: 600;
 }
 
 /* 상태 메시지 */
@@ -486,5 +549,40 @@ body.auth-body {
 
     .at-symbol {
         display: none;
+    }
+}
+
+@media (max-width: 320px) {
+    .auth-container {
+        padding: 1.5rem 1rem;
+    }
+
+    .logo a {
+        font-size: 1.5rem;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+    }
+
+    .form-section {
+        padding: 1.2rem;
+    }
+
+    .input-group input,
+    .input-group select {
+        padding: 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-next,
+    .btn-submit,
+    .btn-cancel {
+        padding: 0.8rem;
+        font-size: 0.95rem;
+    }
+
+    .checkbox-label {
+        font-size: 0.85rem;
     }
 }

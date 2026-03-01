@@ -1909,3 +1909,40 @@
         font-size: 1rem;
     }
 }
+
+@media (max-width: 320px) {
+    .view-grid {
+        padding: 1rem 0.5rem;
+    }
+
+    .title-row h1 {
+        font-size: 1.3rem;
+    }
+
+    .hero-text-area {
+        padding: 0 1rem;
+    }
+
+    .btn-buy-now {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+
+    .class-nav button {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+
+    .rating-value {
+        font-size: 2rem;
+    }
+
+    .chat-container {
+        height: 500px;
+    }
+
+    .msg-bubble {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+}

@@ -3,18 +3,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Supabase 및 Firebase 초기화 (전역 설정과 동일)
     const SUPABASE_URL = "https://tqyckxgtavviatkfsymb.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxeWNreGd0YXZ2aWF0a2ZzeW1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NTQ1MjYsImV4cCI6MjA4NzEzMDUyNn0.Lc6Q9Q8qavIPI13bFdQEf0Mhmv4XOS41WtEr7CVXCCw";
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyDStdCCFWhlgcgDPXeKgSAwfTtbP9mjNyc",
-        authDomain: "b-square-39b11.firebaseapp.com",
-        databaseURL: "https://b-square-39b11-default-rtdb.firebaseio.com",
-        projectId: "b-square-39b11",
-        storageBucket: "b-square-39b11.firebasestorage.app",
-        messagingSenderId: "1012056920961",
-        appId: "1:1012056920961:web:8342bfdf123b78f6a38e80"
-    };
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    // Check if Firebase is already initialized
+    if (!firebase.apps.length) {
+        // Fallback config if not initialized globally
+        firebase.initializeApp({
+            apiKey: "AIzaSyDStdCCFWhlgcgDPXeKgSAwfTtbP9mjNyc",
+            authDomain: "b-square-39b11.firebaseapp.com",
+            databaseURL: "https://b-square-39b11-default-rtdb.firebaseio.com",
+            projectId: "b-square-39b11",
+            storageBucket: "b-square-39b11.firebasestorage.app",
+            messagingSenderId: "1012056920961",
+            appId: "1:1012056920961:web:8342bfdf123b78f6a38e80"
+        });
+    }
     const db = firebase.database();
 
     // Auth Check

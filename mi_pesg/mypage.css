@@ -820,3 +820,32 @@ body {
         margin-left: 0;
     }
 }
+
+@media (max-width: 320px) {
+    .mypage-layout {
+        padding: 0 1rem;
+    }
+
+    .profile-summary {
+        padding: 1.5rem 1rem;
+    }
+
+    .profile-img-placeholder {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+    }
+
+    .tab-title {
+        font-size: 1.4rem;
+    }
+
+    .category-chip {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .mypage-content {
+        padding: 1rem;
+    }
+}

@@ -185,3 +185,18 @@
         font-size: 1.15rem;
     }
 }
+
+@media (max-width: 320px) {
+    .section-inner {
+        padding: 0 1rem;
+    }
+
+    .class-page-overrides .card-thumbnail {
+        height: 120px;
+    }
+
+    .category-grid li a {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}

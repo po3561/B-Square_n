@@ -12,7 +12,9 @@
     // ---- Firebase + Supabase 설정 ----
     const SUPABASE_URL = "https://tqyckxgtavviatkfsymb.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxeWNreGd0YXZ2aWF0a2ZzeW1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NTQ1MjYsImV4cCI6MjA4NzEzMDUyNn0.Lc6Q9Q8qavIPI13bFdQEf0Mhmv4XOS41WtEr7CVXCCw";
-    const FIREBASE_CONFIG = {
+
+    // Fallback config if not initialized globally
+    const fallbackFirebaseConfig = {
         apiKey: "AIzaSyDStdCCFWhlgcgDPXeKgSAwfTtbP9mjNyc",
         authDomain: "b-square-39b11.firebaseapp.com",
         databaseURL: "https://b-square-39b11-default-rtdb.firebaseio.com",

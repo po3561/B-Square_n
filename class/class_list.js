@@ -5,17 +5,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxeWNreGd0YXZ2aWF0a2ZzeW1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NTQ1MjYsImV4cCI6MjA4NzEzMDUyNn0.Lc6Q9Q8qavIPI13bFdQEf0Mhmv4XOS41WtEr7CVXCCw";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyDStdCCFWhlgcgDPXeKgSAwfTtbP9mjNyc",
-        authDomain: "b-square-39b11.firebaseapp.com",
-        databaseURL: "https://b-square-39b11-default-rtdb.firebaseio.com",
-        projectId: "b-square-39b11",
-        storageBucket: "b-square-39b11.firebasestorage.app",
-        messagingSenderId: "1012056920961",
-        appId: "1:1012056920961:web:8342bfdf123b78f6a38e80"
-    };
-
-    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    // Check if Firebase is already initialized
+    if (!firebase.apps.length) {
+        // Fallback config if not initialized globally
+        firebase.initializeApp({
+            apiKey: "AIzaSyDStdCCFWhlgcgDPXeKgSAwfTtbP9mjNyc",
+            authDomain: "b-square-39b11.firebaseapp.com",
+            databaseURL: "https://b-square-39b11-default-rtdb.firebaseio.com",
+            projectId: "b-square-39b11",
+            storageBucket: "b-square-39b11.firebasestorage.app",
+            messagingSenderId: "1012056920961",
+            appId: "1:1012056920961:web:8342bfdf123b78f6a38e80"
+        });
+    }
     const db = firebase.database();
 
     // 2. 헤더 유저 메뉴 (프로필 / 로그아웃)
@@ -103,22 +105,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="class-card" onclick="location.href='../class_view/class_view.html?id=${cls.id}'" style="cursor:pointer; position:relative; overflow:visible;">
                     ${newBadgeHtml}
                     <div class="card-thumbnail">
-                        <img src="${imageUrl}" alt="${cls.title || '제목 없음'}" style="width:100%; height:180px; object-fit:cover; border-radius:16px;">
+                        <img src="${imageUrl}" alt="${cls.title || '제목 없음'}" style="width:100%; height:180px; object-fit:cover;">
+                        <button class="btn-bookmark" aria-label="찜하기">🤍</button>
                         <div class="card-badges">
                             ${cls.coupon_pack ? '<span class="badge-coupon">쿠폰팩</span>' : ''}
                             ${discountRate > 0 ? `<span class="badge-discount">${discountRate}% 할인</span>` : ''}
                         </div>
                     </div>
-                    <div class="card-info" style="padding-top: 10px;">
+                    <div class="card-info">
                         <span class="category">${cls.category || '미분류'}</span>
                         <h4 class="title">${cls.title || '제목 없음'}</h4>
-                        <span class="creator">작성자: ${cls.creator_name || '크리에이터'}</span>
-                        <div class="meta" style="margin-top:4px;">
-                            <span class="rating">⭐ ${cls.rating || '5.0'}</span>
+                        <span class="creator">${cls.creator_name || '크리에이터'}</span>
+                        <div class="meta">
+                            <span class="rating">👍 ${(Math.random() * 50 + 50).toFixed(0)}% 만족도</span>
                         </div>
-                        <div class="price-area" style="margin-top:8px;">
-                            ${discountRate > 0 ? `<span class="original-price" style="text-decoration:line-through; color:#888; font-size:0.85rem; margin-right:6px;">${originalPrice.toLocaleString()}원</span>` : ''}
-                            <span class="current-price" style="font-weight:700; color:var(--text-primary);">${currentPrice.toLocaleString()}원</span>
+                        <div class="price-area">
+                            ${discountRate > 0 ? `<span class="original-price">${originalPrice.toLocaleString()}원</span>` : ''}
+                            <span class="current-price">${currentPrice.toLocaleString()}원</span>
                         </div>
                     </div>
                 </div>

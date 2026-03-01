@@ -607,3 +607,32 @@
         display: inline-block;
     }
 }
+
+@media (max-width: 320px) {
+    .notice-main {
+        padding: 1rem 0.5rem;
+    }
+
+    .hero-content h1 {
+        font-size: 1.5rem;
+    }
+
+    .notice-left-panel,
+    .notice-right-panel {
+        padding: 1rem;
+    }
+
+    .panel-header h2 {
+        font-size: 1.2rem;
+    }
+
+    .search-input {
+        padding: 6px 8px;
+        width: 100px;
+    }
+
+    .btn-admin {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+}

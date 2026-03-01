@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>로그인 | 클래스 플랫폼</title>
-    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style.css">
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_mobile.css" media="(max-width: 768px)">
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css" media="(min-width: 769px)">
     <link rel="stylesheet" href="auth.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -16,7 +17,8 @@
             <h1 class="logo">
                 <a href="../bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a>
             </h1>
-            <nav class="main-nav">
+            <button class="btn-mobile-menu" id="btnMobileMenu">☰</button>
+            <nav class="main-nav desktop-only-flex">
                 <ul>
                     <li><a href="../class/class_list.html">클래스</a></li>
                     <li><a href="../create_class/create_class.html">등록</a></li>
@@ -25,7 +27,7 @@
                     <li><a href="../community/community.html">커뮤니티</a></li>
                 </ul>
             </nav>
-            <div class="header-utils">
+            <div class="header-utils desktop-only-flex">
                 <div class="search-bar">
                     <input type="text" placeholder="검색어를 입력하세요">
                     <button type="button">🔍</button>
@@ -36,36 +38,38 @@
         </div>
     </header>
 
-    <div class="auth-container" style="margin-top: 60px;">
+    <main class="auth-main">
+        <div class="auth-container">
 
-        <form id="loginForm" class="auth-form active">
-            <div class="input-group">
-                <label for="loginUsername">로그인 아이디 (이메일)</label>
-                <input type="text" id="loginUsername" placeholder="이메일 또는 아이디를 입력해주세요" required>
-            </div>
-
-            <div class="input-group">
-                <label for="loginPassword">비밀번호</label>
-                <input type="password" id="loginPassword" placeholder="비밀번호를 입력해주세요" required>
-            </div>
-
-            <div class="login-utils">
-                <label class="save-id-label">
-                    <input type="checkbox" id="chkSaveId"> 아이디 저장
-                </label>
-                <div class="find-links">
-                    <a href="find_account.html">아이디 찾기</a> |
-                    <a href="find_account.html#reset">비밀번호 찾기</a>
+            <form id="loginForm" class="auth-form active">
+                <div class="input-group">
+                    <label for="loginUsername">로그인 아이디 (이메일)</label>
+                    <input type="text" id="loginUsername" placeholder="이메일 또는 아이디를 입력해주세요" required>
                 </div>
-            </div>
 
-            <button type="submit" class="btn-submit">로그인</button>
+                <div class="input-group">
+                    <label for="loginPassword">비밀번호</label>
+                    <input type="password" id="loginPassword" placeholder="비밀번호를 입력해주세요" required>
+                </div>
 
-            <div class="auth-link">
-                계정이 없으신가요? <a href="signup.html">회원가입하기</a>
-            </div>
-        </form>
-    </div>
+                <div class="login-utils">
+                    <label class="checkbox-label" for="chkSaveId">
+                        <input type="checkbox" id="chkSaveId"> 아이디 저장
+                    </label>
+                    <div class="find-links">
+                        <a href="find_account.html">아이디 찾기</a> |
+                        <a href="find_account.html#reset">비밀번호 찾기</a>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">로그인</button>
+
+                <div class="auth-link">
+                    계정이 없으신가요? <a href="signup.html">회원가입하기</a>
+                </div>
+            </form>
+        </div>
+    </main>
 
     <footer class="site-footer">
         <div class="footer-top">
@@ -103,6 +107,7 @@
     </footer>
 
     <script src="auth_1.js"></script>
+    <script src="../bsnnnnnnnnnnnnnnnnnn/header.js"></script>
 </body>
 
 </html>

@@ -344,3 +344,38 @@ option {
         padding: 2.5rem;
     }
 }
+
+@media (max-width: 320px) {
+    .create-layout {
+        padding: 0 1rem;
+    }
+
+    .create-content {
+        padding: 1.5rem 1rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .input-group label {
+        font-size: 1rem;
+    }
+
+    .input-group input,
+    .input-group select,
+    .input-group textarea {
+        padding: 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .create-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .create-actions button {
+        width: 100%;
+        padding: 0.8rem;
+    }
+}

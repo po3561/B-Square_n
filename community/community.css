@@ -1655,12 +1655,44 @@
     transform: scale(1.02);
 }
 
-.btn-info-action.reenroll {
-    background: var(--comm-card-bg);
-    border: 2px dashed var(--comm-accent);
-    color: var(--comm-accent);
-}
-
 .btn-info-action.reenroll:hover {
     background: rgba(110, 142, 251, 0.08);
+}
+
+@media (max-width: 320px) {
+    .chat-top-header {
+        padding: 5px 8px;
+    }
+
+    .chat-header-avatar {
+        width: 30px;
+        height: 30px;
+    }
+
+    .chat-header-name {
+        font-size: 0.9rem;
+    }
+
+    .btn-header-action {
+        width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
+    }
+
+    .msg-bubble {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .input-main-row textarea {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+
+    .btn-send,
+    .btn-input-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
 }

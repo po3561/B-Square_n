@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>클래스 상세 정보 | B-Square</title>
-    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style.css">
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_mobile.css" media="(max-width: 768px)">
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css" media="(min-width: 769px)">
     <link rel="stylesheet" href="class_view.css">
     <link rel="stylesheet" href="payment_toast.css">
     <link rel="stylesheet" href="../community/community.css">
@@ -26,7 +27,9 @@
             <h1 class="logo">
                 <a href="../bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a>
             </h1>
-            <nav class="main-nav">
+
+            <button class="btn-mobile-menu" id="btnMobileMenu">☰</button>
+            <nav class="main-nav desktop-only-flex">
                 <ul>
                     <li><a href="../class/class_list.html">클래스</a></li>
                     <li><a href="../create_class/create_class.html">등록</a></li>
@@ -35,12 +38,13 @@
                     <li><a href="../community/community.html">커뮤니티</a></li>
                 </ul>
             </nav>
-            <div class="header-utils">
+            <div class="header-utils desktop-only-flex">
                 <div class="search-bar">
                     <input type="text" placeholder="검색어를 입력하세요">
                     <button type="button">🔍</button>
                 </div>
                 <div class="user-menu" id="userMenu" style="display: flex; gap: 10px; align-items: center;">
+                    <!-- header.js가 렌더링 -->
                 </div>
             </div>
         </div>
@@ -452,6 +456,7 @@
     <script src="view_edit.js"></script>
     <script src="view_notice.js"></script> <!-- 추가된 공지 모듈 -->
     <script src="class_view.js"></script>
+    <script src="../bsnnnnnnnnnnnnnnnnnn/header.js"></script>
     <script src="../dev_mode.js"></script>
 </body>
 

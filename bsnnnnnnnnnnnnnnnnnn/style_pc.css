@@ -60,6 +60,43 @@ select,
 }
 
 /* ==========================================
+   Responsive Display Utilities
+=========================================== */
+.desktop-only {
+    display: block !important;
+}
+
+.mobile-only {
+    display: none !important;
+}
+
+.desktop-only-flex {
+    display: flex !important;
+}
+
+.mobile-only-flex {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: block !important;
+    }
+
+    .desktop-only-flex {
+        display: none !important;
+    }
+
+    .mobile-only-flex {
+        display: flex !important;
+    }
+}
+
+/* ==========================================
    1. HEADER
 =========================================== */
 .site-header {
@@ -379,17 +416,23 @@ option {
     position: absolute;
     top: 12px;
     right: 12px;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(5px);
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     z-index: 2;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.btn-bookmark:hover {
+    transform: scale(1.1);
+    background: rgba(0, 0, 0, 0.6);
 }
 
 .badge-award {
@@ -423,6 +466,18 @@ option {
     border-radius: 24px;
     padding: 2rem;
     border: 1px solid var(--glass-border);
+}
+
+.btn-hamburger {
+    display: none;
+}
+
+.btn-mobile-menu {
+    display: none !important;
+}
+
+.desktop-only-flex {
+    display: flex !important;
 }
 
 .column-header {
@@ -463,34 +518,35 @@ option {
 
 /* 카드 텍스트 정보 */
 .card-info {
-    padding: 1.5rem;
+    padding: 1rem 1.2rem 1.2rem 1.2rem;
 }
 
 .card-info .category {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
 }
 
 .card-info .title {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 0.6rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
     line-height: 1.4;
     color: var(--text-primary);
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    height: 2.8rem;
+    height: 2.9rem;
 }
 
 .card-info .creator {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.6rem;
     display: block;
 }
 
@@ -508,24 +564,27 @@ option {
     gap: 4px;
     color: #ffb100;
     font-weight: 700;
+    font-size: 0.85rem;
 }
 
 .card-info .price-area {
     margin-top: 1rem;
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 8px;
+    border-top: 1px solid var(--glass-border);
+    padding-top: 0.8rem;
 }
 
 .card-info .original-price {
-    font-size: 0.85rem;
-    color: #666;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
     text-decoration: line-through;
 }
 
 .card-info .current-price {
-    font-size: 1.1rem;
-    font-weight: 700;
+    font-size: 1.15rem;
+    font-weight: 800;
     color: var(--text-primary);
 }
 

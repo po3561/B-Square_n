@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>마이페이지 | 클래스 플랫폼</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style_mobile.css" media="(max-width: 768px)">
+    <link rel="stylesheet" href="style_pc.css" media="(min-width: 769px)">
     <link rel="stylesheet" href="mypage.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -16,10 +17,17 @@
 
     <header class="site-header">
         <div class="header-inner">
-            <h1 class="logo">
-                <a href="../bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a>
-            </h1>
-            <nav class="main-nav">
+            <div class="header-left" style="display: flex; align-items: center; gap: 10px;">
+                <button class="btn-hamburger mobile-only-flex" id="btnHamburger">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <h1 class="logo">
+                    <a href="../bsnnnnnnnnnnnnnnnnnn/index.html"><span class="logo-icon">💠</span> 클래스</a>
+                </h1>
+            </div>
+            <nav class="main-nav desktop-only-flex">
                 <ul>
                     <li><a href="../class/class_list.html">클래스</a></li>
                     <li><a href="../create_class/create_class.html">등록</a></li>
@@ -28,7 +36,7 @@
                     <li><a href="../community/community.html">커뮤니티</a></li>
                 </ul>
             </nav>
-            <div class="header-utils">
+            <div class="header-utils desktop-only-flex">
                 <div class="search-bar">
                     <input type="text" placeholder="검색어를 입력하세요">
                     <button type="button">🔍</button>
@@ -306,6 +314,7 @@
     <script src="tab_profile.js"></script>
     <script src="tab_security.js"></script>
     <script src="tab_chat_sub.js"></script>
+    <script src="../bsnnnnnnnnnnnnnnnnnn/header.js"></script>
     <script src="../dev_mode.js"></script>
 </body>
 

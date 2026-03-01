@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>B-Square</title>
-    <link rel="stylesheet" href="style_mobile.css" media="(max-width: 768px)">
-    <link rel="stylesheet" href="style_pc.css" media="(min-width: 769px)">
+    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -15,115 +14,14 @@
 
 <body>
 
-    <!-- 사이드 메뉴 (Drawer) 모달 -->
-    <div class="drawer-overlay mobile-only" id="drawerOverlay"></div>
-    <aside class="drawer-menu mobile-only" id="drawerMenu">
-        <!-- 닫기 버튼을 포함한 상단 검색 영역 -->
-        <div class="drawer-header">
-            <div class="drawer-search">
-                <input type="text" placeholder="관심 주제, 클래스, 크리에이터 찾기">
-                <button type="button">🔍</button>
-            </div>
-            <button class="btn-close-drawer" id="btnCloseDrawer">✕</button>
-        </div>
-
-        <!-- 본문 2분할 레이아웃 -->
-        <div class="drawer-body">
-            <!-- 좌측 대분류 리스트 -->
-            <ul class="drawer-main-categories">
-                <li class="active">크리에이티브</li>
-                <li>디지털 드로잉</li>
-                <li>드로잉</li>
-                <li>공예</li>
-                <li>요리 · 음료</li>
-                <li>베이킹 · 디저트</li>
-                <li>음악</li>
-                <li>운동</li>
-                <li>라이프스타일</li>
-                <li>사진 · 영상</li>
-                <li class="divider">수익 창출</li>
-                <li>금융 · 재테크</li>
-                <li>창업 · 부업</li>
-            </ul>
-
-            <!-- 우측 소분류 및 카드 영역 -->
-            <div class="drawer-sub-categories">
-                <!-- 배너 -->
-                <div class="drawer-banner">
-                    <p>2월 마지막 할인 곧 마감<br><strong>혜택 받기 ></strong></p>
-                    <span class="icon">🎉</span>
-                </div>
-
-                <div class="sub-category-group">
-                    <div class="group-header">
-                        <h4>디지털 드로잉</h4> <span class="arrow">></span>
-                    </div>
-                    <div class="drawer-card-grid">
-                        <div class="drawer-card">
-                            <div class="thumbnail" style="background-image: url('https://picsum.photos/100/100?1')">
-                            </div>
-                            <span class="label">일러스트</span>
-                        </div>
-                        <div class="drawer-card">
-                            <div class="thumbnail" style="background-image: url('https://picsum.photos/100/100?2')">
-                            </div>
-                            <span class="label">컨셉아트</span>
-                        </div>
-                        <div class="drawer-card">
-                            <div class="thumbnail" style="background-image: url('https://picsum.photos/100/100?3')">
-                            </div>
-                            <span class="label">캐릭터 드로잉</span>
-                        </div>
-                        <div class="drawer-card">
-                            <div class="thumbnail" style="background-image: url('https://picsum.photos/100/100?4')">
-                            </div>
-                            <span class="label">인물 드로잉</span>
-                        </div>
-                        <div class="drawer-card">
-                            <div class="thumbnail" style="background-image: url('https://picsum.photos/100/100?5')">
-                            </div>
-                            <span class="label">굿즈 · 이모티콘</span>
-                        </div>
-                        <div class="drawer-card">
-                            <div class="thumbnail" style="background-image: url('https://picsum.photos/100/100?6')">
-                            </div>
-                            <span class="label">웹툰</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="sub-category-group mt-3">
-                    <div class="group-header">
-                        <h4>드로잉</h4> <span class="arrow">></span>
-                    </div>
-                    <div class="drawer-card-grid">
-                        <div class="drawer-card">
-                            <div class="thumbnail" style="background-image: url('https://picsum.photos/100/100?7')">
-                            </div>
-                            <span class="label">캘리그라피</span>
-                        </div>
-                        <!-- ...추가 데이터... -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </aside>
-
     <header class="site-header">
         <div class="header-inner">
-            <div class="header-left" style="display: flex; align-items: center; gap: 10px;">
-                <button class="btn-hamburger mobile-only-flex" id="btnHamburger">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <h1 class="logo">
-                    <a href="index.html"><span class="logo-icon">💠</span> 클래스</a>
-                </h1>
-            </div>
+            <h1 class="logo">
+                <a href="index.html"><span class="logo-icon">💠</span> 클래스</a>
+            </h1>
 
-            <nav class="main-nav desktop-only-flex">
-                <ul style="list-style: none; margin: 0; padding: 0;">
+            <nav class="main-nav">
+                <ul>
                     <li><a href="../class/class_list.html">클래스</a></li>
                     <li><a href="../create_class/create_class.html">등록</a></li>
                     <li><a href="../notice/notice.html">공지사항</a></li>
@@ -132,13 +30,13 @@
                 </ul>
             </nav>
 
-            <div class="header-right header-utils">
-                <div class="search-bar desktop-only-flex">
+            <div class="header-utils">
+                <div class="search-bar">
                     <input type="text" placeholder="검색어를 입력하세요">
                     <button type="button">🔍</button>
                 </div>
+
                 <div class="user-menu" id="userMenu" style="display: flex; gap: 10px; align-items: center;">
-                    <!-- header.js -> renderUserMenus -->
                 </div>
             </div>
         </div>
@@ -234,30 +132,6 @@
         </section>
     </main>
 
-    <!-- 모바일 전용 하단 네비게이션 (Bottom Nav) -->
-    <nav class="bottom-nav">
-        <a href="../class/class_list.html" class="nav-item active">
-            <span class="icon">▶️</span>
-            <span class="label">클래스</span>
-        </a>
-        <a href="#" class="nav-item">
-            <span class="icon">🎟️</span>
-            <span class="label">멤버십</span>
-        </a>
-        <a href="../community/community.html" class="nav-item">
-            <span class="icon">👥</span>
-            <span class="label">커뮤니티</span>
-        </a>
-        <a href="#" class="nav-item">
-            <span class="icon">🔍</span>
-            <span class="label">카테고리</span>
-        </a>
-        <a href="#" class="nav-item">
-            <span class="icon">📺</span>
-            <span class="label">내 클래스</span>
-        </a>
-    </nav>
-
     <footer class="site-footer">
         <div class="footer-top">
             <div class="social-links">
@@ -291,8 +165,6 @@
             <p class="copyright">© Bisquare. All rights reserved.</p>
         </div>
     </footer>
-
-
 
     <script src="main.js"></script>
     <script src="../dev_mode.js"></script>

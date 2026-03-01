@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // [성공]
-                window.location.href = '/bsnnnnnnnnnnnnnnnnnn/index.html';
+                window.location.href = '../bsnnnnnnnnnnnnnnnnnn/index.html';
 
             } catch (error) {
                 alert(error.message);
