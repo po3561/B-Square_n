@@ -51,7 +51,16 @@
                 <div class="class-grid-header">
                     <h3 class="group-title">전체 클래스 목록</h3>
                     <div class="list-controls">
-                        <span id="totalClassCount">총 0개</span>
+                        <div class="search-filter">
+                            <input type="text" id="classSearchInput" placeholder="클래스 검색..." class="class-search-input">
+                        </div>
+                        <select id="sortSelect" class="sort-select">
+                            <option value="newest">최신순</option>
+                            <option value="popular">인기순</option>
+                            <option value="price-low">가격 낮은순</option>
+                            <option value="price-high">가격 높은순</option>
+                        </select>
+                        <span id="totalClassCount" class="total-count">총 0개</span>
                     </div>
                 </div>
                 <div class="card-grid" id="allClassGrid">
