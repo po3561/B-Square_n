@@ -379,3 +379,76 @@ option {
         padding: 0.8rem;
     }
 }
+
+/* =========================================
+   Quill Rich Text Editor
+========================================= */
+.quill-editor-wrap {
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.quill-editor-wrap .ql-toolbar {
+    border: none;
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.quill-editor-wrap .ql-container {
+    border: none;
+    font-family: var(--primary-font, 'Inter', sans-serif);
+    font-size: 1rem;
+    color: var(--text-primary, #e8e8e8);
+}
+
+.quill-editor-wrap .ql-editor {
+    min-height: 250px;
+    padding: 1.2rem;
+}
+
+.quill-editor-wrap .ql-editor.ql-blank::before {
+    color: var(--text-secondary, rgba(255, 255, 255, 0.3));
+    font-style: normal;
+}
+
+/* =========================================
+   결제 옵션 스타일
+========================================= */
+.payment-options {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 10px 0;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.payment-option:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.payment-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.bank-transfer-info {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-top: 1rem;
+}

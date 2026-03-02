@@ -31,7 +31,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const userId = session.user.id;
-        renderUserMenu(supabase, session);
+
+        // Quill.js 리치 텍스트 에디터 초기화
+        let quillEditor = null;
+        const quillContainer = document.getElementById('quillEditor');
+        if (quillContainer && typeof Quill !== 'undefined') {
+            quillEditor = new Quill('#quillEditor', {
+                theme: 'snow',
+                placeholder: '클래스에 대해 자세히 설명해주세요. 서식, 이미지, 링크 등을 자유롭게 사용할 수 있습니다.',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        [{ 'align': [] }],
+                        ['link', 'image'],
+                        ['blockquote', 'code-block'],
+                        ['clean']
+                    ]
+                }
+            });
+        }
+
+        // 계좌이체 토글 로직
+        const payBankCheckbox = document.getElementById('payBank');
+        const bankTransferInfo = document.getElementById('bankTransferInfo');
+        if (payBankCheckbox && bankTransferInfo) {
+            payBankCheckbox.addEventListener('change', () => {
+                bankTransferInfo.style.display = payBankCheckbox.checked ? 'block' : 'none';
+            });
+        }
 
         // UI 변수 세팅
         let currentStep = 1;
@@ -185,11 +215,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                     category: document.getElementById('classCategory').value,
                     keywords: document.getElementById('classKeywords').value.split(',').map(k => k.trim()),
                     summary: document.getElementById('classSummary').value,
-                    description: document.getElementById('classDescription').value,
+                    description: quillEditor ? quillEditor.root.innerHTML : (document.getElementById('classDescription')?.value || ''),
+                    description_text: quillEditor ? quillEditor.getText() : '',
                     price: parseInt(document.getElementById('classPrice').value) || 0,
+                    discount_rate: parseInt(document.getElementById('classDiscount')?.value) || 0,
+                    coupon_pack: document.getElementById('classCoupon')?.checked || false,
                     class_type: form.querySelector('input[name="classType"]:checked')?.value || 'VOD',
-                    image_url: uploadedImages[0], // 대표 이미지 (기존 호환성)
-                    image_urls: uploadedImages, // 전체 이미지 슬라이더용
+                    payment_methods: {
+                        card: document.getElementById('payCard')?.checked || false,
+                        bank_transfer: document.getElementById('payBank')?.checked || false,
+                        bank_name: document.getElementById('bankName')?.value || '',
+                        bank_account: document.getElementById('bankAccount')?.value || '',
+                        bank_holder: document.getElementById('bankHolder')?.value || ''
+                    },
+                    image_url: uploadedImages[0],
+                    image_urls: uploadedImages,
                     curriculum: chapters,
                     created_at: Date.now()
                 };
