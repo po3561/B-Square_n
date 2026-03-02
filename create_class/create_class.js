@@ -3,32 +3,23 @@
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("🚀 B-Square Create Class Page Initializing...");
 
-    // 1. 수파베이스 초기화 (오직 로그인 인증용으로만 사용)
-    const supabaseUrl = 'https://tqyckxgtavviatkfsymb.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxeWNreGd0YXZ2aWF0a2ZzeW1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NTQ1MjYsImV4cCI6MjA4NzEzMDUyNn0.Lc6Q9Q8qavIPI13bFdQEf0Mhmv4XOS41WtEr7CVXCCw';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    // header.js가 Supabase/Firebase 초기화 및 유저 메뉴를 처리함
+    // 여기서는 초기화 완료를 대기
+    const waitForInit = () => new Promise((resolve) => {
+        const check = () => {
+            if (window.supabaseClient && (typeof firebase !== 'undefined' && firebase.apps.length > 0)) {
+                resolve();
+            } else {
+                setTimeout(check, 100);
+            }
+        };
+        check();
+        setTimeout(resolve, 3000); // 3초 타임아웃
+    });
+    await waitForInit();
 
-    // 2. 파이어베이스 초기화 (실제 데이터 저장소)
-    const firebaseConfig = {
-        apiKey: "AIzaSyDStdCCFWhlgcgDPXeKgSAwfTtbP9mjNyc",
-        authDomain: "b-square-39b11.firebaseapp.com",
-        databaseURL: "https://b-square-39b11-default-rtdb.firebaseio.com",
-        projectId: "b-square-39b11",
-        storageBucket: "b-square-39b11.firebasestorage.app",
-        messagingSenderId: "1012056920961",
-        appId: "1:1012056920961:web:8342bfdf123b78f6a38e80",
-        measurementId: "G-TLQFK7FDY9"
-    };
-
-    let isFirebaseReady = false;
-    try {
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-            isFirebaseReady = true;
-        }
-    } catch (err) {
-        console.error("❌ Firebase Initialization Error:", err);
-    }
+    const supabase = window.supabaseClient;
+    const isFirebaseReady = typeof firebase !== 'undefined' && firebase.apps.length > 0;
 
     // 3. 로그인 세션 확인
     try {
@@ -225,34 +216,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Session check error:", sessionErr);
     }
 
-    // 상단 헤더 프로필 렌더링
-    async function renderUserMenu(supabase, session) {
-        const userMenu = document.getElementById('userMenu');
-        if (!userMenu) return;
-        const userId = session.user.id;
-
-        let profileImgUrl = '';
-        let userName = '사용자';
-        try {
-            const { data } = await supabase.from('users').select('name, profile_image_url').eq('id', userId).maybeSingle();
-            if (data) {
-                profileImgUrl = data.profile_image_url || '';
-                userName = data.name || '사용자';
-            }
-        } catch (e) {
-            console.warn("프로필 로드 무시");
-        }
-
-        userMenu.innerHTML = `
-            <a href="../mi_pesg/mypage.html" class="user-profile-btn">
-                <div class="user-avatar" style="${profileImgUrl ? `background-image: url(${profileImgUrl})` : ''}">${!profileImgUrl ? '👤' : ''}</div>
-                <span class="user-name">${userName} 님</span>
-            </a>
-            <button type="button" id="btnLogout" style="color:var(--text-secondary); font-size: 0.8rem; margin-left: 5px;">로그아웃</button>
-        `;
-        document.getElementById('btnLogout')?.addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            window.location.reload();
-        });
-    }
+    // renderUserMenu는 header.js에서 처리 — 중복 제거됨
 });
