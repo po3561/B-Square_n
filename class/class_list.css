@@ -200,3 +200,56 @@
         font-size: 0.8rem;
     }
 }
+
+@media (max-width: 210px) {
+    .section-inner {
+        padding: 0 0.4rem;
+    }
+
+    .class-list-main {
+        padding-top: 0.8rem;
+    }
+
+    .category-header-section {
+        margin-bottom: 0.8rem;
+    }
+
+    .category-grid li a {
+        padding: 4px 8px;
+        font-size: 0.65rem;
+        gap: 4px;
+    }
+
+    .class-page-overrides .card-thumbnail {
+        height: 80px;
+    }
+
+    .class-page-overrides .group-title {
+        font-size: 0.9rem;
+    }
+
+    .class-page-overrides .list-controls {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
+}
+
+/* =========================================
+   Card Fade-In Animation
+========================================= */
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-animate {
+    animation: cardFadeIn 0.4s ease forwards;
+    opacity: 0;
+}
