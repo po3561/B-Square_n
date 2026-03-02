@@ -1,28 +1,23 @@
 // community.js - 커뮤니티 채팅 메인 컨트롤러
 // Firebase + Supabase 오케스트레이터
 document.addEventListener('DOMContentLoaded', async () => {
-    // ---- Supabase / Firebase 설정 ----
-    const SUPABASE_URL = "https://tqyckxgtavviatkfsymb.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxeWNreGd0YXZ2aWF0a2ZzeW1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NTQ1MjYsImV4cCI6MjA4NzEzMDUyNn0.Lc6Q9Q8qavIPI13bFdQEf0Mhmv4XOS41WtEr7CVXCCw";
+    // ---- header.js가 Supabase/Firebase 초기화 및 유저 메뉴를 처리함 ----
+    // 초기화 완료 대기
+    const waitForInit = () => new Promise((resolve) => {
+        const check = () => {
+            if (window.supabaseClient && (typeof firebase !== 'undefined' && firebase.apps.length > 0)) {
+                resolve();
+            } else {
+                setTimeout(check, 100);
+            }
+        };
+        check();
+        setTimeout(resolve, 3000);
+    });
+    await waitForInit();
 
-    // Check if Firebase is already initialized
-    if (!firebase.apps.length) {
-        // Fallback config if not initialized globally
-        firebase.initializeApp({
-            apiKey: "AIzaSyDStdCCFWhlgcgDPXeKgSAwfTtbP9mjNyc",
-            authDomain: "b-square-39b11.firebaseapp.com",
-            databaseURL: "https://b-square-39b11-default-rtdb.firebaseio.com",
-            projectId: "b-square-39b11",
-            storageBucket: "b-square-39b11.firebasestorage.app",
-            messagingSenderId: "1012056920961",
-            appId: "1:1012056920961:web:8342bfdf123b78f6a38e80"
-        });
-    }
     const db = firebase.database();
-    const supabase = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // 글로벌에 저장 (header.js 등과 호환)
-    if (!window.supabaseClient) window.supabaseClient = supabase;
+    const supabase = window.supabaseClient;
 
     // ---- 세션 및 운영자 확인 ----
     const { data: { session } } = await supabase.auth.getSession();
@@ -483,21 +478,4 @@ function renderLoginPrompt() {
     `;
 }
 
-// ---- 사용자 메뉴 ----
-async function renderUserMenu(supabase, menu, userId) {
-    if (!menu) return;
-    try {
-        const { data: profile } = await supabase.from('users').select('name, profile_image_url').eq('id', userId).maybeSingle();
-        const userName = profile?.name || '사용자';
-        const profileImgUrl = profile?.profile_image_url;
-
-        menu.innerHTML = `
-            <a href="../mi_pesg/mypage.html" class="user-profile-link" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
-                <div class="user-avatar" style="width:36px;height:36px;border-radius:50%;background:var(--comm-card-bg,#222);background-size:cover;${profileImgUrl ? `background-image:url(${profileImgUrl})` : 'display:flex;align-items:center;justify-content:center;'}">
-                    ${!profileImgUrl ? '👤' : ''}
-                </div>
-                <span style="font-weight:600;color:var(--comm-text,#e8e8e8);font-size:0.9rem;">${userName}</span>
-            </a>
-        `;
-    } catch (e) { console.warn(e); }
-}
+// renderUserMenu는 header.js에서 처리 — 중복 제거됨
