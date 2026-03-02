@@ -1,23 +1,22 @@
 // mypage.js - Orchestrator
-const supabaseUrl = 'https://tqyckxgtavviatkfsymb.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxeWNreGd0YXZ2aWF0a2ZzeW1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NTQ1MjYsImV4cCI6MjA4NzEzMDUyNn0.Lc6Q9Q8qavIPI13bFdQEf0Mhmv4XOS41WtEr7CVXCCw';
-const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-// Firebase Configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyDStdCCFWhlgcgDPXeKgSAwfTtbP9mjNyc",
-    authDomain: "b-square-39b11.firebaseapp.com",
-    databaseURL: "https://b-square-39b11-default-rtdb.firebaseio.com",
-    projectId: "b-square-39b11",
-    storageBucket: "b-square-39b11.firebasestorage.app",
-    messagingSenderId: "1012056920961",
-    appId: "1:1012056920961:web:8342bfdf123b78f6a38e80",
-    measurementId: "G-TLQFK7FDY9"
-};
+// header.js가 Supabase/Firebase 초기화 처리
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Firebase Initialize
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    // header.js 초기화 대기
+    const waitForInit = () => new Promise((resolve) => {
+        const check = () => {
+            if (window.supabaseClient && (typeof firebase !== 'undefined' && firebase.apps.length > 0)) {
+                resolve();
+            } else {
+                setTimeout(check, 100);
+            }
+        };
+        check();
+        setTimeout(resolve, 3000);
+    });
+    await waitForInit();
+
+    const supabaseClient = window.supabaseClient;
 
     // 2. Auth Check
     const { data: { session } } = await supabaseClient.auth.getSession();
