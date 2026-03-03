@@ -31,10 +31,54 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
 
     let notices = [];
     let currentOpenNoticeId = null;
+    let hasAdminPrivilege = false;
 
-    // 1. 강사일 경우 작성 버튼 노출 (레이스 컨디션 대응)
-    function applyAdminUI() {
-        if (isInstructor || window.__BSQ_DEV_MODE__) {
+    // Quill JS 초기화
+    let quill;
+    if (document.getElementById('ceEditorContainer')) {
+        quill = new Quill('#ceEditorContainer', {
+            theme: 'snow',
+            placeholder: '내용을 입력하세요...',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['link', 'image', 'video'],
+                    ['clean']
+                ]
+            }
+        });
+    }
+
+    // 1. 강사/관리자일 경우 작성 버튼 노출 (레이스 컨디션 대응)
+    async function applyAdminUI() {
+        hasAdminPrivilege = isInstructor || window.__BSQ_DEV_MODE__ === true;
+
+        if (!hasAdminPrivilege && supabaseClient) {
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session && session.user) {
+                    const { data: profile } = await supabaseClient
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', session.user.id)
+                        .single();
+
+                    const userEmail = session.user.email || '';
+                    const isSuperAdmin = (profile && profile.role === 'admin') || userEmail.startsWith('ej210651392');
+
+                    if (isSuperAdmin) {
+                        hasAdminPrivilege = true;
+                    }
+                }
+            } catch (err) {
+                console.warn("Notice admin check failed", err);
+            }
+        }
+
+        if (hasAdminPrivilege) {
             if (btnCreate) btnCreate.style.display = 'block';
         } else {
             if (btnCreate) btnCreate.style.display = 'none';
@@ -105,12 +149,14 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
             ceModalTitle.textContent = '공지사항 수정';
             ceTargetId.value = noticeData.id;
             ceTitle.value = noticeData.title;
-            ceContent.value = noticeData.content;
+            if (quill) quill.root.innerHTML = noticeData.content || '';
+            else ceContent.value = noticeData.content || '';
         } else {
             ceModalTitle.textContent = '새 공지사항 등록';
             ceTargetId.value = '';
             ceTitle.value = '';
-            ceContent.value = '';
+            if (quill) quill.root.innerHTML = '';
+            else ceContent.value = '';
         }
         editorModal.style.display = 'flex';
     }
@@ -121,7 +167,13 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
     document.getElementById('btnCeSubmit')?.addEventListener('click', async () => {
         const id = ceTargetId.value;
         const title = ceTitle.value.trim();
-        const content = ceContent.value.trim();
+        let content = '';
+        if (quill) {
+            content = quill.root.innerHTML.trim();
+            if (content === '<p><br></p>') content = '';
+        } else {
+            content = ceContent.value.trim();
+        }
 
         if (!title || !content) return alert('제목과 내용을 모두 입력해주세요.');
 
@@ -149,6 +201,9 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
                 payload.author_name = window.__BSQ_DEV_MODE__ ? '운영자' : authorName;
                 payload.created_at = firebase.database.ServerValue.TIMESTAMP;
                 payload.views = 0;
+                // 메인 공지 페이지 연동용 클래스명
+                const heroTitle = document.getElementById('heroTitle');
+                payload.class_name = heroTitle ? heroTitle.textContent : '클래스';
                 await db.ref(`class_notices/${classId}`).push(payload);
             }
 
@@ -183,7 +238,7 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
         cvContent.innerHTML = n.content.replace(/\n/g, '<br>');
 
         // 강사면 수정/삭제 표시
-        if (isInstructor || window.__BSQ_DEV_MODE__) {
+        if (hasAdminPrivilege) {
             cvAdminActions.style.display = 'flex';
         } else {
             cvAdminActions.style.display = 'none';

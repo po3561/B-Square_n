@@ -155,7 +155,7 @@
     function initDatabases() {
         try {
             if (typeof firebase !== 'undefined') {
-                if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+                if (!firebase.apps.length) firebase.initializeApp(fallbackFirebaseConfig);
                 if (!db) db = firebase.database();
             }
         } catch (e) { console.warn('Firebase init:', e); }

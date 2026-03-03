@@ -1,23 +1,78 @@
 // notice_admin.js - 운영자/개발자모드 전용 (작성, 수정, 삭제, 숨김)
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Firebase 초기화 대기
+    const waitForFirebase = () => new Promise((resolve) => {
+        const check = () => {
+            if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+                resolve();
+            } else {
+                setTimeout(check, 100);
+            }
+        };
+        check();
+        setTimeout(resolve, 3000);
+    });
+    await waitForFirebase();
+
     const db = firebase.database();
 
+    // Quill JS 초기화
+    let quill;
+    if (document.getElementById('editorContainer')) {
+        quill = new Quill('#editorContainer', {
+            theme: 'snow',
+            placeholder: '내용을 입력하세요...',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['link', 'image', 'video'],
+                    ['clean']
+                ]
+            }
+        });
+    }
+
     // Admin Check Logic
-    function applyAdminUI() {
-        const isAdmin = window.__BSQ_DEV_MODE__ === true;
+    async function applyAdminUI() {
+        let isAdmin = window.__BSQ_DEV_MODE__ === true;
+
+        if (window.supabaseClient) {
+            try {
+                const { data: { session } } = await window.supabaseClient.auth.getSession();
+                if (session && session.user) {
+                    const { data: profile } = await window.supabaseClient
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', session.user.id)
+                        .single();
+                    const userEmail = session.user.email || '';
+                    if ((profile && profile.role === 'admin') || userEmail.startsWith('ej210651392')) {
+                        isAdmin = true;
+                    }
+                }
+            } catch (err) {
+                console.error("Admin check failed:", err);
+            }
+        }
+
         if (isAdmin) {
-            document.getElementById('btnWriteNotice').style.display = 'inline-block';
-            document.getElementById('btnWriteFaq').style.display = 'inline-block';
+            const btnNotice = document.getElementById('btnWriteNotice');
+            if (btnNotice) btnNotice.style.display = 'inline-block';
+            const btnFaq = document.getElementById('btnWriteFaq');
+            if (btnFaq) btnFaq.style.display = 'inline-block';
         }
         return isAdmin;
     }
 
-    // 초기 로드 시 체크
-    let isAdmin = applyAdminUI();
+    let isAdmin = false;
+    applyAdminUI().then(res => { isAdmin = res; });
 
     // Dev Mode 레이스 컨디션 대응 (이벤트 리스너)
-    window.addEventListener('bsq_dev_mode_activated', () => {
-        isAdmin = applyAdminUI();
+    window.addEventListener('bsq_dev_mode_activated', async () => {
+        isAdmin = await applyAdminUI();
     });
 
     // Modal Elements
@@ -57,13 +112,15 @@ document.addEventListener('DOMContentLoaded', () => {
             editTitle.placeholder = '제목을 입력하세요';
             if (itemData) {
                 editTitle.value = itemData.title;
-                editContent.value = itemData.content;
+                if (quill) quill.root.innerHTML = itemData.content || '';
+                else editContent.value = itemData.content || '';
                 editIsHidden.checked = !!itemData.is_hidden;
                 if (itemData.type === 'important') typeImportant.checked = true;
                 else typeNormal.checked = true;
             } else {
                 editTitle.value = '';
-                editContent.value = '';
+                if (quill) quill.root.innerHTML = '';
+                else editContent.value = '';
                 editIsHidden.checked = false;
                 typeNormal.checked = true;
             }
@@ -74,11 +131,13 @@ document.addEventListener('DOMContentLoaded', () => {
             editTitle.placeholder = '질문을 입력하세요';
             if (itemData) {
                 editTitle.value = itemData.question;
-                editContent.value = itemData.answer;
+                if (quill) quill.root.innerHTML = itemData.answer || '';
+                else editContent.value = itemData.answer || '';
                 editIsHidden.checked = !!itemData.is_hidden;
             } else {
                 editTitle.value = '';
-                editContent.value = '';
+                if (quill) quill.root.innerHTML = '';
+                else editContent.value = '';
                 editIsHidden.checked = false;
             }
         }
@@ -98,7 +157,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const type = editDataType.value;
         const id = editTargetId.value;
         const title = editTitle.value.trim();
-        const content = editContent.value.trim();
+        let content = '';
+        if (quill) {
+            content = quill.root.innerHTML.trim();
+            if (content === '<p><br></p>') content = '';
+        } else {
+            content = editContent.value.trim();
+        }
         const isHidden = editIsHidden.checked;
 
         if (!title || !content) {
@@ -165,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
         onViewerOpen: (noticeData) => {
             currentViewerItem = noticeData;
             const actionDiv = document.getElementById('adminViewerActions');
-            if (window.__BSQ_DEV_MODE__ === true) {
+            if (isAdmin || window.__BSQ_DEV_MODE__ === true) {
                 actionDiv.style.display = 'flex';
                 actionDiv.style.gap = '10px';
             } else {

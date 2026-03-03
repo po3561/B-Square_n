@@ -1696,3 +1696,136 @@
         font-size: 0.9rem;
     }
 }
+
+/* =========================================
+   210px 극소형 모바일 (101클래스 스타일)
+========================================= */
+@media (max-width: 210px) {
+    .comm-sidebar {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+
+    .sidebar-header {
+        padding: 6px 8px;
+        gap: 4px;
+    }
+
+    .sidebar-title {
+        font-size: 0.85rem;
+    }
+
+    .sidebar-tabs {
+        gap: 2px;
+        padding: 2px;
+    }
+
+    .stab {
+        padding: 4px 6px;
+        font-size: 0.65rem;
+    }
+
+    .room-item {
+        padding: 8px 6px;
+        gap: 6px;
+    }
+
+    .room-avatar {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        font-size: 0.7rem;
+    }
+
+    .room-name {
+        font-size: 0.75rem;
+    }
+
+    .room-last-msg {
+        font-size: 0.65rem;
+    }
+
+    .chat-top-header {
+        padding: 4px 6px;
+    }
+
+    .chat-header-avatar {
+        width: 24px;
+        height: 24px;
+    }
+
+    .chat-header-name {
+        font-size: 0.8rem;
+    }
+
+    .btn-header-action {
+        width: 24px;
+        height: 24px;
+        font-size: 0.75rem;
+    }
+
+    .msg-row {
+        gap: 4px;
+        margin-bottom: 4px;
+    }
+
+    .msg-bubble {
+        padding: 5px 8px;
+        font-size: 0.72rem;
+        max-width: 85%;
+        border-radius: 10px;
+    }
+
+    .msg-sender {
+        font-size: 0.6rem;
+    }
+
+    .msg-time {
+        font-size: 0.55rem;
+    }
+
+    .input-main-row {
+        gap: 4px;
+        padding: 4px;
+    }
+
+    .input-main-row textarea {
+        font-size: 0.72rem;
+        padding: 5px 8px;
+        min-height: 28px;
+    }
+
+    .btn-send {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+
+    .btn-input-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 0.75rem;
+    }
+
+    .emoji-picker {
+        width: 150px !important;
+        max-height: 120px !important;
+    }
+
+    .emoji-picker button {
+        font-size: 0.85rem;
+        padding: 2px;
+    }
+
+    .no-chat-icon {
+        font-size: 2rem;
+    }
+
+    .no-chat-inner h3 {
+        font-size: 0.9rem;
+    }
+
+    .no-chat-inner p {
+        font-size: 0.7rem;
+    }
+}

@@ -37,7 +37,7 @@ window.CommunityModules.SyncBridge = (function () {
 
     // ---- Firebase 리스너 관리 ----
     function listenMessages(path, onAdd, onChange, onRemove) {
-        const ref = db.ref(path);
+        const ref = db.ref(path).orderByChild('timestamp').limitToLast(50);
         ref.on('child_added', snap => onAdd(snap.key, snap.val()));
         ref.on('child_changed', snap => onChange(snap.key, snap.val()));
         ref.on('child_removed', snap => onRemove(snap.key, snap.val()));

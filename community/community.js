@@ -29,12 +29,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const userId = isOperator ? 'OPERATOR_GHOST' : session.user.id;
-    const userMenu = document.getElementById('userMenu');
-
+    // header.js에서 유저 메뉴를 이미 처리하므로, 운영자 표시만 추가
     if (isOperator) {
+        const userMenu = document.getElementById('userMenu');
         if (userMenu) userMenu.innerHTML = `<div class="user-profile-btn"><span class="user-avatar">👨‍💻</span><span class="user-name">운영자 님</span></div>`;
-    } else {
-        renderUserMenu(supabase, userMenu, userId);
     }
 
     // ---- 모듈 초기화 ----

@@ -16,6 +16,10 @@
     <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css" media="(min-width: 769px)">
     <link rel="stylesheet" href="notice.css">
 
+    <!-- Quill.js 리치 텍스트 에디터 -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
     <!-- SDKs -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -50,6 +54,8 @@
                     </div>
                 </div>
 
+
+
                 <div class="notice-list-header">
                     <span class="col-type">구분</span>
                     <span class="col-title">제목</span>
@@ -81,6 +87,24 @@
                 </div>
             </div>
         </section>
+
+        <!-- Class Notice Board Layout -->
+        <section class="class-notice-container" style="margin: 2rem auto; max-width: 1300px; padding: 0 2rem;">
+            <div class="panel-header">
+                <h2>클래스별 공지사항</h2>
+            </div>
+            <div class="notice-list-header">
+                <span class="col-type">클래스명</span>
+                <span class="col-title">제목</span>
+                <span class="col-author">작성 강사</span>
+                <span class="col-date">공지일자</span>
+                <span class="col-views">조회수</span>
+            </div>
+            <div id="classNoticeList" class="notice-list">
+                <div class="empty-state">로딩 중...</div>
+            </div>
+            <div class="pagination" id="classNoticePagination"></div>
+        </section>
     </main>
 
     <!-- Modal for Notice/FAQ Editor (Admin Only) -->
@@ -110,8 +134,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="editContent" id="editContentLabel">본문/답변</label>
-                    <textarea id="editContent" placeholder="내용을 입력하세요" rows="10"></textarea>
+                    <label for="editorContainer" id="editContentLabel">본문/답변</label>
+                    <div id="editorContainer" style="height: 300px; background: #fff; color: #000;"></div>
+                    <textarea id="editContent" style="display: none;"></textarea>
+                    <!-- Hidden field for saving/loading -->
                 </div>
 
                 <div class="form-group row-align" id="groupHidden">
@@ -165,14 +191,11 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Scripts: header.js(초기화) → dev_mode → notice → notice_admin 순서 중요 -->
+    <script src="../bsnnnnnnnnnnnnnnnnnn/header.js"></script>
+    <script src="../dev_mode.js"></script>
     <script src="notice.js"></script>
     <script src="notice_admin.js"></script>
-    <script src="../dev_mode.js"></script>
-    <script src="../bsnnnnnnnnnnnnnnnnnn/header.js"></script>
-
-
-    <script src="../community/sync_bridge.js"></script>
 </body>
 
 </html>

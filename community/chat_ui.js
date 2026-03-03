@@ -168,11 +168,15 @@ window.CommunityModules.ChatUI = (function () {
         }
 
         // 아바타/이름 클릭 → 정보 패널 열기
-        avatarEl.style.cursor = 'pointer';
-        avatarEl.onclick = () => renderInfoPanel(roomId, roomType, roomInfo);
+        if (avatarEl) {
+            avatarEl.style.cursor = 'pointer';
+            avatarEl.onclick = () => renderInfoPanel(roomId, roomType, roomInfo);
+        }
         const nameEl = document.getElementById('chatHeaderName');
-        nameEl.style.cursor = 'pointer';
-        nameEl.onclick = () => renderInfoPanel(roomId, roomType, roomInfo);
+        if (nameEl) {
+            nameEl.style.cursor = 'pointer';
+            nameEl.onclick = () => renderInfoPanel(roomId, roomType, roomInfo);
+        }
 
         // 상태
         const statusEl = document.getElementById('chatHeaderStatus');

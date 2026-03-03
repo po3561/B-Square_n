@@ -17,6 +17,47 @@
     max-width: 1300px;
     margin: 0 auto;
     padding-bottom: 5rem;
+    color: #fff;
+}
+
+/* 모든 탭 콘텐츠 / 카드 내 텍스트 명시적 흰색 */
+.view-container h1,
+.view-container h2,
+.view-container h3,
+.view-container h4,
+.view-container p,
+.view-container span,
+.view-container li,
+.view-container td,
+.view-container label,
+.view-container div {
+    color: inherit;
+}
+
+/* Quill HTML 뷰어 (기본값 검정 방지) */
+.html-viewer,
+.html-viewer * {
+    color: #e0e0e0 !important;
+}
+
+.html-viewer h1,
+.html-viewer h2,
+.html-viewer h3 {
+    color: #fff !important;
+}
+
+/* 에디트 패널 텍스트 */
+.edit-panel,
+.edit-panel * {
+    color: #e0e0e0;
+}
+
+.edit-panel input,
+.edit-panel textarea,
+.edit-panel select {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 /* ========================
@@ -46,7 +87,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at 20% 50%, rgba(255, 77, 77, 0.05) 0%, transparent 50%);
+    background: transparent;
     pointer-events: none;
 }
 
@@ -280,6 +321,7 @@
     background: transparent;
     padding: 1rem;
     margin-bottom: 4rem;
+    color: var(--text-primary, #fff);
 }
 
 .section-title {

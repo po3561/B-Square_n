@@ -132,27 +132,49 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (curriculumList.children.length === 0) curriculumList.appendChild(createChapterItem());
         }
 
+        // --- 이미지 압축 유틸리티 (Firebase 10MB 제한 방지) ---
+        function compressImage(file, maxWidth = 800, quality = 0.6) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > maxWidth) {
+                            h = Math.round(h * maxWidth / w);
+                            w = maxWidth;
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
         // --- 다중 이미지 업로드 로직 ---
-        const uploadedImages = []; // Base64 이미지 배열
+        const uploadedImages = []; // 압축된 Base64 이미지 배열
         const imageUploadGrid = document.getElementById('imageUploadGrid');
         const classImageInput = document.getElementById('classImage');
         const btnUploadImage = document.getElementById('btnUploadImage');
 
         btnUploadImage?.addEventListener('click', () => classImageInput.click());
 
-        classImageInput?.addEventListener('change', (e) => {
+        classImageInput?.addEventListener('change', async (e) => {
             const files = Array.from(e.target.files);
 
-            files.forEach(file => {
-                if (uploadedImages.length >= 6) return;
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    uploadedImages.push(event.target.result);
-                    renderImageGrid();
-                };
-                reader.readAsDataURL(file);
-            });
+            for (const file of files) {
+                if (uploadedImages.length >= 6) break;
+                const compressed = await compressImage(file, 800, 0.6);
+                uploadedImages.push(compressed);
+            }
+            renderImageGrid();
             // 입력값 초기화 (같은 파일 다시 올릴 수 있게)
             classImageInput.value = '';
         });
@@ -211,11 +233,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const classData = {
                     creator_id: userId,
+                    creator_email: session.user.email || '',
                     title: document.getElementById('classTitle').value,
                     category: document.getElementById('classCategory').value,
                     keywords: document.getElementById('classKeywords').value.split(',').map(k => k.trim()),
                     summary: document.getElementById('classSummary').value,
-                    description: quillEditor ? quillEditor.root.innerHTML : (document.getElementById('classDescription')?.value || ''),
+                    description: (() => {
+                        let html = quillEditor ? quillEditor.root.innerHTML : (document.getElementById('classDescription')?.value || '');
+                        // Quill 에디터에 삽입된 Base64 이미지 태그 제거 (Firebase 용량 초과 방지)
+                        html = html.replace(/<img[^>]+src="data:image\/[^"]+"[^>]*>/gi, '');
+                        return html;
+                    })(),
                     description_text: quillEditor ? quillEditor.getText() : '',
                     price: parseInt(document.getElementById('classPrice').value) || 0,
                     discount_rate: parseInt(document.getElementById('classDiscount')?.value) || 0,

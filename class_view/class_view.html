@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css" media="(min-width: 769px)">
     <link rel="stylesheet" href="class_view.css">
     <link rel="stylesheet" href="payment_toast.css">
-    <link rel="stylesheet" href="../community/community.css">
+    <!-- Quill.js 리치 텍스트 에디터 -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 
     <!-- 결제 SDK 추가 (PortOne) -->
     <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
@@ -371,8 +373,8 @@
                 <div style="margin-bottom: 1.2rem;">
                     <label
                         style="display:block; font-size:0.9rem; color:var(--comm-text2); margin-bottom:6px;">본문</label>
-                    <textarea id="ceContent" placeholder="내용을 입력하세요" rows="10"
-                        style="width:100%; background:rgba(0,0,0,0.2); border:1px solid var(--border-color); border-radius:8px; padding:10px 12px; color:#fff; resize:vertical;"></textarea>
+                    <div id="ceEditorContainer" style="height: 300px; background: #fff; color: #000;"></div>
+                    <textarea id="ceContent" style="display: none;"></textarea>
                 </div>
             </div>
             <div class="modal-footer"

@@ -59,6 +59,11 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     // 기존 이미지 배열 (base64 또는 URL)
     let editImages = classData.image_urls ? [...classData.image_urls] : (classData.image_url ? [classData.image_url] : []);
 
+    // 서브 강사 초기 데이터
+    const subInstructorHTML = (classData.sub_instructors || []).length === 0
+        ? '<p style="color:var(--text-secondary,#888); font-size:0.85rem;">등록된 서브 강사가 없습니다</p>'
+        : '';
+
     // ========================
     // 3. UI 렌더링
     // ========================
@@ -186,6 +191,20 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                     <button type="button" id="btnAddEditChapter" class="btn-add-chapter">+ 챕터 추가</button>
                 </div>
 
+                <!-- 서브 강사 관리 -->
+                <div class="edit-section">
+                    <h4 class="edit-section-title">👥 서브 강사 관리</h4>
+                    <p class="edit-section-hint">이 클래스를 함께 운영할 서브 강사를 검색하여 추가할 수 있습니다.</p>
+                    <div class="edit-field" style="position: relative;">
+                        <label>강사 검색</label>
+                        <input type="text" id="subInstructorSearch" placeholder="이름으로 검색..." autocomplete="off">
+                        <div id="subInstructorResults" style="position:absolute; top:100%; left:0; right:0; background:var(--bg-card,#1a1a2e); border:1px solid var(--border-color,#333); border-radius:8px; max-height:200px; overflow-y:auto; z-index:50; display:none;"></div>
+                    </div>
+                    <div id="subInstructorList" class="edit-sub-instructor-list" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:1rem;">
+                        ${subInstructorHTML}
+                    </div>
+                </div>
+
                 <!-- 저장 -->
                 <div class="edit-actions">
                     <button type="submit" class="btn-edit-save" id="btnEditSave">
@@ -230,18 +249,34 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
         dropzone.style.display = editImages.length >= 6 ? 'none' : 'block';
     }
 
-    function processFiles(files) {
-        Array.from(files).forEach(file => {
-            if (editImages.length >= 6) return;
-            if (!file.type.startsWith('image/')) return;
-
+    // 이미지 압축 유틸리티
+    function compressEditImage(file, maxWidth = 800, quality = 0.6) {
+        return new Promise((resolve) => {
             const reader = new FileReader();
             reader.onload = (e) => {
-                editImages.push(e.target.result);
-                renderImageGrid();
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         });
+    }
+
+    async function processFiles(files) {
+        for (const file of Array.from(files)) {
+            if (editImages.length >= 6) break;
+            if (!file.type.startsWith('image/')) continue;
+            const compressed = await compressEditImage(file, 800, 0.6);
+            editImages.push(compressed);
+        }
+        renderImageGrid();
     }
 
     // 클릭으로 파일 선택
@@ -371,15 +406,14 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
             await db.ref(`classes/${classId}`).update(updates);
             console.log("✅ Firebase update successful");
 
+            // 서브 강사 정보도 저장
+            await db.ref(`classes/${classId}/sub_instructors`).set(subInstructors);
+
             // 현재 페이지 UI 실시간 반영
             Object.assign(classData, updates);
             if (typeof renderCorePageInfo === 'function') renderCorePageInfo(classData);
             if (window.BSquareModules.initIntro) window.BSquareModules.initIntro(classData);
             if (window.BSquareModules.initCurriculum) window.BSquareModules.initCurriculum(classData);
-
-            // 히어로 이미지 업데이트
-            const mainImg = document.getElementById('mainImg');
-            if (mainImg && updates.image_url) mainImg.src = updates.image_url;
 
             if (typeof showToast === 'function') showToast('success', '수정 완료 ✅', '클래스 정보가 Firebase에 실시간 반영되었습니다.');
         } catch (err) {
@@ -388,6 +422,98 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
         } finally {
             saveBtn.innerHTML = originalHTML;
             saveBtn.disabled = false;
+        }
+    });
+
+    // ========================
+    // 8. 서브 강사 관리
+    // ========================
+    let subInstructors = classData.sub_instructors || [];
+    const subSearchInput = document.getElementById('subInstructorSearch');
+    const subResults = document.getElementById('subInstructorResults');
+    const subList = document.getElementById('subInstructorList');
+
+    function renderSubInstructors() {
+        if (!subList) return;
+        if (subInstructors.length === 0) {
+            subList.innerHTML = '<p style="color:var(--text-secondary,#888); font-size:0.85rem;">등록된 서브 강사가 없습니다</p>';
+            return;
+        }
+        subList.innerHTML = subInstructors.map((si, i) => `
+            <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:8px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.1);">
+                <div style="width:32px; height:32px; border-radius:50%; background:var(--comm-accent,#6c5ce7); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+                    ${si.avatar ? `<img src="${si.avatar}" style="width:100%;height:100%;object-fit:cover;">` : '👤'}
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:600; font-size:0.9rem;">${si.name}</div>
+                    <div style="font-size:0.75rem; color:var(--text-secondary,#888);">${si.email || ''}</div>
+                </div>
+                <button type="button" data-idx="${i}" class="btn-remove-sub" style="background:rgba(255,0,0,0.1); color:#ff4757; border:none; border-radius:6px; padding:4px 8px; cursor:pointer; font-size:0.8rem;">제거</button>
+            </div>
+        `).join('');
+
+        subList.querySelectorAll('.btn-remove-sub').forEach(btn => {
+            btn.addEventListener('click', () => {
+                subInstructors.splice(parseInt(btn.dataset.idx), 1);
+                renderSubInstructors();
+            });
+        });
+    }
+    renderSubInstructors();
+
+    let searchTimeout = null;
+    subSearchInput?.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        const query = subSearchInput.value.trim();
+        if (query.length < 2) { subResults.style.display = 'none'; return; }
+
+        searchTimeout = setTimeout(async () => {
+            try {
+                const { data } = await supabase.from('users')
+                    .select('id, name, email, profile_image_url')
+                    .ilike('name', `%${query}%`)
+                    .limit(10);
+
+                if (!data || data.length === 0) {
+                    subResults.innerHTML = '<div style="padding:12px; color:var(--text-secondary,#888); text-align:center;">검색 결과가 없습니다</div>';
+                } else {
+                    subResults.innerHTML = data
+                        .filter(u => u.id !== userId && !subInstructors.find(s => s.id === u.id))
+                        .map(u => `
+                            <div class="sub-search-item" data-id="${u.id}" data-name="${u.name}" data-email="${u.email || ''}" data-avatar="${u.profile_image_url || ''}"
+                                style="padding:10px 14px; cursor:pointer; display:flex; align-items:center; gap:8px; border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <div style="width:28px; height:28px; border-radius:50%; background:#333; overflow:hidden; flex-shrink:0;">
+                                    ${u.profile_image_url ? `<img src="${u.profile_image_url}" style="width:100%;height:100%;object-fit:cover;">` : '👤'}
+                                </div>
+                                <div><div style="font-weight:600; font-size:0.85rem;">${u.name}</div><div style="font-size:0.75rem; color:#888;">${u.email || ''}</div></div>
+                            </div>
+                        `).join('');
+                }
+                subResults.style.display = 'block';
+
+                subResults.querySelectorAll('.sub-search-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        subInstructors.push({
+                            id: item.dataset.id,
+                            name: item.dataset.name,
+                            email: item.dataset.email,
+                            avatar: item.dataset.avatar
+                        });
+                        renderSubInstructors();
+                        subSearchInput.value = '';
+                        subResults.style.display = 'none';
+                    });
+                });
+            } catch (err) {
+                console.warn('Sub instructor search error:', err);
+            }
+        }, 300);
+    });
+
+    // 검색 결과 외부 클릭 시 닫기
+    document.addEventListener('click', (e) => {
+        if (subResults && !subResults.contains(e.target) && e.target !== subSearchInput) {
+            subResults.style.display = 'none';
         }
     });
 };

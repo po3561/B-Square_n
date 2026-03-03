@@ -238,11 +238,11 @@
         // Firebase 초기화 보장
         if (typeof firebase !== 'undefined' && !firebase.apps.length) {
             firebase.initializeApp({
-                apiKey: "AIzaSyCeIblMNIZqVxWIaYufBmFCxrBNHxNgSho",
-                authDomain: "b-square-e921c.firebaseapp.com",
-                databaseURL: "https://b-square-e921c-default-rtdb.asia-southeast1.firebasedatabase.app",
-                projectId: "b-square-e921c",
-                storageBucket: "b-square-e921c.firebasestorage.app",
+                apiKey: "AIzaSyDStdCCFWhlgcgDPXeKgSAwfTtbP9mjNyc",
+                authDomain: "b-square-39b11.firebaseapp.com",
+                databaseURL: "https://b-square-39b11-default-rtdb.firebaseio.com",
+                projectId: "b-square-39b11",
+                storageBucket: "b-square-39b11.firebasestorage.app",
                 messagingSenderId: "1012056920961",
                 appId: "1:1012056920961:web:8342bfdf123b78f6a38e80"
             });

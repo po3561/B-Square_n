@@ -132,7 +132,7 @@ async function loadPaymentHistory(firebaseApp, userId) {
             };
             const payMethod = payMethodMap[info.pay_method] || info.pay_method || '-';
 
-            const classTitle = info.class_title || classId;
+            const classTitle = info.title || info.class_title || classId;
 
             return `
                 <div class="payment-history-item">

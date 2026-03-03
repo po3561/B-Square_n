@@ -83,13 +83,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
     const db = firebase.database();
 
-    // 2. 세션 및 프로필 확인
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    const userMenu = document.getElementById('userMenu');
+    // 2. 세션 확인 — onAuthStateChange로 안정적으로 대기
+    function waitForSession() {
+        return new Promise((resolve) => {
+            // 먼저 getSession 시도
+            supabaseClient.auth.getSession().then(({ data: { session } }) => {
+                if (session) {
+                    console.log('✅ getSession 성공:', session.user.email);
+                    resolve(session);
+                    return;
+                }
+                // getSession 실패 시 onAuthStateChange 대기
+                console.log('⏳ getSession null — onAuthStateChange 대기...');
+                const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((event, session) => {
+                    if (session) {
+                        console.log('✅ onAuthStateChange 성공:', session.user.email);
+                        subscription.unsubscribe();
+                        resolve(session);
+                    }
+                });
+                // 3초 후 타임아웃
+                setTimeout(() => {
+                    subscription.unsubscribe();
+                    console.warn('⚠️ 세션 대기 타임아웃 — 미로그인으로 진행');
+                    resolve(null);
+                }, 3000);
+            });
+        });
+    }
+
+    const session = await waitForSession();
     const isOperator = window.__BSQ_DEV_MODE__ === true;
 
     if (session || isOperator) {
         userId = isOperator ? 'OPERATOR_GHOST' : session.user.id;
+        console.log('🔑 로그인 확인 — userId:', userId, '| email:', session?.user?.email);
 
         if (isOperator) {
             userProfile = { name: '운영자', profile_image_url: 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png' };
@@ -97,29 +125,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const { data: profile } = await supabaseClient.from('users').select('*').eq('id', userId).maybeSingle();
             userProfile = profile;
         }
-
-        if (userMenu) {
-            // [SYNC] Header UI with main.js
-            const profileImgUrl = userProfile?.profile_image_url;
-            const userName = userProfile?.name || '사용자';
-
-            userMenu.innerHTML = `
-                <a href="../mi_pesg/mypage.html" class="user-profile-btn">
-                    <div class="user-avatar" id="headerAvatar" style="${profileImgUrl ? `background-image: url(${profileImgUrl})` : ''}">${!profileImgUrl ? '👤' : ''}</div>
-                    <span class="user-name">${userName} 님</span>
-                </a>
-                <button type="button" id="btnLogout" style="color:var(--text-secondary); font-size: 0.8rem; margin-left: 5px; background:none; border:none; cursor:pointer;">로그아웃</button>
-            `;
-
-            document.getElementById('btnLogout').onclick = async () => {
-                await supabaseClient.auth.signOut();
-                location.reload();
-            };
-        }
     } else {
-        if (userMenu) {
-            userMenu.innerHTML = `<a href="../login/login.html" class="btn-login-main">로그인</a>`;
-        }
+        console.warn('⚠️ 미로그인 상태');
     }
 
     // 3. 클래스 데이터 로드 및 모듈 초기화
@@ -135,9 +142,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (classData) {
-            // 강사 판별 (클래스 생성자 = 강사)
+            // 강사 판별 (1. creator_id 매치, 2. 서브 강사, 3. creator_email 폴백)
             isInstructor = !!(userId && classData.creator_id && userId === classData.creator_id);
-            console.log("👨‍🏫 강사 판별:", { userId, creator_id: classData.creator_id, isInstructor });
+
+            // 서브 강사 체크
+            if (!isInstructor && userId && Array.isArray(classData.sub_instructors)) {
+                isInstructor = classData.sub_instructors.some(si => si.id === userId);
+            }
+
+            // creator_email 폴백 (기존 클래스 호환)
+            if (!isInstructor && session && session.user && classData.creator_email) {
+                if (session.user.email === classData.creator_email) {
+                    isInstructor = true;
+                    console.log('✅ creator_email 매치로 강사 판별');
+                }
+            }
+
+            console.log("👨‍🏫 강사 판별:", {
+                userId,
+                creator_id: classData.creator_id,
+                creator_email: classData.creator_email,
+                session_email: session?.user?.email,
+                isInstructor,
+                devMode: !!window.__BSQ_DEV_MODE__
+            });
 
             renderCorePageInfo(classData);
 
@@ -167,13 +195,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 updateEnrollmentUI();
 
-                // 강사 전용: '페이지 수정' 탭 표시 + 모듈 초기화
-                if (isInstructor) {
-                    console.log("✅ 강사 모드 활성화 - 수정 탭 표시");
+                // 강사/운영자: '페이지 수정' 탭 표시 + 모듈 초기화
+                if (isInstructor || window.__BSQ_DEV_MODE__) {
+                    console.log("✅ 강사/운영자 모드 활성화 - 수정 탭 표시");
                     const editTabBtn = document.getElementById('tabEditBtn');
                     if (editTabBtn) editTabBtn.style.display = 'inline-block';
                     if (window.BSquareModules.initEdit) window.BSquareModules.initEdit(db, classId, classData, supabaseClient, userId);
                 }
+
+                // Dev Mode 이벤트 리스너 (후발적 활성화 대응)
+                window.addEventListener('bsq_dev_mode_activated', () => {
+                    const editTabBtn = document.getElementById('tabEditBtn');
+                    if (editTabBtn) editTabBtn.style.display = 'inline-block';
+                    if (window.BSquareModules.initEdit && classData) {
+                        window.BSquareModules.initEdit(db, classId, classData, supabaseClient, userId);
+                    }
+                });
             }
         } else {
             alert("클래스 정보를 찾을 수 없습니다.");
@@ -226,7 +263,10 @@ async function handleFreeEnrollment() {
             merchant_uid: `free_${new Date().getTime()}`,
             amount: 0,
             status: 'enrolled',
-            class_title: classData?.title || '',
+            title: classData?.title || '',
+            image_url: classData?.image_url || '',
+            category: classData?.category || '',
+            class_id: classId,
             pay_method: 'free'
         });
 
@@ -288,12 +328,12 @@ async function handlePayment() {
         return;
     }
 
-    IMP.init('imp00052118');
+    IMP.init('imp14397622'); // 포트원 공용 테스트 가맹점 식별코드
 
     const merchantUid = `order_${classId}_${new Date().getTime()}`;
 
     IMP.request_pay({
-        pg: "html5_inicis.INIpayTest",
+        pg: "html5_inicis",
         pay_method: "card",
         merchant_uid: merchantUid,
         name: classData.title,
@@ -317,7 +357,10 @@ async function handlePayment() {
                     pay_method: rsp.pay_method || 'card',
                     card_name: rsp.card_name || '',
                     status: 'paid',
-                    class_title: classData?.title || ''
+                    title: classData?.title || '',
+                    image_url: classData?.image_url || '',
+                    category: classData?.category || '',
+                    class_id: classId
                 });
 
                 isEnrolled = true;
@@ -357,9 +400,34 @@ function renderCorePageInfo(data) {
         document.getElementById('priceInstallment').textContent = `월 ${(Math.floor(price / 5)).toLocaleString()}원 (5개월 할부 시)`;
     }
 
-    const mainImg = document.getElementById('mainImg');
-    if (mainImg && data.image_url) {
-        mainImg.src = data.image_url;
+    // ===== 다중 이미지 슬라이더 =====
+    const images = data.image_urls && data.image_urls.length > 0 ? data.image_urls : (data.image_url ? [data.image_url] : []);
+    const slider = document.getElementById('imageSlider');
+    const counter = document.querySelector('.slider-counter');
+    const prevBtn = document.querySelector('.slider-btn.prev');
+    const nextBtn = document.querySelector('.slider-btn.next');
+
+    if (slider && images.length > 0) {
+        slider.innerHTML = images.map((src, i) => `
+            <div class="slider-item${i === 0 ? ' active' : ''}" style="${i !== 0 ? 'display:none;' : ''}">
+                <img src="${src}" alt="클래스 이미지 ${i + 1}" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+        `).join('');
+
+        let currentSlide = 0;
+        const totalSlides = images.length;
+        if (counter) counter.textContent = `1 / ${totalSlides}`;
+
+        function goToSlide(idx) {
+            const items = slider.querySelectorAll('.slider-item');
+            items.forEach(item => item.style.display = 'none');
+            items[idx].style.display = 'block';
+            currentSlide = idx;
+            if (counter) counter.textContent = `${idx + 1} / ${totalSlides}`;
+        }
+
+        if (prevBtn) prevBtn.addEventListener('click', () => goToSlide((currentSlide - 1 + totalSlides) % totalSlides));
+        if (nextBtn) nextBtn.addEventListener('click', () => goToSlide((currentSlide + 1) % totalSlides));
     }
 }
 
