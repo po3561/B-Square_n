@@ -108,6 +108,18 @@ async function loadParticipants(db, classId, supabase) {
             }
             pList.innerHTML = html || '<span style="color:var(--comm-text2); font-size:0.85rem;">아직 참여자가 없습니다</span>';
             if (countEl) countEl.textContent = `${count}명 참여`;
+
+            // 탭 버튼에 참여자 수 뱃지 표시
+            const chatTabBtn = document.querySelector('[data-target="tabChat"]');
+            if (chatTabBtn && count > 0) {
+                let badge = chatTabBtn.querySelector('.tab-participant-badge');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'tab-participant-badge';
+                    chatTabBtn.appendChild(badge);
+                }
+                badge.textContent = count;
+            }
         });
     } catch (err) {
         console.error("Chat Participants Error:", err);

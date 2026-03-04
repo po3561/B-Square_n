@@ -157,6 +157,14 @@
             if (typeof firebase !== 'undefined') {
                 if (!firebase.apps.length) firebase.initializeApp(fallbackFirebaseConfig);
                 if (!db) db = firebase.database();
+                // 익명 로그인으로 Firebase 규칙(auth != null) 우회 권한 획득
+                if (typeof firebase.auth === 'function') {
+                    firebase.auth().onAuthStateChanged(user => {
+                        if (!user) {
+                            firebase.auth().signInAnonymously().catch(e => console.warn('Firebase Anon auth error:', e));
+                        }
+                    });
+                }
             }
         } catch (e) { console.warn('Firebase init:', e); }
 

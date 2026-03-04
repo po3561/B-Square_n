@@ -70,7 +70,35 @@
                 <!-- TAB: Intro -->
                 <div id="tabIntro" class="tab-content active">
                     <section class="content-card">
-                        <div class="html-viewer" id="descriptionViewer"></div>
+                        <!-- 요약 -->
+                        <div class="intro-section">
+                            <p id="viewSummary"
+                                style="font-size: 1.15rem; color: var(--text-secondary, #aaa); line-height: 1.7; margin-bottom: 0;">
+                            </p>
+                        </div>
+
+                        <!-- 상세 설명 (Rich HTML) -->
+                        <div class="intro-divider"></div>
+                        <div class="intro-section">
+                            <h3 class="section-title">📝 클래스 소개</h3>
+                            <div class="html-viewer" id="descriptionViewer"></div>
+                            <div id="viewDescription"
+                                style="line-height: 1.8; color: var(--text-secondary, #ccc); font-size: 1rem;"></div>
+                        </div>
+
+                        <!-- 대상 수강생 -->
+                        <div class="intro-divider"></div>
+                        <div class="intro-section">
+                            <h3 class="section-title">🎯 이런 분들을 위한 클래스입니다</h3>
+                            <ul class="target-list" id="targetList"></ul>
+                        </div>
+
+                        <!-- 학습 목표 -->
+                        <div class="intro-divider"></div>
+                        <div class="intro-section">
+                            <h3 class="section-title">🎓 이 클래스에서 배우는 것</h3>
+                            <div class="objective-grid" id="objectiveGrid"></div>
+                        </div>
                     </section>
                 </div>
 
@@ -141,12 +169,10 @@
                 </div>
 
                 <!-- TAB: Chat (Class Channel) -->
-                <div id="tabChat" class="tab-content"
-                    style="border: 1px solid var(--comm-border); border-radius: 12px; overflow: hidden; height: 600px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-                    <div style="display: flex; flex-direction: column; height: 100%; width: 100%;">
+                <div id="tabChat" class="tab-content chat-tab-wrapper">
+                    <div class="chat-tab-inner">
                         <!-- 채팅 잠금 UI (미수강자) -->
-                        <div class="chat-locked-overlay" id="chatLockedOverlay"
-                            style="flex: 1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                        <div class="chat-locked-overlay" id="chatLockedOverlay">
                             <div class="chat-locked-card">
                                 <span class="lock-emoji">🔒</span>
                                 <h3>클래스 전용 채널</h3>
@@ -155,10 +181,8 @@
                         </div>
                         <!-- 채팅 해제 UI (수강자/강사) -->
                         <div class="chat-unlocked" id="chatUnlocked" style="display:none; flex: 1; position: relative;">
-                            <section class="comm-main" id="commMain"
-                                style="height: 100%; display: flex; flex-direction: column;">
-                                <div class="chat-active-area" id="chatActiveArea"
-                                    style="height: 100%; display: flex; flex-direction: column;">
+                            <section class="comm-main" id="commMain">
+                                <div class="chat-active-area" id="chatActiveArea">
                                     <div class="chat-top-header" id="chatTopHeader">
                                         <div class="chat-header-info">
                                             <span class="chat-header-name" id="chatHeaderName">클래스 채널</span>
@@ -183,8 +207,7 @@
                                         <button id="msgSearchClose" class="btn-search-close">✕</button>
                                     </div>
 
-                                    <div class="chat-messages-container" id="chatMessagesContainer"
-                                        style="flex: 1; overflow-y: auto;"></div>
+                                    <div class="chat-messages-container" id="chatMessagesContainer"></div>
 
                                     <!-- 답장 미리보기 -->
                                     <div class="reply-preview" id="replyPreview" style="display:none;">
@@ -204,14 +227,11 @@
                                     </div>
 
                                     <!-- 입력 UI -->
-                                    <div class="chat-input-area"
-                                        style="padding: 12px; background: var(--comm-card-bg); border-top: 1px solid var(--comm-border);">
-                                        <div class="input-main-row"
-                                            style="display: flex; gap: 8px; align-items: flex-end;">
+                                    <div class="chat-input-area">
+                                        <div class="input-main-row">
                                             <button class="btn-input-icon" id="btnAttach" title="파일 첨부">📎</button>
                                             <input type="file" id="fileInput" multiple hidden>
-                                            <textarea id="msgInput" placeholder="메시지 작성..." rows="1"
-                                                style="flex: 1; resize: none; overflow-y: hidden;"></textarea>
+                                            <textarea id="msgInput" placeholder="메시지 작성..." rows="1"></textarea>
                                             <button class="btn-input-icon" id="btnEmoji" title="이모지">😊</button>
                                             <button class="btn-send" id="btnSend">
                                                 <span>➤</span>
@@ -222,17 +242,14 @@
                             </section>
 
                             <!-- 정보 패널 (참여자 목록 등) -->
-                            <aside class="comm-info-panel" id="commInfoPanel"
-                                style="display:none; position: absolute; right: 0; top: 0; height: 100%; border-left: 1px solid var(--comm-border); background: var(--comm-sidebar-bg); z-index: 10;">
+                            <aside class="comm-info-panel" id="commInfoPanel" style="display:none;">
                                 <div class="info-panel-header">
                                     <h3>클래스 정보</h3>
                                     <button class="btn-close-panel" id="btnClosePanel">✕</button>
                                 </div>
-                                <div class="info-panel-body" id="infoPanelBody" style="padding: 16px;">
+                                <div class="info-panel-body" id="infoPanelBody">
                                     <div id="participantsList" class="chat-participants-row"></div>
-                                    <div id="chatMemberCount"
-                                        style="margin-top:10px; font-size: 0.85rem; color: var(--comm-text2);">0명 참여
-                                    </div>
+                                    <div id="chatMemberCount" class="chat-member-count-label">0명 참여</div>
                                 </div>
                             </aside>
                         </div>
@@ -354,34 +371,29 @@
 
     <!-- Notice Editor Modal (강사용) -->
     <div id="classNoticeEditorModal" class="modal-overlay" style="display:none;">
-        <div class="modal-content large"
-            style="background: var(--bg-deep); border: 1px solid var(--border-color); border-radius: 20px;">
-            <div class="modal-header"
-                style="padding:1.5rem; border-bottom: 1px solid var(--border-color); display:flex; justify-content:space-between;">
-                <h3 id="ceModalTitle" style="font-size: 1.2rem; font-weight: 700;">새 공지사항 등록</h3>
-                <button class="btn-close" id="btnCeClose"
-                    style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">✕</button>
-            </div>
-            <div class="modal-body" style="padding: 1.5rem;">
-                <input type="hidden" id="ceTargetId">
-                <div style="margin-bottom: 1.2rem;">
-                    <label
-                        style="display:block; font-size:0.9rem; color:var(--comm-text2); margin-bottom:6px;">제목</label>
-                    <input type="text" id="ceTitle" placeholder="제목을 입력하세요"
-                        style="width:100%; background:rgba(0,0,0,0.2); border:1px solid var(--border-color); border-radius:8px; padding:10px 12px; color:#fff;">
+        <div class="notice-editor-modal">
+            <div class="notice-editor-header">
+                <div class="notice-editor-title-row">
+                    <span class="notice-editor-badge">📢 공지사항</span>
+                    <h3 id="ceModalTitle">새 공지사항 등록</h3>
                 </div>
-                <div style="margin-bottom: 1.2rem;">
-                    <label
-                        style="display:block; font-size:0.9rem; color:var(--comm-text2); margin-bottom:6px;">본문</label>
-                    <div id="ceEditorContainer" style="height: 300px; background: #fff; color: #000;"></div>
+                <button class="notice-editor-close" id="btnCeClose">✕</button>
+            </div>
+            <div class="notice-editor-body">
+                <input type="hidden" id="ceTargetId">
+                <div class="notice-editor-field">
+                    <label>제목</label>
+                    <input type="text" id="ceTitle" placeholder="공지사항 제목을 입력하세요">
+                </div>
+                <div class="notice-editor-field">
+                    <label>본문</label>
+                    <div id="ceEditorContainer" class="notice-editor-quill"></div>
                     <textarea id="ceContent" style="display: none;"></textarea>
                 </div>
             </div>
-            <div class="modal-footer"
-                style="padding: 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
-                <button id="btnCeCancel"
-                    style="background: rgba(255,255,255,0.1); color: #fff; border:none; padding: 10px 24px; border-radius:8px; font-weight:600; cursor:pointer;">취소</button>
-                <button id="btnCeSubmit" class="btn-submit" style="padding: 10px 24px;">저장</button>
+            <div class="notice-editor-footer">
+                <button id="btnCeCancel" class="notice-editor-btn-cancel">취소</button>
+                <button id="btnCeSubmit" class="notice-editor-btn-save">💾 저장</button>
             </div>
         </div>
     </div>

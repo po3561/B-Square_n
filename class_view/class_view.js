@@ -83,6 +83,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
     const db = firebase.database();
 
+    // Firebase DB 쓰기 권한(auth != null)을 위한 익명 로그인 추가
+    if (typeof firebase.auth === 'function') {
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user) {
+                firebase.auth().signInAnonymously().catch(err => console.warn("Anon Auth Error:", err));
+            }
+        });
+    }
+
     // 2. 세션 확인 — onAuthStateChange로 안정적으로 대기
     function waitForSession() {
         return new Promise((resolve) => {
@@ -398,6 +407,12 @@ function renderCorePageInfo(data) {
     } else {
         document.getElementById('viewPrice').textContent = price.toLocaleString() + '원';
         document.getElementById('priceInstallment').textContent = `월 ${(Math.floor(price / 5)).toLocaleString()}원 (5개월 할부 시)`;
+    }
+
+    // ===== 소개 탭: description HTML 렌더링 =====
+    const descViewer = document.getElementById('descriptionViewer');
+    if (descViewer && data.description) {
+        descViewer.innerHTML = data.description.replace(/\n/g, '<br>');
     }
 
     // ===== 다중 이미지 슬라이더 =====

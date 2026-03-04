@@ -184,8 +184,8 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
         try {
             let authorName = '강사';
             if (userId) {
-                const { data: profile } = await supabaseClient.from('users').select('name').eq('id', userId).single();
-                if (profile) authorName = profile.name;
+                const { data: profile } = await supabaseClient.from('users').select('name').eq('id', userId).maybeSingle();
+                if (profile && profile.name) authorName = profile.name;
             }
 
             const payload = {
@@ -334,7 +334,7 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
             activeUserName = '운영자';
         } else {
             if (!activeUserId) return alert('로그인이 필요합니다.');
-            const { data: profile } = await supabaseClient.from('users').select('name').eq('id', activeUserId).single();
+            const { data: profile } = await supabaseClient.from('users').select('name').eq('id', activeUserId).maybeSingle();
             if (profile) activeUserName = profile.name;
         }
 

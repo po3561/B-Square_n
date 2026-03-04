@@ -465,14 +465,18 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     subSearchInput?.addEventListener('input', () => {
         clearTimeout(searchTimeout);
         const query = subSearchInput.value.trim();
-        if (query.length < 2) { subResults.style.display = 'none'; return; }
+        if (query.length < 1) { subResults.style.display = 'none'; return; }
 
         searchTimeout = setTimeout(async () => {
             try {
-                const { data } = await supabase.from('users')
+                const { data, error } = await supabase.from('users')
                     .select('id, name, email, profile_image_url')
                     .ilike('name', `%${query}%`)
                     .limit(10);
+
+                if (error) {
+                    console.error("Sub-instructor search error:", error);
+                }
 
                 if (!data || data.length === 0) {
                     subResults.innerHTML = '<div style="padding:12px; color:var(--text-secondary,#888); text-align:center;">검색 결과가 없습니다</div>';
