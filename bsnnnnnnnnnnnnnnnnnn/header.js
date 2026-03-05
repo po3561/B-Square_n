@@ -36,6 +36,7 @@
         if (p.includes('class_list') || (p.includes('/class/') && !p.includes('class_view'))) return 'class';
         if (p.includes('create_class')) return 'create';
         if (p.includes('notice')) return 'notice';
+        if (p.includes('contact')) return 'contact';
         if (p.includes('community')) return 'community';
         if (p.includes('class_view')) return 'classview';
         if (p.includes('mypage') || p.includes('mi_pesg')) return 'mypage';
@@ -64,7 +65,7 @@
                     ${nav('class', '클래스')}
                     ${nav('create', '등록')}
                     ${nav('notice', '공지사항')}
-                    <li><a href="#">문의</a></li>
+                    ${nav('contact', '문의')}
                     ${nav('community', '커뮤니티')}
                 </ul>
             </nav>
@@ -86,6 +87,7 @@
             case 'class': return 'class/class_list.html';
             case 'create': return 'create_class/create_class.html';
             case 'notice': return 'notice/notice.html';
+            case 'contact': return 'contact/contact.html';
             case 'community': return 'community/community.html';
             case 'mypage': return 'mi_pesg/mypage.html';
             default: return 'bsnnnnnnnnnnnnnnnnnn/index.html';
@@ -106,6 +108,7 @@
             <a href="${prefix}class/class_list.html" class="drawer-nav-item${activeNav === 'class' ? ' active' : ''}">📚 클래스</a>
             <a href="${prefix}create_class/create_class.html" class="drawer-nav-item${activeNav === 'create' ? ' active' : ''}">✏️ 등록</a>
             <a href="${prefix}notice/notice.html" class="drawer-nav-item${activeNav === 'notice' ? ' active' : ''}">📢 공지사항</a>
+            <a href="${prefix}contact/contact.html" class="drawer-nav-item${activeNav === 'contact' ? ' active' : ''}">📞 문의</a>
             <a href="${prefix}community/community.html" class="drawer-nav-item${activeNav === 'community' ? ' active' : ''}">👥 커뮤니티</a>
             <a href="${prefix}mi_pesg/mypage.html" class="drawer-nav-item${activeNav === 'mypage' ? ' active' : ''}">👤 마이페이지</a>
         </nav>
@@ -251,6 +254,12 @@
             window.firebaseDB = firebase.database();
         }
 
+        // ★ 개발자 모드: 가상 운영자 계정으로 즉시 로그인 표시
+        if (window.__BSQ_DEV_MODE__) {
+            renderOperatorMenu();
+            return;
+        }
+
         // 세션 확인
         let currentUser = null;
         let currentSession = null;
@@ -270,6 +279,33 @@
         }
 
         // 유저 메뉴 렌더링
+        renderUserMenu(currentSession, currentUser);
+
+        // ★ 개발자 모드 후발 활성화 대응
+        window.addEventListener('bsq_dev_mode_activated', () => {
+            renderOperatorMenu();
+        });
+    }
+
+    // 운영자 메뉴 렌더링
+    function renderOperatorMenu() {
+        const op = window.__BSQ_OPERATOR_PROFILE__ || {
+            name: '운영자',
+            profile_image_url: 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png'
+        };
+        document.querySelectorAll('#userMenu').forEach(menuEl => {
+            menuEl.innerHTML = `
+                <a href="${prefix}mi_pesg/mypage.html" class="user-profile-btn" style="text-decoration:none;">
+                    <div class="user-avatar" style="background-image:url(${op.profile_image_url});">
+                    </div>
+                    <span class="user-name" style="color:#6e8efb;font-weight:700;">🛡️ ${op.name}</span>
+                </a>
+            `;
+        });
+    }
+
+    // 일반 유저 메뉴 렌더링
+    function renderUserMenu(currentSession, currentUser) {
         document.querySelectorAll('#userMenu').forEach(menuEl => {
             if (currentSession && currentUser) {
                 menuEl.innerHTML = `

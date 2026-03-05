@@ -1,20 +1,21 @@
 // notice_admin.js - 운영자/개발자모드 전용 (작성, 수정, 삭제, 숨김)
 document.addEventListener('DOMContentLoaded', async () => {
-    // Firebase 초기화 대기
-    const waitForFirebase = () => new Promise((resolve) => {
-        const check = () => {
-            if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-                resolve();
-            } else {
-                setTimeout(check, 100);
-            }
-        };
-        check();
-        setTimeout(resolve, 3000);
-    });
-    await waitForFirebase();
+    // bsq_server.js 초기화 대기 (Firebase 익명 인증 완료 보장)
+    if (window.BSQ) {
+        await window.BSQ.ready;
+    } else {
+        // 폴백: Firebase 직접 대기
+        await new Promise((resolve) => {
+            const check = () => {
+                if (typeof firebase !== 'undefined' && firebase.apps.length > 0) resolve();
+                else setTimeout(check, 100);
+            };
+            check();
+            setTimeout(resolve, 3000);
+        });
+    }
 
-    const db = firebase.database();
+    const db = window.BSQ?.db || firebase.database();
 
     // Quill JS 초기화
     let quill;
@@ -39,17 +40,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function applyAdminUI() {
         let isAdmin = window.__BSQ_DEV_MODE__ === true;
 
-        if (window.supabaseClient) {
+        // ★ 개발자 모드 운영자는 무조건 관리자
+        if (window.__BSQ_OPERATOR_PROFILE__?.is_operator) {
+            isAdmin = true;
+        }
+
+        if (!isAdmin && window.supabaseClient) {
             try {
                 const { data: { session } } = await window.supabaseClient.auth.getSession();
                 if (session && session.user) {
                     const { data: profile } = await window.supabaseClient
-                        .from('profiles')
-                        .select('role')
+                        .from('users')
+                        .select('role, user_type')
                         .eq('id', session.user.id)
-                        .single();
+                        .maybeSingle();
                     const userEmail = session.user.email || '';
-                    if ((profile && profile.role === 'admin') || userEmail.startsWith('ej210651392')) {
+                    if ((profile && (profile.role === 'admin' || profile.user_type === 'admin')) || userEmail.startsWith('ej210651392')) {
                         isAdmin = true;
                     }
                 }

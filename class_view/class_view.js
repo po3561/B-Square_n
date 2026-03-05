@@ -167,6 +167,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
+            // ★ 총괄 개발자: 모든 클래스에서 강사 + 수강생 권한 강제 부여
+            if (window.__BSQ_DEV_MODE__) {
+                isInstructor = true;
+                isEnrolled = true;
+                console.log('🛡️ 개발자 모드: 강사/수강 권한 강제 부여');
+            }
+
             console.log("👨‍🏫 강사 판별:", {
                 userId,
                 creator_id: classData.creator_id,
@@ -184,7 +191,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (window.BSquareModules.initCurriculum) window.BSquareModules.initCurriculum(classData);
 
                 // 수강 신청 여부 확인 (userId가 있을 때만)
-                if (userId) {
+                if (userId && !window.__BSQ_DEV_MODE__) {
                     try {
                         const enrollSnap = await db.ref(`enrollments/${userId}/${classId}`).once('value');
                         isEnrolled = enrollSnap.exists();

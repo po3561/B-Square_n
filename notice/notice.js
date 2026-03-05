@@ -25,11 +25,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const { data: authData } = await supabase.auth.getSession();
         if (authData?.session) {
-            const { data: profile } = await supabase.from('users').select('*').eq('id', authData.session.user.id).single();
+            const { data: profile } = await supabase.from('users').select('*').eq('id', authData.session.user.id).maybeSingle();
             currentUser = profile;
         }
     } catch (e) {
         console.warn("Auth check failed:", e);
+    }
+
+    // ★ 개발자 모드: 가상 운영자 계정으로 상호작용 가능
+    if (!currentUser && window.__BSQ_DEV_MODE__) {
+        currentUser = window.__BSQ_OPERATOR_PROFILE__ || {
+            id: 'OPERATOR_GHOST',
+            name: '운영자',
+            email: 'operator@b-square.kr'
+        };
     }
 
     // 전역 State

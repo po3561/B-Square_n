@@ -1,0 +1,76 @@
+{
+    "rules": {
+        "classes": {
+            ".read": true,
+            ".write": "auth != null"
+        },
+        "class_notices": {
+            ".read": true,
+            "$classId": {
+                ".write": "auth != null"
+            }
+        },
+        "notices": {
+            ".read": true,
+            ".write": "auth != null"
+        },
+        "faqs": {
+            ".read": true,
+            ".write": "auth != null"
+        },
+        "notice_likes": {
+            ".read": true,
+            ".write": "auth != null"
+        },
+        "notice_comments": {
+            ".read": true,
+            ".write": "auth != null"
+        },
+        "chats": {
+            ".read": true,
+            "$chatId": {
+                ".write": "auth != null"
+            }
+        },
+        "group_chats": {
+            ".read": true,
+            "$groupId": {
+                ".write": "auth != null"
+            }
+        },
+        "dm_rooms": {
+            ".read": "auth != null",
+            "$roomId": {
+                ".write": "auth != null"
+            }
+        },
+        "user_chats": {
+            "$userId": {
+                ".read": "auth != null",
+                ".write": "auth != null"
+            }
+        },
+        "enrollments": {
+            ".read": true,
+            "$userId": {
+                ".write": "auth != null"
+            }
+        },
+        "contacts": {
+            "$userId": {
+                ".read": "auth != null",
+                ".write": "auth != null"
+            }
+        },
+        "user_presence": {
+            ".read": true,
+            "$userId": {
+                ".write": "auth != null"
+            }
+        },
+        "inquiries": {
+            ".read": "auth != null",
+            ".write": "auth != null"
+        }
+    }
+}

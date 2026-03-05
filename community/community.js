@@ -20,9 +20,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const supabase = window.supabaseClient;
 
     // ---- 세션 및 운영자 확인 ----
-    const { data: { session } } = await supabase.auth.getSession();
     const isOperator = window.__BSQ_DEV_MODE__ === true;
+    let session = null;
 
+    try {
+        if (supabase && supabase.auth) {
+            const { data } = await supabase.auth.getSession();
+            session = data?.session || null;
+        }
+    } catch (e) {
+        console.warn('Session check error:', e);
+    }
+
+    // ★ 운영자 모드면 로그인 없이 진입 가능
     if ((!session || !session.user) && !isOperator) {
         renderLoginPrompt();
         return;
@@ -32,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // header.js에서 유저 메뉴를 이미 처리하므로, 운영자 표시만 추가
     if (isOperator) {
         const userMenu = document.getElementById('userMenu');
-        if (userMenu) userMenu.innerHTML = `<div class="user-profile-btn"><span class="user-avatar">👨‍💻</span><span class="user-name">운영자 님</span></div>`;
+        if (userMenu) userMenu.innerHTML = `<div class="user-profile-btn"><span class="user-avatar">🛡️</span><span class="user-name">운영자 님</span></div>`;
     }
 
     // ---- 모듈 초기화 ----

@@ -21,16 +21,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     const supabase = window.supabaseClient;
     const isFirebaseReady = typeof firebase !== 'undefined' && firebase.apps.length > 0;
 
-    // 3. 로그인 세션 확인
+    // 3. 로그인 세션 확인 (운영자 모드 우회 지원)
     try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
+        let session = null;
+        let userId = null;
+        const isOperator = window.__BSQ_DEV_MODE__ === true;
+
+        // Supabase 세션 확인 (에러 시 무시)
+        try {
+            if (supabase && supabase.auth) {
+                const { data } = await supabase.auth.getSession();
+                session = data?.session || null;
+            }
+        } catch (e) {
+            console.warn('Session check error:', e);
+        }
+
+        if (!session && !isOperator) {
             alert("클래스 개설을 위해 로그인이 필요합니다.");
             window.location.href = '../login/login.html';
             return;
         }
 
-        const userId = session.user.id;
+        // ★ 운영자 모드: 가상 계정으로 클래스 등록
+        if (isOperator) {
+            userId = 'OPERATOR_GHOST';
+            if (!session) {
+                session = { user: { id: 'OPERATOR_GHOST', email: 'operator@b-square.kr' } };
+            }
+            console.log('🛡️ 운영자 모드: 클래스 등록 가능');
+        } else {
+            userId = session.user.id;
+        }
 
         // Quill.js 리치 텍스트 에디터 초기화
         let quillEditor = null;

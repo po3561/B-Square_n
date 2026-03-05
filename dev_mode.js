@@ -182,10 +182,21 @@
         window.__BSQ_DEV_DB__ = db;
         window.__BSQ_DEV_SUPABASE__ = supabaseClient;
 
-        // 강사 권한 강제 부여 (class_view용)
-        if (typeof window.isInstructor !== 'undefined') {
-            window.isInstructor = true;
-        }
+        // ★ 총괄 개발자: 가상 운영자 계정 프로필 전역 설정
+        window.__BSQ_OPERATOR_PROFILE__ = {
+            id: 'OPERATOR_GHOST',
+            name: '운영자',
+            email: 'operator@b-square.kr',
+            profile_image_url: 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png',
+            user_type: 'admin',
+            is_operator: true
+        };
+
+        // ★ 강사 권한 강제 부여 (모든 클래스에서 강사로 동작)
+        window.isInstructor = true;
+
+        // ★ 수강 상태 강제 활성화
+        window.isEnrolled = true;
 
         // 숨겨진 편집 UI 표시
         document.querySelectorAll('[data-dev-only], .dev-only').forEach(el => {
@@ -196,6 +207,35 @@
         document.querySelectorAll('[disabled]').forEach(el => {
             el.removeAttribute('disabled');
         });
+
+        // 편집 탭 강제 표시
+        const editTabBtn = document.getElementById('tabEditBtn');
+        if (editTabBtn) editTabBtn.style.display = 'inline-block';
+
+        // ★ 헤더에 운영자 로그인 상태 반영
+        applyOperatorToHeader();
+
+        // ★ 다른 스크립트에 개발자 모드 활성화 알림
+        window.dispatchEvent(new CustomEvent('bsq_dev_mode_activated', {
+            detail: { profile: window.__BSQ_OPERATOR_PROFILE__ }
+        }));
+    }
+
+    // 헤더에 운영자 프로필 적용
+    function applyOperatorToHeader() {
+        // 로그인 버튼 숨기고 프로필 표시
+        const loginBtn = document.querySelector('.btn-login, .header-login-btn, [href*="login"]');
+        if (loginBtn) loginBtn.style.display = 'none';
+
+        // 프로필 영역이 있으면 운영자 정보로 교체
+        const profileArea = document.querySelector('.header-profile, .user-profile-area, .header-user');
+        if (profileArea) {
+            profileArea.style.display = 'flex';
+            const nameEl = profileArea.querySelector('.user-name, .profile-name');
+            if (nameEl) nameEl.textContent = '운영자';
+            const avatarEl = profileArea.querySelector('.user-avatar img, .profile-avatar img');
+            if (avatarEl) avatarEl.src = 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png';
+        }
     }
 
     // ---- 개발자 패널 UI ----
@@ -527,9 +567,13 @@
         listAllUsers: async function () {
             const output = document.getElementById('devToolOutput');
             try {
-                const { data } = await supabaseClient.from('users').select('id, name, email, user_type');
-                output.textContent = `👥 사용자 ${data.length}명:\n\n` + data.map(u => `${u.name} (${u.email}) - ${u.user_type || 'user'}`).join('\n');
-            } catch (e) { output.textContent = '❌ ' + e.message; }
+                const sb = window.supabaseClient || window.BSQ?.supabase;
+                if (!sb) { output.textContent = '❌ Supabase 연결 안 됨'; return; }
+                const { data, error } = await sb.from('users').select('id, name, email, user_type');
+                if (error) throw error;
+                const list = data || [];
+                output.textContent = `👥 사용자 ${list.length}명:\n\n` + list.map(u => `${u.name || '-'} (${u.email || '-'}) - ${u.user_type || 'user'}`).join('\n');
+            } catch (e) { output.textContent = '❌ ' + (e.message || e); }
         },
 
         clearChatHistory: async function () {
