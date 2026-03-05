@@ -167,6 +167,15 @@
 
     // ---- DOM 삽입 ----
     function injectUI() {
+        // 210px 모바일 글로벌 최적화 CSS 동적 삽입
+        if (!document.getElementById('bsqMobileOptimizeCSS')) {
+            const linkCSS = document.createElement('link');
+            linkCSS.id = 'bsqMobileOptimizeCSS';
+            linkCSS.rel = 'stylesheet';
+            linkCSS.href = prefix + 'mobile_210px_optimize.css';
+            document.head.appendChild(linkCSS);
+        }
+
         // 기존 헤더 제거
         const oldHeader = document.querySelector('header.site-header');
         if (oldHeader) oldHeader.remove();
