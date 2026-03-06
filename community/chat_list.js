@@ -366,7 +366,9 @@ window.CommunityModules.ChatList = (function () {
         }
         container.style.display = 'flex';
         container.innerHTML = folders.map(f =>
-            `<button class="folder-tab${currentFolder === f ? ' active' : ''}" data-folder="${f}">${f}</button>`
+            `<button class="folder-tab${currentFolder === f ? ' active' : ''}" data-folder="${f}" title="${f}">
+                <span class="icon">📁</span>
+            </button>`
         ).join('');
 
         container.querySelectorAll('.folder-tab').forEach(btn => {

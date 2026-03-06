@@ -128,10 +128,10 @@ window.initProfileTab = function (supabase, userId, userEmail) {
                         profile_image_url: updates.profile_image_url
                     };
                     const { error: fallbackError } = await supabase.from('users').upsert(fallbackData);
-                    if (fallbackError) throw fallbackError;
+                    if (fallbackError) throw new Error(fallbackError.message);
                     alert("일부 항목(카테고리, SNS 등)은 시스템 업데이트 후 저장 가능합니다. 기본 정보는 성공적으로 저장되었습니다.");
                 } else {
-                    throw error;
+                    throw new Error(error.message);
                 }
             } else {
                 alert("프로필 정보가 안전하게 저장되었습니다.");

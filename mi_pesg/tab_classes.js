@@ -73,8 +73,8 @@ window.initClassesTab = function (firebase, userId) {
                             <h4>${enroll.title}</h4>
                             <p>${enroll.category} | 진도율: ${enroll.progress || 0}%</p>
                             <div style="display:flex; gap:10px;">
-                                <button class="btn-chat-link" onclick="location.href='../class_view/class_view.html?id=${enroll.class_id}'">▶️ 학습 페이지로 이동</button>
-                                <button class="btn-chat-link" style="background:rgba(255,255,255,0.05);">💬 채팅방 입장</button>
+                                <button class="btn-chat-link" onclick="location.href='../class_view/class_view.html?id=${classId}'">▶️ 학습 페이지로 이동</button>
+                                <button class="btn-chat-link" style="background:rgba(255,255,255,0.05);" onclick="location.href='../community/community.html'">💬 채팅방 입장</button>
                             </div>
                         </div>
                     </div>

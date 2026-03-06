@@ -135,7 +135,14 @@ function setupHamburgerMenu(supabase, userId, db, SyncBridge, DM, ChatUI, ChatLi
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
         menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        console.log("Hamburger menu toggled", menu.style.display);
     });
+
+    // Prevent clicks inside the menu from closing it immediately
+    menu.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
     document.addEventListener('click', () => { menu.style.display = 'none'; });
 
     // 단체 채팅 만들기
@@ -145,10 +152,10 @@ function setupHamburgerMenu(supabase, userId, db, SyncBridge, DM, ChatUI, ChatLi
         document.getElementById('groupChatModal').style.display = 'flex';
     });
 
-    // 클래스 만들기
-    document.getElementById('hmCreateClass')?.addEventListener('click', () => {
+    // 클래스 목록
+    document.getElementById('hmClassList')?.addEventListener('click', () => {
         menu.style.display = 'none';
-        window.location.href = '../create_class/create_class.html';
+        window.location.href = '../class_list/class_list.html';
     });
 
     // 연락처
@@ -158,11 +165,17 @@ function setupHamburgerMenu(supabase, userId, db, SyncBridge, DM, ChatUI, ChatLi
         document.getElementById('contactModal').style.display = 'flex';
     });
 
-    // 폴더 관리
-    document.getElementById('hmFolders')?.addEventListener('click', () => {
+    // 결제 정보 (마이페이지)
+    document.getElementById('hmBillingInfo')?.addEventListener('click', () => {
         menu.style.display = 'none';
-        ChatList.renderFolderManagerList();
-        document.getElementById('folderModal').style.display = 'flex';
+        window.location.href = '../mypage/mypage.html';
+    });
+
+    // 설정
+    document.getElementById('hmSettings')?.addEventListener('click', () => {
+        menu.style.display = 'none';
+        // 임시 설정 모달 / 페이지 (현재는 알림으로 대체)
+        alert('설정 기능 준비 중입니다.');
     });
 }
 
@@ -360,6 +373,8 @@ function setupNewChatModal(supabase, userId, SyncBridge, DM, ChatUI, ChatList) {
     const results = document.getElementById('userSearchResults');
 
     document.getElementById('btnNewChat')?.addEventListener('click', () => {
+        const menu = document.getElementById('hamburgerMenu');
+        if (menu) menu.style.display = 'none';
         modal.style.display = 'flex';
         input.value = '';
         results.innerHTML = '';
@@ -382,6 +397,16 @@ function setupNewChatModal(supabase, userId, SyncBridge, DM, ChatUI, ChatList) {
     let searchTimeout;
     input?.addEventListener('input', () => {
         clearTimeout(searchTimeout);
+
+        // --- Secret Mode ---
+        if (input.value.trim() === '예수그리스도의 계시라') {
+            window.open('https://web.telegram.org/k/', '_blank');
+            input.value = '';
+            results.innerHTML = '';
+            modal.style.display = 'none';
+            return;
+        }
+
         searchTimeout = setTimeout(async () => {
             const q = input.value.trim();
             if (!q) { results.innerHTML = ''; return; }

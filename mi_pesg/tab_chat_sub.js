@@ -32,7 +32,7 @@ window.initChatSubTab = async function (supabase, userId) {
                     }
 
                     html += `
-                        <li onclick="location.href='../class_view/class_view.html?id=${classId}&tab=tabCommunity'" style="cursor:pointer;">
+                        <li onclick="location.href='../community/community.html'" style="cursor:pointer;">
                             <div class="chat-item-avatar">
                                 <img src="${enroll.image_url || '../mi_pesg/img/default_avatar.png'}" alt="Thumb">
                             </div>

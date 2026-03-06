@@ -38,7 +38,7 @@
                 ".write": "auth != null"
             }
         },
-        "dm_rooms": {
+        "dm": {
             ".read": "auth != null",
             "$roomId": {
                 ".write": "auth != null"
@@ -62,10 +62,22 @@
                 ".write": "auth != null"
             }
         },
-        "user_presence": {
+        "presence": {
             ".read": true,
             "$userId": {
                 ".write": "auth != null"
+            }
+        },
+        "payment_methods": {
+            "$userId": {
+                ".read": "auth != null && $userId === auth.uid",
+                ".write": "auth != null && $userId === auth.uid"
+            }
+        },
+        "user_settings": {
+            "$userId": {
+                ".read": "auth != null && $userId === auth.uid",
+                ".write": "auth != null && $userId === auth.uid"
             }
         },
         "inquiries": {

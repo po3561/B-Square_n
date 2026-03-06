@@ -21,36 +21,48 @@
     <!-- header.js가 헤더/푸터/Drawer/BottomNav를 동적 삽입 -->
 
     <main class="comm-container">
-        <!-- 왼쪽: 채팅 목록 사이드바 -->
-        <aside class="comm-sidebar" id="commSidebar">
-            <div class="sidebar-header">
+        <!-- 왼쪽 레일: 네비게이션 미니 사이드바 -->
+        <nav class="comm-nav-rail" id="commNavRail">
+            <div class="rail-top">
                 <button class="btn-hamburger" id="btnHamburger" title="메뉴">☰</button>
-                <h2 class="sidebar-title">채팅</h2>
-                <button class="btn-new-chat" id="btnNewChat" title="새 대화">✏️</button>
             </div>
 
-            <!-- 햄버거 메뉴 드롭다운 -->
-            <div class="hamburger-menu" id="hamburgerMenu" style="display:none;">
-                <div class="hm-item" id="hmGroupChat"><span>👥</span>단체 채팅 만들기</div>
-                <div class="hm-item" id="hmCreateClass"><span>📚</span>클래스 만들기</div>
-                <div class="hm-item" id="hmContacts"><span>📇</span>연락처</div>
-                <div class="hm-item" id="hmFolders"><span>📂</span>폴더 관리</div>
-            </div>
-
-            <div class="sidebar-search">
-                <input type="text" id="chatSearchInput" placeholder="대화 검색...">
-            </div>
-
-            <!-- 폴더 탭 -->
-            <div class="sidebar-tabs" id="sidebarTabs">
-                <button class="stab active" data-filter="all">전체</button>
-                <button class="stab" data-filter="dm">1:1</button>
-                <button class="stab" data-filter="class">클래스</button>
-                <button class="stab" data-filter="group">그룹</button>
+            <div class="rail-tabs" id="sidebarTabs">
+                <button class="stab active" data-filter="all" title="전체 대화">
+                    <span class="icon">💬</span>
+                </button>
+                <button class="stab" data-filter="dm" title="1:1 채팅">
+                    <span class="icon">👤</span>
+                </button>
+                <button class="stab" data-filter="class" title="클래스">
+                    <span class="icon">📚</span>
+                </button>
+                <button class="stab" data-filter="group" title="그룹">
+                    <span class="icon">👥</span>
+                </button>
             </div>
 
             <!-- 사용자 폴더 탭 (동적 생성) -->
-            <div class="folder-tabs" id="folderTabs" style="display:none;"></div>
+            <div class="rail-folders" id="folderTabs" style="display:none;"></div>
+        </nav>
+
+        <!-- 햄버거 메뉴 드롭다운 -->
+        <div class="hamburger-menu" id="hamburgerMenu" style="display:none;">
+            <div class="hm-item" id="btnNewChat"><span>✏️</span>새 대화 시작</div>
+            <div class="hm-item" id="hmGroupChat"><span>👥</span>단체 대화방 만들기</div>
+            <div class="hm-item" id="hmContacts"><span>📇</span>연락처</div>
+            <div class="hm-item" id="hmClassList"><span>📚</span>클래스 목록</div>
+            <div class="hm-item" id="hmBillingInfo"><span>💳</span>결제 정보</div>
+            <div class="hm-item" id="hmSettings"><span>⚙️</span>설정</div>
+        </div>
+
+        <!-- 왼쪽: 채팅 목록 사이드바 -->
+        <aside class="comm-sidebar" id="commSidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-search">
+                    <input type="text" id="chatSearchInput" placeholder="검색">
+                </div>
+            </div>
 
             <div class="chat-room-list" id="chatRoomList">
                 <div class="chat-list-empty">
