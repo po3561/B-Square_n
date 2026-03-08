@@ -448,6 +448,15 @@ option {
     line-height: 1.2;
 }
 
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
 .placeholder-orange {
     background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%);
 }

@@ -50,6 +50,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 메인 페이지 클래스 목록 로드 (실시간)
     initRealtimeClasses(supabase);
 
+    // 추천 클래스 폴더 로드
+    initRecommendations(supabase);
+
     // 3. 카테고리 필터링 이벤트 연결
     const categoryLinks = document.querySelectorAll('.category-grid a');
     categoryLinks.forEach(link => {
@@ -273,3 +276,71 @@ function renderClassCards(classes, container) {
         });
     });
 }
+
+async function initRecommendations(supabase) {
+    const recommendColumns = document.querySelector('.recommend-columns');
+    if (!recommendColumns) return;
+
+    // 슬라이더 감싸기 (좌우 이동을 위해 가로 스크롤 가능하게 변경)
+    recommendColumns.style.cssText = 'display: flex !important; overflow-x: auto; gap: 20px; padding: 10px 5px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;';
+    recommendColumns.classList.add('hide-scrollbar');
+
+    const db = firebase.database();
+    db.ref('site_design/recommendations').on('value', async (snap) => {
+        const data = snap.val() || {};
+        const folders = Object.values(data).sort((a, b) => (a.order || 0) - (b.order || 0));
+
+        if (folders.length === 0) {
+            recommendColumns.innerHTML = '<p style="color:#888; padding:20px;">공개된 추천 클래스가 없습니다.</p>';
+            return;
+        }
+
+        recommendColumns.innerHTML = '';
+
+        for (const folder of folders) {
+            const folderDiv = document.createElement('div');
+            folderDiv.className = 'column';
+            folderDiv.style.cssText = 'flex: 0 0 300px; scroll-snap-align: start; background: var(--card-bg); border-radius: var(--card-radius); border: 1px solid var(--border-color); padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);';
+
+            const detailUrl = `recommend_view.html?id=${folder.id}`;
+
+            folderDiv.innerHTML = `
+                <div class="column-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+                    <h4 style="margin:0; font-size:1.1rem; font-weight:700;">${folder.title}</h4>
+                    <a href="${detailUrl}" class="btn-more" style="background:#007aff; color:#fff; width:24px; height:24px; border-radius:4px; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:12px;">➔</a>
+                </div>
+                <ul class="column-list" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;">
+                </ul>
+            `;
+
+            recommendColumns.appendChild(folderDiv);
+
+            if (folder.classIds && Array.isArray(folder.classIds)) {
+                const listUl = folderDiv.querySelector('.column-list');
+                const previewIds = folder.classIds.slice(0, 3);
+
+                for (const cid of previewIds) {
+                    const cSnap = await db.ref(`classes/${cid}`).once('value');
+                    const cData = cSnap.val();
+                    if (cData) {
+                        const li = document.createElement('li');
+                        li.className = 'list-item';
+                        li.style.cssText = 'display:flex; align-items:center; gap:12px; cursor:pointer;';
+                        li.onclick = () => location.href = `../class_view/class_view.html?id=${cid}`;
+                        li.innerHTML = `
+                            <div class="item-thumbnail" style="width:50px; height:35px; border-radius:4px; overflow:hidden; background:#eee;">
+                                <img src="${cData.thumbnail || ''}" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
+                            <div class="item-info">
+                                <p class="title" style="margin:0; font-size:0.9rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">${cData.title}</p>
+                                <p class="rating" style="margin:0; font-size:0.75rem; color:var(--text-secondary);">⭐ ${cData.rating || '4.5'}</p>
+                            </div>
+                        `;
+                        listUl.appendChild(li);
+                    }
+                }
+            }
+        }
+    });
+}
+
