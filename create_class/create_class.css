@@ -452,3 +452,76 @@ option {
     padding: 1.2rem;
     margin-top: 1rem;
 }
+
+/* Extreme Mobile (iOS App Style) < 198px */
+@media (max-width: 198px) {
+    .create-layout {
+        margin: 1rem auto;
+        padding: 0 0.5rem;
+    }
+    
+    .create-content {
+        padding: 1rem 0.5rem;
+        border-radius: 12px;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .create-steps {
+        gap: 0.5rem;
+    }
+    
+    .step-item {
+        gap: 0.4rem;
+    }
+    
+    .step-num {
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
+    }
+    
+    .step-text {
+        font-size: 0.75rem;
+    }
+    
+    .input-group label {
+        font-size: 0.85rem;
+    }
+    
+    .input-group input,
+    .input-group select,
+    .input-group textarea,
+    .input, select, textarea {
+        padding: 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .image-upload-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .upload-slot, .image-item {
+        aspect-ratio: auto;
+        height: 100px;
+    }
+    
+    .create-actions button {
+        padding: 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .radio-group {
+        flex-direction: column;
+        gap: 0.8rem;
+        padding: 0.8rem;
+    }
+    
+    .quill-editor-wrap .ql-editor {
+        min-height: 150px;
+        padding: 0.8rem;
+    }
+}

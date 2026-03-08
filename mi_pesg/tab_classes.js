@@ -47,43 +47,103 @@ window.initClassesTab = function (firebase, userId) {
         }
     };
 
-    // 2. 내가 수강 신청한 클래스 로드 (신규)
+    // 2. 내가 수강 신청한 클래스 로드 & 수강권 로드 (신규 통합)
     window.loadEnrolledClasses = async function () {
         if (!enrolledList) return;
         enrolledList.innerHTML = '<div class="empty-state">수강 정보를 불러오는 중...</div>';
 
         try {
-            const snapshot = await db.ref(`enrollments/${userId}`).once('value');
-            const data = snapshot.val();
+            const enrollSnap = await db.ref(`enrollments/${userId}`).once('value');
+            const passSnap = await db.ref(`user_passes/${userId}`).once('value');
+            
+            const enrollData = enrollSnap.val() || {};
+            const passData = passSnap.val() || {};
+            
+            const classIds = Array.from(new Set([...Object.keys(enrollData), ...Object.keys(passData)]));
 
-            if (!data) {
-                enrolledList.innerHTML = '<div class="empty-state">아직 수강 신청한 클래스가 없습니다.</div>';
+            if (classIds.length === 0) {
+                enrolledList.innerHTML = '<div class="empty-state">아직 참가중인 클래스나 보유한 수강권이 없습니다.</div>';
                 return;
             }
 
-            let html = '';
-            Object.keys(data).forEach(classId => {
-                const enroll = data[classId];
-                html += `
+            let totalPasses = 0;
+            let totalEnrolled = classIds.length;
+            let dashHtml = ''; // For Recent Class in dashboard
+
+            for (let i = 0; i < classIds.length; i++) {
+                const classId = classIds[i];
+                // 기본 정보는 enrollData나 classData에서 가져오기
+                let title = enrollData[classId]?.title || '알 수 없는 클래스';
+                let category = enrollData[classId]?.category || '기타';
+                let imageUrl = enrollData[classId]?.image_url || '';
+                
+                // 만약 enroll 정보가 없고 수강권만 있다면 db에서 한 번 더 긁어옴
+                if (!enrollData[classId]) {
+                    const clsSnap = await db.ref(`classes/${classId}`).once('value');
+                    const cls = clsSnap.val();
+                    if (cls) {
+                        title = cls.title || title;
+                        category = cls.category || category;
+                        imageUrl = cls.image_url || imageUrl;
+                    }
+                }
+
+                const myPass = passData[classId] || {};
+                let passText = '';
+                if (myPass.count > 0) {
+                    passText = `<span style="color:#4cc9f0; font-weight:bold; margin-left: 10px;">🎫 수강권 ${myPass.count}개 보유</span>`;
+                    totalPasses += myPass.count;
+                }
+                if (myPass.monthly) {
+                    passText += `<span style="color:#4cc9f0; font-weight:bold; margin-left: 10px;">🌟 월정액 구독 중</span>`;
+                    totalPasses += 1;
+                }
+
+                const cardHtml = `
                     <div class="my-class-card">
-                        <div class="class-thumb ${!enroll.image_url ? 'placeholder-orange' : ''}">
-                            ${enroll.image_url ? `<img src="${enroll.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">` : ''}
+                        <div class="class-thumb ${!imageUrl ? 'placeholder-orange' : ''}">
+                            ${imageUrl ? `<img src="${imageUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">` : ''}
                         </div>
                         <div class="class-info">
-                            <h4>${enroll.title}</h4>
-                            <p>${enroll.category} | 진도율: ${enroll.progress || 0}%</p>
+                            <h4>${title}</h4>
+                            <p>${category} | 진도율: ${enrollData[classId]?.progress || 0}% ${passText}</p>
                             <div style="display:flex; gap:10px;">
-                                <button class="btn-chat-link" onclick="location.href='../class_view/class_view.html?id=${classId}'">▶️ 학습 페이지로 이동</button>
-                                <button class="btn-chat-link" style="background:rgba(255,255,255,0.05);" onclick="location.href='../community/community.html'">💬 채팅방 입장</button>
+                                <button class="btn-chat-link" onclick="location.href='../class_view/class_view.html?id=${classId}'">▶️ 학습 페이지</button>
+                                <button class="btn-chat-link" style="background:rgba(255,255,255,0.05);" onclick="location.href='../class_view/class_view.html?id=${classId}#tabChat'">💬 클래스 채널</button>
                             </div>
                         </div>
                     </div>
                 `;
-            });
+
+                html += cardHtml;
+
+                // Dashboard Recent Class (just show the first/latest one)
+                if (i === 0) {
+                    dashHtml = cardHtml;
+                }
+            }
             enrolledList.innerHTML = html;
+
+            // Update Dashboard UI
+            const dashPassCount = document.getElementById('dashPassCount');
+            const dashClassCount = document.getElementById('dashClassCount');
+            const dashRecentClass = document.getElementById('dashRecentClass');
+            
+            if (dashPassCount) dashPassCount.textContent = `${totalPasses}개`;
+            if (dashClassCount) dashClassCount.textContent = `${totalEnrolled}개`;
+            if (dashRecentClass) dashRecentClass.innerHTML = dashHtml || '<div class="empty-state">최근 수강 내역이 없습니다.</div>';
+
+            // Also load chat count for dashboard
+            try {
+                const chatSnap = await db.ref(`user_chats/${userId}`).once('value');
+                const chatCount = chatSnap.exists() ? Object.keys(chatSnap.val()).length : 0;
+                const dashChatCount = document.getElementById('dashChatCount');
+                if (dashChatCount) dashChatCount.textContent = `${chatCount}개`;
+            } catch(e) { console.warn("Chat count error", e); }
+
         } catch (error) {
             console.error("Enrollment load error:", error);
-            enrolledList.innerHTML = '<div class="empty-state">수강 정보를 가져오는 중 오류가 발생했습니다.</div>';
+            enrolledList.innerHTML = '<div class="empty-state text-error">수강 정보를 가져오는 중 오류가 발생했습니다.</div>';
         }
     };
 

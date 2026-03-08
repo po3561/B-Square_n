@@ -1,22 +1,22 @@
 /* ==========================================
-   기본 설정 (Reset & Typography)
+   湲곕낯 ?ㅼ젙 (Reset & Typography)
 =========================================== */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
 :root {
-    --bg-color: #ffffff;
-    --card-bg: rgba(255, 255, 255, 0.85);
-    --border-color: #e5e5e5;
+    --bg-color: #f7f9fa; /* slightly more grayish/blue background for better card pop */
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --border-color: #e2e5eA;
     --accent-color: #000000;
-    --text-primary: #1a1a2e;
-    --text-secondary: #6e6e80;
-    --glass-bg: rgba(255, 255, 255, 0.9);
-    --glass-border: rgba(0, 0, 0, 0.05);
-    --glass-blur: blur(20px) saturate(180%);
-    --card-radius: 16px;
-    --btn-radius: 24px;
+    --text-primary: #1d1d1f; /* Apple style deep gray */
+    --text-secondary: #86868b;
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(0, 0, 0, 0.03);
+    --glass-blur: blur(24px) saturate(180%);
+    --card-radius: 24px; /* Increased from 16px */
+    --btn-radius: 36px;  /* Increased from 24px */
     --primary-font: 'Inter', 'Pretendard', sans-serif;
-    --nav-icon-color: #333333;
+    --nav-icon-color: #1d1d1f;
     --hover-bg: #f5f5f7;
 }
 
@@ -52,7 +52,7 @@ button {
     transition: all 0.2s ease;
 }
 
-/* 터치 대상 최소 크기 보장 (모바일 최적화) */
+/* ?곗튂 ???理쒖냼 ?ш린 蹂댁옣 (紐⑤컮??理쒖쟻?? */
 button,
 input,
 select,
@@ -72,7 +72,7 @@ select,
     display: none !important;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 198px) {
     .desktop-only-flex {
         display: none !important;
     }
@@ -167,7 +167,7 @@ select,
     color: var(--text-secondary);
 }
 
-/* 드롭다운 시인성 해결 */
+/* ?쒕∼?ㅼ슫 ?쒖씤???닿껐 */
 select {
     background-color: var(--card-bg);
     color: var(--text-primary);
@@ -184,7 +184,7 @@ option {
     color: #ffffff;
 }
 
-/* 사용자 메뉴 스타일 (JS에서 동적으로 들어옴) */
+/* ?ъ슜??硫붾돱 ?ㅽ???(JS?먯꽌 ?숈쟻?쇰줈 ?ㅼ뼱?? */
 .user-menu {
     display: flex;
     align-items: center;
@@ -251,7 +251,7 @@ option {
     padding: 3rem 2rem;
 }
 
-/* 2-1. Hero Section (광고 및 카테고리) */
+/* 2-1. Hero Section (愿묎퀬 諛?移댄뀒怨좊━) */
 .hero-section {
     margin-bottom: 5rem;
 }
@@ -364,7 +364,7 @@ option {
     letter-spacing: -0.5px;
 }
 
-/* 공통 카드 그리드 */
+/* 怨듯넻 移대뱶 洹몃━??*/
 .card-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -404,7 +404,7 @@ option {
     transform: scale(1.08);
 }
 
-/* 카드 뱃지 스타일 */
+/* 移대뱶 諭껋? ?ㅽ???*/
 .card-badges {
     position: absolute;
     top: 12px;
@@ -470,7 +470,7 @@ option {
     background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%);
 }
 
-/* 추천 클래스 (3단 컬럼) */
+/* 異붿쿇 ?대옒??(3??而щ읆) */
 .recommend-columns {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -544,7 +544,7 @@ option {
     background: rgba(0, 0, 0, 0.6);
 }
 
-/* 카드 텍스트 정보 */
+/* 移대뱶 ?띿뒪???뺣낫 */
 .card-info {
     padding: 1rem 1.2rem 1.2rem 1.2rem;
 }
@@ -616,7 +616,7 @@ option {
     color: var(--text-primary);
 }
 
-/* 2-3. 하단 배너 */
+/* 2-3. ?섎떒 諛곕꼫 */
 .bottom-banner-section {
     background: linear-gradient(90deg, #1a1a1a, #0d0d0d);
     border: 1px solid var(--glass-border);
@@ -643,7 +643,7 @@ option {
 =========================================== */
 .bottom-nav {
     display: none;
-    /* 데스크탑에서는 숨김 */
+    /* ?곗뒪?ы깙?먯꽌???④? */
     position: fixed;
     bottom: 0;
     left: 0;
@@ -653,7 +653,7 @@ option {
     border-top: 1px solid var(--border-color);
     z-index: 1000;
     padding-bottom: env(safe-area-inset-bottom);
-    /* iOS 대응 */
+    /* iOS ???*/
 }
 
 .bottom-nav .nav-item {
@@ -777,7 +777,7 @@ option {
 }
 
 /* ==========================================
-   4. DRAWER MENU (Hamburger 사이드 메뉴)
+   4. DRAWER MENU (Hamburger ?ъ씠??硫붾돱)
 =========================================== */
 .drawer-overlay {
     position: fixed;
@@ -855,14 +855,14 @@ option {
     padding: 0.5rem;
 }
 
-/* 2분할 레이아웃 */
+/* 2遺꾪븷 ?덉씠?꾩썐 */
 .drawer-body {
     display: flex;
     flex: 1;
     overflow: hidden;
 }
 
-/* 좌측 대분류 */
+/* 醫뚯륫 ?遺꾨쪟 */
 .drawer-main-categories {
     width: 130px;
     background: var(--hover-bg);
@@ -892,7 +892,7 @@ option {
     /* point color ex: Class101 red */
 }
 
-/* 우측 콘텐츠 */
+/* ?곗륫 肄섑뀗痢?*/
 .drawer-sub-categories {
     flex: 1;
     padding: 1.5rem;
@@ -983,7 +983,7 @@ option {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 198px) {
     .header-inner {
         padding: 1rem;
     }
@@ -998,7 +998,7 @@ option {
 
     .header-right .header-link {
         display: none;
-        /* 모바일에서는 글로벌 링크 숨김, 햄버거 메뉴 사용 */
+        /* 紐⑤컮?쇱뿉?쒕뒗 湲濡쒕쾶 留곹겕 ?④?, ?꾨쾭嫄?硫붾돱 ?ъ슜 */
     }
 
     .main-promo-banner {
@@ -1022,7 +1022,7 @@ option {
         gap: 16px;
     }
 
-    /* Bottom Nav 렌더링 */
+    /* Bottom Nav ?뚮뜑留?*/
     .bottom-nav {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
@@ -1030,7 +1030,7 @@ option {
 
     .site-footer {
         padding-bottom: 80px;
-        /* footer가 bottom nav에 가려지지 않게 여백 추가 */
+        /* footer媛 bottom nav??媛?ㅼ?吏 ?딄쾶 ?щ갚 異붽? */
     }
 }
 
@@ -1039,7 +1039,7 @@ option {
     .card-grid,
     .large-grid {
         grid-template-columns: 1fr;
-        /* 모바일 세로 모드에서는 1열 */
+        /* 紐⑤컮???몃줈 紐⑤뱶?먯꽌??1??*/
     }
 
     .category-grid ul {
@@ -1135,7 +1135,7 @@ option {
         margin-bottom: 1rem;
     }
 
-    /* 카드 */
+    /* 移대뱶 */
     .card-thumbnail {
         height: 140px;
     }
@@ -1158,7 +1158,7 @@ option {
         font-size: 1rem;
     }
 
-    /* 바텀 네비 */
+    /* 諛뷀? ?ㅻ퉬 */
     .bottom-nav .nav-item {
         font-size: 0.6rem;
         padding: 0.6rem 0;
@@ -1168,7 +1168,7 @@ option {
         font-size: 1rem;
     }
 
-    /* Drawer 최적화 */
+    /* Drawer 理쒖쟻??*/
     .drawer-header {
         padding: 0.8rem;
     }
@@ -1195,13 +1195,13 @@ option {
         gap: 6px;
     }
 
-    /* Nav (대형 Drawer 사이드 네비) */
+    /* Nav (???Drawer ?ъ씠???ㅻ퉬) */
     .drawer-nav-item {
         font-size: 0.85rem;
         padding: 0.8rem 1rem;
     }
 
-    /* 푸터 축소 */
+    /* ?명꽣 異뺤냼 */
     .site-footer {
         padding: 2rem 0.8rem 5rem;
         font-size: 0.75rem;
@@ -1234,7 +1234,7 @@ option {
         font-size: 0.7rem;
     }
 
-    /* 추천 클래스 */
+    /* 異붿쿇 ?대옒??*/
     .recommend-columns {
         grid-template-columns: 1fr;
         gap: 1rem;
@@ -1248,7 +1248,7 @@ option {
         font-size: 1rem;
     }
 
-    /* 배너 */
+    /* 諛곕꼫 */
     .main-ad-banner {
         height: 180px;
         border-radius: 12px;
@@ -1267,7 +1267,7 @@ option {
 
 /* ==========================================
    7. ULTRA-SMALL MOBILE (max-width: 210px)
-   Class101 수준의 초소형 화면 대응
+   Class101 ?섏???珥덉냼???붾㈃ ???
 =========================================== */
 @media (max-width: 210px) {
     body {
@@ -1288,7 +1288,7 @@ option {
         font-size: 0.9rem;
     }
 
-    /* 헤더 유틸 숨김 - 로고+햄버거만 표시 */
+    /* ?ㅻ뜑 ?좏떥 ?④? - 濡쒓퀬+?꾨쾭嫄곕쭔 ?쒖떆 */
     .header-right,
     .header-utils {
         display: none !important;
@@ -1299,14 +1299,14 @@ option {
         height: 14px;
     }
 
-    /* 카테고리 그리드 → 가로 스크롤 아이콘만 */
+    /* 移댄뀒怨좊━ 洹몃━????媛濡??ㅽ겕濡??꾩씠肄섎쭔 */
     .category-grid ul {
         gap: 0.3rem;
     }
 
     .category-grid li a {
         font-size: 0;
-        /* 텍스트 숨기고 아이콘만 */
+        /* ?띿뒪???④린怨??꾩씠肄섎쭔 */
         gap: 0;
         padding: 0.3rem 0;
     }
@@ -1317,7 +1317,7 @@ option {
         border-radius: 8px;
     }
 
-    /* 콘텐츠 */
+    /* 肄섑뀗痢?*/
     .main-content {
         padding: 0.8rem 0.4rem;
     }
@@ -1342,7 +1342,7 @@ option {
         margin-bottom: 0.6rem;
     }
 
-    /* 카드 */
+    /* 移대뱶 */
     .card-grid,
     .large-grid {
         grid-template-columns: 1fr;
@@ -1415,7 +1415,7 @@ option {
         right: 4px;
     }
 
-    /* 바텀 네비 — 라벨 숨기고 아이콘만 */
+    /* 諛뷀? ?ㅻ퉬 ???쇰꺼 ?④린怨??꾩씠肄섎쭔 */
     .bottom-nav .nav-item .label {
         display: none;
     }
@@ -1452,7 +1452,7 @@ option {
         padding: 0.6rem 0.6rem;
     }
 
-    /* 추천 클래스 */
+    /* 異붿쿇 ?대옒??*/
     .column {
         padding: 0.6rem;
         border-radius: 10px;
@@ -1481,7 +1481,7 @@ option {
         font-size: 0.6rem;
     }
 
-    /* 배너 */
+    /* 諛곕꼫 */
     .bottom-banner-section {
         padding: 0.5rem;
         border-radius: 6px;
@@ -1492,7 +1492,7 @@ option {
         font-size: 0.7rem;
     }
 
-    /* 푸터 */
+    /* ?명꽣 */
     .site-footer {
         padding: 1.5rem 0.4rem 4rem;
         font-size: 0.65rem;
@@ -1553,3 +1553,36 @@ option {
         font-size: 0.55rem;
     }
 }
+
+/* Aggressive 198px Overrides */
+@media (max-width: 198px) {
+    .site-header { position: sticky !important; top: 0 !important; z-index: 1000 !important; }
+    .site-header .header-inner { padding: 4px 6px !important; flex-direction: column !important; align-items:flex-start !important; gap:4px !important; }
+    .header-left, .header-right { width: 100% !important; justify-content: space-between !important; }
+    
+    .main-ad-banner { height: auto !important; min-height: 80px !important; padding:10px !important; border-radius:12px !important;}
+    .main-ad-banner h2 { font-size: 1rem !important; }
+    
+    .category-grid ul { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 4px !important; padding:10px 0 !important; }
+    .category-grid li a { padding: 4px !important; font-size: 0.65rem !important; }
+    .category-grid .icon { font-size: 1rem !important; margin-bottom: 2px !important; }
+    
+    .card-grid, .banner-columns { display: flex !important; flex-direction: column !important; gap: 12px !important; }
+    .class-card, .column { width: 100% !important; box-sizing: border-box !important; border-radius: 12px !important; }
+    .card-thumbnail { height: 100px !important; }
+    
+    .card-info { padding: 8px !important; }
+    .card-info .title { font-size: 0.85rem !important; line-height: 1.3 !important; }
+    .card-info .category { font-size: 0.65rem !important; margin-bottom: 4px !important; }
+    .stats { font-size: 0.7rem !important; }
+    
+    .group-title { font-size: 1rem !important; margin-bottom: 10px !important;}
+    
+    input, select, button { width: 100% !important; box-sizing: border-box !important; }
+    
+    .bottom-banner-section { padding: 10px !important; }
+    .promo-content h2 { font-size: 0.9rem !important; }
+    .promo-content h2 strong { font-size: 1.1rem !important; }
+}
+
+ / *   A g g r e s s i v e   1 9 8 p x   O v e r r i d e s   * / 

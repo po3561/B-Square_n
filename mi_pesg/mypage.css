@@ -849,3 +849,94 @@ body {
         padding: 1rem;
     }
 }
+
+/* Extreme Mobile (iOS App Style) < 198px */
+@media (max-width: 198px) {
+    .mypage-layout {
+        margin: 1rem auto;
+        padding: 0 0.5rem;
+    }
+
+    .mypage-sidebar {
+        padding: 0 !important;
+    }
+
+    .profile-summary {
+        padding: 1rem;
+    }
+    
+    .profile-img-placeholder {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .nav-btn {
+        padding: 10px 12px;
+        font-size: 0.8rem;
+    }
+
+    .mypage-content {
+        padding: 1rem;
+    }
+
+    /* Force stats grid to 1 column */
+    #dashboardStats {
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem !important;
+    }
+    
+    .stat-card {
+        padding: 1rem !important;
+    }
+    
+    .stat-card span {
+        font-size: 1.5rem !important;
+        margin-bottom: 0.2rem !important;
+    }
+    
+    .stat-card h4 {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.2rem !important;
+    }
+    
+    .stat-card p {
+        font-size: 1.2rem !important;
+    }
+
+    /* Stack quick links */
+    .dashboard-quick-links {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+    
+    .dashboard-quick-links button {
+        padding: 0.8rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    .tab-title {
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.8rem;
+    }
+    
+    /* Payment history shrink */
+    .payment-history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem;
+        gap: 8px;
+    }
+    
+    .payment-history-right {
+        margin-left: 0;
+        align-items: flex-start;
+        width: 100%;
+    }
+    
+    .payment-history-amount {
+        font-size: 1rem;
+    }
+}

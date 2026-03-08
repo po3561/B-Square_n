@@ -92,7 +92,10 @@
                         <span class="chat-header-name" id="chatHeaderName">채팅방</span>
                         <span class="chat-header-status" id="chatHeaderStatus">오프라인</span>
                     </div>
-                    <div class="chat-header-actions">
+                    <!-- 클래스 채팅용 바로가기 바인딩 -->
+                    <a href="#" id="btnGoToClass" class="btn-go-class" style="display:none; margin-left:10px; padding:4px 12px; background:rgba(255,255,255,0.1); border-radius:12px; font-size:0.75rem; text-decoration:none; color:var(--text-color); border:1px solid var(--border-color); white-space:nowrap;">🏠 클래스 보러가기</a>
+                    
+                    <div class="chat-header-actions" style="margin-left:auto;">
                         <button class="btn-header-action" id="btnChatSearch" title="메시지 검색">🔍</button>
                         <button class="btn-header-action" id="btnThemeToggle" title="테마 전환">🌙</button>
                         <button class="btn-header-action" id="btnChatInfo" title="정보">ℹ️</button>
@@ -131,6 +134,7 @@
                 <div class="chat-input-area">
                     <div class="input-main-row">
                         <button class="btn-input-icon" id="btnAttach" title="파일 첨부">📎</button>
+                        <button class="btn-input-icon" id="btnGathering" title="클래스 모집 카드 보내기" style="display:none;">📅</button>
                         <input type="file" id="fileInput" multiple hidden>
                         <textarea id="msgInput" placeholder="메시지 작성..." rows="1"></textarea>
                         <button class="btn-input-icon" id="btnEmoji" title="이모지">😊</button>
@@ -178,6 +182,22 @@
                     <div class="selected-members" id="selectedMembers"></div>
                     <div class="user-search-results" id="groupSearchResults"></div>
                     <button class="btn-create-group" id="btnCreateGroup">그룹 만들기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 모집 카드 만들기 모달 -->
+        <div class="new-chat-modal" id="gatheringModal" style="display:none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>📅 클래스 모집 카드 보내기</h3>
+                    <button class="btn-close-modal" id="btnCloseGatheringModal">✕</button>
+                </div>
+                <div class="modal-body" style="display:flex; flex-direction:column; gap:10px;">
+                    <input type="text" id="gatherTitle" placeholder="모집 제목 (예: 5월 첫 모임)" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:white;" required>
+                    <input type="number" id="gatherMin" placeholder="최소 인원 (예: 2)" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:white;" required>
+                    <input type="number" id="gatherMax" placeholder="최대 정원 (예: 10)" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:white;" required>
+                    <button class="btn-submit" id="btnSendGatheringSubmit" style="margin-top:10px;">모집 카드 전송</button>
                 </div>
             </div>
         </div>

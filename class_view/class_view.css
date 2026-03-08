@@ -4,12 +4,12 @@
    ============================================================ */
 
 :root {
-    --bg-deep: var(--bg-color, #000);
-    --card-bg: var(--card-bg, rgba(30, 30, 30, 0.4));
+    --bg-deep: var(--bg-color);
+    --card-bg: var(--card-bg);
     --accent-color: #ff4d4d;
-    --text-primary: var(--text-primary, #fff);
-    --text-secondary: var(--text-secondary, #888);
-    --glass-border: var(--glass-border, rgba(255, 255, 255, 0.08));
+    --text-primary: var(--text-primary);
+    --text-secondary: var(--text-secondary);
+    --glass-border: var(--glass-border);
     --glass-blur: blur(15px) saturate(180%);
 }
 
@@ -17,10 +17,10 @@
     max-width: 1300px;
     margin: 0 auto;
     padding-bottom: 5rem;
-    color: #fff;
+    color: var(--text-primary);
 }
 
-/* 모든 탭 콘텐츠 / 카드 내 텍스트 명시적 흰색 */
+/* 모든 탭 콘텐츠 / 카드 내 텍스트 명시적 전역변수화 */
 .view-container h1,
 .view-container h2,
 .view-container h3,
@@ -34,16 +34,16 @@
     color: inherit;
 }
 
-/* Quill HTML 뷰어 (기본값 검정 방지) */
+/* Quill HTML 뷰어 */
 .html-viewer,
 .html-viewer * {
-    color: #e0e0e0 !important;
+    color: var(--text-primary) !important;
 }
 
 .html-viewer h1,
 .html-viewer h2,
 .html-viewer h3 {
-    color: #fff !important;
+    color: var(--text-primary) !important;
 }
 
 /* 에디트 패널 텍스트 */
@@ -268,7 +268,7 @@
 .tab-btn {
     background: none;
     border: none;
-    color: #666;
+    color: var(--text-secondary);
     padding: 1.2rem 0;
     font-size: 1rem;
     font-weight: 700;
@@ -278,11 +278,11 @@
 }
 
 .tab-btn:hover {
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .tab-btn.active {
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .tab-btn.active::after {
@@ -292,7 +292,7 @@
     left: 0;
     width: 100%;
     height: 3px;
-    background: #fff;
+    background: var(--text-primary);
 }
 
 .tab-content {
@@ -328,7 +328,7 @@
     font-size: 1.6rem;
     font-weight: 800;
     margin-bottom: 2rem;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 /* ========================
@@ -456,8 +456,8 @@
 .curriculum-chapter {
     margin-bottom: 1rem;
     border-radius: 12px;
-    background: #1a1a1a;
-    border: 1px solid #333;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
     overflow: hidden;
 }
 
@@ -504,7 +504,7 @@
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.4s ease-out;
-    background: #111;
+    background: var(--bg-color);
 }
 
 .lesson-list-container.active {
@@ -649,11 +649,10 @@
     backdrop-filter: blur(2px);
 }
 
-/* Review Items */
 .review-item-premium {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--card-radius);
     padding: 2rem;
     margin-bottom: 1.5rem;
     transition: transform 0.2s, background 0.2s;
@@ -761,9 +760,9 @@
 /* Review Form */
 .review-form-card {
     margin-top: 3rem;
-    background: #111;
-    border: 1px solid #222;
-    border-radius: 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--card-radius);
     padding: 2rem;
 }
 
@@ -2612,5 +2611,109 @@
 
     .notice-editor-quill {
         height: 220px;
+    }
+}
+
+@media (max-width: 198px) {
+    /* Hide global Bottom Nav on this page to make room for the Purchase Bar */
+    #bsqBottomNav {
+        display: none !important;
+    }
+    
+    body {
+        padding-bottom: env(safe-area-inset-bottom, 80px) !important;
+    }
+    
+    .view-container {
+        padding-bottom: 0 !important;
+    }
+
+    /* Transform Sidebar to Custom Native Fixed Bottom CTA */
+    .view-sidebar {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        max-width: 198px !important;
+        background: rgba(40, 40, 40, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        z-index: 999 !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        padding: 8px 12px calc(env(safe-area-inset-bottom, 8px) + 8px) !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        margin: 0 auto !important;
+        right: 0 !important;
+    }
+    
+    .sticky-card-premium {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    /* Hide unnecessary desktop elements from the sticky bar */
+    .creator-box, .side-main-title, .side-category-line, .side-review-line, .incentive-badges {
+        display: none !important;
+    }
+
+    .side-price-section {
+        margin: 0 !important;
+        text-align: left !important;
+        flex: 1 !important;
+    }
+
+    .side-final-price {
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        display: block !important;
+    }
+    
+    .side-installment {
+        display: none !important;
+    }
+
+    .sidebar-cta-area {
+        flex: 1.2 !important;
+    }
+    
+    .btn-cta-start {
+        padding: 8px !important;
+        font-size: 0.8rem !important;
+        border-radius: 8px !important;
+        white-space: nowrap !important;
+    }
+    
+    /* Make view-grid stack vertically */
+    .view-grid {
+        display: block !important;
+    }
+    .view-main-content {
+        width: 100% !important;
+    }
+    
+    .view-tabs {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        border-radius: 0 !important;
+    }
+    .tab-btn {
+        padding: 10px !important;
+        font-size: 0.75rem !important;
+        white-space: nowrap !important;
+    }
+    
+    .hero-content-wrapper {
+        padding: 0 10px !important;
     }
 }

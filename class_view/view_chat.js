@@ -31,7 +31,8 @@ window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAcc
         // 2. 클래스 채팅방 열기 (타이틀 가져오기)
         const classTitle = document.getElementById('sidebarTitle')?.textContent || '클래스';
         ChatUI.openRoom(classId, 'class', {
-            class_name: classTitle
+            class_name: classTitle,
+            is_instructor: isInstructor
         });
 
         // 3. 전송 이벤트 바인딩

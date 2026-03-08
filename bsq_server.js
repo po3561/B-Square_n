@@ -91,6 +91,27 @@
         // 전역 호환성
         if (db) window.firebaseDB = db;
 
+        // ---- 개발자(총괄) 권한 자동 체크 ----
+        if (supabaseClient) {
+            const { data: sessionData } = await supabaseClient.auth.getSession();
+            const session = sessionData?.session;
+            if (session && session.user) {
+                const userEmail = session.user.email || '';
+                const userId = session.user.id;
+                
+                // profile 정보 (username 등) 조회
+                const { data: profile } = await supabaseClient.from('users').select('username').eq('id', userId).maybeSingle();
+                const username = profile?.username || '';
+
+                // promise1 계정이거나 특정 이메일/UID인 경우 총괄 개발자 모드 켬
+                if (userEmail.includes('promise1') || userEmail === 'po3561@naver.com' || username === 'promise1') {
+                    window.__BSQ_DEV_MODE__ = true;
+                    console.log('💎 [BSQ Server] 총괄 개발자(promise1) 세션 감지: DEV_MODE 활성화');
+                    window.dispatchEvent(new Event('bsq_dev_mode_activated'));
+                }
+            }
+        }
+
         _readyResolve({
             db: db,
             supabase: supabaseClient,
@@ -100,7 +121,120 @@
         console.log('[BSQ Server] ✅ 서버 연결 초기화 완료', {
             firebase: !!db,
             supabase: !!supabaseClient,
-            auth: !!firebaseAuthUser
+            auth: !!firebaseAuthUser,
+            devMode: !!window.__BSQ_DEV_MODE__
+        });
+
+        // 글로벌 디자인 세팅 적용
+        applySiteSettings(db);
+
+        // 방문자 트래킹 시작
+        trackVisitor(db);
+    }
+
+    // ==========================================
+    // 6. Global Site Settings (디자인 동적 반영) & Visitors
+    // ==========================================
+    function trackVisitor(database) {
+        if (!database) return;
+        try {
+            // 1. 일일 방문수 트래킹 (단순 카운터)
+            const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+            const visitorsRef = database.ref(`site_settings/visitors/${today}`);
+            
+            visitorsRef.transaction((current_value) => {
+                return (current_value || 0) + 1;
+            }).catch(e => console.error("Visitor tracking failed", e));
+
+            // 2. 실시간 접속자 트래킹 (Presence)
+            const myConnectionsRef = database.ref(`site_settings/presence`);
+            const connectedRef = database.ref('.info/connected');
+            
+            connectedRef.on('value', (snap) => {
+                if (snap.val() === true) {
+                    const con = myConnectionsRef.push();
+                    con.onDisconnect().remove();
+                    con.set(true);
+                }
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function applySiteSettings(database) {
+        if (!database) return;
+        database.ref('site_settings').once('value').then(snap => {
+            const settings = snap.val();
+            if (!settings) return;
+
+            // 1. Title 업데이트
+            if (settings.siteName) {
+                document.title = settings.siteName + (document.title.includes('|') ? document.title.substring(document.title.indexOf(' |')) : ' | B-Square');
+            }
+
+            // 2. Favicon 업데이트
+            if (settings.faviconURL) {
+                let link = document.querySelector("link[rel~='icon']");
+                if (!link) {
+                    link = document.createElement('link');
+                    link.rel = 'icon';
+                    document.getElementsByTagName('head')[0].appendChild(link);
+                }
+                link.href = settings.faviconURL;
+            }
+
+            // 3. Footer 정보 업데이트
+            const footerCompanyElems = document.querySelectorAll('.footer-company-name, footer p strong');
+            const footerInfoElems = document.querySelectorAll('.footer-info-text, footer .info-text');
+            
+            if (settings.companyName && footerCompanyElems.length > 0) {
+                footerCompanyElems.forEach(el => el.textContent = settings.companyName);
+            }
+
+            if (footerInfoElems.length > 0) {
+                const parts = [];
+                if (settings.ceoName) parts.push(`대표: ${settings.ceoName}`);
+                if (settings.bizNum) parts.push(`사업자등록번호: ${settings.bizNum}`);
+                if (settings.mailOrderNum) parts.push(`통신판매업신고: ${settings.mailOrderNum}`);
+                if (settings.csPhone) parts.push(`고객센터: ${settings.csPhone}`);
+                if (settings.csEmail) parts.push(`이메일: ${settings.csEmail}`);
+                
+                let fullText = parts.join(' | ');
+                if (settings.address) {
+                    fullText += `\n주소: ${settings.address}`;
+                }
+                
+                if (fullText) {
+                    footerInfoElems.forEach(el => el.innerText = fullText);
+                }
+            }
+
+            // 4. SEO 메타 속성 (동적 생성)
+            if (settings.seo) {
+                const seo = settings.seo;
+                if (seo.title) document.title = seo.title;
+                
+                const injectMeta = (name, content, isProperty = false) => {
+                    if(!content) return;
+                    let attr = isProperty ? 'property' : 'name';
+                    let meta = document.querySelector(`meta[${attr}="${name}"]`);
+                    if(!meta) {
+                        meta = document.createElement('meta');
+                        meta.setAttribute(attr, name);
+                        document.head.appendChild(meta);
+                    }
+                    meta.setAttribute('content', content);
+                };
+
+                injectMeta('description', seo.description);
+                injectMeta('keywords', seo.keywords);
+                injectMeta('og:title', seo.title, true);
+                injectMeta('og:description', seo.description, true);
+                if (seo.image) injectMeta('og:image', seo.image, true);
+            }
+        }).catch(err => {
+            console.warn('⚠️ [BSQ Server] 사이트 설정 로드 실패:', err);
         });
     }
 

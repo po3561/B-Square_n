@@ -196,7 +196,12 @@ window.CommunityModules.ChatList = (function () {
         });
 
         if (rooms.length === 0) {
-            list.innerHTML = `<div class="chat-list-empty"><span>💭</span><p>${searchQuery ? '검색 결과 없음' : '채팅이 없습니다'}</p></div>`;
+            list.innerHTML = `
+                <div class="chat-list-empty" style="padding:2rem; text-align:center;">
+                    <span style="font-size:3rem; display:block; margin-bottom:1rem;">💭</span>
+                    <p style="color:var(--comm-text2); margin-bottom:1.5rem;">${searchQuery ? '검색 결과 없음' : '아직 참여중인 채팅이 없습니다.<br>클래스를 수강하고 멤버들과 대화해보세요!'}</p>
+                    ${!searchQuery ? `<button class="btn-primary" style="padding:0.75rem 1.5rem; border-radius:12px; font-weight:bold;" onclick="location.href='../class/class_list.html'">새로운 클래스 탐색하기</button>` : ''}
+                </div>`;
             return;
         }
 

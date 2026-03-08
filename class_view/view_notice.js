@@ -120,8 +120,9 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
                         <h4 style="font-size: 1.2rem; font-weight: 700; color: var(--text-color); margin: 0;">${n.title}</h4>
                         <span style="background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; color: var(--comm-text2);">${dateStr}</span>
                     </div>
-                    <div style="display: flex; gap: 15px; font-size: 0.85rem; color: var(--comm-text2);">
-                        <span>👤 ${n.author_name || '강사'}</span>
+                    <div style="display: flex; gap: 15px; font-size: 0.85rem; color: var(--comm-text2); align-items:center;">
+                        <img src="${n.profile_image_url || 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png'}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;border:1px solid var(--border-color);">
+                        <span style="font-weight:600;">${n.author_name || '강사'}</span>
                         <span>👁️ ${n.views || 0}</span>
                     </div>
                 </div>
@@ -183,14 +184,17 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
 
         try {
             let authorName = '강사';
+            let profileImageUrl = 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png';
             if (userId) {
-                const { data: profile } = await supabaseClient.from('users').select('name').eq('id', userId).maybeSingle();
+                const { data: profile } = await supabaseClient.from('users').select('name, profile_image_url').eq('id', userId).maybeSingle();
                 if (profile && profile.name) authorName = profile.name;
+                if (profile && profile.profile_image_url) profileImageUrl = profile.profile_image_url;
             }
 
             const payload = {
                 title: title,
                 content: content,
+                profile_image_url: profileImageUrl,
                 updated_at: firebase.database.ServerValue.TIMESTAMP
             };
 

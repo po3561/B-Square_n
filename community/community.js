@@ -97,7 +97,7 @@ async function registerClassChats(db, userId) {
         const enrollSnap = await db.ref(`enrollments/${userId}`).once('value');
         const enrollments = enrollSnap.val() || {};
         for (const [classId, data] of Object.entries(enrollments)) {
-            if (data.status === 'approved' || data.enrolled) {
+            if (data.status === 'approved' || data.status === 'enrolled' || data.status === 'paid' || data.enrolled) {
                 const classSnap = await db.ref(`classes/${classId}`).once('value');
                 const classData = classSnap.val();
                 if (classData) {
@@ -113,11 +113,12 @@ async function registerClassChats(db, userId) {
         const classesSnap = await db.ref('classes').once('value');
         const allClasses = classesSnap.val() || {};
         for (const [classId, classData] of Object.entries(allClasses)) {
-            if (classData.creator_id === userId) {
+            if (classData.creator_id === userId || window.__BSQ_DEV_MODE__) {
                 await db.ref(`user_chats/${userId}/${classId}`).update({
                     type: 'class',
                     class_name: classData.title || '클래스',
-                    class_image: classData.image_url || ''
+                    class_image: classData.image_url || '',
+                    is_instructor: true
                 });
             }
         }

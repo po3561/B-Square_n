@@ -231,6 +231,7 @@
                                     <div class="chat-input-area">
                                         <div class="input-main-row">
                                             <button class="btn-input-icon" id="btnAttach" title="파일 첨부">📎</button>
+                                            <button class="btn-input-icon" id="btnGathering" title="클래스 모집 카드 보내기" style="display:none;">📅</button>
                                             <input type="file" id="fileInput" multiple hidden>
                                             <textarea id="msgInput" placeholder="메시지 작성..." rows="1"></textarea>
                                             <button class="btn-input-icon" id="btnEmoji" title="이모지">😊</button>
@@ -285,6 +286,15 @@
                         <span class="side-rating" id="sideAvgRating">0.0</span>
                         <span class="side-review-count">(후기 <span id="sideReviewCount">0</span>개)</span>
                     </div>
+
+                    <!-- 내 수강권 현황 표시 -->
+                    <div id="myPassStatus" style="display:none; padding: 12px; margin: 10px 0; background: rgba(76, 201, 240, 0.1); border: 1px solid rgba(76, 201, 240, 0.3); border-radius: 8px; color: #4cc9f0; font-weight: 600; text-align: center;">
+                        내 보유 수강권: <span id="myPassCountVal">0</span>개
+                    </div>
+
+                    <!-- 수강권 구매 옵션 -->
+                    <div id="passOptionsContainer" style="display:none; margin: 15px 0;"></div>
+
                     <div class="side-price-section">
                         <span class="side-final-price" id="viewPrice">0원</span>
                         <p class="side-installment" id="priceInstallment">월 0원 (5개월 할부 시)</p>
@@ -324,6 +334,22 @@
     </div>
 
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 모집 카드 만들기 모달 -->
+    <div class="new-chat-modal" id="gatheringModal" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>📅 클래스 모집 카드 보내기</h3>
+                <button class="btn-close-modal" id="btnCloseGatheringModal">✕</button>
+            </div>
+            <div class="modal-body" style="display:flex; flex-direction:column; gap:10px;">
+                <input type="text" id="gatherTitle" placeholder="모집 제목 (예: 5월 첫 모임)" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:white;" required>
+                <input type="number" id="gatherMin" placeholder="최소 인원 (예: 2)" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:white;" required>
+                <input type="number" id="gatherMax" placeholder="최대 정원 (예: 10)" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:white;" required>
+                <button class="btn-submit" id="btnSendGatheringSubmit" style="margin-top:10px;">모집 카드 전송</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Notice Viewer Modal (공용 모달 재활용) -->
     <div id="classNoticeViewerModal" class="modal-overlay" style="display:none;">

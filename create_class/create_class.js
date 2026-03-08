@@ -271,6 +271,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     discount_rate: parseInt(document.getElementById('classDiscount')?.value) || 0,
                     coupon_pack: document.getElementById('classCoupon')?.checked || false,
                     class_type: form.querySelector('input[name="classType"]:checked')?.value || 'VOD',
+                    operating_mode: document.getElementById('classOperatingMode')?.value || 'ONEDAY',
+                    capacity: {
+                        min: parseInt(document.getElementById('minCapacity')?.value) || null,
+                        max: parseInt(document.getElementById('maxCapacity')?.value) || null
+                    },
+                    tickets: {
+                        price_one_time: parseInt(document.getElementById('priceOneTime')?.value) || null,
+                        pass_count: parseInt(document.getElementById('passCount')?.value) || null,
+                        price_multi: parseInt(document.getElementById('priceMulti')?.value) || null,
+                        price_monthly: parseInt(document.getElementById('priceMonthly')?.value) || null
+                    },
                     payment_methods: {
                         card: document.getElementById('payCard')?.checked || false,
                         bank_transfer: document.getElementById('payBank')?.checked || false,

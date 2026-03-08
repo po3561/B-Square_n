@@ -1,5 +1,13 @@
 {
     "rules": {
+        "site_settings": {
+            ".read": true,
+            ".write": "auth != null"
+        },
+        "coupons": {
+            ".read": true,
+            ".write": "auth != null"
+        },
         "classes": {
             ".read": true,
             ".write": "auth != null"
@@ -75,19 +83,31 @@
             }
         },
         "payment_methods": {
+            ".read": true,
             "$userId": {
-                ".read": "auth != null && $userId === auth.uid",
-                ".write": "auth != null && $userId === auth.uid"
+                ".write": "auth != null"
             }
         },
         "user_settings": {
+            ".read": true,
             "$userId": {
-                ".read": "auth != null && $userId === auth.uid",
-                ".write": "auth != null && $userId === auth.uid"
+                ".write": "auth != null"
+            }
+        },
+        "user_passes": {
+            ".read": true,
+            "$userId": {
+                ".write": "auth != null"
+            }
+        },
+        "class_participants": {
+            ".read": true,
+            "$classId": {
+                ".write": "auth != null"
             }
         },
         "inquiries": {
-            ".read": "auth != null",
+            ".read": true,
             ".write": "auth != null"
         }
     }

@@ -20,6 +20,13 @@ let userProfile = null;
 let classData = null;
 let isEnrolled = false;
 let supabaseClient = null;
+let isInstructor = false;
+
+// 패스(수강권) 관련 전역 변수
+let selectedPassType = null;
+let selectedPassPrice = 0;
+let userPassCount = 0;
+let isMonthlySubscribed = false;
 
 // ===== Toast Notification System =====
 function showToast(type, title, message, duration = 3500) {
@@ -139,8 +146,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 3. 클래스 데이터 로드 및 모듈 초기화
-    let isInstructor = false;
-
     try {
         const fbSnap = await db.ref(`classes/${classId}`).once('value');
         classData = fbSnap.val();
@@ -195,6 +200,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     try {
                         const enrollSnap = await db.ref(`enrollments/${userId}/${classId}`).once('value');
                         isEnrolled = enrollSnap.exists();
+                        
+                        // 현재 수강권 상태 확인
+                        const passSnap = await db.ref(`user_passes/${userId}/${classId}`).once('value');
+                        const passInfo = passSnap.val();
+                        if (passInfo) {
+                            userPassCount = passInfo.count || 0;
+                            isMonthlySubscribed = !!passInfo.monthly;
+                            // 수강권이 하나라도 있으면 권한 부여
+                            if (userPassCount > 0 || isMonthlySubscribed) isEnrolled = true;
+                        }
                     } catch (enrollErr) {
                         console.warn("수강 상태 확인 실패:", enrollErr);
                         isEnrolled = false;
@@ -290,6 +305,7 @@ async function handleFreeEnrollment() {
         updateEnrollmentUI();
 
         showToast('success', '수강 신청 완료! 🎉', `"${classData?.title}" 클래스를 무료로 시작합니다.`);
+        setTimeout(() => window.location.reload(), 1500);
     } catch (err) {
         console.error("Free enrollment error:", err);
         showToast('error', '수강 신청 실패', '문제가 발생했습니다. 다시 시도해 주세요.');
@@ -315,12 +331,12 @@ async function handlePayment() {
         }, 1500);
         return;
     }
-    if (isEnrolled) {
+    if (isEnrolled && (!classData || !classData.tickets)) {
         showToast('info', '이미 수강 중', '이미 수강 중인 클래스입니다.');
         return;
     }
 
-    const price = classData.price || 0;
+    const price = (classData.tickets && selectedPassType) ? selectedPassPrice : (classData.price || 0);
 
     // 무료 클래스: 결제창 대신 확인 모달 표시
     if (price === 0) {
@@ -363,7 +379,9 @@ async function handlePayment() {
         if (rsp.success) {
             try {
                 const db = firebase.database();
-                await db.ref(`enrollments/${userId}/${classId}`).set({
+                const updates = {};
+                
+                updates[`enrollments/${userId}/${classId}`] = {
                     enrolled_at: firebase.database.ServerValue.TIMESTAMP,
                     payment_id: rsp.imp_uid,
                     merchant_uid: rsp.merchant_uid,
@@ -377,12 +395,32 @@ async function handlePayment() {
                     image_url: classData?.image_url || '',
                     category: classData?.category || '',
                     class_id: classId
-                });
+                };
+
+                // 구매한 수강권 반영
+                if (classData && classData.tickets && selectedPassType) {
+                    updates[`user_passes/${userId}/${classId}/updated_at`] = firebase.database.ServerValue.TIMESTAMP;
+                    
+                    if (selectedPassType === 'one_time') {
+                        updates[`user_passes/${userId}/${classId}/count`] = userPassCount + 1;
+                        userPassCount += 1;
+                    } else if (selectedPassType === 'multi') {
+                        const addedCount = classData.tickets.pass_count || 1;
+                        updates[`user_passes/${userId}/${classId}/count`] = userPassCount + addedCount;
+                        userPassCount += addedCount;
+                    } else if (selectedPassType === 'monthly') {
+                        updates[`user_passes/${userId}/${classId}/monthly`] = true;
+                        isMonthlySubscribed = true;
+                    }
+                }
+
+                await db.ref().update(updates);
 
                 isEnrolled = true;
                 updateEnrollmentUI();
 
                 showToast('success', '결제 완료! 🎉', `"${classData.title}" 클래스 수강이 시작됩니다.`);
+                setTimeout(() => window.location.reload(), 1500);
             } catch (err) {
                 console.error("Enrollment save error:", err);
                 showToast('error', '등록 오류', '결제는 완료되었으나 수강 등록에 문제가 발생했습니다. 고객센터에 문의해 주세요.');
@@ -406,14 +444,67 @@ function renderCorePageInfo(data) {
     document.getElementById('viewCategory').textContent = data.category || '기타';
     document.getElementById('sidebarCategory').textContent = data.category || '기타';
 
-    const price = data.price || 0;
+    const price = data.tickets && selectedPassType ? selectedPassPrice : (data.price || 0);
 
-    if (price === 0) {
-        document.getElementById('viewPrice').textContent = '무료';
-        document.getElementById('priceInstallment').textContent = '';
+    // ===== 다회권 / 구독권 UI 렌더링 =====
+    const passOptionsContainer = document.getElementById('passOptionsContainer');
+    if (passOptionsContainer && data.tickets && (data.tickets.price_one_time || data.tickets.price_multi || data.tickets.price_monthly)) {
+        let optionsHtml = '<div style="display:flex; flex-direction:column; gap:8px;">';
+        let firstAvailable = null;
+
+        if (data.tickets.price_one_time) {
+            optionsHtml += `
+                <label style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #444; border-radius:8px; cursor:pointer;">
+                    <span><input type="radio" name="passType" value="one_time" data-price="${data.tickets.price_one_time}" style="margin-right:8px;">1회 수강권</span>
+                    <span style="color:var(--comm-accent); font-weight:bold;">${data.tickets.price_one_time.toLocaleString()}원</span>
+                </label>`;
+            if (!firstAvailable) firstAvailable = { type: 'one_time', price: data.tickets.price_one_time };
+        }
+        if (data.tickets.price_multi && data.tickets.pass_count) {
+            optionsHtml += `
+                <label style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #444; border-radius:8px; cursor:pointer;">
+                    <span><input type="radio" name="passType" value="multi" data-price="${data.tickets.price_multi}" data-count="${data.tickets.pass_count}" style="margin-right:8px;">다회권 (${data.tickets.pass_count}회)</span>
+                    <span style="color:var(--comm-accent); font-weight:bold;">${data.tickets.price_multi.toLocaleString()}원</span>
+                </label>`;
+            if (!firstAvailable) firstAvailable = { type: 'multi', price: data.tickets.price_multi };
+        }
+        if (data.tickets.price_monthly) {
+            optionsHtml += `
+                <label style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #444; border-radius:8px; cursor:pointer;">
+                    <span><input type="radio" name="passType" value="monthly" data-price="${data.tickets.price_monthly}" style="margin-right:8px;">월정액(구독) 패스</span>
+                    <span style="color:var(--comm-accent); font-weight:bold;">${data.tickets.price_monthly.toLocaleString()}원/월</span>
+                </label>`;
+            if (!firstAvailable) firstAvailable = { type: 'monthly', price: data.tickets.price_monthly };
+        }
+        optionsHtml += '</div>';
+
+        if (firstAvailable) {
+            passOptionsContainer.style.display = 'block';
+            passOptionsContainer.innerHTML = optionsHtml;
+            // Add change listener
+            passOptionsContainer.querySelectorAll('input[name="passType"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    selectedPassType = e.target.value;
+                    selectedPassPrice = parseInt(e.target.dataset.price, 10);
+                    document.getElementById('viewPrice').textContent = selectedPassPrice.toLocaleString() + '원';
+                    document.getElementById('priceInstallment').textContent = '';
+                });
+            });
+            // Select first
+            const firstRadio = passOptionsContainer.querySelector('input[name="passType"]');
+            if (firstRadio) {
+                firstRadio.checked = true;
+                firstRadio.dispatchEvent(new Event('change'));
+            }
+        }
     } else {
-        document.getElementById('viewPrice').textContent = price.toLocaleString() + '원';
-        document.getElementById('priceInstallment').textContent = `월 ${(Math.floor(price / 5)).toLocaleString()}원 (5개월 할부 시)`;
+        if (price === 0) {
+            document.getElementById('viewPrice').textContent = '무료';
+            document.getElementById('priceInstallment').textContent = '';
+        } else {
+            document.getElementById('viewPrice').textContent = price.toLocaleString() + '원';
+            document.getElementById('priceInstallment').textContent = `월 ${(Math.floor(price / 5)).toLocaleString()}원 (5개월 할부 시)`;
+        }
     }
 
     // ===== 소개 탭: description HTML 렌더링 =====
@@ -455,12 +546,29 @@ function renderCorePageInfo(data) {
 
 function updateEnrollmentUI() {
     const btn = document.getElementById('btnEnroll');
-    if (btn && isEnrolled) {
-        btn.textContent = "✓ 수강 중인 클래스";
-        btn.style.background = "#2a2a2a";
-        btn.style.color = "#888";
-        btn.style.boxShadow = "none";
-        btn.disabled = true;
-        btn.style.cursor = "default";
+    const myPassStatus = document.getElementById('myPassStatus');
+    const myPassCountVal = document.getElementById('myPassCountVal');
+
+    if (myPassStatus && userPassCount > 0) {
+        myPassStatus.style.display = 'block';
+        myPassCountVal.textContent = userPassCount;
+    }
+    if (isMonthlySubscribed && myPassStatus) {
+        myPassStatus.style.display = 'block';
+        myPassStatus.innerHTML = `🌟 프리미엄 월정액 구독 중`;
+    }
+
+    if (btn) {
+        if (classData && classData.tickets) {
+             btn.textContent = "수강권(패스) 구매하기";
+             btn.disabled = false;
+        } else if (isEnrolled && !window.__BSQ_DEV_MODE__) {
+            btn.textContent = "✓ 수강 중인 클래스";
+            btn.style.background = "#2a2a2a";
+            btn.style.color = "#888";
+            btn.style.boxShadow = "none";
+            btn.disabled = true;
+            btn.style.cursor = "default";
+        }
     }
 }

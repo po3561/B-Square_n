@@ -117,18 +117,42 @@
 
     // ---- Bottom Nav (모바일 하단) ----
     function buildBottomNavHTML() {
-        const item = (href, icon, label, id) =>
-            `<a href="${href}" class="nav-item${activeNav === id ? ' active' : ''}">
-                <span class="icon">${icon}</span>
-                <span class="label">${label}</span>
+        const item = (href, iconSvg, label, id) =>
+            `<a href="${href}" class="nav-item${activeNav === id ? ' active' : ''}" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; flex:1; padding:8px 0; color:${activeNav === id ? 'var(--mac-primary)' : 'var(--mac-text-muted)'}; text-decoration:none;">
+                <div class="icon" style="width:24px; height:24px; display:flex; align-items:center; justify-content:center; fill:currentColor;">
+                    ${iconSvg}
+                </div>
+                <span class="label" style="font-size:10px; font-weight:${activeNav === id ? '600' : '400'}; line-height:1;">${label}</span>
             </a>`;
+            
+        // Apple-style line icons vs filled icons based on state
+        const icons = {
+            class: activeNav === 'class' ? 
+                `<svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>` : 
+                `<svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" opacity="0.8"/></svg>`,
+            membership: activeNav === 'membership' ? 
+                `<svg viewBox="0 0 24 24"><path d="M21 11.08V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7.92A1 1 0 0 0 3 11a1 1 0 0 0-1-1V7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a1 1 0 0 0-1 1 1 1 0 0 0-.01.08z"/></svg>` : 
+                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/></svg>`,
+            community: activeNav === 'community' ? 
+                `<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>` : 
+                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>`,
+            mypage: activeNav === 'mypage' ? 
+                `<svg viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>` : 
+                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+            cart: activeNav === 'cart' ? 
+                `<svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>` : 
+                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`,
+        };
+
         return `
-    <nav class="bottom-nav mobile-only" id="bsqBottomNav">
-        ${item(prefix + 'class/class_list.html', '▶️', '클래스', 'class')}
-        ${item('#', '🎟️', '멤버십', 'membership')}
-        ${item(prefix + 'community/community.html', '👥', '커뮤니티', 'community')}
-        ${item(prefix + 'mi_pesg/mypage.html', '👤', '마이페이지', 'mypage')}
-        ${item('#', '📺', '내 클래스', 'myclasses')}
+    <nav class="bottom-nav mobile-only" id="bsqBottomNav" style="display:none; position:fixed; bottom:0; left:0; width:100%; height:env(safe-area-inset-bottom, 60px) /* Fallback */ ; min-height:60px; padding-bottom:env(safe-area-inset-bottom); background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid rgba(0,0,0,0.08); z-index:900;">
+        <div style="display:flex; width:100%; height:100%; max-width:198px; margin:0 auto; justify-content:space-between; align-items:center; padding:0 8px;">
+            ${item(prefix + 'class/class_list.html', icons.class, '클래스', 'class')}
+            ${item('#', icons.membership, '멤버십', 'membership')}
+            ${item(homePrefix + 'index.html', icons.mypage, '마이페이지', 'home')}
+            ${item(prefix + 'community/community.html', icons.community, '커뮤니티', 'community')}
+            ${item('#', icons.cart, '장바구니', 'cart')}
+        </div>
     </nav>`;
     }
 
@@ -215,6 +239,22 @@
                 footer.insertAdjacentHTML('beforebegin', buildBottomNavHTML());
             }
         }
+
+        // Add padding to body to prevent content from being hidden behind the fixed Bottom Nav
+        // Since we are targeting a very specific 198px mobile width:
+        const checkMobilePadding = () => {
+            if (window.innerWidth <= 198 && !currentPath.includes('community')) {
+                document.body.style.paddingBottom = 'environment(safe-area-inset-bottom, 60px)';
+                document.body.style.paddingBottom = 'calc(env(safe-area-inset-bottom, 0px) + 60px)';
+                document.querySelector('.bottom-nav.mobile-only').style.display = 'block';
+            } else {
+                document.body.style.paddingBottom = '0';
+                const bnav = document.querySelector('.bottom-nav.mobile-only');
+                if (bnav) bnav.style.display = 'none';
+            }
+        };
+        checkMobilePadding();
+        window.addEventListener('resize', checkMobilePadding);
     }
 
     // ---- Drawer 이벤트 ----
@@ -299,16 +339,18 @@
     // 운영자 메뉴 렌더링
     function renderOperatorMenu() {
         const op = window.__BSQ_OPERATOR_PROFILE__ || {
-            name: '운영자',
+            name: '총괄 관리자',
             profile_image_url: 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png'
         };
         document.querySelectorAll('#userMenu').forEach(menuEl => {
             menuEl.innerHTML = `
-                <a href="${prefix}mi_pesg/mypage.html" class="user-profile-btn" style="text-decoration:none;">
+                <a href="${prefix}admin_dashboard/admin.html" class="user-profile-btn" style="text-decoration:none;">
                     <div class="user-avatar" style="background-image:url(${op.profile_image_url});">
                     </div>
                     <span class="user-name" style="color:#6e8efb;font-weight:700;">🛡️ ${op.name}</span>
                 </a>
+                <a href="${prefix}admin_dashboard/admin.html" class="btn-login-main" style="background: linear-gradient(135deg, #1e1e2d, #2c2c44); color:#fff; padding:6px 14px; margin-left:10px; font-size:0.85rem; border-radius:12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border:1px solid #444;">운영 관리자 대시보드</a>
+                <button type="button" class="btn-logout" onclick="handleGlobalLogout()" style="color:var(--text-secondary);font-size:0.8rem;background:none;border:none;cursor:pointer;margin-left:10px;">로그아웃</button>
             `;
         });
     }

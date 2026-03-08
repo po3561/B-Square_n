@@ -21,8 +21,44 @@ window.CommunityModules.ChatUI = (function () {
         setupReply();
         setupThemeToggle();
         setupMessageSearch();
+        setupGatheringUI();
         restoreTheme();
         console.log("🎨 ChatUI initialized");
+    }
+
+    // ==== 모집 카드 UI 이벤트 ====
+    function setupGatheringUI() {
+        const btnGathering = document.getElementById('btnGathering');
+        const modal = document.getElementById('gatheringModal');
+        const btnClose = document.getElementById('btnCloseGatheringModal');
+        const btnSubmit = document.getElementById('btnSendGatheringSubmit');
+
+        if (!btnGathering || !modal) return;
+
+        btnGathering.addEventListener('click', () => {
+            modal.style.display = 'flex';
+            document.getElementById('gatherTitle').value = '';
+            document.getElementById('gatherMin').value = '';
+            document.getElementById('gatherMax').value = '';
+        });
+
+        if (btnClose) btnClose.addEventListener('click', () => modal.style.display = 'none');
+
+        if (btnSubmit) {
+            btnSubmit.addEventListener('click', () => {
+                const title = document.getElementById('gatherTitle').value.trim();
+                const min = document.getElementById('gatherMin').value.trim();
+                const max = document.getElementById('gatherMax').value.trim();
+
+                if (!title || !min || !max) {
+                    alert("모든 항목을 입력해주세요.");
+                    return;
+                }
+                
+                sendGatheringCard(title, min, max);
+                modal.style.display = 'none';
+            });
+        }
     }
 
     // ==== 입력 UI ====
@@ -178,19 +214,42 @@ window.CommunityModules.ChatUI = (function () {
             nameEl.onclick = () => renderInfoPanel(roomId, roomType, roomInfo);
         }
 
-        // 상태
+        // 상태 & UI 업데이트
         const statusEl = document.getElementById('chatHeaderStatus');
+        const btnGathering = document.getElementById('btnGathering');
+        const btnGoToClass = document.getElementById('btnGoToClass');
+        
         if (roomType === 'dm' && roomInfo?.target_id) {
             bridge().watchPresence(roomInfo.target_id, (p) => {
-                statusEl.textContent = p.online ? '온라인' : '오프라인';
-                statusEl.className = 'chat-header-status' + (p.online ? ' online' : '');
+                if(statusEl) {
+                    statusEl.textContent = p.online ? '온라인' : '오프라인';
+                    statusEl.className = 'chat-header-status' + (p.online ? ' online' : '');
+                }
             });
+            if (btnGathering) btnGathering.style.display = 'none';
+            if (btnGoToClass) btnGoToClass.style.display = 'none';
         } else if (roomType === 'class') {
-            statusEl.textContent = '클래스 채팅';
-            statusEl.className = 'chat-header-status';
+            if(statusEl) {
+                statusEl.textContent = '클래스 채팅';
+                statusEl.className = 'chat-header-status';
+            }
+            if (btnGathering) {
+                // 운영자(개발모드)이거나 강사면 보임
+                const isOp = window.__BSQ_DEV_MODE__;
+                btnGathering.style.display = (isOp || (roomInfo && roomInfo.is_instructor)) ? 'inline-flex' : 'none';
+                // alignItems/justifyContent 적용을 위해 inline-flex 추천 (btn-input-icon 스타일)
+            }
+            if (btnGoToClass) {
+                btnGoToClass.style.display = 'inline-block';
+                btnGoToClass.href = `../class_view/class_view.html?id=${roomId}`;
+            }
         } else if (roomType === 'group') {
-            statusEl.textContent = '그룹 채팅';
-            statusEl.className = 'chat-header-status';
+            if(statusEl) {
+                statusEl.textContent = '그룹 채팅';
+                statusEl.className = 'chat-header-status';
+            }
+            if (btnGathering) btnGathering.style.display = 'none';
+            if (btnGoToClass) btnGoToClass.style.display = 'none';
         }
 
         bridge().markAsRead(roomId);
@@ -272,6 +331,24 @@ window.CommunityModules.ChatUI = (function () {
                     <span class="file-name">${msgData.file_name}</span>
                     <span class="file-size">${formatFileSize(msgData.file_size)}</span>
                 </div>
+            </div>`;
+        } else if (msgData.type === 'gathering_card') {
+            const gatherId = msgId;
+            const title = msgData.gather_title || '클래스 모임';
+            const minCap = msgData.min_capacity || 0;
+            const maxCap = msgData.max_capacity || 0;
+            const currentCount = msgData.current_count || 0;
+            const status = msgData.status || 'open';
+            
+            contentHtml = `
+            <div class="msg-bubble gathering-card" style="border:1px solid var(--border-color); border-radius:12px; padding:15px; background:rgba(0,0,0,0.2); min-width:250px;">
+                <h4 style="margin:0 0 10px 0; color:var(--comm-accent);">📅 ${escapeHtml(title)}</h4>
+                <p style="font-size:0.9rem; margin-bottom:15px;">참여 인원: ${currentCount} / ${maxCap}명 (최소 ${minCap}명)</p>
+                ${status === 'closed' 
+                    ? `<button class="btn-submit" disabled style="background:#555; cursor:not-allowed;">마감됨</button>` 
+                    : `<button class="btn-submit" onclick="window.CommunityModules.ChatUI.joinGathering('${currentRoomId}', '${gatherId}')">참여하기 (수강권 사용)</button>`
+                }
+                ${isMine && status === 'open' ? `<button class="btn-secondary" style="margin-top:10px; width:100%;" onclick="window.CommunityModules.ChatUI.closeGathering('${currentRoomId}', '${gatherId}')">모집 마감하기</button>` : ''}
             </div>`;
         } else {
             contentHtml = `<div class="msg-bubble">${escapeHtml(msgData.content || '')}</div>`;
@@ -437,7 +514,7 @@ window.CommunityModules.ChatUI = (function () {
                     user_avatar: profile.profile_image_url || '',
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
                     type: 'text',
-                    is_instructor: currentRoomInfo && currentRoomInfo.is_instructor ? true : false
+                    is_instructor: (currentRoomInfo && currentRoomInfo.is_instructor) || window.__BSQ_DEV_MODE__ ? true : false
                 });
             } else if (currentRoomType === 'group') {
                 const userId = bridge().getUserId();
@@ -597,6 +674,134 @@ window.CommunityModules.ChatUI = (function () {
     // ==== 유틸 ====
     function closeAllMenus() {
         document.querySelectorAll('.msg-context-menu').forEach(m => m.remove());
+    }
+
+    // ==== 모집(Gathering) 카드 로직 ====
+    async function sendGatheringCard(title, minCap, maxCap) {
+        if (!currentRoomId || currentRoomType !== 'class') return;
+        try {
+            const currentUserId = bridge().getUserId();
+            const profile = await bridge().getUserProfile(currentUserId);
+            
+            await bridge().getDb().ref(`chats/${currentRoomId}`).push({
+                type: 'gathering_card',
+                gather_title: title,
+                min_capacity: parseInt(minCap, 10),
+                max_capacity: parseInt(maxCap, 10),
+                current_count: 0,
+                status: 'open',
+                sender_id: currentUserId,
+                user_id: currentUserId,
+                user_name: profile.name || '강사',
+                user_avatar: profile.profile_image_url || '',
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                is_instructor: true
+            });
+        } catch (e) {
+            console.error('Send Gathering error:', e);
+            alert("모집 카드 전송에 실패했습니다.");
+        }
+    }
+
+    async function joinGathering(roomId, gatherId) {
+        let userId = bridge().getUserId();
+        if (window.__BSQ_DEV_MODE__) userId = 'OPERATOR_GHOST';
+        const db = bridge().getDb();
+        
+        try {
+            // First check user's passes
+            const passSnap = await db.ref(`user_passes/${userId}/${roomId}`).once('value');
+            const passInfo = passSnap.val() || {};
+            
+            if (!passInfo.monthly && (!passInfo.count || passInfo.count <= 0) && !window.__BSQ_DEV_MODE__) {
+                alert("수강권이 부족합니다. 클래스 페이지에서 수강권을 구매해주세요.");
+                return;
+            }
+
+            // Check if already joined
+            const partSnap = await db.ref(`class_participants/${gatherId}/${userId}`).once('value');
+            if (partSnap.exists()) {
+                alert("이미 참여하셨습니다.");
+                return;
+            }
+
+            // Use transaction to safely check and increment
+            const gatherRef = db.ref(`chats/${roomId}/${gatherId}`);
+            let errorMsg = null;
+            const result = await gatherRef.transaction((currentData) => {
+                if (currentData) {
+                    if (currentData.status !== 'open') {
+                        errorMsg = "이미 마감된 모집입니다.";
+                        return; // Abort
+                    }
+                    if (currentData.max_capacity > 0 && currentData.current_count >= currentData.max_capacity) {
+                        errorMsg = "모집 정원이 꽉 찼습니다.";
+                        return; // Abort
+                    }
+                    currentData.current_count = (currentData.current_count || 0) + 1;
+                }
+                return currentData;
+            });
+            
+            if (!result.committed) {
+                alert(errorMsg || "모집에 참여할 수 없습니다.");
+                return;
+            }
+
+            // Record participant
+            await db.ref(`class_participants/${gatherId}/${userId}`).set({
+                joined_at: firebase.database.ServerValue.TIMESTAMP,
+                used_pass: passInfo.monthly ? 'monthly' : 'ticket',
+                user_name: (await bridge().getUserProfile(userId)).name || '참여자'
+            });
+
+            // Deduct pass if ticket and not dev mode
+            if (!passInfo.monthly && !window.__BSQ_DEV_MODE__) {
+                await db.ref(`user_passes/${userId}/${roomId}/count`).set(passInfo.count - 1);
+            }
+            alert("참여가 성공적으로 완료되었습니다! 수강권 1개가 사용되었습니다.");
+            
+        } catch (e) {
+            console.error("Gathering join error:", e);
+            alert("참여 처리 중 오류가 발생했습니다.");
+        }
+    }
+
+    async function closeGathering(roomId, gatherId) {
+        if (!confirm("모집을 마감하시겠습니까? (최소 인원 미달 시 수강생들의 패스가 자동 환불됩니다.)")) return;
+        const db = bridge().getDb();
+        try {
+            const gatherRef = db.ref(`chats/${roomId}/${gatherId}`);
+            const gatherSnap = await gatherRef.once('value');
+            const gatherData = gatherSnap.val();
+            
+            if (!gatherData || gatherData.status === 'closed') {
+                alert("이미 마감되었거나 존재하지 않는 모집입니다.");
+                return;
+            }
+            
+            await gatherRef.update({ status: 'closed' });
+            
+            if (gatherData.current_count < gatherData.min_capacity) {
+                alert(`최소 인원(${gatherData.min_capacity}명) 미달로 모집이 자동 취소되며, 수강생들의 수강권이 자동 환불(반환)됩니다.`);
+                const partsSnap = await db.ref(`class_participants/${gatherId}`).once('value');
+                const parts = partsSnap.val() || {};
+                
+                // Refund pass tickets
+                for (const [uid, info] of Object.entries(parts)) {
+                    if (info.used_pass === 'ticket') {
+                        const countSnap = await db.ref(`user_passes/${uid}/${roomId}/count`).once('value');
+                        const curCount = countSnap.val() || 0;
+                        await db.ref(`user_passes/${uid}/${roomId}/count`).set(curCount + 1);
+                    }
+                }
+            } else {
+                alert(`총 ${gatherData.current_count}명 모집 확정되었습니다!`);
+            }
+        } catch(e) { 
+            console.error("Close gathering error:", e); 
+            alert("마감 처리 중 오류가 발생했습니다.");
+        }
     }
 
     function escapeHtml(s) {
@@ -832,6 +1037,7 @@ window.CommunityModules.ChatUI = (function () {
     return {
         init, openRoom, sendCurrentMessage, renderInfoPanel,
         getCurrentRoomId: () => currentRoomId,
-        getCurrentRoomType: () => currentRoomType
+        getCurrentRoomType: () => currentRoomType,
+        sendGatheringCard, joinGathering, closeGathering
     };
 })();

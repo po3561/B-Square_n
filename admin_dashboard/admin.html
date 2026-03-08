@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>총괄 관리자 대시보드 | B-Square</title>
+    
+    <!-- 전역 스타일 & 관리자 전용 스타일 -->
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css">
+    <link rel="stylesheet" href="admin.css">
+
+    <!-- 외부 라이브러리 -->
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Firebase & Supabase (권한 체크용) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="../bsq_server.js"></script>
+</head>
+<body class="admin-body">
+
+    <!-- 좌측 사이드바 (LNB) -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <h1 class="admin-logo">B-Square<span style="font-size:0.8rem; font-weight:400; display:block; color:#aaa; margin-top:4px;">ADMINISTRATION</span></h1>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item-link" onclick="location.href='../index.html'" style="color: var(--primary-accent); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1.5rem; margin-bottom: 1rem;">
+                <span class="icon">↗</span> 사이트 바로가기
+            </a>
+
+            <!-- 대시보드 홈 -->
+            <a href="#dashboard" class="nav-item" data-tab="tabDashboard">
+                <span class="icon">📊</span> 대시보드
+            </a>
+
+            <!-- 사이트 디자인 -->
+            <div class="nav-group">
+                <button class="nav-group-btn" aria-expanded="true">
+                    <span><span class="icon">🎨</span> 사이트 디자인</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="nav-sub">
+                    <a href="#menu_settings" class="nav-item" data-tab="tabMenuSettings">메뉴 설정</a>
+                    <a href="#homepage_settings" class="nav-item" data-tab="tabHomepage">홈페이지 설정</a>
+                    <a href="#page_settings" class="nav-item" data-tab="tabPages">페이지 관리</a>
+                    <a href="#footer_settings" class="nav-item" data-tab="tabFooter">푸터 설정</a>
+                </div>
+            </div>
+
+            <!-- 회원 관리 -->
+            <div class="nav-group">
+                <button class="nav-group-btn" aria-expanded="true">
+                    <span><span class="icon">👥</span> 회원 관리</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="nav-sub">
+                    <a href="#users" class="nav-item" data-tab="tabUsers">가입 회원</a>
+                    <a href="#roles" class="nav-item" data-tab="tabRoles">회원 그룹 관리 <span style="font-size:0.6rem; background:#6366f1; border-radius:10px; padding:2px 5px;">Beta</span></a>
+                </div>
+            </div>
+
+            <!-- 클래스 관리 -->
+            <div class="nav-group">
+                <button class="nav-group-btn" aria-expanded="true">
+                    <span><span class="icon">📚</span> 클래스 관리</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="nav-sub">
+                    <a href="#classes" class="nav-item" data-tab="tabAllClasses">클래스</a>
+                </div>
+            </div>
+
+            <!-- 게시판 관리 -->
+            <div class="nav-group">
+                <button class="nav-group-btn" aria-expanded="false">
+                    <span><span class="icon">📝</span> 게시판 관리</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="nav-sub" style="display:none;">
+                    <a href="#boards" class="nav-item" data-tab="tabBoards">사이트 게시판</a>
+                    <a href="#class_boards" class="nav-item" data-tab="tabClassBoards">클래스 게시판</a>
+                </div>
+            </div>
+
+            <!-- 리스트형 단일 메뉴들 -->
+            <a href="#reviews" class="nav-item" data-tab="tabReviews">
+                <span class="icon">💬</span> 리뷰 관리
+            </a>
+            <a href="#bookmarks" class="nav-item" data-tab="tabBookmarks">
+                <span class="icon">❤️</span> 찜한 목록
+            </a>
+            <a href="#coupons" class="nav-item" data-tab="tabCoupons">
+                <span class="icon">🎫</span> 쿠폰 관리
+            </a>
+            <a href="#operators" class="nav-item active" data-tab="tabOperators">
+                <span class="icon">🧑‍💻</span> 운영자 설정
+            </a>
+            
+            <a href="#search_code" class="nav-item" data-tab="tabSearchCode">
+                <span class="icon">🔍</span> 검색 및 코드 설정
+            </a>
+            <a href="#seo" class="nav-item" data-tab="tabSEO">
+                <span class="icon">🌍</span> SEO 관리 <span style="font-size:0.6rem; background:#6366f1; border-radius:10px; padding:2px 5px;">Beta</span>
+            </a>
+
+            <!-- 마케팅 관리 -->
+            <div class="nav-group">
+                <button class="nav-group-btn" aria-expanded="false">
+                    <span><span class="icon">💡</span> 마케팅 관리</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="nav-sub" style="display:none;">
+                    <a href="#forms" class="nav-item" data-tab="tabForms">폼 관리 <span style="font-size:0.6rem; background:#6366f1; border-radius:10px; padding:2px 5px;">Beta</span></a>
+                    <a href="#marketing_tools" class="nav-item" data-tab="tabMarketingTools">마케팅 툴 연동</a>
+                </div>
+            </div>
+
+            <!-- 마케팅 메시지 -->
+            <div class="nav-group">
+                <button class="nav-group-btn" aria-expanded="false">
+                    <span><span class="icon">✉️</span> 마케팅 메시지</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="nav-sub" style="display:none;">
+                    <a href="#msg_templates" class="nav-item" data-tab="tabMsgTemplates">메시지 템플릿 관리</a>
+                    <a href="#campaigns" class="nav-item" data-tab="tabCampaigns">캠페인 관리</a>
+                </div>
+            </div>
+
+            <!-- 매출 및 정산 관리 -->
+            <div class="nav-group">
+                <button class="nav-group-btn" aria-expanded="true">
+                    <span><span class="icon">💰</span> 매출 및 정산 관리</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="nav-sub">
+                    <a href="#payments" class="nav-item" data-tab="tabPaymentsView">결제 조회</a>
+                    <a href="#settlement_info" class="nav-item" data-tab="tabSettlementInfo">정산 정보 관리</a>
+                    <a href="#settlement_history" class="nav-item" data-tab="tabSettlementHistory">정산 내역</a>
+                    <a href="#tax" class="nav-item" data-tab="tabTax">부가세 신고 자료</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="admin-profile">
+                <div class="avatar">👨‍💻</div>
+                <div class="info">
+                    <div class="role" style="font-size:0.7rem; color:#aaa;">총괄 관리자</div>
+                    <div class="name" id="adminUserName">로딩 중...</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 우측 메인 콘텐츠 영역 -->
+    <main class="admin-main">
+        
+        <!-- 전역 시스템 에러 배너 (Firebase 권한 오류 등) -->
+        <div id="globalErrorBanner" style="display:none; background:#fee2e2; border-left:5px solid #ef4444; color:#991b1b; padding:1.2rem; margin:1rem 2rem 0 2rem; border-radius:8px; display:none; align-items:flex-start; gap:1rem; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+            <div style="font-size:1.5rem; line-height:1;">🚨</div>
+            <div style="flex:1;">
+                <h4 style="margin:0 0 0.5rem 0; font-weight:700; color:#b91c1c;">데이터베이스 저장이 거부되었습니다. (Permission Denied)</h4>
+                <p style="margin:0; font-size:0.9rem; line-height:1.5;">현재 Firebase의 보안 규칙(Rules)이 업데이트되지 않아 관리자 기능과 설정 저장이 차단된 상태입니다.<br>
+                <strong>해결 방법:</strong> 최상단 폴더에 있는 <code>firebase_rules.json</code> 파일의 내용을 복사하여 <a href="https://console.firebase.google.com" target="_blank" style="color:#ef4444; text-decoration:underline; font-weight:600;">Firebase Console</a> 접속 ➡️ Realtime Database ➡️ 규칙(Rules) 탭 ➡️ <strong>기존 내용을 모두 지우고 붙여넣기 한 뒤 [게시]</strong> 해주세요!</p>
+            </div>
+            <button onclick="document.getElementById('globalErrorBanner').style.display='none'" style="background:none; border:none; cursor:pointer; padding:0.5rem; color:#b91c1c;">✖</button>
+        </div>
+
+        <header class="admin-topbar">
+            <h2 id="currentTabTitle">대시보드</h2>
+            <div class="topbar-actions">
+                <button class="btn-refresh" id="btnAdminRefresh">🔄 데이터 새로고침</button>
+            </div>
+        </header>
+
+        <div class="admin-content-wrapper">
+            
+            <!-- 탭 1: 대시보드 홈 -->
+            <section id="tabDashboard" class="admin-tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">총 거래액 (KRW)</div>
+                        <div class="stat-value" id="statRevenue">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">총 가입자 수</div>
+                        <div class="stat-value" id="statUsers">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">운영중인 클래스</div>
+                        <div class="stat-value" id="statClasses">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">오늘 방문자</div>
+                        <div class="stat-value" id="statVisitors" style="color:#10b981;">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">현재 접속자 (Live)</div>
+                        <div class="stat-value" id="statActive" style="color:#ef4444;">0</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3 class="section-title">최근 7일 지표 분석</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="mainDashboardChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭 2: 회원 관리 (가입 회원 목록) -->
+            <section id="tabUsers" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">가입 회원 목록</h3>
+                        <div class="search-box">
+                            <input type="text" id="searchInputUsers" placeholder="이름 또는 이메일 검색...">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>UID</th>
+                                    <th>이름</th>
+                                    <th>이메일</th>
+                                    <th>가입일</th>
+                                    <th>권한</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminUsersTableBody">
+                                <!-- JS 동적 생성 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 삭제된 구버전 탭 위치 -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">결제 내역 조회</h3>
+                        <div class="filter-group">
+                            <select id="filterPaymentStatus">
+                                <option value="all">전체 상태</option>
+                                <option value="paid">결제 완료</option>
+                                <option value="refunded">환불됨</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>주문번호</th>
+                                    <th>클래스/상품명</th>
+                                    <th>주문자</th>
+                                    <th>주문 일시</th>
+                                    <th>상태</th>
+                                    <th>결제 수단</th>
+                                    <th>결제 금액</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminPaymentsTableBody">
+                                <!-- JS 동적 생성 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭 5: 홈페이지 설정 -->
+            <section id="tabHomepage" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header" style="justify-content: space-between;">
+                        <h3 class="section-title">홈페이지 설정</h3>
+                        <button class="btn-primary" id="btnSaveHomepage">저장</button>
+                    </div>
+                    <div class="admin-grid-layout" style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem; padding-top:1.5rem;">
+                        <div class="settings-desc">
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">사이트 이름 및 주소 설정</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">사이트 이름을 설정할 수 있습니다.</p>
+                        </div>
+                        <div class="settings-fields" style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
+                            <div class="field-group" style="margin-bottom:1rem;">
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사이트 이름</label>
+                                <input type="text" id="settingSiteName" placeholder="예: 비스퀘어" class="admin-form-input">
+                            </div>
+                            <div style="display:flex; gap:1rem;">
+                                <div class="field-group" style="flex:1;">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사이트 대표 URL</label>
+                                    <input type="text" id="settingSiteURL" placeholder="https://" class="admin-form-input">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr style="border:none; border-top:1px solid var(--admin-border); margin:2rem 0;">
+
+                    <div class="admin-grid-layout" style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                        <div class="settings-desc">
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">로고 설정</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">사이트 헤더 로고 및 파비콘에 사용되는 이미지를 설정할 수 있습니다.</p>
+                        </div>
+                        <div class="settings-fields" style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
+                            <div style="display:flex; gap:2rem;">
+                                <div class="field-group">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">로고 이미지 업로드</label>
+                                    <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+                                        <input type="file" id="settingLogoFile" accept="image/*" style="display:none;">
+                                        <button class="btn-small outline" onclick="document.getElementById('settingLogoFile').click()">이미지 선택</button>
+                                        <button class="btn-small outline" id="btnRemoveLogo" style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">삭제</button>
+                                    </div>
+                                    <input type="hidden" id="settingLogoURL">
+                                    <div style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:8px; padding:10px; display:flex; justify-content:center; align-items:center; min-height:80px;">
+                                        <img id="previewLogo" src="" alt="로고가 없습니다." style="max-width:200px; max-height:60px; display:none;">
+                                        <span id="logoPlaceholderTxt" style="color:var(--mac-text-muted); font-size:0.85rem;">로고 이미지를 업로드해주세요.</span>
+                                    </div>
+                                </div>
+                                <div class="field-group">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">파비콘 업로드</label>
+                                    <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+                                        <input type="file" id="settingFaviconFile" accept="image/*" style="display:none;">
+                                        <button class="btn-small outline" onclick="document.getElementById('settingFaviconFile').click()">이미지 선택</button>
+                                        <button class="btn-small outline" id="btnRemoveFavicon" style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">삭제</button>
+                                    </div>
+                                    <input type="hidden" id="settingFaviconURL">
+                                    <div style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:8px; padding:10px; display:flex; justify-content:center; align-items:center; min-height:80px;">
+                                        <img id="previewFavicon" src="" alt="파비콘이 없습니다." style="max-width:60px; max-height:60px; display:none; border-radius:8px;">
+                                        <span id="faviconPlaceholderTxt" style="color:var(--mac-text-muted); font-size:0.85rem;">파비콘을 업로드해주세요.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr style="border:none; border-top:1px solid var(--admin-border); margin:2rem 0;">
+
+                    <div class="admin-grid-layout" style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                        <div class="settings-desc">
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">광고 배너 설정</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">메인 홈페이지 상단에 롤링되는 광고 배너 이미지를 관리합니다.</p>
+                            <button id="btnAddBanner" class="btn-primary" style="background:#4f46e5; margin-top:1rem; width:100%;">+ 배너 추가하기</button>
+                        </div>
+                        <div class="settings-fields" style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
+                            <div id="bannerListContainer" style="display:flex; flex-direction:column; gap:1rem;">
+                                <!-- 동적 로딩 배너 아이템 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭 6: 푸터 설정 -->
+            <section id="tabFooter" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header" style="justify-content: space-between;">
+                        <h3 class="section-title">푸터 설정</h3>
+                        <button class="btn-primary" id="btnSaveFooter">저장</button>
+                    </div>
+                    <div class="admin-grid-layout" style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding-top:1.5rem;">
+                        <div class="settings-fields" style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border); grid-column: span 2;">
+                            <p style="margin-bottom:1.5rem; color:var(--admin-text-muted);">사이트 하단에 표시되는 사업자 정보를 설정합니다.</p>
+                            
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+                                <div class="field-group">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">회사명(상호)</label>
+                                    <input type="text" id="setFooterCompany" placeholder="예: (주)비스퀘어" class="admin-form-input">
+                                </div>
+                                <div class="field-group">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">대표자 성명</label>
+                                    <input type="text" id="setFooterCEO" placeholder="대표자명" class="admin-form-input">
+                                </div>
+                                <div class="field-group" style="grid-column: span 2;">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">주소</label>
+                                    <input type="text" id="setFooterAddress" placeholder="사업장 소재지 주소" class="admin-form-input">
+                                </div>
+                                <div class="field-group">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사업자등록번호</label>
+                                    <input type="text" id="setFooterBizNum" placeholder="000-00-00000" class="admin-form-input">
+                                </div>
+                                <div class="field-group">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">통신판매업 신고번호</label>
+                                    <input type="text" id="setFooterMailNum" placeholder="제 0000-지역-0000 호" class="admin-form-input">
+                                </div>
+                                <div class="field-group">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">고객센터 전화번호</label>
+                                    <input type="text" id="setFooterCS" placeholder="0000-0000" class="admin-form-input">
+                                </div>
+                                <div class="field-group">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">이메일</label>
+                                    <input type="text" id="setFooterEmail" placeholder="cs@domain.com" class="admin-form-input">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            </section>
+
+            <!-- 탭: 00_Placeholder (미구현 메뉴 공통) -->
+            <section id="tabPlaceholder" class="admin-tab-content">
+                <div class="admin-card" style="text-align:center; padding:5rem 2rem;">
+                    <h2 style="color:var(--admin-text-muted); margin-bottom:1rem;">🚧 페이지를 준비 중입니다.</h2>
+                    <p style="color:#777;">해당 기능은 추후 업데이트를 통해 제공될 예정입니다.</p>
+                </div>
+            </section>
+
+            <!-- 탭: 운영자 설정 (tabOperators) -->
+            <section id="tabOperators" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header" style="justify-content: space-between;">
+                        <div>
+                            <h3 class="section-title">운영자 설정</h3>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">사이트를 관리하는 운영자와 강의를 진행하는 강사를 관리할 수 있습니다.</p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button class="btn-primary" style="background:#4f46e5;">운영자 등록</button>
+                            <button class="btn-primary" style="background:#4f46e5;">강사 등록</button>
+                        </div>
+                    </div>
+                    <div style="padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--admin-border);">
+                        <div style="display:flex; gap:0.5rem;">
+                            <div style="padding:0.4rem 0.8rem; background:#111; color:#fff; border-radius:6px; font-size:0.8rem; font-weight:600;" id="countAllOps">전체 0명</div>
+                            <div style="padding:0.4rem 0.8rem; background:#f4f4f5; color:#333; border-radius:6px; font-size:0.8rem;" id="countAdmins">운영자 0명</div>
+                            <div style="padding:0.4rem 0.8rem; background:#f4f4f5; color:#333; border-radius:6px; font-size:0.8rem;" id="countInsts">강사 0명</div>
+                        </div>
+                        <div style="display:flex; gap:0.5rem;">
+                            <select class="admin-form-input" style="padding:0.4rem; padding-right:2rem; margin:0;"><option>10개씩</option></select>
+                            <div style="position:relative;">
+                                <input type="text" class="admin-form-input" placeholder="이름 또는 이메일 검색" style="margin:0; width:200px;">
+                                <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#888;">🔍</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:50px;"><input type="checkbox"></th>
+                                    <th>이름</th>
+                                    <th>연락처</th>
+                                    <th>이메일</th>
+                                    <th>역할</th>
+                                </tr>
+                            </thead>
+                            <tbody id="operatorsTableBody">
+                                <!-- JS Injected -->
+                                <tr><td colspan="5" style="text-align:center;">데이터를 불러오는 중입니다...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 쿠폰 관리 (tabCoupons) -->
+            <section id="tabCoupons" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header" style="justify-content: space-between;">
+                        <div>
+                            <h3 class="section-title">쿠폰 관리</h3>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">마케팅 이벤트나 고객 보상을 위해 사용할 수 있는 할인 쿠폰을 발급하고 관리합니다.</p>
+                        </div>
+                        <button class="btn-primary" style="background:#4f46e5;" id="btnOpenCouponModal">+ 새 쿠폰 발급</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>쿠폰 코드</th>
+                                    <th>내용</th>
+                                    <th>할인 혜택</th>
+                                    <th>유효 기한</th>
+                                    <th>발행일</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="couponsTableBody">
+                                <tr><td colspan="6" style="text-align:center;">데이터를 불러오는 중입니다...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 새 쿠폰 발급 폼 (간단히 인라인 렌더링 후 JS에서 토글) -->
+                <div id="couponFormModal" style="display:none; padding:1.5rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; margin-top:1rem;">
+                    <h4 style="margin-bottom:1rem; font-size:1.1rem; color:#1e293b;">새 쿠폰 만들기</h4>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div class="field-group">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">할인 타입</label>
+                            <select id="newCouponType" class="admin-form-input">
+                                <option value="percent">% 할인</option>
+                                <option value="fixed">원 할인</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">할인액 / 할인율</label>
+                            <input type="number" id="newCouponAmount" class="admin-form-input" placeholder="예: 20 또는 5000">
+                        </div>
+                        <div class="field-group" style="grid-column: span 2;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">쿠폰 설명</label>
+                            <input type="text" id="newCouponDesc" class="admin-form-input" placeholder="스프링 시즌 오픈 기념 20% 할인">
+                        </div>
+                        <div class="field-group">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">만료 일자</label>
+                            <input type="date" id="newCouponExpiry" class="admin-form-input">
+                        </div>
+                    </div>
+                    <div style="margin-top:1.5rem; display:flex; gap:0.5rem; justify-content:flex-end;">
+                        <button class="btn-small outline" id="btnCancelCoupon" style="color:#64748b; border-color:#cbd5e1;">취소</button>
+                        <button class="btn-primary" id="btnSaveCoupon" style="background:#10b981;">발급하기</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: SEO 관리 (tabSEO) -->
+            <section id="tabSEO" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header" style="justify-content: space-between;">
+                        <div>
+                            <h3 class="section-title">SEO 메타 태그 최적화</h3>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">검색 엔진(Google, Naver 등) 및 소셜 미디어 공유 시 노출될 정보를 설정합니다.</p>
+                        </div>
+                        <button class="btn-primary" id="btnSaveSEO" style="background:#4f46e5;">저장하기</button>
+                    </div>
+                    <div style="padding:1.5rem;">
+                        <div style="display:grid; grid-template-columns:1fr; gap:1.5rem;">
+                            <div class="field-group">
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사이트 검색 제목 (Title Tag)</label>
+                                <input type="text" id="seoTitle" class="admin-form-input" placeholder="B-Square | 최고의 클래스를 만나보세요">
+                                <small style="display:block; margin-top:4px; color:#888;">브라우저 탭과 검색 결과의 제목으로 나타납니다. (권장: 60자 이내)</small>
+                            </div>
+                            <div class="field-group">
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사이트 설명 (Description)</label>
+                                <textarea id="seoDescription" class="admin-form-input" style="height:80px; resize:none;" placeholder="B-Square는 다양한 분야의 전문 강사들이 모여 지식을 나누는 프리미엄 클래스 플랫폼입니다."></textarea>
+                                <small style="display:block; margin-top:4px; color:#888;">검색 결과 제목 아래에 표시되는 사이트 설명입니다. (권장: 155자 이내)</small>
+                            </div>
+                            <div class="field-group">
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">검색 키워드 (Keywords)</label>
+                                <input type="text" id="seoKeywords" class="admin-form-input" placeholder="클래스, 온라인강의, 원데이클래스, 취미">
+                                <small style="display:block; margin-top:4px; color:#888;">쉼표(,)로 구분하여 입력해주세요.</small>
+                            </div>
+                            <div class="field-group">
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">대표 썸네일 (og:image URL)</label>
+                                <input type="text" id="seoImage" class="admin-form-input" placeholder="https://domain.com/assets/og_image.jpg">
+                                <small style="display:block; margin-top:4px; color:#888;">카카오톡, 페이스북 등에 링크를 공유할 때 나타날 대표 이미지 주소입니다.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 클래스 목록 (tabAllClasses) -->
+            <section id="tabAllClasses" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header" style="justify-content: space-between;">
+                        <h3 class="section-title">클래스</h3>
+                        <button class="btn-primary" style="background:#4f46e5;">+ 클래스 생성</button>
+                    </div>
+                    <!-- 카테고리 필터바 -->
+                    <div style="display:flex; gap:1rem; padding:1rem 1.5rem; border-bottom:1px solid var(--admin-border); overflow-x:auto;">
+                        <button style="padding:0.4rem 1rem; border:1px solid #ddd; background:#fff; border-radius:20px; font-size:0.85rem; white-space:nowrap; font-weight:600;">전체</button>
+                        <button style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">👥 소모임/동아리</button>
+                        <button style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">✨ 맛있는 클래스</button>
+                        <button style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">🔥 운동 클래스</button>
+                        <button style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">+ 카테고리 추가</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:50px;"><input type="checkbox"></th>
+                                    <th>클래스</th>
+                                    <th>카테고리</th>
+                                    <th>가격</th>
+                                    <th>수강생 수 / 정원</th>
+                                    <th>상태 (승인)</th>
+                                    <th>공개여부</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allClassesTableBody">
+                                <!-- JS Injected -->
+                                <tr><td colspan="7" style="text-align:center;">데이터를 불러오는 중입니다...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 리뷰 관리 (tabReviews) -->
+            <section id="tabReviews" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">리뷰 관리</h3>
+                        <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">모든 클래스의 리뷰를 최신 작성된 순서로 검색할 수 있습니다.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>클래스</th>
+                                    <th>회원 이름</th>
+                                    <th>이메일</th>
+                                    <th>등록일</th>
+                                    <th>평점</th>
+                                    <th>리뷰</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reviewsTableBody">
+                                <!-- JS Injected -->
+                                <tr><td colspan="7" style="text-align:center;">데이터를 불러오는 중입니다...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 정산 정보 등록 (tabSettlementInfo) -->
+            <section id="tabSettlementInfo" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header" style="flex-direction:column; align-items:flex-start;">
+                        <h3 class="section-title">정산 정보 관리</h3>
+                        <p style="font-size:0.85rem; color:#888; margin-top:0.5rem; line-height:1.4;">라이브클래스에서 발생한 수익을 정산 받으시려면 정산 정보 등록이 필요합니다.<br>입력한 정보가 유효하지 않거나 확인이 필요한 경우 정산이 보류될 수 있습니다.</p>
+                    </div>
+                    <div style="padding:1.5rem; max-width:800px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                            <h4 style="font-size:1.1rem; font-weight:600;">정산 서류 정보 및 자료 제출</h4>
+                            <button class="btn-primary" style="background:#fff; color:#333; border:1px solid #ddd;" id="btnSaveSettlementInfo">저장</button>
+                        </div>
+                        
+                        <div class="field-group" style="margin-bottom:1.5rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">회사명 <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
+                            <input type="text" id="setCoName" placeholder="예시: 주식회사 비스퀘어" class="admin-form-input">
+                        </div>
+                        <div class="field-group" style="margin-bottom:1.5rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">대표자명 <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
+                            <input type="text" id="setCeo" placeholder="사업자등록증 상의 대표명을 입력해 주세요" class="admin-form-input">
+                        </div>
+                        <div class="field-group" style="margin-bottom:1.5rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사업자 등록번호 <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
+                            <input type="text" id="setBizNum" placeholder="'-' 없이 숫자만 입력해주세요" class="admin-form-input">
+                        </div>
+                        <div class="field-group" style="margin-bottom:1.5rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">회사 주소 <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
+                            <input type="text" id="setAddr" placeholder="사업자등록증의 주소로 입력해주세요." class="admin-form-input">
+                        </div>
+                        <div class="field-group" style="margin-bottom:1.5rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">업태 <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
+                            <input type="text" id="setBizType" placeholder="교육서비스업" class="admin-form-input">
+                        </div>
+                        <div class="field-group" style="margin-bottom:1.5rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">정산 담당자 이메일 <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
+                            <input type="text" id="setManagerEmail" placeholder="본 메일로 정산 내역 및 세금계산서가 발송됩니다." class="admin-form-input">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 메뉴 설정 (tabMenuSettings) -->
+            <section id="tabMenuSettings" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header" style="flex-direction:column; align-items:flex-start;">
+                        <h3 class="section-title">메뉴 설정</h3>
+                        <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">사이트 메뉴의 이름 변경, 사용 여부를 관리하고 메뉴에 외부 URL을 연결할 수 있습니다.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>메뉴명</th>
+                                    <th>이동할 링크</th>
+                                    <th>표시 대상</th>
+                                    <th>새 창으로 열기</th>
+                                    <th>메뉴 보이기</th>
+                                    <th>수정</th>
+                                </tr>
+                            </thead>
+                            <tbody id="menuSettingsTableBody">
+                                <tr>
+                                    <td style="font-weight:600;">홈</td>
+                                    <td style="color:#888;">메인 페이지 ↗</td>
+                                    <td>전체</td>
+                                    <td>아니오</td>
+                                    <td>네</td>
+                                    <td><button style="padding:0.3rem 0.6rem; border:1px solid #ddd; background:#fff; border-radius:4px; font-size:0.8rem; cursor:pointer;">수정</button></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:600;">클래스</td>
+                                    <td style="color:#888;">프로그램 ↗</td>
+                                    <td>전체</td>
+                                    <td>아니오</td>
+                                    <td>네</td>
+                                    <td><button style="padding:0.3rem 0.6rem; border:1px solid #ddd; background:#fff; border-radius:4px; font-size:0.8rem; cursor:pointer;">수정</button></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:600;">공지사항/FAQ</td>
+                                    <td style="color:#888;">공지사항/FAQ ↗</td>
+                                    <td>전체</td>
+                                    <td>아니오</td>
+                                    <td>네</td>
+                                    <td><button style="padding:0.3rem 0.6rem; border:1px solid #ddd; background:#fff; border-radius:4px; font-size:0.8rem; cursor:pointer;">수정</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 결제 조회 (tabPaymentsView) -->
+            <section id="tabPaymentsView" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">결제 조회</h3>
+                        <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">결제 및 신청 내역을 조건에 따라 검색하고 세부 내역을 확인할 수 있습니다.</p>
+                    </div>
+                    <div style="padding:1.5rem; border-bottom:1px solid var(--admin-border);">
+                        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                            <span style="font-weight:600; width:80px;">조회 기간</span>
+                            <button style="padding:0.4rem 1rem; border:1px solid #ddd; background:#fff; border-radius:4px;">오늘</button>
+                            <button style="padding:0.4rem 1rem; border:1px solid #ddd; background:#111; color:#fff; border-radius:4px;">이번 달</button>
+                            <div style="display:flex; align-items:center; gap:0.5rem; margin-left:1rem;">
+                                <input type="date" class="admin-form-input" style="margin:0; padding:0.4rem;"> ~ <input type="date" class="admin-form-input" style="margin:0; padding:0.4rem;">
+                            </div>
+                        </div>
+                        <div style="text-align:center; margin-top:2rem;">
+                            <button class="btn-primary" style="background:#3b82f6; padding:0.6rem 3rem;">검색</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>주문번호</th>
+                                    <th>클래스</th>
+                                    <th>주문자</th>
+                                    <th>신청일시</th>
+                                    <th>결제상태</th>
+                                    <th>결제수단</th>
+                                    <th>결제금액</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsSearchTableBody">
+                                <!-- JS Injected -->
+                                <tr><td colspan="7" style="text-align:center;">데이터 없음</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 정산 내역 (tabSettlementHistory) -->
+            <section id="tabSettlementHistory" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">정산 내역</h3>
+                        <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">정산 시점별 세부 정산 내역을 확인하실 수 있습니다.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>정산일</th>
+                                    <th>정산상태</th>
+                                    <th>정산건수</th>
+                                    <th>결제금액(원)</th>
+                                    <th>판매수수료</th>
+                                    <th>PG수수료</th>
+                                    <th>정산금액(원)</th>
+                                    <th>상세 내역</th>
+                                </tr>
+                            </thead>
+                            <tbody id="settlementsTableBody">
+                                <!-- JS Injected -->
+                                <tr><td colspan="8" style="text-align:center;">정산된 데이터가 없습니다.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <!-- 탭: 가입 회원 (tabUsers) -->
+            <section id="tabUsers" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">가입 회원</h3>
+                        <p style="font-size:0.85rem; color:var(--mac-text-muted); margin-left:1rem; margin-top:0.3rem;">전체 가입 회원 목록을 확인하고 관리합니다.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>가입일</th>
+                                    <th>이름</th>
+                                    <th>이메일</th>
+                                    <th>연락처</th>
+                                    <th>상태</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allUsersTableBody">
+                                <tr><td colspan="6" style="text-align:center;">데이터를 불러오는 중입니다...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 회원 그룹 관리 (tabRoles) -->
+            <section id="tabRoles" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">회원 그룹 관리 <span class="admin-badge primary">Beta</span></h3>
+                    </div>
+                    <div style="padding: 2rem; text-align:center; color: var(--mac-text-muted);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>
+                        <h4>회원 그룹(등급) 기능은 준비 중입니다.</h4>
+                        <p>향후 업데이트를 통해 VIP, 일반 등급 등 다단계 회원 분류 기능이 제공될 예정입니다.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 사이트 게시판 (tabBoards) -->
+            <section id="tabBoards" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header" style="justify-content: space-between;">
+                        <h3 class="section-title">사이트 게시판 (공지사항/FAQ)</h3>
+                        <button class="btn-primary" id="btnWriteGlobalNotice">+ 새 글 작성</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>분류</th>
+                                    <th>제목</th>
+                                    <th>작성자</th>
+                                    <th>작성일</th>
+                                    <th>조회수</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="globalBoardsTableBody">
+                                <!-- JS Injected -->
+                                <tr><td colspan="6" style="text-align:center;">게시물을 불러오는 중입니다...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 클래스 게시판 (tabClassBoards) -->
+            <section id="tabClassBoards" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">클래스 게시판 모아보기</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>클래스명</th>
+                                    <th>내용 요약</th>
+                                    <th>등록일</th>
+                                    <th>작성자 (강사)</th>
+                                    <th>이동</th>
+                                </tr>
+                            </thead>
+                            <tbody id="classBoardsTableBody">
+                                <!-- JS Injected -->
+                                <tr><td colspan="5" style="text-align:center;">클래스 공지사항을 불러오는 중입니다...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 찜한 목록 (tabBookmarks) -->
+            <section id="tabBookmarks" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">찜한 목록 (인기 랭킹)</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>순위</th>
+                                    <th>클래스명</th>
+                                    <th>강사명</th>
+                                    <th>찜(❤️) 개수</th>
+                                    <th>상태</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookmarksTableBody">
+                                <tr><td colspan="5" style="text-align:center;">통계 데이터를 산출하는 중입니다...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 검색 및 코드 설정 (tabSearchCode) -->
+            <section id="tabSearchCode" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">검색 및 외부 스크립트 코드 설정</h3>
+                    </div>
+                    <div style="padding:1.5rem;">
+                        <div class="field-group" style="margin-bottom:1.5rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Google Analytics (GA4) 측정 ID</label>
+                            <input type="text" id="scriptGa4" placeholder="G-XXXXXXXXXX" class="admin-form-input">
+                            <small style="color:var(--mac-text-muted); display:block; margin-top:4px;">구글 애널리틱스 트래킹 코드가 자동으로 삽입됩니다.</small>
+                        </div>
+                        <div class="field-group" style="margin-bottom:1.5rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Meta (Facebook) Pixel ID</label>
+                            <input type="text" id="scriptPixel" placeholder="123456789012345" class="admin-form-input">
+                        </div>
+                        <div class="field-group" style="margin-bottom:1.5rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">&lt;head&gt; 사용자 정의 스크립트</label>
+                            <textarea id="scriptCustomHead" class="admin-form-input" style="height:120px; font-family:monospace;" placeholder="<!-- 네이버 웹마스터 소유확인 등 -->"></textarea>
+                        </div>
+                        <div style="text-align:right;">
+                            <button class="btn-primary" id="btnSaveScripts">스크립트 저장</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 폼 관리 (tabForms) -->
+            <section id="tabForms" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">커스텀 폼 관리 <span class="admin-badge primary">Beta</span></h3>
+                    </div>
+                    <div style="padding: 2rem; text-align:center; color: var(--mac-text-muted);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+                        <h4>설문조사 및 신청서 폼 빌더는 준비 중입니다.</h4>
+                        <p>현재는 Google Forms나 Tally 등 외부 폼 링크를 메뉴에 연결하여 사용해주세요.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 마케팅 툴 연동 (tabMarketingTools) -->
+            <section id="tabMarketingTools" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">마케팅 툴 연동</h3>
+                    </div>
+                    <div style="padding:1.5rem;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem; border:1px solid var(--mac-border-light); border-radius:8px; margin-bottom:1rem;">
+                            <div style="display:flex; align-items:center; gap:1rem;">
+                                <div style="font-size:2rem;">💬</div>
+                                <div>
+                                    <h4 style="margin:0 0 0.2rem 0;">카카오톡 알림톡 API</h4>
+                                    <p style="margin:0; font-size:0.85rem; color:var(--mac-text-muted);">클래스 신청 및 취소 시 자동 발송</p>
+                                </div>
+                            </div>
+                            <span class="admin-badge muted">미연동</span>
+                        </div>
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem; border:1px solid var(--mac-border-light); border-radius:8px;">
+                            <div style="display:flex; align-items:center; gap:1rem;">
+                                <div style="font-size:2rem;">📧</div>
+                                <div>
+                                    <h4 style="margin:0 0 0.2rem 0;">스티비 (Stibee) 연동</h4>
+                                    <p style="margin:0; font-size:0.85rem; color:var(--mac-text-muted);">뉴스레터 이메일 마케팅 자동화</p>
+                                </div>
+                            </div>
+                            <span class="admin-badge muted">미연동</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 메시지 템플릿 관리 (tabMsgTemplates) -->
+            <section id="tabMsgTemplates" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">메시지 템플릿 관리</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>치환 태그</th>
+                                    <th>발송 상황</th>
+                                    <th>템플릿 내용 (미리보기)</th>
+                                    <th>수정</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>#{userName}</code>, <code>#{className}</code></td>
+                                    <td>결제 완료 시</td>
+                                    <td style="color:var(--mac-text-muted); font-size:0.85rem;">"#{userName}님, #{className} 결제가 완료되었습니다..."</td>
+                                    <td><button class="btn-small outline">수정</button></td>
+                                </tr>
+                                <tr>
+                                    <td><code>#{userName}</code>, <code>#{refundAmount}</code></td>
+                                    <td>환불 승인 시</td>
+                                    <td style="color:var(--mac-text-muted); font-size:0.85rem;">"#{userName}님, 요청하신 환불(#{refundAmount}원)이..."</td>
+                                    <td><button class="btn-small outline">수정</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 캠페인 관리 (tabCampaigns) -->
+            <section id="tabCampaigns" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3 class="section-title">캠페인 및 프로모션 관리</h3>
+                    </div>
+                    <div style="padding: 2rem; text-align:center; color: var(--mac-text-muted);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+                        <h4>캠페인 성과 추적 도구는 준비 중입니다.</h4>
+                        <p>Utm 파라미터를 기반으로 한 유입 경로 분석 기능이 제공될 예정입니다.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭: 부가세 신고 자료 (tabTax) -->
+            <section id="tabTax" class="admin-tab-content">
+                <div class="admin-card">
+                    <div class="card-header" style="justify-content:space-between;">
+                        <h3 class="section-title">부가세 신고 자료 생성</h3>
+                        <button class="btn-primary" id="btnDownloadTax" style="background:#34c759;">Excel 다운로드</button>
+                    </div>
+                    <div style="padding:1.5rem;">
+                        <p style="color:var(--mac-text-muted); font-size:0.9rem; margin-bottom:1.5rem;">지정한 기간 동안 완료된 수강권 결제(과세 매출) 기록을 취합하여 세무 대리인 제출용 엑셀 파일을 생성합니다.</p>
+                        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                            <span style="font-weight:600;">신고 기준 기간</span>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <input type="month" class="admin-form-input" style="width:150px;"> ~ <input type="month" class="admin-form-input" style="width:150px;">
+                            </div>
+                        </div>
+                        <div style="padding:1.5rem; background:#f5f5f7; border-radius:8px; border:1px dashed var(--mac-border);">
+                            <h4 style="margin:0 0 0.5rem 0;">📑 예상 조회 요약</h4>
+                            <p style="margin:0; font-size:0.9rem;">총 과세 매출: <strong style="color:var(--mac-primary);" id="totalTaxRevenue">계산 중...</strong>원</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Admin Core & UI Scripts -->
+    <script src="admin_core.js"></script>
+    <script src="admin_dashboard.js"></script>
+    <script src="admin_users.js"></script>
+    <script src="admin_classes.js"></script>
+    <script src="admin_payments.js"></script>
+    <script src="admin_settings.js"></script>
+    <script src="admin_extensions.js"></script>
+
+    <script>
+        // 배너 아이템 동적 템플릿 처리 (간단한 인라인 헬퍼)
+        document.getElementById('btnAddBanner').addEventListener('click', () => {
+            const container = document.getElementById('bannerListContainer');
+            const newId = Date.now();
+            const html = `
+                <div class="banner-item" data-id="${newId}" style="display:flex; gap:1rem; padding:1rem; background:#fff; border:1px solid #ddd; border-radius:8px; position:relative;">
+                    <div style="flex:1;">
+                        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:0.3rem;">배너 이미지 URL</label>
+                        <input type="text" class="admin-form-input banner-img-input" placeholder="https://..." style="margin-bottom:0.5rem;">
+                        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:0.3rem;">클릭 시 이동할 링크 URL (선택)</label>
+                        <input type="text" class="admin-form-input banner-link-input" placeholder="https://...">
+                    </div>
+                    <div style="width:100px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:0.5rem;">
+                        <img class="banner-preview" src="" style="width:100%; height:50px; object-fit:cover; background:#f4f4f5; border-radius:4px; border:1px solid #eee;">
+                        <button class="btn-remove-banner" style="padding:0.3rem; background:#fee2e2; color:#ef4444; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:100%;">삭제</button>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+            
+            // 프리뷰 업데이트 바인딩
+            const newItem = container.lastElementChild;
+            const input = newItem.querySelector('.banner-img-input');
+            const preview = newItem.querySelector('.banner-preview');
+            input.addEventListener('input', (e) => { preview.src = e.target.value; });
+            
+            // 삭제 바인딩
+            newItem.querySelector('.btn-remove-banner').addEventListener('click', () => {
+                newItem.remove();
+            });
+        });
+    </script>
+</body>
+</html>

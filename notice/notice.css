@@ -673,3 +673,80 @@
         font-size: 0.8rem;
     }
 }
+
+/* Extreme Mobile (iOS App Style) < 198px */
+@media (max-width: 198px) {
+    .notice-main {
+        padding: 0.5rem;
+    }
+    
+    .notice-hero {
+        height: 120px;
+        margin-bottom: 1rem;
+        border-radius: 12px;
+    }
+    
+    .hero-content h1 {
+        font-size: 1.2rem;
+    }
+    
+    .hero-content p {
+        font-size: 0.8rem;
+    }
+    
+    .notice-left-panel,
+    .notice-right-panel {
+        padding: 0.8rem;
+        min-height: 300px;
+    }
+    
+    .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .panel-header h2 {
+        font-size: 1rem;
+    }
+    
+    .header-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn-admin {
+        padding: 6px;
+        font-size: 0.75rem;
+        text-align: center;
+    }
+    
+    .notice-item {
+        padding: 0.8rem 0.5rem;
+        border-radius: 8px;
+    }
+    
+    .item-title {
+        font-size: 0.85rem;
+    }
+    
+    .item-meta-mobile {
+        flex-direction: column;
+        gap: 2px;
+        font-size: 0.75rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 0 auto;
+    }
+    
+    .modal-header h3 {
+        font-size: 1rem;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+}

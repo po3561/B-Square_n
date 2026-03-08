@@ -28,7 +28,8 @@
                 <p id="displayUsername" style="font-size: 0.85rem; opacity: 0.5; margin-top: 4px;">ID: -</p>
             </div>
             <nav class="mypage-nav">
-                <button class="nav-btn active" data-target="tabClasses">내 클래스</button>
+                <button class="nav-btn active" data-target="tabDashboard">대시보드</button>
+                <button class="nav-btn" data-target="tabClasses">내 클래스</button>
                 <button class="nav-btn" data-target="tabProfile">프로필 설정</button>
                 <button class="nav-btn" data-target="tabSecurity">보안 및 결제</button>
                 <button class="nav-btn bordered" data-target="tabChatSub">채팅 및 구독 관리</button>
@@ -37,8 +38,42 @@
 
         <main class="mypage-content">
 
-            <section id="tabClasses" class="mypage-tab active">
-                <h2 class="tab-title">나의 클래스 현황</h2>
+            <section id="tabDashboard" class="mypage-tab active">
+                <h2 class="tab-title">나의 대시보드</h2>
+                <div id="dashboardStats" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="stat-card" style="background:var(--bg-card); padding:1.5rem; border-radius:12px; border:1px solid var(--border-color); text-align:center;">
+                        <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">🎫</span>
+                        <h4 style="color:var(--comm-text2); margin-bottom:0.5rem;">보유 수강권</h4>
+                        <p id="dashPassCount" style="font-size:1.5rem; font-weight:700; color:var(--text-color);">0개</p>
+                    </div>
+                    <div class="stat-card" style="background:var(--bg-card); padding:1.5rem; border-radius:12px; border:1px solid var(--border-color); text-align:center;">
+                        <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">📚</span>
+                        <h4 style="color:var(--comm-text2); margin-bottom:0.5rem;">수강중 클래스</h4>
+                        <p id="dashClassCount" style="font-size:1.5rem; font-weight:700; color:var(--text-color);">0개</p>
+                    </div>
+                    <div class="stat-card" style="background:var(--bg-card); padding:1.5rem; border-radius:12px; border:1px solid var(--border-color); text-align:center;">
+                        <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">💬</span>
+                        <h4 style="color:var(--comm-text2); margin-bottom:0.5rem;">참여중 채팅</h4>
+                        <p id="dashChatCount" style="font-size:1.5rem; font-weight:700; color:var(--text-color);">0개</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-quick-links" style="display:flex; gap:10px; margin-bottom: 3rem;">
+                    <button class="btn-primary" style="flex:1; padding:1rem; border-radius:12px;" onclick="location.href='../community/community.html'">내 채팅방 바로가기</button>
+                    <button class="btn-secondary" style="flex:1; padding:1rem; border-radius:12px;" onclick="document.querySelector('[data-target=tabClasses]').click()">이어서 학습하기</button>
+                </div>
+
+                <h3 style="margin-bottom: 1rem;">🔥 최근 수강 클래스</h3>
+                <div class="my-class-list" id="dashRecentClass">
+                    <div class="empty-state">최근 수강 내역을 불러오는 중...</div>
+                </div>
+            </section>
+
+            <section id="tabClasses" class="mypage-tab">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h2 class="tab-title" style="margin-bottom:0;">나의 클래스 현황</h2>
+                    <button class="btn-primary" style="padding:0.6rem 1.2rem; border-radius:12px; font-weight:700; background:linear-gradient(135deg, #ff6b6b, #ff8e53); color:white; border:none; box-shadow:0 4px 10px rgba(255,107,107,0.3); cursor:pointer;" onclick="location.href='../class_list/class_list.html'">🎟️ 수강권 구매하기</button>
+                </div>
                 <div class="class-section">
                     <h3>📚 수강 중인 클래스</h3>
                     <div class="my-class-list" id="enrolledClasses">

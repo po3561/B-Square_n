@@ -70,14 +70,21 @@ function loadReviews(db, classId, userId, isInstructor) {
                     const dateStr = new Date(r.created_at).toLocaleDateString();
                     const helpfulCount = r.helpful_count || 0;
                     const isCreatorReview = r.is_instructor;
+                    const defaultProfile = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
+                    const avatarUrl = r.profile_image_url || defaultProfile;
 
                     return `
                     <div class="review-item-premium">
                         <div class="rip-header">
-                            <div class="rip-user">
-                                <span class="rip-stars">${stars}</span>
-                                ${isCreatorReview ? '<span class="rip-instructor-badge">강사</span>' : ''}
-                                <span class="rip-name">${r.user_name}</span>
+                            <div class="rip-user" style="display:flex; align-items:center; gap:8px;">
+                                <img src="${avatarUrl}" alt="profile" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color);">
+                                <div style="display:flex; flex-direction:column;">
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <span class="rip-name" style="color:var(--text-primary); font-weight:700;">${r.user_name}</span>
+                                        ${isCreatorReview ? '<span class="rip-instructor-badge" style="background:linear-gradient(135deg,#6e8efb,#a777e3);color:#fff;padding:2px 6px;border-radius:4px;font-size:0.65rem;">강사</span>' : ''}
+                                    </div>
+                                    <span class="rip-stars" style="color:#ffb100; font-size:0.8rem;">${stars}</span>
+                                </div>
                             </div>
                             <div class="rip-header-right">
                                 <span class="rip-date">${dateStr}</span>
@@ -133,7 +140,11 @@ function setupReviewForm(db, classId, userId, supabase, hasAccess, isInstructor)
 
     if (!btnSubmit) return;
 
-    btnSubmit.addEventListener('click', async () => {
+    // Remove stale event listeners by cloning the button
+    const newBtnSubmit = btnSubmit.cloneNode(true);
+    btnSubmit.parentNode.replaceChild(newBtnSubmit, btnSubmit);
+
+    newBtnSubmit.addEventListener('click', async () => {
         if (!userId) {
             if (typeof showToast === 'function') showToast('info', '로그인 필요', '로그인 후 후기를 작성할 수 있습니다.');
             return;
@@ -150,10 +161,11 @@ function setupReviewForm(db, classId, userId, supabase, hasAccess, isInstructor)
         if (!content) { if (typeof showToast === 'function') showToast('info', '내용 입력', '후기 내용을 입력해주세요.'); return; }
 
         try {
-            const { data: profile } = await supabase.from('users').select('name').eq('id', userId).maybeSingle();
+            const { data: profile } = await supabase.from('users').select('name, profile_image_url').eq('id', userId).maybeSingle();
             const reviewData = {
                 user_id: userId,
                 user_name: profile?.name || "익명",
+                profile_image_url: profile?.profile_image_url || "https://cdn-icons-png.flaticon.com/512/847/847969.png",
                 rating: parseInt(rating),
                 content: content,
                 created_at: firebase.database.ServerValue.TIMESTAMP,

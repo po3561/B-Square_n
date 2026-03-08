@@ -586,3 +586,51 @@ body.auth-body {
         font-size: 0.85rem;
     }
 }
+
+/* Extreme Mobile (iOS App Style) < 198px */
+@media (max-width: 198px) {
+    .auth-main {
+        padding: 1rem 0;
+    }
+    
+    .auth-container {
+        padding: 1rem 0.5rem;
+        box-shadow: none;
+    }
+    
+    .logo a {
+        font-size: 1.2rem;
+    }
+    
+    .step-item {
+        font-size: 0.7rem;
+        padding-bottom: 0.4rem;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .form-section {
+        padding: 0.8rem;
+    }
+    
+    .input-group input,
+    .input-group select {
+        padding: 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn-choice {
+        padding: 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn-next,
+    .btn-submit,
+    .btn-cancel {
+        padding: 0.8rem;
+        font-size: 0.9rem;
+    }
+}
