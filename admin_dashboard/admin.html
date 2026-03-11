@@ -19,10 +19,15 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
     <script src="../bsq_server.js"></script>
 </head>
 
 <body class="admin-body">
+
+    <!-- 모바일 사이드바 오버레이 + 햄버거 버튼 -->
+    <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+    <button class="admin-hamburger-btn" id="adminHamburgerBtn" aria-label="메뉴 열기">☰</button>
 
     <!-- 좌측 사이드바 (LNB) -->
     <aside class="admin-sidebar" id="adminSidebar">

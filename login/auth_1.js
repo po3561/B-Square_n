@@ -1,8 +1,7 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. 수파베이스 설정
-    const supabaseUrl = 'https://tqyckxgtavviatkfsymb.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxeWNreGd0YXZ2aWF0a2ZzeW1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NTQ1MjYsImV4cCI6MjA4NzEzMDUyNn0.Lc6Q9Q8qavIPI13bFdQEf0Mhmv4XOS41WtEr7CVXCCw';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+document.addEventListener('DOMContentLoaded', async () => {
+    // ★ BSQ.ready 대기로 Supabase 통일
+    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
+    const supabase = window.BSQ?.supabase || window.supabaseClient;
 
     const loginForm = document.getElementById('loginForm');
     const loginUsernameInput = document.getElementById('loginUsername');

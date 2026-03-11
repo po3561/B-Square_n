@@ -1860,7 +1860,7 @@
 }
 
 /* ==========================================
-   반응형 (Responsive) 및 Apple UX 최적화
+   반응형 (Responsive) — iPhone UX 기반 모바일 최적화
 =========================================== */
 @media (max-width: 1024px) {
     .hero-content-wrapper {
@@ -1897,7 +1897,21 @@
 
 @media (max-width: 768px) {
     .premium-hero {
-        padding: 2rem 0;
+        padding: 1.5rem 0;
+    }
+
+    .hero-content-wrapper {
+        padding: 0 1rem;
+    }
+
+    .hero-title {
+        font-size: 1.8rem;
+    }
+
+    .hero-meta {
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.9rem;
     }
 
     .title-row {
@@ -1907,22 +1921,83 @@
     }
 
     .title-row h1 {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
     }
 
+    /* 탭 네비게이션 — 수평 스크롤 */
     .class-nav {
-        gap: 1rem;
+        gap: 0;
         padding-bottom: 2px;
         overflow-x: auto;
         white-space: nowrap;
         -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .class-nav::-webkit-scrollbar {
+        display: none;
     }
 
     .class-nav button {
         padding: 12px 16px;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    /* 코스 메인 */
+    .course-main {
+        padding: 0 1rem;
+        gap: 1rem;
+    }
+
+    /* 사이드 결제 카드 → 하단 스티키 바 */
+    .floating-card-wrapper {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 99;
+        margin: 0;
+        padding: 0;
+        background: rgba(10, 10, 26, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .floating-card {
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        padding: 1rem 1.2rem;
+    }
+
+    .floating-card .card-top,
+    .floating-card .card-features,
+    .floating-card .card-extra {
+        display: none;
+    }
+
+    .floating-card .price-block {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0;
+    }
+
+    .floating-card .btn-buy-now {
+        width: auto;
+        padding: 12px 28px;
         font-size: 0.95rem;
     }
 
+    /* 본문 하단 여백 (스티키 바 공간 확보) */
+    .course-left {
+        padding-bottom: 100px;
+    }
+
+    /* 크리에이터 프로필 */
     .creator-profile {
         flex-direction: column;
         align-items: flex-start;
@@ -1933,11 +2008,48 @@
         flex-direction: column;
         align-items: flex-start;
     }
+
+    /* 목표/소개 그리드 → 1열 */
+    .objective-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .objective-card {
+        padding: 1.5rem;
+    }
+
+    /* 리뷰 사진 그리드 */
+    .photo-review-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    /* 채팅 */
+    .chat-tab-wrapper {
+        height: 450px;
+    }
+
+    /* 에디터 모달 → Bottom Sheet */
+    .modal-content {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 20px 20px 0 0;
+        max-height: 85vh;
+    }
 }
 
 @media (max-width: 480px) {
-    .title-row h1 {
+    .hero-title {
         font-size: 1.5rem;
+    }
+
+    .title-row h1 {
+        font-size: 1.4rem;
     }
 
     .info-metrics {
@@ -1949,6 +2061,34 @@
         padding: 14px;
         font-size: 1rem;
     }
+
+    .class-nav button {
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+
+    .objective-card {
+        padding: 1.2rem;
+        gap: 12px;
+    }
+
+    .photo-review-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 375px) {
+    .hero-content-wrapper {
+        padding: 0 0.8rem;
+    }
+
+    .hero-title {
+        font-size: 1.3rem;
+    }
+
+    .course-main {
+        padding: 0 0.8rem;
+    }
 }
 
 @media (max-width: 320px) {
@@ -1957,11 +2097,11 @@
     }
 
     .title-row h1 {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
     }
 
     .hero-text-area {
-        padding: 0 1rem;
+        padding: 0 0.6rem;
     }
 
     .btn-buy-now {
@@ -1971,15 +2111,15 @@
 
     .class-nav button {
         padding: 8px 10px;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
     }
 
     .rating-value {
         font-size: 2rem;
     }
 
-    .chat-container {
-        height: 500px;
+    .chat-tab-wrapper {
+        height: 350px;
     }
 
     .msg-bubble {
@@ -2611,109 +2751,5 @@
 
     .notice-editor-quill {
         height: 220px;
-    }
-}
-
-@media (max-width: 198px) {
-    /* Hide global Bottom Nav on this page to make room for the Purchase Bar */
-    #bsqBottomNav {
-        display: none !important;
-    }
-    
-    body {
-        padding-bottom: env(safe-area-inset-bottom, 80px) !important;
-    }
-    
-    .view-container {
-        padding-bottom: 0 !important;
-    }
-
-    /* Transform Sidebar to Custom Native Fixed Bottom CTA */
-    .view-sidebar {
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        max-width: 198px !important;
-        background: rgba(40, 40, 40, 0.95) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-        z-index: 999 !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-        padding: 8px 12px calc(env(safe-area-inset-bottom, 8px) + 8px) !important;
-        box-sizing: border-box !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        gap: 8px !important;
-        margin: 0 auto !important;
-        right: 0 !important;
-    }
-    
-    .sticky-card-premium {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        width: 100% !important;
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-    }
-
-    /* Hide unnecessary desktop elements from the sticky bar */
-    .creator-box, .side-main-title, .side-category-line, .side-review-line, .incentive-badges {
-        display: none !important;
-    }
-
-    .side-price-section {
-        margin: 0 !important;
-        text-align: left !important;
-        flex: 1 !important;
-    }
-
-    .side-final-price {
-        font-size: 0.85rem !important;
-        font-weight: 700 !important;
-        display: block !important;
-    }
-    
-    .side-installment {
-        display: none !important;
-    }
-
-    .sidebar-cta-area {
-        flex: 1.2 !important;
-    }
-    
-    .btn-cta-start {
-        padding: 8px !important;
-        font-size: 0.8rem !important;
-        border-radius: 8px !important;
-        white-space: nowrap !important;
-    }
-    
-    /* Make view-grid stack vertically */
-    .view-grid {
-        display: block !important;
-    }
-    .view-main-content {
-        width: 100% !important;
-    }
-    
-    .view-tabs {
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        border-radius: 0 !important;
-    }
-    .tab-btn {
-        padding: 10px !important;
-        font-size: 0.75rem !important;
-        white-space: nowrap !important;
-    }
-    
-    .hero-content-wrapper {
-        padding: 0 10px !important;
     }
 }

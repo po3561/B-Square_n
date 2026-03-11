@@ -1,24 +1,22 @@
 /* ==========================================
-   湲곕낯 ?ㅼ젙 (Reset & Typography)
+   B-Square Mobile Responsive Stylesheet
+   iPhone UX 기반 모바일 최적화 (Phase 16)
+   기준: iPhone SE 375px ~ iPhone 15 Pro Max 430px
 =========================================== */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
 :root {
     --bg-color: #f7f9fa;
-    /* slightly more grayish/blue background for better card pop */
     --card-bg: rgba(255, 255, 255, 0.95);
     --border-color: #e2e5eA;
     --accent-color: #000000;
     --text-primary: #1d1d1f;
-    /* Apple style deep gray */
     --text-secondary: #86868b;
     --glass-bg: rgba(255, 255, 255, 0.85);
     --glass-border: rgba(0, 0, 0, 0.03);
     --glass-blur: blur(24px) saturate(180%);
     --card-radius: 24px;
-    /* Increased from 16px */
     --btn-radius: 36px;
-    /* Increased from 24px */
     --primary-font: 'Inter', 'Pretendard', sans-serif;
     --nav-icon-color: #1d1d1f;
     --hover-bg: #f5f5f7;
@@ -56,7 +54,7 @@ button {
     transition: all 0.2s ease;
 }
 
-/* ?곗튂 ???理쒖냼 ?ш린 蹂댁옣 (紐⑤컮??理쒖쟻?? */
+/* 터치 타겟 최소 크기 보장 (iOS HIG) */
 button,
 input,
 select,
@@ -76,13 +74,29 @@ select,
     display: none !important;
 }
 
-@media (max-width: 198px) {
+.desktop-only {
+    display: block !important;
+}
+
+.mobile-only {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
     .desktop-only-flex {
         display: none !important;
     }
 
     .mobile-only-flex {
         display: flex !important;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: block !important;
     }
 }
 
@@ -127,7 +141,6 @@ select,
 
 .btn-mobile-menu {
     display: none;
-    /* pc default is none, mobile will show it below */
     background: none;
     border: none;
     font-size: 1.5rem;
@@ -171,7 +184,6 @@ select,
     color: var(--text-secondary);
 }
 
-/* ?쒕∼?ㅼ슫 ?쒖씤???닿껐 */
 select {
     background-color: var(--card-bg);
     color: var(--text-primary);
@@ -188,7 +200,6 @@ option {
     color: #ffffff;
 }
 
-/* ?ъ슜??硫붾돱 ?ㅽ???(JS?먯꽌 ?숈쟻?쇰줈 ?ㅼ뼱?? */
 .user-menu {
     display: flex;
     align-items: center;
@@ -233,7 +244,6 @@ option {
 
 .btn-login-main {
     background: #1a1a2e;
-    /* dark button for white theme */
     color: #ffffff;
     padding: 0.6rem 1.5rem;
     border-radius: 30px;
@@ -255,14 +265,13 @@ option {
     padding: 3rem 2rem;
 }
 
-/* 2-1. Hero Section (愿묎퀬 諛?移댄뀒怨좊━) */
+/* 2-1. Hero Section */
 .hero-section {
     margin-bottom: 5rem;
 }
 
 .main-promo-banner {
     background: linear-gradient(135deg, #eaf2ff 0%, #f4f8ff 100%);
-    /* light blue tint */
     border-radius: 16px;
     padding: 2.5rem 3rem;
     display: flex;
@@ -270,7 +279,6 @@ option {
     justify-content: space-between;
     margin-bottom: 2.5rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-    /* soft shadow */
 }
 
 .promo-content h2 {
@@ -368,7 +376,6 @@ option {
     letter-spacing: -0.5px;
 }
 
-/* 怨듯넻 移대뱶 洹몃━??*/
 .card-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -408,7 +415,6 @@ option {
     transform: scale(1.08);
 }
 
-/* 移대뱶 諭껋? ?ㅽ???*/
 .card-badges {
     position: absolute;
     top: 12px;
@@ -443,17 +449,23 @@ option {
     position: absolute;
     top: 12px;
     right: 12px;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(5px);
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     z-index: 2;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.btn-bookmark:hover {
+    transform: scale(1.1);
+    background: rgba(0, 0, 0, 0.6);
 }
 
 .badge-award {
@@ -474,7 +486,7 @@ option {
     background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%);
 }
 
-/* 異붿쿇 ?대옒??(3??而щ읆) */
+/* 추천 컬럼 (3열 카드) */
 .recommend-columns {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -525,30 +537,7 @@ option {
     flex-shrink: 0;
 }
 
-.btn-bookmark {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(5px);
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.2rem;
-    z-index: 2;
-    transition: transform 0.2s, background 0.2s;
-}
-
-.btn-bookmark:hover {
-    transform: scale(1.1);
-    background: rgba(0, 0, 0, 0.6);
-}
-
-/* 移대뱶 ?띿뒪???뺣낫 */
+/* 카드 텍스트 정보 */
 .card-info {
     padding: 1rem 1.2rem 1.2rem 1.2rem;
 }
@@ -620,7 +609,7 @@ option {
     color: var(--text-primary);
 }
 
-/* 2-3. ?섎떒 諛곕꼫 */
+/* 2-3. 하단 배너 */
 .bottom-banner-section {
     background: linear-gradient(90deg, #1a1a1a, #0d0d0d);
     border: 1px solid var(--glass-border);
@@ -643,21 +632,20 @@ option {
 }
 
 /* ==========================================
-   Bottom Navigation (Mobile Only)
+   Bottom Navigation (Mobile Only - iOS Tab Bar)
 =========================================== */
 .bottom-nav {
     display: none;
-    /* ?곗뒪?ы깙?먯꽌???④? */
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border-top: 1px solid var(--border-color);
     z-index: 1000;
     padding-bottom: env(safe-area-inset-bottom);
-    /* iOS ???*/
 }
 
 .bottom-nav .nav-item {
@@ -781,7 +769,7 @@ option {
 }
 
 /* ==========================================
-   4. DRAWER MENU (Hamburger ?ъ씠??硫붾돱)
+   4. DRAWER MENU (Hamburger 사이드 메뉴)
 =========================================== */
 .drawer-overlay {
     position: fixed;
@@ -807,7 +795,6 @@ option {
     left: -100%;
     width: 90%;
     max-width: 480px;
-    /* tablet/desktop max width */
     height: 100%;
     background: #ffffff;
     z-index: 1100;
@@ -859,14 +846,12 @@ option {
     padding: 0.5rem;
 }
 
-/* 2遺꾪븷 ?덉씠?꾩썐 */
 .drawer-body {
     display: flex;
     flex: 1;
     overflow: hidden;
 }
 
-/* 醫뚯륫 ?遺꾨쪟 */
 .drawer-main-categories {
     width: 130px;
     background: var(--hover-bg);
@@ -893,10 +878,8 @@ option {
     color: var(--text-primary);
     font-weight: 700;
     border-left: 3px solid #ff3e41;
-    /* point color ex: Class101 red */
 }
 
-/* ?곗륫 肄섑뀗痢?*/
 .drawer-sub-categories {
     flex: 1;
     padding: 1.5rem;
@@ -967,7 +950,10 @@ option {
 
 /* ==========================================
    5. RESPONSIVE MEDIA QUERIES
+   iPhone UX 기반 모바일 반응형
 =========================================== */
+
+/* --- 5-1. Tablet (max-width: 1024px) --- */
 @media (max-width: 1024px) {
     .category-grid ul {
         grid-template-columns: repeat(5, 1fr);
@@ -987,9 +973,12 @@ option {
     }
 }
 
-@media (max-width: 198px) {
+/* --- 5-2. Mobile Phone (max-width: 768px) --- */
+@media (max-width: 768px) {
+
+    /* ===== HEADER (iPhone 스타일) ===== */
     .header-inner {
-        padding: 1rem;
+        padding: 0.6rem 1rem;
     }
 
     .main-nav {
@@ -1002,50 +991,82 @@ option {
 
     .header-right .header-link {
         display: none;
-        /* 紐⑤컮?쇱뿉?쒕뒗 湲濡쒕쾶 留곹겕 ?④?, ?꾨쾭嫄?硫붾돱 ?ъ슜 */
+    }
+
+    .header-utils {
+        display: none;
+    }
+
+    .btn-hamburger {
+        display: flex;
+    }
+
+    .btn-mobile-menu {
+        display: flex !important;
+    }
+
+    .header-right {
+        gap: 0.8rem;
+    }
+
+    .logo a {
+        font-size: 1.2rem;
+    }
+
+    .user-profile-btn {
+        padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+    }
+
+    .user-name {
+        display: none;
+    }
+
+    .user-avatar {
+        width: 28px;
+        height: 28px;
+    }
+
+    .btn-login-main {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+        padding: 1.5rem 1rem;
+    }
+
+    .hero-section {
+        margin-bottom: 2rem;
     }
 
     .main-promo-banner {
-        padding: 1.8rem 1.5rem;
+        padding: 1.5rem;
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
+        border-radius: 16px;
     }
 
     .promo-content h2 {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
     }
 
     .promo-content h2 strong {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
     }
 
-    .card-grid,
-    .large-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
+    .main-ad-banner {
+        height: 200px;
+        border-radius: 16px;
+        margin-bottom: 2rem;
     }
 
-    /* Bottom Nav ?뚮뜑留?*/
-    .bottom-nav {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
+    .main-ad-banner h2 {
+        font-size: 2rem;
     }
 
-    .site-footer {
-        padding-bottom: 80px;
-        /* footer媛 bottom nav??媛?ㅼ?吏 ?딄쾶 ?щ갚 異붽? */
-    }
-}
-
-@media (max-width: 480px) {
-
-    .card-grid,
-    .large-grid {
-        grid-template-columns: 1fr;
-        /* 紐⑤컮???몃줈 紐⑤뱶?먯꽌??1??*/
-    }
-
+    /* 카테고리 그리드 -> 2행 5열 */
     .category-grid ul {
         grid-template-columns: repeat(5, 1fr);
         gap: 0.8rem;
@@ -1053,21 +1074,129 @@ option {
 
     .category-grid li a {
         font-size: 0.75rem;
-        padding: 0.5rem 0;
+        padding: 0.6rem 0;
+        gap: 0.5rem;
     }
 
     .category-grid .icon {
         font-size: 1.5rem;
-        padding: 0.8rem;
+        padding: 0.7rem;
         border-radius: 14px;
     }
 
-    .promo-content h2 {
-        font-size: 1.25rem;
+    /* 카드 그리드 -> 2열 */
+    .card-grid,
+    .large-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
     }
 
-    .promo-content h2 strong {
-        font-size: 1.6rem;
+    .card-thumbnail {
+        height: 160px;
+    }
+
+    .card-info .title {
+        font-size: 0.95rem;
+        height: auto;
+    }
+
+    .card-info .current-price {
+        font-size: 1.05rem;
+    }
+
+    .class-card {
+        border-radius: 16px;
+    }
+
+    .class-card:hover {
+        transform: none;
+    }
+
+    .group-title {
+        font-size: 1.4rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .class-group {
+        margin-bottom: 3rem;
+    }
+
+    /* 추천 3컬럼 -> 1컬럼 */
+    .recommend-columns {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .column {
+        padding: 1.2rem;
+        border-radius: 16px;
+    }
+
+    /* 하단 배너 */
+    .bottom-banner-section {
+        padding: 1.2rem 1.5rem;
+        border-radius: 12px;
+        margin-top: 2rem;
+    }
+
+    .banner-inner {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    /* ===== BOTTOM NAV (iOS 탭바 스타일) ===== */
+    .bottom-nav {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        padding: 0.4rem 0;
+        padding-bottom: calc(0.4rem + env(safe-area-inset-bottom));
+    }
+
+    .bottom-nav .nav-item {
+        font-size: 0.7rem;
+        gap: 3px;
+        padding: 0.5rem 0;
+    }
+
+    .bottom-nav .nav-item .icon {
+        font-size: 1.3rem;
+    }
+
+    /* ===== FOOTER ===== */
+    .site-footer {
+        padding: 3rem 1.5rem;
+        padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+    }
+
+    .footer-top {
+        flex-direction: column;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .social-links {
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .footer-nav {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .footer-bottom {
+        padding-top: 2rem;
+    }
+
+    .company-info p {
+        font-size: 0.8rem;
+    }
+
+    /* ===== DRAWER (iPhone 슬라이드 메뉴) ===== */
+    .drawer-menu {
+        width: 85%;
+        max-width: 360px;
     }
 
     .drawer-card-grid {
@@ -1075,33 +1204,92 @@ option {
     }
 }
 
-/* ==========================================
-   6. MICRO MOBILE OPTIMIZATION (max-width: 320px)
-=========================================== */
-@media (max-width: 320px) {
+/* --- 5-3. Small Phone (max-width: 480px) --- */
+@media (max-width: 480px) {
+
     .main-content {
-        padding: 1.5rem 0.8rem;
+        padding: 1.2rem 0.8rem;
     }
 
+    /* 카드 -> 단일 열 */
+    .card-grid,
+    .large-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .card-thumbnail {
+        height: 200px;
+    }
+
+    .class-card {
+        border-radius: 16px;
+    }
+
+    /* 카테고리 4열 */
+    .category-grid ul {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.6rem;
+    }
+
+    .category-grid li a {
+        font-size: 0.7rem;
+        padding: 0.4rem 0;
+    }
+
+    .category-grid .icon {
+        font-size: 1.4rem;
+        padding: 0.7rem;
+    }
+
+    .promo-content h2 {
+        font-size: 1.15rem;
+    }
+
+    .promo-content h2 strong {
+        font-size: 1.5rem;
+    }
+
+    .main-ad-banner {
+        height: 180px;
+        border-radius: 12px;
+    }
+
+    .group-title {
+        font-size: 1.25rem;
+    }
+
+    .drawer-card-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bottom-banner-section {
+        padding: 1rem 1.2rem;
+    }
+
+    .banner-content p {
+        font-size: 0.95rem;
+    }
+}
+
+/* --- 5-4. iPhone SE / Small Phone (max-width: 375px) --- */
+@media (max-width: 375px) {
+
     .header-inner {
-        padding: 0.6rem 0.8rem;
+        padding: 0.5rem 0.8rem;
     }
 
     .logo a {
         font-size: 1.1rem;
     }
 
-    .promo-content h2 {
-        font-size: 1.1rem;
-    }
-
-    .promo-content h2 strong {
-        font-size: 1.3rem;
-    }
-
     .btn-login-main {
-        padding: 0.45rem 0.8rem;
-        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .main-content {
+        padding: 1rem 0.7rem;
     }
 
     .category-grid ul {
@@ -1123,25 +1311,25 @@ option {
     }
 
     .category-grid li a {
-        font-size: 0.7rem;
-        padding: 0.4rem 0;
         white-space: nowrap;
+        font-size: 0.7rem;
     }
 
-    .category-grid .icon {
-        font-size: 1.2rem;
-        padding: 0.5rem;
-        border-radius: 10px;
+    .main-ad-banner {
+        height: 160px;
+    }
+
+    .main-ad-banner h2 {
+        font-size: 1.8rem;
     }
 
     .group-title {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
         margin-bottom: 1rem;
     }
 
-    /* 移대뱶 */
     .card-thumbnail {
-        height: 140px;
+        height: 180px;
     }
 
     .card-info {
@@ -1150,35 +1338,72 @@ option {
 
     .card-info .title {
         font-size: 0.9rem;
-        height: auto;
-        -webkit-line-clamp: 2;
-    }
-
-    .card-info .category {
-        font-size: 0.65rem;
     }
 
     .card-info .current-price {
         font-size: 1rem;
     }
 
-    /* 諛뷀? ?ㅻ퉬 */
+    .bottom-nav .nav-item {
+        font-size: 0.65rem;
+    }
+
+    .bottom-nav .nav-item .icon {
+        font-size: 1.1rem;
+    }
+}
+
+/* --- 5-5. Micro Mobile (max-width: 320px) --- */
+@media (max-width: 320px) {
+    .main-content {
+        padding: 1rem 0.6rem;
+    }
+
+    .header-inner {
+        padding: 0.5rem 0.6rem;
+    }
+
+    .logo a {
+        font-size: 1rem;
+    }
+
+    .promo-content h2 {
+        font-size: 1rem;
+    }
+
+    .promo-content h2 strong {
+        font-size: 1.2rem;
+    }
+
+    .category-grid .icon {
+        font-size: 1.2rem;
+        padding: 0.5rem;
+        border-radius: 10px;
+    }
+
+    .card-thumbnail {
+        height: 150px;
+    }
+
+    .card-info .title {
+        font-size: 0.85rem;
+    }
+
+    .card-info .category {
+        font-size: 0.65rem;
+    }
+
     .bottom-nav .nav-item {
         font-size: 0.6rem;
-        padding: 0.6rem 0;
+        padding: 0.5rem 0;
     }
 
     .bottom-nav .nav-item .icon {
         font-size: 1rem;
     }
 
-    /* Drawer 理쒖쟻??*/
     .drawer-header {
         padding: 0.8rem;
-    }
-
-    .drawer-title {
-        font-size: 1rem;
     }
 
     .drawer-main-categories {
@@ -1196,25 +1421,12 @@ option {
 
     .drawer-card-grid {
         grid-template-columns: 1fr;
-        gap: 6px;
     }
 
-    /* Nav (???Drawer ?ъ씠???ㅻ퉬) */
-    .drawer-nav-item {
-        font-size: 0.85rem;
-        padding: 0.8rem 1rem;
-    }
-
-    /* ?명꽣 異뺤냼 */
     .site-footer {
-        padding: 2rem 0.8rem 5rem;
+        padding: 2rem 0.8rem;
+        padding-bottom: calc(5rem + env(safe-area-inset-bottom));
         font-size: 0.75rem;
-    }
-
-    .footer-top {
-        flex-direction: column;
-        gap: 1.5rem;
-        margin-bottom: 1.5rem;
     }
 
     .social-links {
@@ -1230,18 +1442,12 @@ option {
     }
 
     .footer-nav {
-        flex-wrap: wrap;
-        gap: 1rem;
+        flex-direction: column;
+        gap: 0.8rem;
     }
 
     .company-info p {
         font-size: 0.7rem;
-    }
-
-    /* 異붿쿇 ?대옒??*/
-    .recommend-columns {
-        grid-template-columns: 1fr;
-        gap: 1rem;
     }
 
     .column {
@@ -1252,27 +1458,22 @@ option {
         font-size: 1rem;
     }
 
-    /* 諛곕꼫 */
     .main-ad-banner {
-        height: 180px;
-        border-radius: 12px;
+        height: 140px;
         margin-bottom: 1.5rem;
     }
 
     .main-ad-banner h2 {
-        font-size: 2rem;
+        font-size: 1.6rem;
     }
 
     .bottom-banner-section {
-        padding: 1rem;
+        padding: 0.8rem;
         border-radius: 10px;
     }
 }
 
-/* ==========================================
-   7. ULTRA-SMALL MOBILE (max-width: 210px)
-   Class101 ?섏???珥덉냼???붾㈃ ???
-=========================================== */
+/* --- 5-6. Ultra-Small (max-width: 210px) --- */
 @media (max-width: 210px) {
     body {
         font-size: 11px;
@@ -1288,11 +1489,6 @@ option {
         gap: 0.2rem;
     }
 
-    .logo-icon {
-        font-size: 0.9rem;
-    }
-
-    /* ?ㅻ뜑 ?좏떥 ?④? - 濡쒓퀬+?꾨쾭嫄곕쭔 ?쒖떆 */
     .header-right,
     .header-utils {
         display: none !important;
@@ -1303,14 +1499,12 @@ option {
         height: 14px;
     }
 
-    /* 移댄뀒怨좊━ 洹몃━????媛濡??ㅽ겕濡??꾩씠肄섎쭔 */
     .category-grid ul {
         gap: 0.3rem;
     }
 
     .category-grid li a {
         font-size: 0;
-        /* ?띿뒪???④린怨??꾩씠肄섎쭔 */
         gap: 0;
         padding: 0.3rem 0;
     }
@@ -1321,7 +1515,6 @@ option {
         border-radius: 8px;
     }
 
-    /* 肄섑뀗痢?*/
     .main-content {
         padding: 0.8rem 0.4rem;
     }
@@ -1338,7 +1531,6 @@ option {
 
     .main-ad-banner h2 {
         font-size: 1.2rem;
-        letter-spacing: 0.1em;
     }
 
     .group-title {
@@ -1346,7 +1538,6 @@ option {
         margin-bottom: 0.6rem;
     }
 
-    /* 移대뱶 */
     .card-grid,
     .large-grid {
         grid-template-columns: 1fr;
@@ -1368,17 +1559,14 @@ option {
     .card-info .title {
         font-size: 0.75rem;
         height: auto;
-        margin-bottom: 0.2rem;
     }
 
     .card-info .category {
         font-size: 0.6rem;
-        margin-bottom: 0.2rem;
     }
 
     .card-info .creator {
         font-size: 0.6rem;
-        margin-bottom: 0.3rem;
     }
 
     .card-info .meta {
@@ -1419,7 +1607,6 @@ option {
         right: 4px;
     }
 
-    /* 諛뷀? ?ㅻ퉬 ???쇰꺼 ?④린怨??꾩씠肄섎쭔 */
     .bottom-nav .nav-item .label {
         display: none;
     }
@@ -1432,7 +1619,6 @@ option {
         font-size: 0.9rem;
     }
 
-    /* Drawer */
     .drawer-menu {
         width: 100%;
         max-width: 100%;
@@ -1451,12 +1637,6 @@ option {
         padding: 0.5rem;
     }
 
-    .drawer-nav-item {
-        font-size: 0.75rem;
-        padding: 0.6rem 0.6rem;
-    }
-
-    /* 異붿쿇 ?대옒??*/
     .column {
         padding: 0.6rem;
         border-radius: 10px;
@@ -1485,7 +1665,6 @@ option {
         font-size: 0.6rem;
     }
 
-    /* 諛곕꼫 */
     .bottom-banner-section {
         padding: 0.5rem;
         border-radius: 6px;
@@ -1496,7 +1675,6 @@ option {
         font-size: 0.7rem;
     }
 
-    /* ?명꽣 */
     .site-footer {
         padding: 1.5rem 0.4rem 4rem;
         font-size: 0.65rem;
@@ -1520,7 +1698,6 @@ option {
 
     .cs-center h4 {
         font-size: 0.8rem;
-        margin-bottom: 0.4rem;
     }
 
     .cs-center p {
@@ -1530,12 +1707,10 @@ option {
     .btn-contact {
         padding: 0.4rem 0.8rem;
         font-size: 0.65rem;
-        margin-top: 0.5rem;
     }
 
     .footer-nav {
         gap: 0.5rem;
-        margin-bottom: 0.8rem;
     }
 
     .footer-nav a {
@@ -1544,135 +1719,14 @@ option {
 
     .company-info strong {
         font-size: 0.75rem;
-        margin-bottom: 0.4rem;
     }
 
     .company-info p {
         font-size: 0.55rem;
-        margin-bottom: 0.2rem;
     }
 
     .copyright {
         margin-top: 0.8rem;
         font-size: 0.55rem;
     }
-}
-
-/* Aggressive 198px Overrides */
-@media (max-width: 198px) {
-    .site-header {
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 1000 !important;
-    }
-
-    .site-header .header-inner {
-        padding: 4px 6px !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 4px !important;
-    }
-
-    .header-left,
-    .header-right {
-        width: 100% !important;
-        justify-content: space-between !important;
-    }
-
-    .main-ad-banner {
-        height: auto !important;
-        min-height: 80px !important;
-        padding: 10px !important;
-        border-radius: 12px !important;
-    }
-
-    .main-ad-banner h2 {
-        font-size: 1rem !important;
-    }
-
-    .category-grid ul {
-        display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 4px !important;
-        padding: 10px 0 !important;
-    }
-
-    .category-grid li a {
-        padding: 4px !important;
-        font-size: 0.65rem !important;
-    }
-
-    .category-grid .icon {
-        font-size: 1rem !important;
-        margin-bottom: 2px !important;
-    }
-
-    .card-grid,
-    .banner-columns {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 12px !important;
-    }
-
-    .class-card,
-    .column {
-        width: 100% !important;
-        box-sizing: border-box !important;
-        border-radius: 12px !important;
-    }
-
-    .card-thumbnail {
-        height: 100px !important;
-    }
-
-    .card-info {
-        padding: 8px !important;
-    }
-
-    .card-info .title {
-        font-size: 0.85rem !important;
-        line-height: 1.3 !important;
-    }
-
-    .card-info .category {
-        font-size: 0.65rem !important;
-        margin-bottom: 4px !important;
-    }
-
-    .stats {
-        font-size: 0.7rem !important;
-    }
-
-    .group-title {
-        font-size: 1rem !important;
-        margin-bottom: 10px !important;
-    }
-
-    input,
-    select,
-    button {
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-
-    .bottom-banner-section {
-        padding: 10px !important;
-    }
-
-    .promo-content h2 {
-        font-size: 0.9rem !important;
-    }
-
-    .promo-content h2 strong {
-        font-size: 1.1rem !important;
-    }
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-
-.hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
 }

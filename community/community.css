@@ -1374,7 +1374,7 @@
     border-radius: 3px;
 }
 
-/* ---- Responsive ---- */
+/* ---- Responsive — iPhone UX 기반 모바일 최적화 ---- */
 @media (max-width: 900px) {
     .comm-container {
         margin: 0;
@@ -1410,15 +1410,50 @@
     }
 }
 
-@media (max-width: 500px) {
+@media (max-width: 768px) {
+
+    /* Nav Rail → 숨김 (하단 Bottom Nav 활용) */
+    .comm-nav-rail {
+        display: none;
+    }
+
     .comm-sidebar {
         width: 100%;
         min-width: 100%;
     }
 
+    /* 채팅 입력 영역 — iOS 키보드 대응 */
+    .chat-input-area {
+        padding: 10px 12px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    }
+
+    /* 채팅 헤더 축소 */
+    .chat-top-header {
+        padding: 8px 12px;
+    }
+
+    /* 메시지 버블 최적 패딩 */
+    .msg-bubble {
+        max-width: 85%;
+    }
+
+    /* 모달 → Bottom Sheet */
     .modal-card {
-        width: 92%;
-        margin: 0 auto;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        border-radius: 20px 20px 0 0;
+        max-height: 80vh;
+    }
+}
+
+@media (max-width: 500px) {
+    .comm-sidebar {
+        width: 100%;
+        min-width: 100%;
     }
 
     .emoji-picker {

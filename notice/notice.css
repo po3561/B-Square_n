@@ -596,20 +596,31 @@
     line-height: 1.5;
 }
 
-/* === 모바일 반응형 지원 === */
+/* ==========================================
+   반응형 — iPhone UX 기반 모바일 최적화
+=========================================== */
 @media (max-width: 768px) {
     .notice-main {
         padding: 1.5rem 1rem;
     }
 
+    .notice-hero {
+        height: 160px;
+        border-radius: 16px;
+    }
+
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+
     .notice-left-panel,
     .notice-right-panel {
         padding: 1.2rem;
+        border-radius: 16px;
     }
 
     .notice-list-header {
         display: none;
-        /* 모바일에서 테이블 헤더 숨김 */
     }
 
     .notice-item {
@@ -643,20 +654,138 @@
     .item-views {
         display: inline-block;
     }
+
+    /* 모달 → Bottom Sheet */
+    .modal-content {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 20px 20px 0 0;
+        max-height: 85vh;
+    }
+
+    .notice-filter-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .notice-filter-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-tab {
+        flex-shrink: 0;
+    }
+
+    /* FAQ 터치 최적 패딩 */
+    .faq-question {
+        padding: 1.2rem;
+        min-height: 54px;
+    }
+
+    .comment-input-area {
+        flex-direction: column;
+    }
+
+    .comment-input-area textarea {
+        height: 60px;
+    }
 }
 
-@media (max-width: 320px) {
+@media (max-width: 480px) {
     .notice-main {
-        padding: 1rem 0.5rem;
+        padding: 1rem 0.8rem;
+    }
+
+    .notice-hero {
+        height: 130px;
+        border-radius: 12px;
     }
 
     .hero-content h1 {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
+    }
+
+    .hero-content p {
+        font-size: 0.9rem;
+    }
+
+    .panel-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+
+    .viewer-meta-info {
+        flex-direction: column;
+        gap: 8px;
+        padding: 0 1.5rem 1rem;
+    }
+
+    .modal-header-viewer {
+        padding: 1.5rem 1.5rem 0.8rem;
+    }
+
+    .viewer-meta-top h3 {
+        font-size: 1.3rem;
+    }
+
+    .viewer-body {
+        padding: 1.5rem;
+    }
+
+    .viewer-actions {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 375px) {
+    .notice-main {
+        padding: 0.8rem 0.6rem;
+    }
+
+    .hero-content h1 {
+        font-size: 1.4rem;
     }
 
     .notice-left-panel,
     .notice-right-panel {
         padding: 1rem;
+    }
+
+    .faq-question {
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 320px) {
+    .notice-main {
+        padding: 0.8rem 0.5rem;
+    }
+
+    .hero-content h1 {
+        font-size: 1.3rem;
+    }
+
+    .notice-left-panel,
+    .notice-right-panel {
+        padding: 0.8rem;
     }
 
     .panel-header h2 {
@@ -665,88 +794,10 @@
 
     .search-input {
         padding: 6px 8px;
-        width: 100px;
     }
 
     .btn-admin {
         padding: 6px 10px;
         font-size: 0.8rem;
-    }
-}
-
-/* Extreme Mobile (iOS App Style) < 198px */
-@media (max-width: 198px) {
-    .notice-main {
-        padding: 0.5rem;
-    }
-    
-    .notice-hero {
-        height: 120px;
-        margin-bottom: 1rem;
-        border-radius: 12px;
-    }
-    
-    .hero-content h1 {
-        font-size: 1.2rem;
-    }
-    
-    .hero-content p {
-        font-size: 0.8rem;
-    }
-    
-    .notice-left-panel,
-    .notice-right-panel {
-        padding: 0.8rem;
-        min-height: 300px;
-    }
-    
-    .panel-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    
-    .panel-header h2 {
-        font-size: 1rem;
-    }
-    
-    .header-actions {
-        width: 100%;
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .btn-admin {
-        padding: 6px;
-        font-size: 0.75rem;
-        text-align: center;
-    }
-    
-    .notice-item {
-        padding: 0.8rem 0.5rem;
-        border-radius: 8px;
-    }
-    
-    .item-title {
-        font-size: 0.85rem;
-    }
-    
-    .item-meta-mobile {
-        flex-direction: column;
-        gap: 2px;
-        font-size: 0.75rem;
-    }
-    
-    .modal-content {
-        width: 95%;
-        margin: 0 auto;
-    }
-    
-    .modal-header h3 {
-        font-size: 1rem;
-    }
-    
-    .modal-body {
-        padding: 1rem;
     }
 }

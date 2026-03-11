@@ -2,19 +2,12 @@
 // header.js가 Supabase/Firebase 초기화 처리
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // header.js 초기화 대기
-    const waitForInit = () => new Promise((resolve) => {
-        const check = () => {
-            if (window.supabaseClient && (typeof firebase !== 'undefined' && firebase.apps.length > 0)) {
-                resolve();
-            } else {
-                setTimeout(check, 100);
-            }
-        };
-        check();
-        setTimeout(resolve, 3000);
-    });
-    await waitForInit();
+    // ★ BSQ.ready로 서버 초기화 대기 (폴링 제거)
+    if (window.BSQ && window.BSQ.ready) {
+        await window.BSQ.ready;
+    } else {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+    }
 
     const supabaseClient = window.supabaseClient;
 

@@ -9,7 +9,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 2. Sidebar Navigation Setup
     setupSidebarNavigation();
 
-    // 3. Global Refresh Button
+    // 3. Mobile Sidebar Toggle (I3)
+    setupMobileSidebar();
+
+    // 4. Global Refresh Button
     document.getElementById('btnAdminRefresh')?.addEventListener('click', () => {
         location.reload();
     });
@@ -54,7 +57,7 @@ async function verifyAdminAccess() {
                 const userEmail = session.user.email || '';
                 const { data: profile } = await window.supabaseClient.from('users').select('name, username').eq('id', session.user.id).maybeSingle();
                 const currentUsername = profile?.username || '';
-                
+
                 if (userEmail === 'promise9907@naver.com' || userEmail === 'ej210651392@naver.com' || userEmail === 'po3561@naver.com' || userEmail.includes('promise1') || currentUsername === 'promise1') {
                     isAuthorized = true;
                     if (profile && profile.name) userName = profile.name;
@@ -114,8 +117,8 @@ function setupSidebarNavigation() {
                 const groupParent = item.closest('.nav-group');
                 let titleText = item.textContent.trim();
                 if (groupParent && item.textContent.trim() !== '대시보드') {
-                   const groupTitle = groupParent.querySelector('.nav-group-btn span').textContent.replace('▼','').trim();
-                   titleText = `${groupTitle} > ${item.textContent.trim()}`;
+                    const groupTitle = groupParent.querySelector('.nav-group-btn span').textContent.replace('▼', '').trim();
+                    titleText = `${groupTitle} > ${item.textContent.trim()}`;
                 }
                 currentTabTitle.textContent = titleText;
             }
@@ -129,6 +132,50 @@ function setupSidebarNavigation() {
 
             // Trigger Custom Event for Modules to Catch (e.g. refresh data when tab opened)
             window.dispatchEvent(new CustomEvent('adminTabChanged', { detail: { tabId: targetTabId } }));
+
+            // 모바일에서 탭 전환 시 사이드바 자동으로 닫기
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('adminSidebar');
+                const overlay = document.getElementById('adminSidebarOverlay');
+                if (sidebar) sidebar.classList.remove('open');
+                if (overlay) overlay.classList.remove('active');
+            }
         });
     });
+}
+
+/**
+ * Mobile Sidebar Toggle (I3)
+ * 768px 이하에서 햄버거 버튼으로 사이드바 열고 닫기
+ */
+function setupMobileSidebar() {
+    const hamburgerBtn = document.getElementById('adminHamburgerBtn');
+    const sidebar = document.getElementById('adminSidebar');
+    const overlay = document.getElementById('adminSidebarOverlay');
+
+    if (!hamburgerBtn || !sidebar) return;
+
+    function openSidebar() {
+        sidebar.classList.add('open');
+        if (overlay) overlay.classList.add('active');
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('active');
+    }
+
+    hamburgerBtn.addEventListener('click', () => {
+        if (sidebar.classList.contains('open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    });
+
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+
+    console.log("✅ Mobile sidebar toggle initialized");
 }

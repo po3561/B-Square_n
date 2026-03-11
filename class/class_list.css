@@ -291,27 +291,6 @@
     }
 }
 
-@media (max-width: 198px) {
-    .class-page-overrides .list-controls {
-        flex-direction: column;
-        width: 100%;
-        gap: 6px;
-        padding: 0;
-    }
-    .class-search-input {
-        width: 100% !important;
-        font-size: 0.75rem;
-    }
-    .sort-select {
-        width: 100% !important;
-        font-size: 0.75rem;
-        background-position: right 8px center;
-    }
-    .category-grid ul { gap:4px; }
-    .category-grid li a { font-size: 0.6rem; padding: 4px 6px; }
-    .class-page-overrides .card-thumbnail { height: 90px; }
-}
-
 /* =========================================
    Card Fade-In Animation
 ========================================= */

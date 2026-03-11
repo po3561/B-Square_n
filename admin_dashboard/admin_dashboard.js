@@ -19,8 +19,10 @@ let mainChartInstance = null;
 
 async function initDashboard() {
     console.log("📊 Loading Dashboard Statistics...");
-    const db = firebase.database();
-    
+    // ★ BSQ.ready 대기 → 인증 보장 후 DB 접근
+    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
+    const db = window.BSQ?.db || firebase.database();
+
     // 1. Fetch Total Users
     const statUsers = document.getElementById('statUsers');
     if (statUsers && window.supabaseClient) {
@@ -28,7 +30,7 @@ async function initDashboard() {
             const { count, error } = await window.supabaseClient
                 .from('users')
                 .select('*', { count: 'exact', head: true });
-            
+
             if (!error) statUsers.textContent = count.toLocaleString();
         } catch (err) {
             console.error("Failed to fetch user count", err);
@@ -100,7 +102,7 @@ async function renderMainChart() {
 
     const labels = [];
     const dateMap = {};
-    
+
     // Prepare exact Date strings for the past 7 days (YYYY-MM-DD)
     for (let i = 6; i >= 0; i--) {
         const d = new Date();
@@ -118,12 +120,12 @@ async function renderMainChart() {
             // Get users created in the last 7 days
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            
+
             const { data: usersData, error } = await window.supabaseClient
                 .from('users')
                 .select('created_at')
                 .gte('created_at', sevenDaysAgo.toISOString());
-                
+
             if (!error && usersData) {
                 usersData.forEach(u => {
                     const isoDate = u.created_at.split('T')[0];
@@ -148,15 +150,15 @@ async function renderMainChart() {
                 {
                     label: '신규 가입자 👶',
                     data: dataNewUsers,
-                    borderColor: 'var(--admin-primary)',
+                    borderColor: '#009ef7',
                     backgroundColor: 'rgba(0, 158, 247, 0.1)',
                     tension: 0.4,
                     fill: true
                 },
                 {
                     label: '페이지 뷰 👀 (x10) - (준비중)',
-                    data: dataPageViews, 
-                    borderColor: 'var(--admin-success)',
+                    data: dataPageViews,
+                    borderColor: '#50cd89',
                     backgroundColor: 'rgba(80, 205, 137, 0.1)',
                     tension: 0.4,
                     fill: true

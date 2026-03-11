@@ -1,20 +1,12 @@
 // community.js - 커뮤니티 채팅 메인 컨트롤러
 // Firebase + Supabase 오케스트레이터
 document.addEventListener('DOMContentLoaded', async () => {
-    // ---- header.js가 Supabase/Firebase 초기화 및 유저 메뉴를 처리함 ----
-    // 초기화 완료 대기
-    const waitForInit = () => new Promise((resolve) => {
-        const check = () => {
-            if (window.supabaseClient && (typeof firebase !== 'undefined' && firebase.apps.length > 0)) {
-                resolve();
-            } else {
-                setTimeout(check, 100);
-            }
-        };
-        check();
-        setTimeout(resolve, 3000);
-    });
-    await waitForInit();
+    // ---- BSQ.ready 대기 (폴링 제거) ----
+    if (window.BSQ && window.BSQ.ready) {
+        await window.BSQ.ready;
+    } else {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+    }
 
     const db = firebase.database();
     const supabase = window.supabaseClient;
@@ -156,7 +148,7 @@ function setupHamburgerMenu(supabase, userId, db, SyncBridge, DM, ChatUI, ChatLi
     // 클래스 목록
     document.getElementById('hmClassList')?.addEventListener('click', () => {
         menu.style.display = 'none';
-        window.location.href = '../class_list/class_list.html';
+        window.location.href = '../class/class_list.html';
     });
 
     // 연락처
@@ -169,7 +161,7 @@ function setupHamburgerMenu(supabase, userId, db, SyncBridge, DM, ChatUI, ChatLi
     // 결제 정보 (마이페이지)
     document.getElementById('hmBillingInfo')?.addEventListener('click', () => {
         menu.style.display = 'none';
-        window.location.href = '../mypage/mypage.html';
+        window.location.href = '../mi_pesg/mypage.html';
     });
 
     // 설정

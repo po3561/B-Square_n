@@ -17,6 +17,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
     <script src="../bsq_server.js"></script>
 </head>
 
@@ -177,11 +178,13 @@
                     </div>
                     <div class="input-group">
                         <label>수강권 (패스) 기본 가격 설정</label>
-                        <p class="help-text" style="margin-top: -5px; margin-bottom: 10px;">설정하지 않은 수강권은 구매 옵션에 노출되지 않습니다.</p>
+                        <p class="help-text" style="margin-top: -5px; margin-bottom: 10px;">설정하지 않은 수강권은 구매 옵션에 노출되지
+                            않습니다.</p>
                         <div style="display: flex; flex-direction: column; gap: 10px;">
                             <input type="number" id="priceOneTime" placeholder="1회 수강권 가격 (원)" min="0">
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <input type="number" id="passCount" placeholder="다회권 횟수 (예: 5)" min="2" style="width: 140px;">
+                                <input type="number" id="passCount" placeholder="다회권 횟수 (예: 5)" min="2"
+                                    style="width: 140px;">
                                 <input type="number" id="priceMulti" placeholder="다회권 가격 (원)" min="0" style="flex: 1;">
                             </div>
                             <input type="number" id="priceMonthly" placeholder="월정액 수강권(구독) 가격 (원)" min="0">

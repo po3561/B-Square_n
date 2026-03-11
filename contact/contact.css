@@ -313,10 +313,33 @@
     font-size: 0.9rem;
 }
 
-/* Responsive */
+/* ==========================================
+   반응형 — iPhone UX 기반 모바일 최적화
+=========================================== */
 @media (max-width: 768px) {
+    .contact-hero {
+        padding: 3rem 1.5rem 2rem;
+    }
+
+    .contact-hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .contact-container {
+        padding: 2rem 1rem 3rem;
+    }
+
     .contact-methods {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .method-card {
+        padding: 1.5rem;
+    }
+
+    .method-card:hover {
+        transform: none;
     }
 
     .inquiry-form .form-row {
@@ -327,7 +350,83 @@
         padding: 1.5rem;
     }
 
+    .admin-inquiries {
+        padding: 1.5rem;
+    }
+
+    .btn-submit-inquiry {
+        width: 100%;
+        padding: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-hero {
+        padding: 2.5rem 1rem 1.5rem;
+    }
+
     .contact-hero h1 {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
+    }
+
+    .contact-hero p {
+        font-size: 0.9rem;
+    }
+
+    .contact-container {
+        padding: 1.5rem 0.8rem 2rem;
+    }
+
+    .contact-form-section {
+        padding: 1.2rem;
+    }
+
+    .contact-form-section h2 {
+        font-size: 1.2rem;
+    }
+
+    .method-card {
+        padding: 1.2rem;
+        border-radius: 14px;
+    }
+
+    .method-icon {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 375px) {
+    .contact-hero h1 {
+        font-size: 1.3rem;
+    }
+
+    .contact-container {
+        padding: 1rem 0.6rem 2rem;
+    }
+
+    .contact-form-section {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 320px) {
+    .contact-hero {
+        padding: 2rem 0.8rem 1.2rem;
+    }
+
+    .contact-hero h1 {
+        font-size: 1.2rem;
+    }
+
+    .method-card h3 {
+        font-size: 1rem;
+    }
+
+    .inquiry-form input[type="text"],
+    .inquiry-form input[type="email"],
+    .inquiry-form select,
+    .inquiry-form textarea {
+        padding: 10px 12px;
+        font-size: 0.9rem;
     }
 }

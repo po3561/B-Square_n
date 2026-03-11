@@ -513,18 +513,104 @@ body.auth-body {
     margin-bottom: 3rem;
 }
 
-/* 반응형 모바일 */
+/* ==========================================
+   반응형 모바일 — iPhone UX 기반
+=========================================== */
+
+/* --- Tablet (max-width: 768px) --- */
+@media (max-width: 768px) {
+    .auth-main {
+        padding: 3rem 1rem 6rem;
+        /* 하단 Bottom Nav 공간 확보 */
+        align-items: flex-start;
+    }
+
+    .auth-container {
+        max-width: 100%;
+        padding: 2.5rem 1.5rem;
+        border-radius: 20px;
+    }
+
+    .step-indicator {
+        gap: 0.3rem;
+        margin-bottom: 2rem;
+    }
+
+    .step-item {
+        font-size: 0.8rem;
+        padding-bottom: 0.6rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+    }
+
+    .form-section {
+        padding: 1.5rem;
+    }
+
+    .input-row {
+        flex-direction: column;
+    }
+
+    .input-with-btn {
+        flex-direction: column;
+    }
+
+    .input-with-btn input {
+        width: 100%;
+    }
+
+    .btn-secondary {
+        width: 100%;
+        padding: 0.8rem;
+        text-align: center;
+    }
+
+    .choice-group {
+        flex-direction: column;
+    }
+
+    /* 모달 → Bottom Sheet 스타일 */
+    .modal-content {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 24px 24px 0 0;
+        padding: 2rem 1.5rem;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+}
+
+/* --- Small Phone (max-width: 480px) --- */
 @media (max-width: 480px) {
     body.auth-body {
         padding: 0;
         align-items: flex-start;
     }
 
+    .auth-main {
+        padding: 1rem 0 5rem;
+    }
+
     .auth-container {
-        padding: 2.5rem 1.5rem;
+        padding: 2rem 1.2rem;
         border-radius: 0;
         min-height: 100vh;
         border: none;
+        box-shadow: none;
+    }
+
+    .auth-header {
+        margin-bottom: 2rem;
+    }
+
+    .logo a {
+        font-size: 1.7rem;
     }
 
     .btn-row {
@@ -550,11 +636,24 @@ body.auth-body {
     .at-symbol {
         display: none;
     }
+
+    .login-utils {
+        font-size: 0.85rem;
+    }
+
+    .terms-box {
+        padding: 1.2rem;
+    }
+
+    .checkbox-label {
+        font-size: 0.9rem;
+    }
 }
 
-@media (max-width: 320px) {
+/* --- iPhone SE (max-width: 375px) --- */
+@media (max-width: 375px) {
     .auth-container {
-        padding: 1.5rem 1rem;
+        padding: 1.8rem 1rem;
     }
 
     .logo a {
@@ -562,11 +661,36 @@ body.auth-body {
     }
 
     .section-title {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
     }
 
     .form-section {
         padding: 1.2rem;
+    }
+
+    .input-group input,
+    .input-group select {
+        padding: 0.9rem;
+        font-size: 0.95rem;
+    }
+}
+
+/* --- Micro (max-width: 320px) --- */
+@media (max-width: 320px) {
+    .auth-container {
+        padding: 1.5rem 0.8rem;
+    }
+
+    .logo a {
+        font-size: 1.3rem;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+    }
+
+    .form-section {
+        padding: 1rem;
     }
 
     .input-group input,
@@ -585,52 +709,8 @@ body.auth-body {
     .checkbox-label {
         font-size: 0.85rem;
     }
-}
 
-/* Extreme Mobile (iOS App Style) < 198px */
-@media (max-width: 198px) {
-    .auth-main {
-        padding: 1rem 0;
-    }
-    
-    .auth-container {
-        padding: 1rem 0.5rem;
-        box-shadow: none;
-    }
-    
-    .logo a {
-        font-size: 1.2rem;
-    }
-    
     .step-item {
         font-size: 0.7rem;
-        padding-bottom: 0.4rem;
-    }
-    
-    .section-title {
-        font-size: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    .form-section {
-        padding: 0.8rem;
-    }
-    
-    .input-group input,
-    .input-group select {
-        padding: 0.6rem;
-        font-size: 0.8rem;
-    }
-    
-    .btn-choice {
-        padding: 0.6rem;
-        font-size: 0.8rem;
-    }
-    
-    .btn-next,
-    .btn-submit,
-    .btn-cancel {
-        padding: 0.8rem;
-        font-size: 0.9rem;
     }
 }
