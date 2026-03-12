@@ -54,7 +54,7 @@ window.CommunityModules.ChatUI = (function () {
                     alert("모든 항목을 입력해주세요.");
                     return;
                 }
-                
+
                 sendGatheringCard(title, min, max);
                 modal.style.display = 'none';
             });
@@ -218,10 +218,10 @@ window.CommunityModules.ChatUI = (function () {
         const statusEl = document.getElementById('chatHeaderStatus');
         const btnGathering = document.getElementById('btnGathering');
         const btnGoToClass = document.getElementById('btnGoToClass');
-        
+
         if (roomType === 'dm' && roomInfo?.target_id) {
             bridge().watchPresence(roomInfo.target_id, (p) => {
-                if(statusEl) {
+                if (statusEl) {
                     statusEl.textContent = p.online ? '온라인' : '오프라인';
                     statusEl.className = 'chat-header-status' + (p.online ? ' online' : '');
                 }
@@ -229,7 +229,7 @@ window.CommunityModules.ChatUI = (function () {
             if (btnGathering) btnGathering.style.display = 'none';
             if (btnGoToClass) btnGoToClass.style.display = 'none';
         } else if (roomType === 'class') {
-            if(statusEl) {
+            if (statusEl) {
                 statusEl.textContent = '클래스 채팅';
                 statusEl.className = 'chat-header-status';
             }
@@ -244,7 +244,7 @@ window.CommunityModules.ChatUI = (function () {
                 btnGoToClass.href = `../class_view/class_view.html?id=${roomId}`;
             }
         } else if (roomType === 'group') {
-            if(statusEl) {
+            if (statusEl) {
                 statusEl.textContent = '그룹 채팅';
                 statusEl.className = 'chat-header-status';
             }
@@ -339,13 +339,13 @@ window.CommunityModules.ChatUI = (function () {
             const maxCap = msgData.max_capacity || 0;
             const currentCount = msgData.current_count || 0;
             const status = msgData.status || 'open';
-            
+
             contentHtml = `
             <div class="msg-bubble gathering-card" style="border:1px solid var(--border-color); border-radius:12px; padding:15px; background:rgba(0,0,0,0.2); min-width:250px;">
                 <h4 style="margin:0 0 10px 0; color:var(--comm-accent);">📅 ${escapeHtml(title)}</h4>
                 <p style="font-size:0.9rem; margin-bottom:15px;">참여 인원: ${currentCount} / ${maxCap}명 (최소 ${minCap}명)</p>
-                ${status === 'closed' 
-                    ? `<button class="btn-submit" disabled style="background:#555; cursor:not-allowed;">마감됨</button>` 
+                ${status === 'closed'
+                    ? `<button class="btn-submit" disabled style="background:#555; cursor:not-allowed;">마감됨</button>`
                     : `<button class="btn-submit" onclick="window.CommunityModules.ChatUI.joinGathering('${currentRoomId}', '${gatherId}')">참여하기 (수강권 사용)</button>`
                 }
                 ${isMine && status === 'open' ? `<button class="btn-secondary" style="margin-top:10px; width:100%;" onclick="window.CommunityModules.ChatUI.closeGathering('${currentRoomId}', '${gatherId}')">모집 마감하기</button>` : ''}
@@ -501,6 +501,16 @@ window.CommunityModules.ChatUI = (function () {
             if (editingMsgKey) {
                 if (currentRoomType === 'dm') {
                     await DM().editMessage(currentRoomId, editingMsgKey, content);
+                } else if (currentRoomType === 'class') {
+                    await bridge().getDb().ref(`chats/${currentRoomId}/${editingMsgKey}`).update({
+                        content: content,
+                        edited: true
+                    });
+                } else if (currentRoomType === 'group') {
+                    await bridge().getDb().ref(`group_chats/${currentRoomId}/messages/${editingMsgKey}`).update({
+                        content: content,
+                        edited: true
+                    });
                 }
                 editingMsgKey = null;
             } else if (currentRoomType === 'class') {
@@ -682,7 +692,7 @@ window.CommunityModules.ChatUI = (function () {
         try {
             const currentUserId = bridge().getUserId();
             const profile = await bridge().getUserProfile(currentUserId);
-            
+
             await bridge().getDb().ref(`chats/${currentRoomId}`).push({
                 type: 'gathering_card',
                 gather_title: title,
@@ -707,12 +717,12 @@ window.CommunityModules.ChatUI = (function () {
         let userId = bridge().getUserId();
         if (window.__BSQ_DEV_MODE__) userId = 'OPERATOR_GHOST';
         const db = bridge().getDb();
-        
+
         try {
             // First check user's passes
             const passSnap = await db.ref(`user_passes/${userId}/${roomId}`).once('value');
             const passInfo = passSnap.val() || {};
-            
+
             if (!passInfo.monthly && (!passInfo.count || passInfo.count <= 0) && !window.__BSQ_DEV_MODE__) {
                 alert("수강권이 부족합니다. 클래스 페이지에서 수강권을 구매해주세요.");
                 return;
@@ -742,7 +752,7 @@ window.CommunityModules.ChatUI = (function () {
                 }
                 return currentData;
             });
-            
+
             if (!result.committed) {
                 alert(errorMsg || "모집에 참여할 수 없습니다.");
                 return;
@@ -760,7 +770,7 @@ window.CommunityModules.ChatUI = (function () {
                 await db.ref(`user_passes/${userId}/${roomId}/count`).set(passInfo.count - 1);
             }
             alert("참여가 성공적으로 완료되었습니다! 수강권 1개가 사용되었습니다.");
-            
+
         } catch (e) {
             console.error("Gathering join error:", e);
             alert("참여 처리 중 오류가 발생했습니다.");
@@ -774,19 +784,19 @@ window.CommunityModules.ChatUI = (function () {
             const gatherRef = db.ref(`chats/${roomId}/${gatherId}`);
             const gatherSnap = await gatherRef.once('value');
             const gatherData = gatherSnap.val();
-            
+
             if (!gatherData || gatherData.status === 'closed') {
                 alert("이미 마감되었거나 존재하지 않는 모집입니다.");
                 return;
             }
-            
+
             await gatherRef.update({ status: 'closed' });
-            
+
             if (gatherData.current_count < gatherData.min_capacity) {
                 alert(`최소 인원(${gatherData.min_capacity}명) 미달로 모집이 자동 취소되며, 수강생들의 수강권이 자동 환불(반환)됩니다.`);
                 const partsSnap = await db.ref(`class_participants/${gatherId}`).once('value');
                 const parts = partsSnap.val() || {};
-                
+
                 // Refund pass tickets
                 for (const [uid, info] of Object.entries(parts)) {
                     if (info.used_pass === 'ticket') {
@@ -798,8 +808,8 @@ window.CommunityModules.ChatUI = (function () {
             } else {
                 alert(`총 ${gatherData.current_count}명 모집 확정되었습니다!`);
             }
-        } catch(e) { 
-            console.error("Close gathering error:", e); 
+        } catch (e) {
+            console.error("Close gathering error:", e);
             alert("마감 처리 중 오류가 발생했습니다.");
         }
     }

@@ -4,22 +4,23 @@
    기준: iPhone SE 375px ~ iPhone 15 Pro Max 430px
 =========================================== */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+@import url('../mobile_210px_optimize.css');
 
 :root {
-    --bg-color: #f7f9fa;
-    --card-bg: rgba(255, 255, 255, 0.95);
-    --border-color: #e2e5eA;
-    --accent-color: #000000;
-    --text-primary: #1d1d1f;
-    --text-secondary: #86868b;
-    --glass-bg: rgba(255, 255, 255, 0.85);
-    --glass-border: rgba(0, 0, 0, 0.03);
+    --bg-color: #0a0a0a;
+    --card-bg: rgba(20, 20, 20, 0.95);
+    --border-color: #333333;
+    --accent-color: #ffffff;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --glass-bg: rgba(10, 10, 10, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.05);
     --glass-blur: blur(24px) saturate(180%);
-    --card-radius: 24px;
+    --card-radius: 20px;
     --btn-radius: 36px;
-    --primary-font: 'Inter', 'Pretendard', sans-serif;
-    --nav-icon-color: #1d1d1f;
-    --hover-bg: #f5f5f7;
+    --primary-font: 'Inter', 'Pretendard', -apple-system, sans-serif;
+    --nav-icon-color: #ffffff;
+    --hover-bg: #1f1f1f;
 }
 
 * {
@@ -33,6 +34,19 @@ body {
     background-color: var(--bg-color);
     color: var(--text-primary);
     line-height: 1.6;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+    /* Prevent text selection like a native app */
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* Allow text selection for inputs and textareas */
+input,
+textarea,
+[contenteditable] {
+    user-select: auto;
 }
 
 a {
@@ -640,12 +654,12 @@ option {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border-top: 1px solid var(--border-color);
+    background: rgba(18, 18, 18, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     z-index: 1000;
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom, 12px);
 }
 
 .bottom-nav .nav-item {

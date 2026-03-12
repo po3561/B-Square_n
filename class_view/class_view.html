@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_mobile.css" media="(max-width: 768px)">
     <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css" media="(min-width: 769px)">
     <link rel="stylesheet" href="class_view.css">
+    <link rel="stylesheet" href="view_chat.css">
     <link rel="stylesheet" href="payment_toast.css">
     <!-- Quill.js 리치 텍스트 에디터 -->
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
@@ -231,7 +232,8 @@
                                     <div class="chat-input-area">
                                         <div class="input-main-row">
                                             <button class="btn-input-icon" id="btnAttach" title="파일 첨부">📎</button>
-                                            <button class="btn-input-icon" id="btnGathering" title="클래스 모집 카드 보내기" style="display:none;">📅</button>
+                                            <button class="btn-input-icon" id="btnGathering" title="클래스 모집 카드 보내기"
+                                                style="display:none;">📅</button>
                                             <input type="file" id="fileInput" multiple hidden>
                                             <textarea id="msgInput" placeholder="메시지 작성..." rows="1"></textarea>
                                             <button class="btn-input-icon" id="btnEmoji" title="이모지">😊</button>
@@ -288,7 +290,8 @@
                     </div>
 
                     <!-- 내 수강권 현황 표시 -->
-                    <div id="myPassStatus" style="display:none; padding: 12px; margin: 10px 0; background: rgba(76, 201, 240, 0.1); border: 1px solid rgba(76, 201, 240, 0.3); border-radius: 8px; color: #4cc9f0; font-weight: 600; text-align: center;">
+                    <div id="myPassStatus"
+                        style="display:none; padding: 12px; margin: 10px 0; background: rgba(76, 201, 240, 0.1); border: 1px solid rgba(76, 201, 240, 0.3); border-radius: 8px; color: #4cc9f0; font-weight: 600; text-align: center;">
                         내 보유 수강권: <span id="myPassCountVal">0</span>개
                     </div>
 
@@ -335,18 +338,94 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- 모집 카드 만들기 모달 -->
-    <div class="new-chat-modal" id="gatheringModal" style="display:none;">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3>📅 클래스 모집 카드 보내기</h3>
-                <button class="btn-close-modal" id="btnCloseGatheringModal">✕</button>
+    <!-- Toss UI Style Payment Bottom Sheet -->
+    <div class="bottom-sheet-overlay" id="paymentBottomSheet" style="display:none;">
+        <div class="bottom-sheet-content">
+            <div class="sheet-header">
+                <h3>수강 옵션 선택</h3>
+                <button class="btn-sheet-close" id="btnSheetClose">✕</button>
             </div>
-            <div class="modal-body" style="display:flex; flex-direction:column; gap:10px;">
-                <input type="text" id="gatherTitle" placeholder="모집 제목 (예: 5월 첫 모임)" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:white;" required>
-                <input type="number" id="gatherMin" placeholder="최소 인원 (예: 2)" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:white;" required>
-                <input type="number" id="gatherMax" placeholder="최대 정원 (예: 10)" style="padding:10px; border-radius:8px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:white;" required>
-                <button class="btn-submit" id="btnSendGatheringSubmit" style="margin-top:10px;">모집 카드 전송</button>
+
+            <div class="sheet-body">
+                <div class="payment-options">
+                    <label class="pay-option-card">
+                        <input type="radio" name="payOption" value="monthly">
+                        <div class="pay-option-inner">
+                            <span class="pay-opt-title">월정액 (정기결제)</span>
+                            <span class="pay-opt-desc">매월 자동으로 결제됩니다.</span>
+                            <span class="pay-opt-price" id="optPriceMonthly">0원/월</span>
+                        </div>
+                    </label>
+                    <label class="pay-option-card">
+                        <input type="radio" name="payOption" value="30days">
+                        <div class="pay-option-inner">
+                            <span class="pay-opt-title">수강권 한 달 패키지</span>
+                            <span class="pay-opt-desc">결제 후 30일간 무제한 수강 (1회성 결제)</span>
+                            <span class="pay-opt-price" id="optPrice30Days">0원</span>
+                        </div>
+                    </label>
+                    <label class="pay-option-card">
+                        <input type="radio" name="payOption" value="onetime" checked>
+                        <div class="pay-option-inner">
+                            <span class="pay-opt-title">1회 원데이 클래스</span>
+                            <span class="pay-opt-desc">1회 수강권 획득</span>
+                            <span class="pay-opt-price" id="optPriceOneTime">0원</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="coupon-section">
+                    <h4>🎟️ 쿠폰 할인</h4>
+                    <div class="coupon-input-group">
+                        <input type="text" id="couponCodeInput" placeholder="쿠폰 코드를 입력하세요 (예: WELCOME)">
+                        <button id="btnApplyCoupon" class="btn-apply-coupon">적용</button>
+                    </div>
+                    <p id="couponMessage" class="coupon-msg"></p>
+                </div>
+
+                <div class="payment-summary">
+                    <div class="summary-row">
+                        <span>상품 금액</span>
+                        <span id="summaryOriginalPrice">0원</span>
+                    </div>
+                    <div class="summary-row discount-row" style="display:none;" id="summaryDiscountRow">
+                        <span>쿠폰 할인</span>
+                        <span id="summaryDiscountAmount">-0원</span>
+                    </div>
+                    <div class="summary-row total-row">
+                        <span>최종 결제 금액</span>
+                        <span id="summaryFinalPrice" class="final-price-highlight">0원</span>
+                    </div>
+                </div>
+
+                <div class="sheet-footer">
+                    <button class="btn-toss-pay" id="btnTossPayStart">결제하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모집 카드 만들기 모달 -->
+    <div class="modal-overlay" id="gatheringModal" style="display:none;">
+        <div class="modal-content" style="max-width: 400px; padding: 2rem;">
+            <div class="modal-header"
+                style="display:flex; justify-content:space-between; margin-bottom: 20px; border-bottom:none; padding:0;">
+                <h3 style="margin: 0; font-size: 1.2rem;">📅 클래스 모집 카드 보내기</h3>
+                <button class="btn-close-modal" id="btnCloseGatheringModal"
+                    style="background:none; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+            </div>
+            <div class="modal-body" style="display:flex; flex-direction:column; gap:10px; padding:0;">
+                <input type="text" id="gatherTitle" placeholder="모집 제목 (예: 5월 첫 모임)"
+                    style="padding:12px; border-radius:8px; border:1px solid var(--border-color, #444); background:rgba(255,255,255,0.05); color:white; outline:none;"
+                    required>
+                <input type="number" id="gatherMin" placeholder="최소 인원 (예: 2)"
+                    style="padding:12px; border-radius:8px; border:1px solid var(--border-color, #444); background:rgba(255,255,255,0.05); color:white; outline:none;"
+                    required>
+                <input type="number" id="gatherMax" placeholder="최대 정원 (예: 10)"
+                    style="padding:12px; border-radius:8px; border:1px solid var(--border-color, #444); background:rgba(255,255,255,0.05); color:white; outline:none;"
+                    required>
+                <button class="btn-submit" id="btnSendGatheringSubmit"
+                    style="margin-top:15px; padding: 12px; border-radius: 8px; font-weight: bold;">모집 카드 전송</button>
             </div>
         </div>
     </div>

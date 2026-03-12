@@ -89,114 +89,134 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
             </div>
 
             <div class="edit-panel-header">
-                <span class="edit-badge">✏️ 클래스 수정</span>
+                <span class="edit-badge">⚙️ 강사 대시보드</span>
                 <p class="edit-panel-desc">클래스 ID: <code>${classId}</code> · 등록일: ${createdDate}</p>
             </div>
 
-            <form id="editForm" class="edit-form">
-                <!-- 기본 정보 -->
-                <div class="edit-section">
-                    <h4 class="edit-section-title">📋 기본 정보</h4>
-                    <div class="edit-field">
-                        <label>클래스명</label>
-                        <input type="text" id="editTitle" value="${classData.title || ''}" placeholder="클래스 제목">
-                    </div>
-                    <div class="edit-field-row">
+            <!-- 탭 내비게이션 -->
+            <div class="db-tabs" style="display:flex; gap:10px; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:1.5rem;">
+                <button type="button" class="db-tab-btn active" data-target="dbTabInfo" style="background:none; border:none; color:#fff; padding:10px 15px; cursor:pointer; font-weight:700; border-bottom:2px solid var(--comm-accent);">📝 정보 수정</button>
+                <button type="button" class="db-tab-btn" data-target="dbTabInstructors" style="background:none; border:none; color:#888; padding:10px 15px; cursor:pointer; font-weight:600;">👥 서브 강사</button>
+                <button type="button" class="db-tab-btn" data-target="dbTabStudents" style="background:none; border:none; color:#888; padding:10px 15px; cursor:pointer; font-weight:600;">🎓 수강생 및 결제</button>
+                <button type="button" class="db-tab-btn" data-target="dbTabCoupons" style="background:none; border:none; color:#888; padding:10px 15px; cursor:pointer; font-weight:600;">🎟️ 쿠폰 관리</button>
+            </div>
+
+            <!-- TAB 1: 정보 수정 -->
+            <div id="dbTabInfo" class="db-tab-content" style="display:block;">
+                <form id="editForm" class="edit-form">
+                    <!-- 기본 정보 -->
+                    <div class="edit-section">
+                        <h4 class="edit-section-title">📋 기본 정보</h4>
                         <div class="edit-field">
-                            <label>카테고리</label>
-                            <select id="editCategory">${catOptions}</select>
+                            <label>클래스명</label>
+                            <input type="text" id="editTitle" value="${classData.title || ''}" placeholder="클래스 제목">
                         </div>
-                        <div class="edit-field">
-                            <label>클래스 유형</label>
-                            <select id="editClassType">
-                                <option value="VOD" ${classData.class_type === 'VOD' ? 'selected' : ''}>VOD (녹화 강의)</option>
-                                <option value="LIVE" ${classData.class_type === 'LIVE' ? 'selected' : ''}>LIVE (실시간)</option>
-                                <option value="KIT" ${classData.class_type === 'KIT' ? 'selected' : ''}>KIT (키트 포함)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="edit-field">
-                        <label>키워드 (쉼표로 구분)</label>
-                        <input type="text" id="editKeywords" value="${keywords}" placeholder="디자인, 포토샵, 기초">
-                    </div>
-                </div>
-
-                <!-- 이미지 (드래그앤드롭) -->
-                <div class="edit-section">
-                    <h4 class="edit-section-title">🖼️ 클래스 이미지</h4>
-                    <div class="edit-image-grid" id="editImageGrid"></div>
-                    <div class="edit-dropzone" id="editDropzone">
-                        <input type="file" id="editImageFile" accept="image/*" multiple hidden>
-                        <div class="dropzone-inner">
-                            <span class="dropzone-icon">📂</span>
-                            <p>이미지를 드래그하거나 클릭하여 업로드</p>
-                            <span class="dropzone-hint">최대 6장 · JPG, PNG, WEBP</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 대상 수강생 -->
-                <div class="edit-section">
-                    <h4 class="edit-section-title">🎯 대상 수강생</h4>
-                    <div class="edit-field">
-                        <label>이런 분들을 위한 클래스입니다 (줄바꿈으로 구분)</label>
-                        <textarea id="editTargetAudience" rows="4" placeholder="관련 분야 기초를 다지고 싶은 분&#10;실무 기술을 배우고 싶은 분">${(classData.target_audience || []).join('\n')}</textarea>
-                    </div>
-                </div>
-
-                <!-- 학습 목표 -->
-                <div class="edit-section">
-                    <h4 class="edit-section-title">🎓 학습 목표</h4>
-                    <p class="edit-section-hint">각 목표를 아이콘|제목|설명 형식으로 입력 (줄바꿈으로 구분)</p>
-                    <div class="edit-field">
-                        <textarea id="editObjectives" rows="4" placeholder="💡|기초 개념 이해|복잡한 개념도 쉽게 설명합니다&#10;🛠️|실전 프로젝트|직접 결과물을 만들어봅니다">${(classData.objectives || []).map(o => `${o.icon}|${o.title}|${o.desc}`).join('\n')}</textarea>
-                    </div>
-                </div>
-
-                <!-- 소개 -->
-                <div class="edit-section">
-                    <h4 class="edit-section-title">📝 클래스 소개</h4>
-                    <div class="edit-field">
-                        <label>요약 (한 줄 설명)</label>
-                        <textarea id="editSummary" rows="2" placeholder="클래스를 한 줄로 설명하세요">${classData.summary || ''}</textarea>
-                    </div>
-                    <div class="edit-field">
-                        <label>상세 설명</label>
-                        <textarea id="editDescription" rows="8" placeholder="클래스에 대해 자세히 설명하세요">${classData.description || ''}</textarea>
-                    </div>
-                </div>
-
-                <!-- 가격 -->
-                <div class="edit-section">
-                    <h4 class="edit-section-title">💰 가격 설정</h4>
-                    <div class="edit-field-row">
-                        <div class="edit-field">
-                            <label>가격 (원)</label>
-                            <input type="number" id="editPrice" value="${classData.price || 0}" min="0">
+                        <div class="edit-field-row">
+                            <div class="edit-field">
+                                <label>카테고리</label>
+                                <select id="editCategory">${catOptions}</select>
+                            </div>
+                            <div class="edit-field">
+                                <label>클래스 유형</label>
+                                <select id="editClassType">
+                                    <option value="VOD" ${classData.class_type === 'VOD' ? 'selected' : ''}>VOD (녹화 강의)</option>
+                                    <option value="LIVE" ${classData.class_type === 'LIVE' ? 'selected' : ''}>LIVE (실시간)</option>
+                                    <option value="KIT" ${classData.class_type === 'KIT' ? 'selected' : ''}>KIT (키트 포함)</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="edit-field">
-                            <label>할인율 (%)</label>
-                            <input type="number" id="editDiscount" value="${classData.discount_rate || 0}" min="0" max="100">
+                            <label>키워드 (쉼표로 구분)</label>
+                            <input type="text" id="editKeywords" value="${keywords}" placeholder="디자인, 포토샵, 기초">
                         </div>
                     </div>
-                    <div class="edit-price-preview" id="editPricePreview"></div>
-                </div>
 
-                <!-- 커리큘럼 -->
-                <div class="edit-section">
-                    <h4 class="edit-section-title">📚 커리큘럼</h4>
-                    <div id="editCurriculumList" class="edit-curriculum-list">
-                        ${curriculumHTML || '<p class="edit-empty-msg">등록된 챕터가 없습니다</p>'}
+                    <!-- 이미지 (드래그앤드롭) -->
+                    <div class="edit-section">
+                        <h4 class="edit-section-title">🖼️ 클래스 이미지</h4>
+                        <div class="edit-image-grid" id="editImageGrid"></div>
+                        <div class="edit-dropzone" id="editDropzone">
+                            <input type="file" id="editImageFile" accept="image/*" multiple hidden>
+                            <div class="dropzone-inner">
+                                <span class="dropzone-icon">📂</span>
+                                <p>이미지를 드래그하거나 클릭하여 업로드</p>
+                                <span class="dropzone-hint">최대 6장 · JPG, PNG, WEBP</span>
+                            </div>
+                        </div>
                     </div>
-                    <button type="button" id="btnAddEditChapter" class="btn-add-chapter">+ 챕터 추가</button>
-                </div>
 
-                <!-- 서브 강사 관리 -->
+                    <!-- 대상 수강생 -->
+                    <div class="edit-section">
+                        <h4 class="edit-section-title">🎯 대상 수강생</h4>
+                        <div class="edit-field">
+                            <label>이런 분들을 위한 클래스입니다 (줄바꿈으로 구분)</label>
+                            <textarea id="editTargetAudience" rows="4" placeholder="관련 분야 기초를 다지고 싶은 분&#10;실무 기술을 배우고 싶은 분">${(classData.target_audience || []).join('\n')}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- 학습 목표 -->
+                    <div class="edit-section">
+                        <h4 class="edit-section-title">🎓 학습 목표</h4>
+                        <p class="edit-section-hint">각 목표를 아이콘|제목|설명 형식으로 입력 (줄바꿈으로 구분)</p>
+                        <div class="edit-field">
+                            <textarea id="editObjectives" rows="4" placeholder="💡|기초 개념 이해|복잡한 개념도 쉽게 설명합니다&#10;🛠️|실전 프로젝트|직접 결과물을 만들어봅니다">${(classData.objectives || []).map(o => `${o.icon}|${o.title}|${o.desc}`).join('\n')}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- 소개 -->
+                    <div class="edit-section">
+                        <h4 class="edit-section-title">📝 클래스 소개</h4>
+                        <div class="edit-field">
+                            <label>요약 (한 줄 설명)</label>
+                            <textarea id="editSummary" rows="2" placeholder="클래스를 한 줄로 설명하세요">${classData.summary || ''}</textarea>
+                        </div>
+                        <div class="edit-field">
+                            <label>상세 설명</label>
+                            <textarea id="editDescription" rows="8" placeholder="클래스에 대해 자세히 설명하세요">${classData.description || ''}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- 가격 -->
+                    <div class="edit-section">
+                        <h4 class="edit-section-title">💰 가격 설정</h4>
+                        <div class="edit-field-row">
+                            <div class="edit-field">
+                                <label>가격 (원)</label>
+                                <input type="number" id="editPrice" value="${classData.price || 0}" min="0">
+                            </div>
+                            <div class="edit-field">
+                                <label>할인율 (%)</label>
+                                <input type="number" id="editDiscount" value="${classData.discount_rate || 0}" min="0" max="100">
+                            </div>
+                        </div>
+                        <div class="edit-price-preview" id="editPricePreview"></div>
+                    </div>
+
+                    <!-- 커리큘럼 -->
+                    <div class="edit-section">
+                        <h4 class="edit-section-title">📚 커리큘럼</h4>
+                        <div id="editCurriculumList" class="edit-curriculum-list">
+                            ${curriculumHTML || '<p class="edit-empty-msg">등록된 챕터가 없습니다</p>'}
+                        </div>
+                        <button type="button" id="btnAddEditChapter" class="btn-add-chapter">+ 챕터 추가</button>
+                    </div>
+
+                    <!-- 저장 -->
+                    <div class="edit-actions">
+                        <button type="submit" class="btn-edit-save" id="btnEditSave">
+                            <span>💾 변경 사항 저장</span>
+                        </button>
+                        <p class="edit-save-hint">저장 시 Firebase에 실시간 반영되어 모든 사용자에게 즉시 적용됩니다.</p>
+                    </div>
+                </form>
+            </div>
+
+            <!-- TAB 2: 서브 강사 -->
+            <div id="dbTabInstructors" class="db-tab-content" style="display:none;">
                 <div class="edit-section">
                     <h4 class="edit-section-title">👥 서브 강사 관리</h4>
-                    <p class="edit-section-hint">이 클래스를 함께 운영할 서브 강사를 검색하여 추가할 수 있습니다.</p>
+                    <p class="edit-section-hint">이 클래스를 함께 운영할 서브 강사를 검색하여 추가할 수 있습니다. 추가된 강사는 클래스 수정, 채팅 모더레이팅 권한을 동일하게 가집니다.</p>
                     <div class="edit-field" style="position: relative;">
-                        <label>강사 검색</label>
                         <input type="text" id="subInstructorSearch" placeholder="이름으로 검색..." autocomplete="off">
                         <div id="subInstructorResults" style="position:absolute; top:100%; left:0; right:0; background:var(--bg-card,#1a1a2e); border:1px solid var(--border-color,#333); border-radius:8px; max-height:200px; overflow-y:auto; z-index:50; display:none;"></div>
                     </div>
@@ -204,15 +224,61 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                         ${subInstructorHTML}
                     </div>
                 </div>
+            </div>
 
-                <!-- 저장 -->
-                <div class="edit-actions">
-                    <button type="submit" class="btn-edit-save" id="btnEditSave">
-                        <span>💾 변경 사항 저장</span>
-                    </button>
-                    <p class="edit-save-hint">저장 시 Firebase에 실시간 반영되어 모든 사용자에게 즉시 적용됩니다.</p>
+            <!-- TAB 3: 수강생 및 결제 -->
+            <div id="dbTabStudents" class="db-tab-content" style="display:none;">
+                <div class="edit-section">
+                    <h4 class="edit-section-title">🎓 전체 수강 통계</h4>
+                    <div id="studentStatsArea" style="margin-bottom:20px; color:#aaa;">불러오는 중...</div>
+                    <h4 class="edit-section-title">💸 수강생 리스트 및 패스 관리</h4>
+                    <div class="edit-field" style="margin-bottom:15px; display:flex; gap:10px;">
+                        <input type="text" id="studentSearchInput" placeholder="이름/이메일로 빠른 검색" style="flex:1;">
+                    </div>
+                    <div id="studentListArea" style="max-height:400px; overflow-y:auto; border:1px solid rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
+                        불러오는 중...
+                    </div>
                 </div>
-            </form>
+            </div>
+
+            <!-- TAB 4: 쿠폰 관리 -->
+            <div id="dbTabCoupons" class="db-tab-content" style="display:none;">
+                <div class="edit-section" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:10px; margin-bottom:1.5rem;">
+                    <h4 class="edit-section-title">🎟️ 새 쿠폰 발급하기</h4>
+                    <div class="edit-field-row">
+                        <div class="edit-field">
+                            <label>쿠폰 코드 (영문/숫자)</label>
+                            <input type="text" id="newCouponCode" placeholder="예: SUMMER2026">
+                        </div>
+                        <div class="edit-field">
+                            <label>할인 금액(원) / 비율(%)</label>
+                            <input type="number" id="newCouponValue" placeholder="할인 액수 또는 비율">
+                        </div>
+                        <div class="edit-field">
+                            <label>할인 타입</label>
+                            <select id="newCouponType">
+                                <option value="amount">원 할인</option>
+                                <option value="percent">% 할인</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="edit-field-row" style="margin-top:10px;">
+                        <div class="edit-field">
+                            <label>총 발행 수량 (0은 무제한)</label>
+                            <input type="number" id="newCouponLimit" value="0" min="0">
+                        </div>
+                    </div>
+                    <button class="btn-submit" id="btnCreateCoupon" style="margin-top:10px;">쿠폰 생성</button>
+                </div>
+                
+                <div class="edit-section">
+                    <h4 class="edit-section-title">📚 발행된 쿠폰 내역</h4>
+                    <div id="couponListArea">
+                        불러오는 중...
+                    </div>
+                </div>
+            </div>
+
         </div>
     `;
 
@@ -518,6 +584,256 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     document.addEventListener('click', (e) => {
         if (subResults && !subResults.contains(e.target) && e.target !== subSearchInput) {
             subResults.style.display = 'none';
+        }
+    });
+
+    // ========================
+    // 9. 탭 전환 로직
+    // ========================
+    const dbTabBtns = document.querySelectorAll('.db-tab-btn');
+    const dbTabContents = document.querySelectorAll('.db-tab-content');
+
+    dbTabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.target;
+
+            dbTabBtns.forEach(b => {
+                b.classList.remove('active');
+                b.style.color = '#888';
+                b.style.borderBottom = 'none';
+            });
+            btn.classList.add('active');
+            btn.style.color = '#fff';
+            btn.style.borderBottom = '2px solid var(--comm-accent)';
+
+            dbTabContents.forEach(c => c.style.display = 'none');
+            const targetEl = document.getElementById(target);
+            if (targetEl) targetEl.style.display = 'block';
+
+            if (target === 'dbTabStudents') loadStudents(classId, db, supabase);
+            if (target === 'dbTabCoupons') loadCoupons(classId, db);
+        });
+    });
+
+    // ========================
+    // 10. 수강생 및 결제 통계 로드
+    // ========================
+    async function loadStudents(classId, db, supabase) {
+        const statsArea = document.getElementById('studentStatsArea');
+        const listArea = document.getElementById('studentListArea');
+
+        try {
+            // 1) 전체 수강생 내역 로드
+            const enrollSnap = await db.ref(`enrollments`).once('value');
+            const passesSnap = await db.ref(`user_passes`).once('value');
+
+            const enrollments = enrollSnap.val() || {};
+            const userPasses = passesSnap.val() || {};
+
+            let totalStudents = 0;
+            let totalPaid = 0;
+            let totalFree = 0;
+
+            const students = [];
+            const userIds = [];
+
+            for (const uid in enrollments) {
+                if (enrollments[uid][classId]) {
+                    const e = enrollments[uid][classId];
+                    userIds.push(uid);
+
+                    const isFree = e.amount === 0 || e.pay_method === 'free';
+                    if (isFree) totalFree++;
+                    else totalPaid++;
+                    totalStudents++;
+
+                    const passInfo = userPasses[uid] && userPasses[uid][classId] ? userPasses[uid][classId] : null;
+
+                    students.push({
+                        uid,
+                        enrolled_at: e.enrolled_at,
+                        amount: e.amount,
+                        pay_method: e.pay_method,
+                        passInfo
+                    });
+                }
+            }
+
+            statsArea.innerHTML = `
+                <div style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:120px; background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size:0.8rem; color:#aaa;">총 수강생</div>
+                        <div style="font-size:1.5rem; font-weight:700; color:#fff;">${totalStudents}명</div>
+                    </div>
+                    <div style="flex:1; min-width:120px; background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size:0.8rem; color:#aaa;">유료 수강생</div>
+                        <div style="font-size:1.5rem; font-weight:700; color:#4CAF50;">${totalPaid}명</div>
+                    </div>
+                    <div style="flex:1; min-width:120px; background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size:0.8rem; color:#aaa;">무료/관리자지정</div>
+                        <div style="font-size:1.5rem; font-weight:700; color:#2196F3;">${totalFree}명</div>
+                    </div>
+                </div>
+            `;
+
+            if (students.length === 0) {
+                listArea.innerHTML = '<div style="color:#aaa; text-align:center; padding:20px;">수강생이 없습니다.</div>';
+                return;
+            }
+
+            // Supabase에서 유저 정보 일괄 조회
+            let userMap = {};
+            if (userIds.length > 0) {
+                try {
+                    const { data } = await supabase.from('users').select('id, name, email').in('id', userIds);
+                    if (data) {
+                        data.forEach(u => userMap[u.id] = u);
+                    }
+                } catch (err) { console.warn(err); }
+            }
+
+            listArea.innerHTML = students.sort((a, b) => b.enrolled_at - a.enrolled_at).map(s => {
+                const u = userMap[s.uid] || { name: '알 수 없음', email: '' };
+                const dateStr = s.enrolled_at ? new Date(s.enrolled_at).toLocaleDateString() : '-';
+                const passStr = s.passInfo
+                    ? (s.passInfo.monthly ? '<span style="color:#FF9800">[월정액 구독중]</span>' : `<span style="color:#4CAF50">[잔여 수강권: ${s.passInfo.count}회]</span>`)
+                    : '<span style="color:#888">[패스 기록 없음]</span>';
+
+                return `
+                    <div class="student-item" data-email="${u.email}" data-name="${u.name}" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.05); padding:12px 0;">
+                        <div>
+                            <div style="font-weight:600;">${u.name} <span style="font-size:0.8rem; color:#888;">${u.email}</span></div>
+                            <div style="font-size:0.8rem; color:#aaa; margin-top:4px;">
+                                결제액: ${s.amount === 0 ? '무료' : s.amount.toLocaleString() + '원'} (${dateStr}) ${passStr}
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn-manage-pass" data-uid="${s.uid}" data-action="add" style="background:#4CAF50; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:0.8rem;">권한 +1</button>
+                            <button class="btn-manage-pass" data-uid="${s.uid}" data-action="remove" style="background:#F44336; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:0.8rem;">권한 -1</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // 검색 기능
+            const searchInput = document.getElementById('studentSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const q = e.target.value.toLowerCase();
+                    document.querySelectorAll('.student-item').forEach(item => {
+                        const name = item.dataset.name.toLowerCase();
+                        const email = item.dataset.email.toLowerCase();
+                        if (name.includes(q) || email.includes(q)) {
+                            item.style.display = 'flex';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // 수강권 관리 이벤트
+            listArea.querySelectorAll('.btn-manage-pass').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (!confirm('이 사용자의 수강권(패스) 수량을 변경하시겠습니까?')) return;
+                    const uid = btn.dataset.uid;
+                    const action = btn.dataset.action;
+
+                    const passRef = db.ref(`user_passes/${uid}/${classId}`);
+                    const passSnap = await passRef.once('value');
+                    let currentPass = passSnap.val() || { count: 0, monthly: false };
+
+                    if (action === 'add') {
+                        currentPass.count = (currentPass.count || 0) + 1;
+                    } else if (action === 'remove') {
+                        currentPass.count = Math.max(0, (currentPass.count || 0) - 1);
+                    }
+
+                    currentPass.updated_at = firebase.database.ServerValue.TIMESTAMP;
+                    await passRef.set(currentPass);
+                    alert(`수강권이 변경되었습니다. (현재 잔여수량: ${currentPass.count}회)`);
+                    loadStudents(classId, db, supabase);
+                });
+            });
+
+        } catch (e) {
+            console.error(e);
+            listArea.innerHTML = '<div style="color:red;">데이터 로드 중 오류가 발생했습니다.</div>';
+        }
+    }
+
+    // ========================
+    // 11. 쿠폰 관리 로직
+    // ========================
+    async function loadCoupons(classId, db) {
+        const listArea = document.getElementById('couponListArea');
+        try {
+            const snap = await db.ref(`coupons/${classId}`).once('value');
+            const coupons = snap.val() || {};
+
+            const entries = Object.entries(coupons);
+            if (entries.length === 0) {
+                listArea.innerHTML = '<div style="color:#aaa; text-align:center; padding:20px;">발행된 쿠폰이 없습니다.</div>';
+                return;
+            }
+
+            listArea.innerHTML = entries.map(([code, c]) => {
+                const typeStr = c.type === 'percent' ? `${c.value}% 할인` : `${(c.value || 0).toLocaleString()}원 할인`;
+                const limitStr = c.limit_count === 0 ? '무제한' : `${c.used_count || 0} / ${c.limit_count} 사용됨`;
+                return `
+                    <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-weight:700; color:var(--comm-accent); font-size:1.1rem; margin-bottom:4px;">${code}</div>
+                            <div style="font-size:0.85rem; color:#ccc;">${typeStr} | 수량: ${limitStr}</div>
+                        </div>
+                        <button class="btn-delete-coupon" data-code="${code}" style="background:none; border:1px solid #F44336; color:#F44336; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.8rem;">폐기하기</button>
+                    </div>
+                `;
+            }).join('');
+
+            listArea.querySelectorAll('.btn-delete-coupon').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (confirm('진행 중인 모든 할인이 중지됩니다. 이 쿠폰을 정말 폐기하시겠습니까?')) {
+                        await db.ref(`coupons/${classId}/${btn.dataset.code}`).remove();
+                        loadCoupons(classId, db);
+                    }
+                });
+            });
+
+        } catch (e) {
+            console.error(e);
+            listArea.innerHTML = '<div style="color:red;">쿠폰을 불러오는 데 실패했습니다.</div>';
+        }
+    }
+
+    document.getElementById('btnCreateCoupon')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const code = document.getElementById('newCouponCode').value.trim().toUpperCase();
+        const val = parseInt(document.getElementById('newCouponValue').value);
+        const type = document.getElementById('newCouponType').value;
+        const limit = parseInt(document.getElementById('newCouponLimit').value) || 0;
+
+        if (!code || isNaN(val)) {
+            alert('쿠폰 코드와 할인 금액(비율)을 올바르게 입력해주세요.');
+            return;
+        }
+
+        try {
+            await db.ref(`coupons/${classId}/${code}`).set({
+                type,
+                value: val,
+                limit_count: limit,
+                used_count: 0,
+                created_at: firebase.database.ServerValue.TIMESTAMP
+            });
+            alert('성공적으로 새 쿠폰이 발급되었습니다!');
+            document.getElementById('newCouponCode').value = '';
+            document.getElementById('newCouponValue').value = '';
+            document.getElementById('newCouponLimit').value = '0';
+            loadCoupons(classId, db);
+        } catch (err) {
+            console.error(err);
+            alert('쿠폰 생성에 실패했습니다.');
         }
     });
 };

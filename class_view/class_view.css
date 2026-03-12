@@ -31,19 +31,20 @@
 .view-container td,
 .view-container label,
 .view-container div {
-    color: inherit;
+    color: #ffffff;
 }
 
 /* Quill HTML 뷰어 */
 .html-viewer,
 .html-viewer * {
-    color: var(--text-primary) !important;
+    color: #ffffff !important;
+    background-color: transparent !important;
 }
 
 .html-viewer h1,
 .html-viewer h2,
 .html-viewer h3 {
-    color: var(--text-primary) !important;
+    color: #ffffff !important;
 }
 
 /* 에디트 패널 텍스트 */
@@ -2164,7 +2165,9 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     overflow: hidden;
-    height: 600px;
+    height: 70vh;
+    min-height: 500px;
+    max-height: 800px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -2751,5 +2754,423 @@
 
     .notice-editor-quill {
         height: 220px;
+    }
+}
+
+/* ==========================================
+   Chat Bubble Styles for class_view
+   (imported from chat_ui.js spec)
+=========================================== */
+.msg-row {
+    display: flex;
+    gap: 8px;
+    max-width: 75%;
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.msg-row.mine {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.msg-row.other {
+    align-self: flex-start;
+}
+
+.msg-avatar-sm {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #222;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    margin-top: auto;
+}
+
+.msg-bubble-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.msg-sender-name {
+    font-size: 0.8rem;
+    color: #a777e3;
+    font-weight: 600;
+    margin-bottom: 2px;
+    margin-left: 4px;
+}
+
+.msg-bubble {
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    word-break: break-word;
+    position: relative;
+}
+
+.msg-row.mine .msg-bubble {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+.msg-row.other .msg-bubble {
+    background: #1a1a1a;
+    color: #eee;
+    border: 1px solid #333;
+    border-bottom-left-radius: 4px;
+}
+
+.msg-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 0 4px;
+}
+
+.msg-row.mine .msg-meta {
+    justify-content: flex-end;
+}
+
+.msg-time-sm {
+    font-size: 0.7rem;
+    color: #888;
+}
+
+.msg-read-check {
+    font-size: 0.7rem;
+    color: #6e8efb;
+}
+
+.msg-edited {
+    font-size: 0.65rem;
+    color: #888;
+    font-style: italic;
+}
+
+.chat-messages-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Context menu */
+.msg-context-menu {
+    position: absolute;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 6px 0;
+    min-width: 160px;
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.msg-context-menu .ctx-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.msg-context-menu .ctx-item:hover {
+    background: #222;
+}
+
+.msg-context-menu .ctx-item.danger {
+    color: #ff4d4d;
+}
+
+#viewDescription {
+    color: #eeeeee !important;
+}
+
+/* =========================================
+   Toss Style Payment Bottom Sheet
+========================================= */
+.bottom-sheet-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeInOverlay 0.3s forwards;
+}
+
+@keyframes fadeInOverlay {
+    to {
+        opacity: 1;
+    }
+}
+
+.bottom-sheet-content {
+    background: var(--bg-deep, #1a1a1a);
+    width: 100%;
+    max-width: 500px;
+    border-radius: 24px 24px 0 0;
+    padding: 2rem 1.5rem;
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+    transform: translateY(100%);
+    animation: slideUpSheet 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+@keyframes slideUpSheet {
+    to {
+        transform: translateY(0);
+    }
+}
+
+.sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.sheet-header h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.btn-sheet-close {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sheet-body {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 5px;
+}
+
+.sheet-body::-webkit-scrollbar {
+    width: 5px;
+}
+
+.sheet-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 2rem;
+}
+
+.pay-option-card {
+    display: block;
+    cursor: pointer;
+    position: relative;
+}
+
+.pay-option-card input {
+    display: none;
+}
+
+.pay-option-inner {
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 16px;
+    padding: 1.2rem;
+    transition: all 0.2s;
+}
+
+.pay-option-card input:checked+.pay-option-inner {
+    border-color: #3182f6;
+    /* Toss blue */
+    background: rgba(49, 130, 246, 0.1);
+}
+
+.pay-opt-title {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.pay-opt-desc {
+    display: block;
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 15px;
+}
+
+.pay-opt-price {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #3182f6;
+    text-align: right;
+}
+
+.coupon-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.coupon-section h4 {
+    margin: 0 0 10px 0;
+    font-size: 1rem;
+    color: #fff;
+}
+
+.coupon-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.coupon-input-group input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 12px;
+    border-radius: 10px;
+    outline: none;
+    font-family: inherit;
+}
+
+.coupon-input-group input:focus {
+    border-color: #3182f6;
+}
+
+.btn-apply-coupon {
+    background: #3182f6;
+    color: #fff;
+    border: none;
+    padding: 0 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-apply-coupon:disabled {
+    background: #555;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.coupon-msg {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    min-height: 1.2em;
+}
+
+.coupon-msg.success {
+    color: #00e676;
+}
+
+.coupon-msg.error {
+    color: #ff5252;
+}
+
+.payment-summary {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #aaa;
+}
+
+.discount-row {
+    color: #ff5252;
+}
+
+.total-row {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.2);
+    font-weight: 700;
+    color: #fff;
+    font-size: 1.1rem;
+    margin-bottom: 0;
+}
+
+.final-price-highlight {
+    font-size: 1.4rem;
+    color: #3182f6;
+}
+
+.sheet-footer {
+    padding-top: 1rem;
+}
+
+.btn-toss-pay {
+    width: 100%;
+    background: #3182f6;
+    color: #fff;
+    border: none;
+    padding: 18px;
+    border-radius: 16px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(49, 130, 246, 0.3);
+    transition: all 0.2s;
+}
+
+.btn-toss-pay:hover {
+    transform: translateY(-2px);
+    background: #2b74db;
+}
+
+@media (min-width: 769px) {
+    .bottom-sheet-content {
+        border-radius: 24px;
+        transform: translateY(0);
+        animation: fadeInScale 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        max-height: 80vh;
+        margin: auto;
+    }
+
+    @keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 }
