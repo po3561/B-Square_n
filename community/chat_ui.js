@@ -205,19 +205,17 @@ window.CommunityModules.ChatUI = (function () {
 
             // 입력창 자동 숨김/보임 (스크롤 방향 감지)
             if (inputArea) {
-                if (scrollTop > lastScrollTop && scrollTop > 100 && !isNearBottom) {
-                    // 아래로 스크롤 중 (과거 메시지 보는 중 아님) -> 입력을 가릴지 말지는 기획에 따라 다름
-                    // 사용자가 "스크롤시 아래로 사라졌다가 내리면(풀다운) 다시 올라오는" 이라고 했으므로
-                    // 위로 스크롤(과거로 이동)할 때 숨기고, 아래로 스크롤(최신으로 이동)할 때 보이게 함
-                    inputArea.classList.remove('hidden');
-                } else if (scrollTop < lastScrollTop && scrollTop > 50) {
-                    // 위로 스크롤 중 (과거 메시지 탐색) -> 입력창 숨김
-                    inputArea.classList.add('hidden');
-                }
+                const diff = scrollTop - lastScrollTop;
                 
-                // 맨 하단에 도달하면 항상 보임
-                if (isNearBottom) {
+                if (isNearBottom || scrollTop < 50) {
+                    // 맨 하단이나 맨 상단 근처면 무조건 보임
                     inputArea.classList.remove('hidden');
+                } else if (diff > 20) {
+                    // 아래로 스크롤 중 (최신 메시지 방향) -> 보임
+                    inputArea.classList.remove('hidden');
+                } else if (diff < -20) {
+                    // 위로 스크롤 중 (과거 메시지 탐색) -> 숨김
+                    inputArea.classList.add('hidden');
                 }
             }
             lastScrollTop = scrollTop;
@@ -273,6 +271,12 @@ window.CommunityModules.ChatUI = (function () {
         // 정보 패널 닫기
         const infoPanel = document.getElementById('commInfoPanel');
         if (infoPanel) infoPanel.style.display = 'none';
+
+        // 스크롤 상태 초기화
+        lastScrollTop = 0;
+        unreadCount = 0;
+        const inputArea = document.querySelector('.chat-input-area');
+        if (inputArea) inputArea.classList.remove('hidden');
 
         // 헤더 업데이트
         const name = roomInfo?.target_name || roomInfo?.class_name || roomInfo?.group_name || '채팅방';
