@@ -2166,12 +2166,14 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
     overflow: hidden;
-    height: 70vh; /* Reduced slightly for better safety on smaller screens */
-    min-height: 550px;
-    max-height: 900px;
+    height: 800px; /* Fixed height for consistency */
+    max-height: 85vh;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
     background: rgba(10, 10, 15, 0.4);
     backdrop-filter: blur(20px) saturate(180%);
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
 }
 
 .chat-tab-inner {
@@ -2195,10 +2197,18 @@
     color: var(--comm-text2, #888);
 }
 
-#tabChat .comm-main {
-    height: 100%;
+#tabChat.active {
     display: flex;
     flex-direction: column;
+}
+
+#tabChat .comm-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    position: relative;
+    overflow: hidden;
 }
 
 #tabChat .comm-info-panel {
@@ -2390,14 +2400,16 @@
     gap: 10px;
     flex-shrink: 0;
     transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s;
-    transform: translateY(0);
-    opacity: 1;
+    transform: translateY(0) !important;
+    opacity: 1 !important;
     z-index: 60;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #tabChat .chat-input-area.hidden {
-    transform: translateY(120%);
-    opacity: 0;
+    transform: translateY(120%) !important;
+    opacity: 0 !important;
     pointer-events: none;
 }
 

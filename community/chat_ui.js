@@ -207,8 +207,8 @@ window.CommunityModules.ChatUI = (function () {
             if (inputArea) {
                 const diff = scrollTop - lastScrollTop;
                 
-                if (isNearBottom || scrollTop < 50) {
-                    // 맨 하단이나 맨 상단 근처면 무조건 보임
+                if (isNearBottom || scrollTop < 50 || scrollHeight <= clientHeight) {
+                    // 맨 하단, 맨 상단, 혹은 스크롤할 내용이 없으면 무조건 보임
                     inputArea.classList.remove('hidden');
                 } else if (diff > 20) {
                     // 아래로 스크롤 중 (최신 메시지 방향) -> 보임
