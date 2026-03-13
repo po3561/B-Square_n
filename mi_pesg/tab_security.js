@@ -1,5 +1,5 @@
 // tab_security.js - 보안 및 결제 설정 로직
-window.initSecurityTab = function (supabase, userId, firebaseApp) {
+window.initSecurityTab = function (supabase, userId, db) {
     const passwordForm = document.getElementById('passwordForm');
 
     if (passwordForm) {
@@ -23,8 +23,6 @@ window.initSecurityTab = function (supabase, userId, firebaseApp) {
             }
         };
     }
-
-    const db = firebaseApp.database();
 
     // MFAToggle 로직
     const mfaToggle = document.getElementById('mfaToggle');
@@ -95,16 +93,15 @@ window.initSecurityTab = function (supabase, userId, firebaseApp) {
     }
 
     // ===== 결제 내역 관리 =====
-    loadPaymentHistory(firebaseApp, userId);
+    loadPaymentHistory(db, userId);
 };
 
 // 결제 내역 로드 함수
-async function loadPaymentHistory(firebaseApp, userId) {
+async function loadPaymentHistory(db, userId) {
     const historyList = document.getElementById('paymentHistoryList');
-    if (!historyList || !firebaseApp) return;
+    if (!historyList || !db) return;
 
     try {
-        const db = firebaseApp.database();
         const snapshot = await db.ref(`enrollments/${userId}`).once('value');
         const data = snapshot.val();
 
@@ -165,3 +162,4 @@ async function loadPaymentHistory(firebaseApp, userId) {
         historyList.innerHTML = '<p style="color:#ef4444; text-align:center; padding:2rem 0;">결제 내역을 불러오는 중 오류가 발생했습니다.</p>';
     }
 }
+

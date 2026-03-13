@@ -22,6 +22,7 @@ window.CommunityModules.ChatUI = (function () {
         setupThemeToggle();
         setupMessageSearch();
         setupGatheringUI();
+        setupScrollUX();
         restoreTheme();
         console.log("🎨 ChatUI initialized");
     }
@@ -47,15 +48,27 @@ window.CommunityModules.ChatUI = (function () {
         if (btnSubmit) {
             btnSubmit.addEventListener('click', () => {
                 const title = document.getElementById('gatherTitle').value.trim();
-                const min = document.getElementById('gatherMin').value.trim();
-                const max = document.getElementById('gatherMax').value.trim();
+                const time = document.getElementById('gatherTime').value.trim();
+                const place = document.getElementById('gatherPlace').value.trim();
+                const min = parseInt(document.getElementById('gatherMin').value.trim());
+                const max = parseInt(document.getElementById('gatherMax').value.trim());
 
-                if (!title || !min || !max) {
-                    alert("모든 항목을 입력해주세요.");
+                if (!title || !time || !place || isNaN(min) || isNaN(max)) {
+                    alert("모든 항목을 올바르게 입력해주세요.");
                     return;
                 }
 
-                sendGatheringCard(title, min, max);
+                if (min < 0 || max <= 0) {
+                    alert("인원은 0보다 커야 합니다.");
+                    return;
+                }
+
+                if (min > max) {
+                    alert("최소 인원이 최대 인원보다 클 수 없습니다.");
+                    return;
+                }
+
+                sendGatheringCard(title, min, max, time, place);
                 modal.style.display = 'none';
             });
         }
@@ -76,7 +89,13 @@ window.CommunityModules.ChatUI = (function () {
             const current = html.getAttribute('data-theme') || 'dark';
             const next = current === 'dark' ? 'light' : 'dark';
             html.setAttribute('data-theme', next);
-            btn.textContent = next === 'dark' ? '🌙' : '☀️';
+            
+            // Sync all theme buttons
+            document.querySelectorAll('#btnThemeToggle').forEach(b => {
+                b.textContent = next === 'dark' ? '🌙' : '☀️';
+                b.setAttribute('title', next === 'dark' ? '다크 모드' : '라이트 모드');
+            });
+            
             localStorage.setItem('bsq_theme', next);
         });
     }
@@ -152,6 +171,73 @@ window.CommunityModules.ChatUI = (function () {
             document.querySelectorAll('.search-highlight').forEach(el => el.classList.remove('search-highlight'));
             matches = [];
             currentMatchIdx = -1;
+        }
+    }
+
+    // ==== 스크롤 UX (하단 이동 버튼, 입력창 자동 숨김) ====
+    let lastScrollTop = 0;
+    let unreadCount = 0;
+
+    function setupScrollUX() {
+        const container = document.getElementById('chatMessagesContainer');
+        const btnScroll = document.getElementById('btnScrollBottom');
+        const badge = document.getElementById('scrollBadge');
+        const inputArea = document.querySelector('.chat-input-area');
+
+        if (!container || !btnScroll) return;
+
+        container.addEventListener('scroll', () => {
+            const scrollTop = container.scrollTop;
+            const scrollHeight = container.scrollHeight;
+            const clientHeight = container.clientHeight;
+            const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+
+            // 하단 이동 버튼 보이게/숨기게
+            if (isNearBottom) {
+                btnScroll.classList.remove('active');
+                unreadCount = 0;
+                if (badge) badge.style.display = 'none';
+            } else {
+                if (scrollTop < scrollHeight - clientHeight - 300) {
+                    btnScroll.classList.add('active');
+                }
+            }
+
+            // 입력창 자동 숨김/보임 (스크롤 방향 감지)
+            if (inputArea) {
+                if (scrollTop > lastScrollTop && scrollTop > 100 && !isNearBottom) {
+                    // 아래로 스크롤 중 (과거 메시지 보는 중 아님) -> 입력을 가릴지 말지는 기획에 따라 다름
+                    // 사용자가 "스크롤시 아래로 사라졌다가 내리면(풀다운) 다시 올라오는" 이라고 했으므로
+                    // 위로 스크롤(과거로 이동)할 때 숨기고, 아래로 스크롤(최신으로 이동)할 때 보이게 함
+                    inputArea.classList.remove('hidden');
+                } else if (scrollTop < lastScrollTop && scrollTop > 50) {
+                    // 위로 스크롤 중 (과거 메시지 탐색) -> 입력창 숨김
+                    inputArea.classList.add('hidden');
+                }
+                
+                // 맨 하단에 도달하면 항상 보임
+                if (isNearBottom) {
+                    inputArea.classList.remove('hidden');
+                }
+            }
+            lastScrollTop = scrollTop;
+        });
+
+        btnScroll.addEventListener('click', () => {
+            scrollToBottom(true);
+            unreadCount = 0;
+            if (badge) badge.style.display = 'none';
+            btnScroll.classList.remove('active');
+        });
+    }
+
+    function scrollToBottom(smooth = false) {
+        const container = document.getElementById('chatMessagesContainer');
+        if (container) {
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: smooth ? 'smooth' : 'auto'
+            });
         }
     }
 
@@ -335,20 +421,69 @@ window.CommunityModules.ChatUI = (function () {
         } else if (msgData.type === 'gathering_card') {
             const gatherId = msgId;
             const title = msgData.gather_title || '클래스 모임';
+            const timeInfo = msgData.gather_time || '-';
+            const placeInfo = msgData.gather_place || '-';
             const minCap = msgData.min_capacity || 0;
             const maxCap = msgData.max_capacity || 0;
             const currentCount = msgData.current_count || 0;
             const status = msgData.status || 'open';
 
+            const isFull = maxCap > 0 && currentCount >= maxCap;
+
+            // Role check (Simplified for rendering)
+            let userId = bridge().getUserId();
+            if (window.__BSQ_DEV_MODE__) userId = 'OPERATOR_GHOST';
+            const isCardMine = msgData.user_id === userId;
+
+            // Background fetch for pass info (async but we pre-calculate based on bridge state)
+            const passSnap = await bridge().getDb().ref(`user_passes/${userId}/${currentRoomId}`).once('value');
+            const passInfo = passSnap.val() || {};
+            const isMonthly = !!passInfo.monthly;
+
             contentHtml = `
-            <div class="msg-bubble gathering-card" style="border:1px solid var(--border-color); border-radius:12px; padding:15px; background:rgba(0,0,0,0.2); min-width:250px;">
-                <h4 style="margin:0 0 10px 0; color:var(--comm-accent);">📅 ${escapeHtml(title)}</h4>
-                <p style="font-size:0.9rem; margin-bottom:15px;">참여 인원: ${currentCount} / ${maxCap}명 (최소 ${minCap}명)</p>
-                ${status === 'closed'
-                    ? `<button class="btn-submit" disabled style="background:#555; cursor:not-allowed;">마감됨</button>`
-                    : `<button class="btn-submit" onclick="window.CommunityModules.ChatUI.joinGathering('${currentRoomId}', '${gatherId}')">참여하기 (수강권 사용)</button>`
-                }
-                ${isMine && status === 'open' ? `<button class="btn-secondary" style="margin-top:10px; width:100%;" onclick="window.CommunityModules.ChatUI.closeGathering('${currentRoomId}', '${gatherId}')">모집 마감하기</button>` : ''}
+            <div class="msg-bubble gathering-card" style="padding:24px; background:#fff; min-width:320px; border-radius:25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border:none; color:#333; position:relative; overflow:hidden;">
+                <!-- Content Section -->
+                <div style="background:#f1f3f5; border-radius:20px; padding:18px; margin-bottom:15px;">
+                    <div style="font-weight:800; font-size:1.15rem; color:#2d3436; line-height:1.6;">
+                        모임 시간 : ${timeInfo}<br>
+                        모임 장소 : ${placeInfo}
+                    </div>
+                </div>
+
+                <!-- Map Button -->
+                <button style="width:100%; padding:14px; border-radius:30px; border:1px solid #eee; background:#fff; font-weight:800; font-size:1rem; color:#2d3436; cursor:pointer; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="window.open('https://map.naver.com/v5/search/${encodeURIComponent(placeInfo)}')">
+                    지도 바로가기 <span style="font-size:0.8rem;">➜</span>
+                </button>
+
+                <!-- Status Section -->
+                <div style="margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="font-weight:900; font-size:1.2rem; color:#2d3436;">참여 : ${currentCount} / ${maxCap}명</span>
+                    </div>
+                    <div style="width:100%; height:12px; background:#e9ecef; border-radius:6px; overflow:hidden;">
+                        <div style="width:${Math.min((currentCount / maxCap) * 100, 100)}%; height:100%; background:#4db6ac; transition: width 0.5s ease;"></div>
+                    </div>
+                    <p style="font-size:0.85rem; color:#868e96; margin-top:8px; font-weight:700;">최소 ${minCap}명 필요</p>
+                </div>
+
+                <!-- Action Button Logic -->
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    ${isMine 
+                        ? `<button class="btn-submit" style="flex:1; background:#4db6ac; color:#fff; padding:18px; border-radius:35px; border:none; font-weight:800; font-size:1.2rem; cursor:pointer;" onclick="window.CommunityModules.ChatUI.closeGathering('${currentRoomId}', '${gatherId}')">모임 마감</button>`
+                        : status === 'closed'
+                            ? `<button disabled style="flex:1; background:#cfd4d9; color:#fff; padding:18px; border-radius:35px; border:none; font-weight:800; font-size:1.2rem; cursor:not-allowed;">마감됨</button>`
+                            : isFull
+                                ? `<button disabled style="flex:1; background:#cfd4d9; color:#fff; padding:18px; border-radius:35px; border:none; font-weight:800; font-size:1.2rem; cursor:not-allowed;">정원 초과</button>`
+                                : `
+                                    <button style="flex:2; background:#4db6ac; color:#fff; padding:18px; border-radius:35px; border:none; font-weight:800; font-size:1.2rem; cursor:pointer;" onclick="window.CommunityModules.ChatUI.joinGathering('${currentRoomId}', '${gatherId}')">
+                                        ${isMonthly ? '모임 참여' : '수강권 사용'}
+                                    </button>
+                                    <button style="flex:1; background:#ffd8d8; color:#ff6b6b; padding:18px; border-radius:35px; border:none; font-weight:800; font-size:1rem; cursor:pointer;">
+                                        불참
+                                    </button>
+                                  `
+                    }
+                </div>
             </div>`;
         } else {
             contentHtml = `<div class="msg-bubble">${escapeHtml(msgData.content || '')}</div>`;
@@ -363,10 +498,10 @@ window.CommunityModules.ChatUI = (function () {
             <div class="msg-bubble-wrap">
                 ${!isMine && (currentRoomType === 'class' || currentRoomType === 'group') ? `<span class="msg-sender-name">${senderName}${instructorBadge}</span>` : ''}
                 ${contentHtml}
-                <div class="msg-meta">
+                <div class="msg-meta" style="display:flex; align-items:center; gap:4px; margin-top:4px; font-size:0.75rem; color:rgba(255,255,255,0.6);">
                     ${msgData.edited ? '<span class="msg-edited">수정됨</span>' : ''}
                     <span class="msg-time-sm">${timeStr}</span>
-                    ${isMine ? '<span class="msg-read-check">✓</span>' : ''}
+                    ${isMine ? '<span class="msg-read-check" style="color:#6e8efb; font-weight:bold;">✓</span>' : ''}
                 </div>
             </div>
         `;
@@ -375,8 +510,26 @@ window.CommunityModules.ChatUI = (function () {
         setupMsgContextMenu(row, msgId, msgData, isMine);
 
         const container = document.getElementById('chatMessagesContainer');
+        const scrollHeight = container.scrollHeight;
+        const scrollTop = container.scrollTop;
+        const clientHeight = container.clientHeight;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 400; // 넉넉하게 체크
+
         container.appendChild(row);
-        container.scrollTop = container.scrollHeight;
+
+        if (isMine || isNearBottom) {
+            scrollToBottom();
+        } else {
+            // 하단 버튼의 배지 업데이트
+            unreadCount++;
+            const badge = document.getElementById('scrollBadge');
+            const btnScroll = document.getElementById('btnScrollBottom');
+            if (badge) {
+                badge.textContent = unreadCount;
+                badge.style.display = 'block';
+            }
+            if (btnScroll) btnScroll.classList.add('active');
+        }
     }
 
     function removeMessage(key) {
@@ -398,9 +551,15 @@ window.CommunityModules.ChatUI = (function () {
                 ${isMine ? `<div class="ctx-item" data-action="edit"><span>✏️</span>수정</div>` : ''}
                 ${isMine ? `<div class="ctx-item danger" data-action="delete"><span>🗑️</span>삭제</div>` : ''}
             `;
+            menu.style.position = 'fixed';
             menu.style.left = x + 'px';
             menu.style.top = y + 'px';
             document.body.appendChild(menu);
+
+            // Prevent menu from going off-screen
+            const rect = menu.getBoundingClientRect();
+            if (x + rect.width > window.innerWidth) menu.style.left = (window.innerWidth - rect.width - 10) + 'px';
+            if (y + rect.height > window.innerHeight) menu.style.top = (window.innerHeight - rect.height - 10) + 'px';
 
             menu.querySelectorAll('.ctx-item').forEach(item => {
                 item.addEventListener('click', () => {
@@ -687,7 +846,7 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     // ==== 모집(Gathering) 카드 로직 ====
-    async function sendGatheringCard(title, minCap, maxCap) {
+    async function sendGatheringCard(title, minCap, maxCap, time, place) {
         if (!currentRoomId || currentRoomType !== 'class') return;
         try {
             const currentUserId = bridge().getUserId();
@@ -696,6 +855,8 @@ window.CommunityModules.ChatUI = (function () {
             await bridge().getDb().ref(`chats/${currentRoomId}`).push({
                 type: 'gathering_card',
                 gather_title: title,
+                gather_time: time,
+                gather_place: place,
                 min_capacity: parseInt(minCap, 10),
                 max_capacity: parseInt(maxCap, 10),
                 current_count: 0,
@@ -769,7 +930,8 @@ window.CommunityModules.ChatUI = (function () {
             if (!passInfo.monthly && !window.__BSQ_DEV_MODE__) {
                 await db.ref(`user_passes/${userId}/${roomId}/count`).set(passInfo.count - 1);
             }
-            alert("참여가 성공적으로 완료되었습니다! 수강권 1개가 사용되었습니다.");
+            const msg = passInfo.monthly ? "모임 참여가 완료되었습니다!" : "수강권 1개를 사용하여 참여하였습니다!";
+            alert(msg);
 
         } catch (e) {
             console.error("Gathering join error:", e);
@@ -834,10 +996,13 @@ window.CommunityModules.ChatUI = (function () {
         const body = document.getElementById('infoPanelBody');
         if (!panel || !body) return;
 
-        const isOpen = panel.style.display !== 'none';
-        if (isOpen) { panel.style.display = 'none'; return; }
+        const isOpen = panel.classList.contains('active');
+        if (isOpen) { 
+            panel.classList.remove('active'); 
+            return; 
+        }
 
-        panel.style.display = 'flex';
+        panel.classList.add('active');
         body.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--comm-text2);">로딩 중...</div>';
 
         if (roomType === 'dm' && roomInfo?.target_id) {

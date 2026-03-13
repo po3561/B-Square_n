@@ -64,12 +64,12 @@ window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAcc
 
         if (btnChatInfo && commInfoPanel) {
             btnChatInfo.addEventListener('click', () => {
-                commInfoPanel.style.display = commInfoPanel.style.display === 'none' ? 'block' : 'none';
+                commInfoPanel.classList.toggle('active');
             });
         }
         if (btnClosePanel && commInfoPanel) {
             btnClosePanel.addEventListener('click', () => {
-                commInfoPanel.style.display = 'none';
+                commInfoPanel.classList.remove('active');
             });
         }
 
@@ -89,26 +89,39 @@ async function loadParticipants(db, classId, supabase) {
     if (!pList) return;
 
     try {
-        db.ref('enrollments').once('value', async (snap) => {
+        const enrollRef = db.ref('enrollments');
+        enrollRef.on('value', async (snap) => {
             const allEnrollments = snap.val() || {};
             let html = '';
             let count = 0;
+            const participantsUids = [];
 
             for (const uid in allEnrollments) {
                 if (allEnrollments[uid][classId]) {
                     count++;
-                    if (count <= 8) {
-                        try {
-                            const { data: user } = await supabase.from('users').select('name, profile_image_url').eq('id', uid).maybeSingle();
-                            if (user) {
-                                html += `<div class="p-avatar" style="${user.profile_image_url ? `background-image:url(${user.profile_image_url})` : ''}" title="${user.name}">${!user.profile_image_url ? '👤' : ''}</div>`;
-                            }
-                        } catch (e) { /* skip */ }
-                    }
+                    participantsUids.push(uid);
                 }
             }
+
+            // 데스크톱에서는 더 많이 보여줌 (최대 15명)
+            const displayLimit = window.innerWidth > 768 ? 15 : 8;
+
+            for (let i = 0; i < Math.min(participantsUids.length, displayLimit); i++) {
+                const uid = participantsUids[i];
+                try {
+                    const { data: user } = await supabase.from('users').select('name, profile_image_url').eq('id', uid).maybeSingle();
+                    if (user) {
+                        html += `<div class="p-avatar" style="${user.profile_image_url ? `background-image:url(${user.profile_image_url})` : ''}" title="${user.name}">${!user.profile_image_url ? '👤' : ''}</div>`;
+                    }
+                } catch (e) { /* skip */ }
+            }
+
+            if (participantsUids.length > displayLimit) {
+                html += `<div class="p-avatar more-participants">+${participantsUids.length - displayLimit}</div>`;
+            }
+
             pList.innerHTML = html || '<span style="color:var(--comm-text2); font-size:0.85rem;">아직 참여자가 없습니다</span>';
-            if (countEl) countEl.textContent = `${count}명 참여`;
+            if (countEl) countEl.textContent = `${count}명 참여 중`;
 
             // 탭 버튼에 참여자 수 뱃지 표시
             const chatTabBtn = document.querySelector('[data-target="tabChat"]');

@@ -190,6 +190,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             renderCorePageInfo(classData);
 
+            // 채팅 헤더 미니 로고 및 버튼 초기화
+            const logoMini = document.getElementById('chatLogoMini');
+            if (logoMini && classData.thumbnail_url) {
+                logoMini.style.backgroundImage = `url(${classData.thumbnail_url})`;
+            }
+            document.getElementById('btnGoToClass')?.addEventListener('click', () => {
+                const introTab = document.querySelector('[data-target="tabIntro"]');
+                introTab?.click();
+            });
+            document.getElementById('btnChatInfo')?.addEventListener('click', () => {
+                document.getElementById('commInfoPanel')?.classList.toggle('active');
+            });
+
             // 모듈형 스크립트 호출
             if (window.BSquareModules) {
                 if (window.BSquareModules.initIntro) window.BSquareModules.initIntro(classData);
@@ -265,7 +278,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // 탭 콘텐츠 활성화 전환
             tabContents.forEach(t => t.classList.remove('active'));
-            document.getElementById(targetId).classList.add('active');
+            const targetEl = document.getElementById(targetId);
+            if (targetEl) targetEl.classList.add('active');
+
+            // [Layout Fix] 채팅 탭일 때 사이드바 숨김 및 폭 확장
+            const grid = document.querySelector('.view-grid');
+            const sidebar = document.querySelector('.view-sidebar');
+            if (grid && sidebar) {
+                if (targetId === 'tabChat') {
+                    grid.style.gridTemplateColumns = '1fr';
+                    sidebar.style.display = 'none';
+                    // 채팅 영역 강제 flex 활성화 (짤림 방지)
+                    const unlocked = document.getElementById('chatUnlocked');
+                    const activeArea = document.getElementById('chatActiveArea');
+                    if (unlocked) unlocked.style.display = 'flex';
+                    if (activeArea) activeArea.style.display = 'flex';
+                } else {
+                    grid.style.gridTemplateColumns = '1fr 380px';
+                    sidebar.style.display = 'block';
+                }
+            }
         });
     });
 
@@ -285,7 +317,67 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('freeEnrollModal')?.classList.remove('active');
     });
     document.getElementById('btnFreeConfirm')?.addEventListener('click', handleFreeEnrollment);
+
+    // 7. 수강권 사용 이벤트
+    document.getElementById('btnUsePass')?.addEventListener('click', usePass);
+
+    // 8. 마우스 위치에 따른 스크롤 제어 (채팅창 내부 스크롤 격리)
+    const tabChat = document.getElementById('tabChat');
+    if (tabChat) {
+        tabChat.addEventListener('mouseenter', () => {
+            document.body.style.overflow = 'hidden';
+            console.log("🔒 Body scroll locked (Chat hovered)");
+        });
+        tabChat.addEventListener('mouseleave', () => {
+            document.body.style.overflow = '';
+            console.log("🔓 Body scroll unlocked (Chat left)");
+        });
+    }
 });
+
+async function usePass() {
+    if (!userId || userId === 'OPERATOR_GHOST') return;
+    if (userPassCount <= 0) {
+        showToast('error', '수강권 부족', '보유하신 수강권이 없습니다. 충전 후 이용해주세요.');
+        return;
+    }
+
+    if (!confirm('수강권 1회를 사용하시겠습니까?')) return;
+
+    const btn = document.getElementById('btnUsePass');
+    btn.disabled = true;
+    btn.textContent = '처리 중...';
+
+    try {
+        const db = firebase.database();
+        const passRef = db.ref(`user_passes/${userId}/${classId}`);
+        
+        // 1. 차감
+        userPassCount--;
+        await passRef.update({
+            count: userPassCount,
+            updated_at: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        // 2. 로그 기록
+        await passRef.child('logs').push({
+            type: 'usage',
+            amount: -1,
+            remaining: userPassCount,
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            note: '사용자 직접 사용'
+        });
+
+        showToast('success', '수강권 사용 완료 ✅', '수강권 1회가 차감되었습니다.');
+        updateEnrollmentUI();
+    } catch (err) {
+        console.error("Pass use error:", err);
+        showToast('error', '오류 발생', '수강권 사용 중 문제가 발생했습니다.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🎫 수강권 1회 사용하기';
+    }
+}
 
 // ===== 무료 클래스 수강 등록 =====
 async function handleFreeEnrollment() {
@@ -411,7 +503,7 @@ async function applyCoupon() {
         btn.textContent = '확인중...';
 
         const db = firebase.database();
-        const snap = await db.ref(`classes/${classId}/coupons/${code}`).once('value');
+        const snap = await db.ref(`coupons/${classId}/${code}`).once('value');
         const coupon = snap.val();
 
         if (!coupon) {
@@ -423,7 +515,7 @@ async function applyCoupon() {
         }
 
         // 수량 체크
-        if (coupon.limit > 0 && (coupon.used || 0) >= coupon.limit) {
+        if (coupon.limit_count > 0 && (coupon.used_count || 0) >= coupon.limit_count) {
             msgEl.className = 'coupon-msg error';
             msgEl.textContent = '선착순 사용이 마감된 쿠폰입니다.';
             btn.disabled = false;
@@ -463,6 +555,17 @@ async function executeTossPayment() {
     closePaymentBottomSheet();
 
     if (finalPaymentPrice <= 0) {
+        if (appliedCouponCode) {
+            // 쿠폰으로 인한 0원 결제 처리
+            await finalizeEnrollment({
+                imp_uid: 'COUPON_FREE',
+                merchant_uid: `coupon_${appliedCouponCode}_${new Date().getTime()}`,
+                paid_amount: 0,
+                paid_at: Math.floor(new Date().getTime() / 1000),
+                pay_method: 'coupon'
+            });
+            return;
+        }
         showToast('error', '결제 금액 오류', '0원 이하의 결제는 무료 버튼을 이용해주세요.');
         return;
     }
@@ -482,8 +585,6 @@ async function executeTossPayment() {
     const merchantUid = `order_${classId}_${new Date().getTime()}`;
     const selectedOption = document.querySelector('input[name="payOption"]:checked').value;
 
-    // --- 제거된 중복 로직 (Toss 모달 진입 시점에서 이미 체크함) ---
-
     IMP.request_pay({
         pg: "html5_inicis",
         pay_method: "card",
@@ -497,83 +598,91 @@ async function executeTossPayment() {
         hidePaymentOverlay();
 
         if (rsp.success) {
-            try {
-                const db = firebase.database();
-                const updates = {};
-
-                updates[`enrollments/${userId}/${classId}`] = {
-                    enrolled_at: firebase.database.ServerValue.TIMESTAMP,
-                    payment_id: rsp.imp_uid,
-                    merchant_uid: rsp.merchant_uid,
-                    amount: rsp.paid_amount || finalPaymentPrice,
-                    paid_at: rsp.paid_at || null,
-                    receipt_url: rsp.receipt_url || null,
-                    pay_method: rsp.pay_method || 'card',
-                    card_name: rsp.card_name || '',
-                    status: 'paid',
-                    title: classData?.title || '',
-                    image_url: classData?.image_url || '',
-                    category: classData?.category || '',
-                    class_id: classId,
-                    pass_type_purchased: selectedOption
-                };
-
-                // 쿠폰 사용 카운트 증가 처리
-                if (appliedCouponCode) {
-                    const couponRef = db.ref(`classes/${classId}/coupons/${appliedCouponCode}`);
-                    const cSnap = await couponRef.once('value');
-                    if (cSnap.exists()) {
-                        updates[`classes/${classId}/coupons/${appliedCouponCode}/used`] = (cSnap.val().used || 0) + 1;
-                    }
-                }
-
-                // Supabase 신규 `user_passes` 시스템 연동 (Phase 6)
-                if (supabaseClient && userId) {
-                    let expiryOffset = null;
-                    if (selectedOption === 'monthly') expiryOffset = 30;
-                    else if (selectedOption === '30days') expiryOffset = 30;
-
-                    let expDate = null;
-                    if (expiryOffset) {
-                        const d = new Date();
-                        d.setDate(d.getDate() + expiryOffset);
-                        expDate = d.toISOString();
-                    }
-
-                    const { error: sbError } = await supabaseClient.from('user_passes').insert({
-                        user_id: userId,
-                        class_id: classId,
-                        pass_type: selectedOption,
-                        remaining_count: selectedOption === 'onetime' ? 1 : 0,
-                        expires_at: expDate,
-                        status: 'active'
-                    });
-
-                    if (sbError) console.error("Supabase pass insert error:", sbError);
-                }
-
-                await db.ref().update(updates);
-
-                isEnrolled = true;
-                updateEnrollmentUI();
-
-                showToast('success', '결제 완료! 🎉', `"${classData.title}" 클래스 수강이 시작됩니다.`);
-                setTimeout(() => window.location.reload(), 1500);
-            } catch (err) {
-                console.error("Enrollment save error:", err);
-                showToast('error', '등록 오류', '결제는 완료되었으나 수강 등록에 문제가 발생했습니다. 고객센터에 문의해 주세요.');
-            }
+            await finalizeEnrollment(rsp);
         } else {
-            // 사용자가 결제를 취소한 경우 별도 처리
             if (rsp.error_msg && rsp.error_msg.includes('취소')) {
                 showToast('info', '결제 취소', '결제가 취소되었습니다.');
             } else {
                 showToast('error', '결제 실패', rsp.error_msg || '알 수 없는 오류가 발생했습니다.');
             }
         }
-
         setButtonLoading(false);
     });
+}
+
+// 결제 혹은 쿠폰 사용 후 최종 DB 처리 공통 함수
+async function finalizeEnrollment(rsp) {
+    setButtonLoading(true);
+    try {
+        const db = firebase.database();
+        const updates = {};
+        const selectedOption = document.querySelector('input[name="payOption"]:checked')?.value || 'onetime';
+
+        updates[`enrollments/${userId}/${classId}`] = {
+            enrolled_at: firebase.database.ServerValue.TIMESTAMP,
+            payment_id: rsp.imp_uid,
+            merchant_uid: rsp.merchant_uid,
+            amount: rsp.paid_amount || 0,
+            paid_at: rsp.paid_at || null,
+            receipt_url: rsp.receipt_url || null,
+            pay_method: rsp.pay_method || 'card',
+            card_name: rsp.card_name || '',
+            status: 'paid',
+            title: classData?.title || '',
+            image_url: classData?.image_url || '',
+            category: classData?.category || '',
+            class_id: classId,
+            pass_type_purchased: selectedOption,
+            applied_coupon: appliedCouponCode || null
+        };
+
+        // 쿠폰 사용 카운트 증가 처리
+        if (appliedCouponCode) {
+            const couponRef = db.ref(`coupons/${classId}/${appliedCouponCode}`);
+            const cSnap = await couponRef.once('value');
+            if (cSnap.exists()) {
+                updates[`coupons/${classId}/${appliedCouponCode}/used_count`] = (cSnap.val().used_count || 0) + 1;
+            }
+        }
+
+        // Supabase 신규 `user_passes` 시스템 연동
+        if (supabaseClient && userId) {
+            let expiryOffset = null;
+            if (selectedOption === 'monthly') expiryOffset = 30;
+            else if (selectedOption === '30days') expiryOffset = 30;
+
+            let expDate = null;
+            if (expiryOffset) {
+                const d = new Date();
+                d.setDate(d.getDate() + expiryOffset);
+                expDate = d.toISOString();
+            }
+
+            const { error: sbError } = await supabaseClient.from('user_passes').insert({
+                user_id: userId,
+                class_id: classId,
+                pass_type: selectedOption,
+                remaining_count: selectedOption === 'onetime' ? 1 : 0,
+                expires_at: expDate,
+                status: 'active'
+            });
+
+            if (sbError) console.error("Supabase pass insert error:", sbError);
+        }
+
+        await db.ref().update(updates);
+
+        isEnrolled = true;
+        updateEnrollmentUI();
+
+        showToast('success', '결제 완료! 🎉', `"${classData.title}" 클래스 수강이 시작됩니다.`);
+        setTimeout(() => window.location.reload(), 1500);
+    } catch (err) {
+        console.error("Enrollment save error:", err);
+        showToast('error', '등록 오류', '수강 등록에 문제가 발생했습니다. 고객센터에 문의해 주세요.');
+    } finally {
+        setButtonLoading(false);
+    }
 }
 
 function renderCorePageInfo(data) {

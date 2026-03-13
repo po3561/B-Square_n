@@ -247,8 +247,8 @@
 .view-grid {
     display: grid;
     grid-template-columns: 1fr 380px;
-    gap: 4rem;
-    padding: 2rem;
+    gap: 3rem;
+    padding: 2rem 0;
 }
 
 /* ========================
@@ -2028,7 +2028,8 @@
 
     /* 채팅 */
     .chat-tab-wrapper {
-        height: 450px;
+        height: 60vh;
+        min-height: 450px;
     }
 
     /* 에디터 모달 → Bottom Sheet */
@@ -2162,13 +2163,15 @@
    CHAT TAB WRAPPER
    ======================== */
 .chat-tab-wrapper {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
     overflow: hidden;
-    height: 70vh;
-    min-height: 500px;
-    max-height: 800px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    height: 70vh; /* Reduced slightly for better safety on smaller screens */
+    min-height: 550px;
+    max-height: 900px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    background: rgba(10, 10, 15, 0.4);
+    backdrop-filter: blur(20px) saturate(180%);
 }
 
 .chat-tab-inner {
@@ -2202,8 +2205,18 @@
     position: absolute;
     right: 0;
     top: 0;
+    width: 300px;
     height: 100%;
-    z-index: 10;
+    z-index: 100;
+    background: rgba(20, 20, 25, 0.95);
+    backdrop-filter: blur(15px);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+#tabChat .comm-info-panel.active {
+    transform: translateX(0);
 }
 
 #tabChat .info-panel-body {
@@ -2215,13 +2228,20 @@
    (community 모듈 → class_view 통합)
    ======================== */
 #tabChat .comm-main {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
     background: transparent;
+    position: relative;
 }
 
 #tabChat .chat-active-area {
     display: flex;
     flex-direction: column;
     height: 100%;
+    overflow: hidden;
+    /* Critical: prevent child overflow */
 }
 
 #tabChat .chat-top-header {
@@ -2237,24 +2257,75 @@
 #tabChat .chat-header-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+}
+
+#tabChat .chat-logo-mini {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-color: #333;
+}
+
+#tabChat .chat-header-text {
+    display: flex;
+    flex-direction: column;
 }
 
 #tabChat .chat-header-name {
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: #fff;
+    line-height: 1.2;
 }
 
 #tabChat .chat-header-status {
-    font-size: 0.75rem;
-    color: #4CAF50;
-    font-weight: 600;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
 }
 
 #tabChat .chat-header-actions {
     display: flex;
-    gap: 6px;
+    align-items: center;
+    gap: 10px;
+}
+
+#tabChat .btn-header-go-class {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#tabChat .btn-header-go-class:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+#tabChat .btn-header-icon {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.2rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+#tabChat .btn-header-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
 }
 
 #tabChat .btn-header-action {
@@ -2282,11 +2353,15 @@
 #tabChat .chat-messages-container {
     flex: 1;
     overflow-y: auto;
-    padding: 1rem;
+    padding: 1.5rem;
+    min-height: 0;
+    overscroll-behavior: contain;
+    background-color: #7b917c !important; /* Sage Green */
+    background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
 }
 
 #tabChat .chat-messages-container::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
 }
 
 #tabChat .chat-messages-container::-webkit-scrollbar-thumb {
@@ -2296,82 +2371,124 @@
 
 #tabChat .chat-input-area {
     padding: 12px 16px;
-    background: rgba(20, 20, 20, 0.9);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    flex-shrink: 0;
-}
-
-#tabChat .input-main-row {
+    background: #0f0f14;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
-    gap: 8px;
     align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+    transform: translateY(0);
 }
 
-#tabChat .btn-input-icon {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #aaa;
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
+#tabChat .chat-input-area.hidden {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Scroll to Bottom Button */
+.btn-scroll-bottom {
+    position: absolute;
+    right: 20px;
+    bottom: 80px;
+    width: 44px;
+    height: 44px;
+    background: #6e8efb;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
     cursor: pointer;
-    transition: all 0.2s;
-    min-height: unset;
-    min-width: unset;
-    flex-shrink: 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 50;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: scale(0);
+    opacity: 0;
 }
 
-#tabChat .btn-input-icon:hover {
-    background: rgba(255, 255, 255, 0.12);
+.btn-scroll-bottom.active {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.btn-scroll-bottom .badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4757;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 800;
+}
+
+.input-pill-wrapper {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    display: flex;
+    align-items: flex-end;
+    padding: 4px 12px;
+}
+
+#tabChat .btn-input-icon-pill {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+#tabChat .btn-input-icon-pill:hover {
     color: #fff;
 }
 
 #tabChat #msgInput {
     flex: 1;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 10px 14px;
+    background: none;
+    border: none;
+    padding: 10px 4px;
     color: #fff;
-    font-size: 0.9rem;
+    font-size: 1rem;
     outline: none;
     resize: none;
-    overflow-y: hidden;
-    transition: border-color 0.2s;
-    font-family: inherit;
-    min-height: 38px;
+    max-height: 150px;
 }
 
-#tabChat #msgInput:focus {
-    border-color: #6e8efb;
-}
-
-#tabChat .btn-send {
-    background: linear-gradient(135deg, #6e8efb, #a777e3);
+#tabChat .btn-send-pill {
+    background: #6e8efb;
     border: none;
     color: #fff;
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     cursor: pointer;
-    transition: all 0.2s;
-    min-height: unset;
-    min-width: unset;
-    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(110, 142, 251, 0.3);
+    transition: transform 0.2s;
+    margin-bottom: 2px;
 }
 
-#tabChat .btn-send:hover {
+#tabChat .btn-send-pill:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(110, 142, 251, 0.3);
 }
+
+/* Legacy styles removed in favor of pill-style */
 
 /* 검색바 */
 #tabChat .chat-search-bar {

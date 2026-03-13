@@ -92,6 +92,7 @@ window.initProfileTab = function (supabase, userId, userEmail) {
             // 이미지 Base64 처리 (새 이미지가 선택된 경우)
             let profileImageUrl = profileImagePreview.querySelector('img')?.src || '';
 
+            // [FIX] mandatory fields must be present for upsert to satisfy DB constraints
             const updates = {
                 id: userId,
                 email: userEmail,
@@ -101,19 +102,27 @@ window.initProfileTab = function (supabase, userId, userEmail) {
                 sns_link: document.getElementById('profileSns').value,
                 preferred_category: preferredCategory,
                 profile_image_url: profileImageUrl,
-                updated_at: new Date()
+                updated_at: new Date(),
+                // Ensure mandatory fields have values
+                birth_year: '1999',
+                birth_month: '01',
+                birth_day: '01',
+                gender: 'N',
+                nationality: 'local',
+                signup_path: 'etc'
             };
 
-            if (isNewRecord) {
-                updates.birth_year = '1999';
-                updates.birth_month = '01';
-                updates.birth_day = '01';
-                updates.gender = 'N';
-                updates.nationality = 'local';
-                updates.signup_path = 'etc';
+            // DB에서 기존 데이터를 먼저 가져와서 필수 필드 누락 방지 (선택 사항이나 안전함)
+            const { data: existingUser } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
+            if (existingUser) {
+                updates.birth_year = existingUser.birth_year || updates.birth_year;
+                updates.birth_month = existingUser.birth_month || updates.birth_month;
+                updates.birth_day = existingUser.birth_day || updates.birth_day;
+                updates.gender = existingUser.gender || updates.gender;
+                updates.nationality = existingUser.nationality || updates.nationality;
+                updates.signup_path = existingUser.signup_path || updates.signup_path;
             }
 
-            // [GDD] Attempt upsert, if specific columns missing, fallback to essential profile data
             const { error } = await supabase.from('users').upsert(updates);
 
             if (error) {
@@ -147,6 +156,7 @@ window.initProfileTab = function (supabase, userId, userEmail) {
             submitBtn.textContent = '기본 정보 저장';
         }
     };
+
 
     function updateSidebarUI(name, username) {
         if (document.getElementById('displayNickname')) {

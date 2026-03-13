@@ -522,6 +522,9 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
             btn.addEventListener('click', () => {
                 subInstructors.splice(parseInt(btn.dataset.idx), 1);
                 renderSubInstructors();
+                // 즉시 DB 반영
+                db.ref(`classes/${classId}/sub_instructors`).set(subInstructors);
+                if (typeof showToast === 'function') showToast('info', '서브 강사 제거', '목록에서 제거되었습니다.');
             });
         });
     }
@@ -548,30 +551,44 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                     subResults.innerHTML = '<div style="padding:12px; color:var(--text-secondary,#888); text-align:center;">검색 결과가 없습니다</div>';
                 } else {
                     subResults.innerHTML = data
-                        .filter(u => u.id !== userId && !subInstructors.find(s => s.id === u.id))
                         .map(u => `
-                            <div class="sub-search-item" data-id="${u.id}" data-name="${u.name}" data-email="${u.email || ''}" data-avatar="${u.profile_image_url || ''}"
-                                style="padding:10px 14px; cursor:pointer; display:flex; align-items:center; gap:8px; border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <div class="sub-search-item" 
+                                style="padding:10px 14px; display:flex; align-items:center; gap:8px; border-bottom:1px solid rgba(255,255,255,0.05);">
                                 <div style="width:28px; height:28px; border-radius:50%; background:#333; overflow:hidden; flex-shrink:0;">
                                     ${u.profile_image_url ? `<img src="${u.profile_image_url}" style="width:100%;height:100%;object-fit:cover;">` : '👤'}
                                 </div>
-                                <div><div style="font-weight:600; font-size:0.85rem;">${u.name}</div><div style="font-size:0.75rem; color:#888;">${u.email || ''}</div></div>
+                                <div style="flex:1;">
+                                    <div style="font-weight:600; font-size:0.85rem;">${u.name}</div>
+                                    <div style="font-size:0.75rem; color:#888;">${u.email || ''}</div>
+                                </div>
+                                <button type="button" class="btn-add-sub-trigger" 
+                                    data-id="${u.id}" data-name="${u.name}" data-email="${u.email || ''}" data-avatar="${u.profile_image_url || ''}"
+                                    style="background:var(--comm-accent,#6c5ce7); color:#fff; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.8rem; font-weight:700;">등록</button>
                             </div>
                         `).join('');
                 }
                 subResults.style.display = 'block';
 
-                subResults.querySelectorAll('.sub-search-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        subInstructors.push({
-                            id: item.dataset.id,
-                            name: item.dataset.name,
-                            email: item.dataset.email,
-                            avatar: item.dataset.avatar
-                        });
+                // 등록 버튼 이벤트
+                subResults.querySelectorAll('.btn-add-sub-trigger').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const newSub = {
+                            id: btn.dataset.id,
+                            name: btn.dataset.name,
+                            email: btn.dataset.email,
+                            avatar: btn.dataset.avatar
+                        };
+
+                        subInstructors.push(newSub);
                         renderSubInstructors();
+
+                        // 즉시 DB 반영
+                        await db.ref(`classes/${classId}/sub_instructors`).set(subInstructors);
+
                         subSearchInput.value = '';
                         subResults.style.display = 'none';
+
+                        if (typeof showToast === 'function') showToast('success', '등록 완료 ✅', `${newSub.name} 님이 서브 강사로 등록되었습니다.`);
                     });
                 });
             } catch (err) {
@@ -732,27 +749,46 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                 });
             }
 
-            // 수강권 관리 이벤트
             listArea.querySelectorAll('.btn-manage-pass').forEach(btn => {
                 btn.addEventListener('click', async () => {
-                    if (!confirm('이 사용자의 수강권(패스) 수량을 변경하시겠습니까?')) return;
                     const uid = btn.dataset.uid;
                     const action = btn.dataset.action;
+                    const actionText = action === 'add' ? '수강권 1회 추가' : '수강권 1회 차감';
 
-                    const passRef = db.ref(`user_passes/${uid}/${classId}`);
-                    const passSnap = await passRef.once('value');
-                    let currentPass = passSnap.val() || { count: 0, monthly: false };
+                    if (!confirm(`${u.name}님의 ${actionText}를 진행하시겠습니까?`)) return;
 
-                    if (action === 'add') {
-                        currentPass.count = (currentPass.count || 0) + 1;
-                    } else if (action === 'remove') {
-                        currentPass.count = Math.max(0, (currentPass.count || 0) - 1);
+                    try {
+                        const passRef = db.ref(`user_passes/${uid}/${classId}`);
+                        const passSnap = await passRef.once('value');
+                        let currentPass = passSnap.val() || { count: 0, monthly: false };
+
+                        let amount = 0;
+                        if (action === 'add') {
+                            currentPass.count = (currentPass.count || 0) + 1;
+                            amount = 1;
+                        } else if (action === 'remove') {
+                            currentPass.count = Math.max(0, (currentPass.count || 0) - 1);
+                            amount = -1;
+                        }
+
+                        currentPass.updated_at = firebase.database.ServerValue.TIMESTAMP;
+                        await passRef.set(currentPass);
+
+                        // 로그 기록 추가
+                        await passRef.child('logs').push({
+                            type: action === 'add' ? 'recharge' : 'deduction',
+                            amount: amount,
+                            remaining: currentPass.count,
+                            timestamp: firebase.database.ServerValue.TIMESTAMP,
+                            note: '강사(관리자) 수동 관리'
+                        });
+
+                        alert(`수강권이 변경되었습니다. (현재 잔여수량: ${currentPass.count}회)`);
+                        loadStudents(classId, db, supabase);
+                    } catch (err) {
+                        console.error("Pass management error:", err);
+                        alert("수강권 변경 중 오류가 발생했습니다.");
                     }
-
-                    currentPass.updated_at = firebase.database.ServerValue.TIMESTAMP;
-                    await passRef.set(currentPass);
-                    alert(`수강권이 변경되었습니다. (현재 잔여수량: ${currentPass.count}회)`);
-                    loadStudents(classId, db, supabase);
                 });
             });
 

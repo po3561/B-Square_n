@@ -1,7 +1,6 @@
-window.initChatSubTab = async function (supabase, userId) {
+window.initChatSubTab = async function (supabase, db, userId) {
     const chatList = document.getElementById('chatList');
     const subCard = document.querySelector('.sub-card');
-    const db = firebase.database();
 
     if (chatList) {
         chatList.innerHTML = '<li class="loading-state">채팅 목록을 불러오는 중...</li>';

@@ -187,16 +187,19 @@
                                 <div class="chat-active-area" id="chatActiveArea">
                                     <div class="chat-top-header" id="chatTopHeader">
                                         <div class="chat-header-info">
-                                            <span class="chat-header-name" id="chatHeaderName">클래스 채널</span>
-                                            <span class="chat-header-status" id="chatHeaderStatus">온라인</span>
+                                            <div class="chat-logo-mini" id="chatLogoMini"></div>
+                                            <div class="chat-header-text">
+                                                <span class="chat-header-name" id="chatHeaderName">클래스 채널</span>
+                                                <span class="chat-header-status" id="chatHeaderStatus">클래스 채팅</span>
+                                            </div>
                                         </div>
                                         <div class="chat-header-actions">
-                                            <button class="btn-header-action" id="btnChatSearch"
-                                                title="메시지 검색">🔍</button>
-                                            <button class="btn-header-action" id="btnThemeToggle"
-                                                title="테마 전환">🌙</button>
-                                            <button class="btn-header-action" id="btnChatInfo"
-                                                title="참여자 정보">👥</button>
+                                            <button class="btn-header-go-class" id="btnGoToClass">
+                                                🏠 클래스 보러가기
+                                            </button>
+                                            <button class="btn-header-icon" id="btnChatSearch" title="메시지 검색">🔍</button>
+                                            <button class="btn-header-icon" id="btnThemeToggle" title="테마 전환">🌙</button>
+                                            <button class="btn-header-icon" id="btnChatInfo" title="참여자 정보">ℹ️</button>
                                         </div>
                                     </div>
 
@@ -210,6 +213,12 @@
                                     </div>
 
                                     <div class="chat-messages-container" id="chatMessagesContainer"></div>
+
+                                    <!-- 하단으로 스크롤 버튼 -->
+                                    <button id="btnScrollBottom" class="btn-scroll-bottom" title="최신 메시지로 이동">
+                                        <span class="icon">↓</span>
+                                        <span class="badge" id="scrollBadge" style="display:none;">0</span>
+                                    </button>
 
                                     <!-- 답장 미리보기 -->
                                     <div class="reply-preview" id="replyPreview" style="display:none;">
@@ -230,23 +239,22 @@
 
                                     <!-- 입력 UI -->
                                     <div class="chat-input-area">
-                                        <div class="input-main-row">
-                                            <button class="btn-input-icon" id="btnAttach" title="파일 첨부">📎</button>
-                                            <button class="btn-input-icon" id="btnGathering" title="클래스 모집 카드 보내기"
-                                                style="display:none;">📅</button>
+                                        <div class="input-pill-wrapper">
+                                            <button class="btn-input-icon-pill" id="btnAttach" title="파일 첨부">📎</button>
+                                            <button class="btn-input-icon-pill" id="btnGathering" title="클래스 모집 카드 보내기" style="display:none;">📅</button>
                                             <input type="file" id="fileInput" multiple hidden>
                                             <textarea id="msgInput" placeholder="메시지 작성..." rows="1"></textarea>
-                                            <button class="btn-input-icon" id="btnEmoji" title="이모지">😊</button>
-                                            <button class="btn-send" id="btnSend">
-                                                <span>➤</span>
-                                            </button>
+                                            <button class="btn-input-icon-pill" id="btnEmoji" title="이모지">😊</button>
                                         </div>
+                                        <button class="btn-send-pill" id="btnSend">
+                                            <span>➤</span>
+                                        </button>
                                     </div>
                                 </div>
                             </section>
 
                             <!-- 정보 패널 (참여자 목록 등) -->
-                            <aside class="comm-info-panel" id="commInfoPanel" style="display:none;">
+                            <aside class="comm-info-panel" id="commInfoPanel">
                                 <div class="info-panel-header">
                                     <h3>클래스 정보</h3>
                                     <button class="btn-close-panel" id="btnClosePanel">✕</button>
@@ -292,7 +300,8 @@
                     <!-- 내 수강권 현황 표시 -->
                     <div id="myPassStatus"
                         style="display:none; padding: 12px; margin: 10px 0; background: rgba(76, 201, 240, 0.1); border: 1px solid rgba(76, 201, 240, 0.3); border-radius: 8px; color: #4cc9f0; font-weight: 600; text-align: center;">
-                        내 보유 수강권: <span id="myPassCountVal">0</span>개
+                        <div style="margin-bottom: 8px;">내 보유 수강권: <span id="myPassCountVal">0</span>개</div>
+                        <button id="btnUsePass" style="width:100%; padding:8px; border-radius:6px; background:#4cc9f0; color:#fff; border:none; font-weight:700; cursor:pointer;">🎫 수강권 1회 사용하기</button>
                     </div>
 
                     <!-- 수강권 구매 옵션 -->
@@ -414,18 +423,26 @@
                 <button class="btn-close-modal" id="btnCloseGatheringModal"
                     style="background:none; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
             </div>
-            <div class="modal-body" style="display:flex; flex-direction:column; gap:10px; padding:0;">
+            <div class="modal-body" style="display:flex; flex-direction:column; gap:12px; padding:0;">
                 <input type="text" id="gatherTitle" placeholder="모집 제목 (예: 5월 첫 모임)"
-                    style="padding:12px; border-radius:8px; border:1px solid var(--border-color, #444); background:rgba(255,255,255,0.05); color:white; outline:none;"
+                    style="padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:white; outline:none;"
                     required>
-                <input type="number" id="gatherMin" placeholder="최소 인원 (예: 2)"
-                    style="padding:12px; border-radius:8px; border:1px solid var(--border-color, #444); background:rgba(255,255,255,0.05); color:white; outline:none;"
+                <input type="text" id="gatherTime" placeholder="모임 시간 (예: 4월 24일 토요일 14:00)"
+                    style="padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:white; outline:none;"
                     required>
-                <input type="number" id="gatherMax" placeholder="최대 정원 (예: 10)"
-                    style="padding:12px; border-radius:8px; border:1px solid var(--border-color, #444); background:rgba(255,255,255,0.05); color:white; outline:none;"
+                <input type="text" id="gatherPlace" placeholder="모임 장소 (예: 서면 놀이마루)"
+                    style="padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:white; outline:none;"
                     required>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <input type="number" id="gatherMin" placeholder="최소 인원 (예: 2)"
+                        style="padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:white; outline:none;"
+                        required>
+                    <input type="number" id="gatherMax" placeholder="최대 정원 (예: 10)"
+                        style="padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:white; outline:none;"
+                        required>
+                </div>
                 <button class="btn-submit" id="btnSendGatheringSubmit"
-                    style="margin-top:15px; padding: 12px; border-radius: 8px; font-weight: bold;">모집 카드 전송</button>
+                    style="margin-top:10px; padding: 14px; border-radius: 12px; font-weight: bold; background: linear-gradient(135deg, #4361ee, #4cc9f0); color:white; border:none; cursor:pointer;">모집 카드 전송</button>
             </div>
         </div>
     </div>

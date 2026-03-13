@@ -1,6 +1,5 @@
 // tab_classes.js - 내 클래스 관리 및 수강 신청 관리 로직
-window.initClassesTab = function (firebase, userId) {
-    const db = firebase.database();
+window.initClassesTab = function (db, userId) {
     const classList = document.getElementById('classList'); // 등록한 클래스
     const enrolledList = document.getElementById('enrolledClasses'); // 수강 중인 클래스
 
@@ -68,16 +67,15 @@ window.initClassesTab = function (firebase, userId) {
 
             let totalPasses = 0;
             let totalEnrolled = classIds.length;
-            let dashHtml = ''; // For Recent Class in dashboard
+            let dashHtml = ''; 
+            let html = ''; // Fixed: Initialized html variable
 
             for (let i = 0; i < classIds.length; i++) {
                 const classId = classIds[i];
-                // 기본 정보는 enrollData나 classData에서 가져오기
                 let title = enrollData[classId]?.title || '알 수 없는 클래스';
                 let category = enrollData[classId]?.category || '기타';
                 let imageUrl = enrollData[classId]?.image_url || '';
                 
-                // 만약 enroll 정보가 없고 수강권만 있다면 db에서 한 번 더 긁어옴
                 if (!enrollData[classId]) {
                     const clsSnap = await db.ref(`classes/${classId}`).once('value');
                     const cls = clsSnap.val();
@@ -89,13 +87,13 @@ window.initClassesTab = function (firebase, userId) {
                 }
 
                 const myPass = passData[classId] || {};
-                let passText = '';
+                let passUi = '';
                 if (myPass.count > 0) {
-                    passText = `<span style="color:#4cc9f0; font-weight:bold; margin-left: 10px;">🎫 수강권 ${myPass.count}개 보유</span>`;
+                    passUi = `<div style="display:inline-block; margin-top:6px; padding:4px 8px; background:rgba(76, 201, 240, 0.15); color:#4cc9f0; border-radius:6px; font-size:0.85rem; font-weight:600;">🎫 수강권 ${myPass.count}개 보유</div>`;
                     totalPasses += myPass.count;
                 }
                 if (myPass.monthly) {
-                    passText += `<span style="color:#4cc9f0; font-weight:bold; margin-left: 10px;">🌟 월정액 구독 중</span>`;
+                    passUi += `<div style="display:inline-block; margin-top:6px; padding:4px 8px; background:rgba(255, 152, 0, 0.15); color:#FF9800; border-radius:6px; font-size:0.85rem; font-weight:600;">🌟 월정액 구독 중</div>`;
                     totalPasses += 1;
                 }
 
@@ -105,11 +103,12 @@ window.initClassesTab = function (firebase, userId) {
                             ${imageUrl ? `<img src="${imageUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">` : ''}
                         </div>
                         <div class="class-info">
-                            <h4>${title}</h4>
-                            <p>${category} | 진도율: ${enrollData[classId]?.progress || 0}% ${passText}</p>
+                            <h4 style="margin-bottom:4px;">${title}</h4>
+                            <p style="font-size:0.9rem; color:#888; margin-bottom:8px;">${category} | 진도율: ${enrollData[classId]?.progress || 0}%</p>
+                            <div style="margin-bottom:12px;">${passUi}</div>
                             <div style="display:flex; gap:10px;">
                                 <button class="btn-chat-link" onclick="location.href='../class_view/class_view.html?id=${classId}'">▶️ 학습 페이지</button>
-                                <button class="btn-chat-link" style="background:rgba(255,255,255,0.05);" onclick="location.href='../class_view/class_view.html?id=${classId}#tabChat'">💬 클래스 채널</button>
+                                <button class="btn-chat-link" style="background:rgba(255,255,255,0.05);" onclick="location.href='../class_view/class_view.html?id=${classId}#tabChat'">💬 채널</button>
                             </div>
                         </div>
                     </div>
@@ -117,7 +116,6 @@ window.initClassesTab = function (firebase, userId) {
 
                 html += cardHtml;
 
-                // Dashboard Recent Class (just show the first/latest one)
                 if (i === 0) {
                     dashHtml = cardHtml;
                 }
