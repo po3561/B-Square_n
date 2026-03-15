@@ -111,6 +111,13 @@
                     <button id="msgSearchClose" class="btn-search-close">✕</button>
                 </div>
 
+                <!-- Pinned Message Bar (Refined Reference Style) -->
+                <div id="pinnedMsgBar" class="pinned-msg-bar" style="display:none;" onclick="window.CommunityModules.ChatUI.scrollToPinnedMsg()">
+                    <i class="fas fa-thumbtack pin-icon"></i>
+                    <div id="pinnedMsgContent" class="pinned-msg-content"><b>고정된 메시지</b> 로딩 중...</div>
+                    <i class="fas fa-bars hamburger-icon"></i>
+                </div>
+
                 <div class="chat-messages-container" id="chatMessagesContainer"></div>
 
                 <!-- 답장 미리보기 -->
@@ -131,17 +138,18 @@
                 </div>
 
                 <!-- 입력 UI -->
-                <div class="chat-input-area">
-                    <div class="input-main-row">
+                <!-- 입력 UI (Detached Send Button Style) -->
+                <div id="chatInputArea" class="chat-input-area">
+                    <div class="input-pill-wrapper">
                         <button class="btn-input-icon" id="btnAttach" title="파일 첨부">📎</button>
                         <button class="btn-input-icon" id="btnGathering" title="클래스 모집 카드 보내기" style="display:none;">📅</button>
                         <input type="file" id="fileInput" multiple hidden>
                         <textarea id="msgInput" placeholder="메시지 작성..." rows="1"></textarea>
                         <button class="btn-input-icon" id="btnEmoji" title="이모지">😊</button>
-                        <button class="btn-send" id="btnSend">
-                            <span>➤</span>
-                        </button>
                     </div>
+                    <button class="btn-send-msg" id="btnSend">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
                 </div>
             </div>
         </section>

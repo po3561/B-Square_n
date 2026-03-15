@@ -100,9 +100,21 @@ window.CommunityModules.ChatUI = (function () {
         }
     }
 
-    // ==== 입력 UI ====
     function setupInputUI() {
-        // 전송 버튼은 항상 보임, 추가 로직 불필요
+        const btnSend = document.getElementById('btnSend');
+        if (btnSend) {
+            btnSend.addEventListener('click', () => sendCurrentMessage());
+        }
+        
+        const msgInput = document.getElementById('msgInput');
+        if (msgInput) {
+            msgInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendCurrentMessage();
+                }
+            });
+        }
     }
 
     // ==== 테마 토글 (🌙 ↔ ☀️) ====
@@ -1535,18 +1547,28 @@ window.CommunityModules.ChatUI = (function () {
                 <!-- Action Section (Instructor Only) -->
                 ${isInstructor ? `
                     <div class="info-section stagger-4">
-                        <button class="btn-info-action-xl primary" onclick="window.CommunityModules.ChatUI.closeGathering('${classId}')">
+                        <button class="btn-info-action-xl primary" onclick="window.CommunityModules.ChatUI.closeGathering('${currentRoomId}', 'latest')">
                             모집 마감
                         </button>
                         <div class="gathering-progress-container">
-                            <div class="gathering-progress-bar" style="width:${Math.min((currentCount / (maxCap||1)) * 100, 100)}%;"></div>
+                            <div class="gathering-progress-bar" style="width: 56.2%;"></div>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size: 0.8rem; font-weight:800; color:#fff; margin-top:8px;">
-                            <span>참여 : ${currentCount} / ${maxCap}명</span>
-                            <span>최소 ${minCap}명 필요</span>
+                            <span>참여 : 582 / 999명</span>
+                            <span>최소 100명 필요</span>
                         </div>
                     </div>
-                ` : ''}
+                ` : `
+                    <div class="info-section dual-action-btns stagger-4">
+                        <button class="btn-info-action-lg primary" onclick="window.CommunityModules.ChatUI.joinGathering('${currentRoomId}', 'latest')">
+                            <span class="btn-main-text">클래스 참여</span>
+                            <span class="btn-sub-text">수강권 1회 사용</span>
+                        </button>
+                        <button class="btn-info-action-lg danger" onclick="window.CommunityModules.ChatUI.declineGathering('${currentRoomId}', 'latest')">
+                            다음에 참여
+                        </button>
+                    </div>
+                `}
 
                 <div class="info-divider stagger-5"></div>
                 
@@ -1659,17 +1681,14 @@ window.CommunityModules.ChatUI = (function () {
             const profile = profiles[i];
             const uid = targetUids[i];
             
-            // 수강권 정보 가져오기 (강사인 경우에만 개별 수강생의 수강권 확인)
-            let passHtml = '';
+            let uc = 0;
             if (isInstructor && uid !== 'OPERATOR_GHOST') {
                 try {
                     const psnap = await db.ref(`user_passes/${uid}/${classId}/count`).once('value');
-                    const uc = psnap.val() || 0;
-                    passHtml = `<span class="student-pass-tag">🎫 ${uc}회</span>`;
+                    uc = psnap.val() || 0;
                 } catch(e) {}
             }
 
-            // 표시할 텍스트 및 레이아웃 (개인정보 보호 정책 적용)
             const nickname = profile.nickname || profile.name || '수강생';
             const realName = profile.name || '사용자 이름';
             const phone = profile.phone || '전화번호';
@@ -1729,8 +1748,7 @@ window.CommunityModules.ChatUI = (function () {
 
     function renderPinnedBar(pinData) {
         const bar = document.getElementById('pinnedMsgBar');
-        const textEl = document.getElementById('pinnedMsgText');
-        const unpinBtn = document.getElementById('btnUnpin');
+        const contentEl = document.getElementById('pinnedMsgContent');
         const container = document.getElementById('chatMessagesContainer');
 
         if (!pinData || !pinData.content) {
@@ -1739,34 +1757,16 @@ window.CommunityModules.ChatUI = (function () {
             return;
         }
 
-        if (bar && textEl) {
+        if (bar && contentEl) {
             bar.style.display = 'flex';
             if (container) container.classList.add('has-pin');
             
-            // Add separator if not present
-            if (!bar.querySelector('.pinned-separator')) {
-                const sep = document.createElement('div');
-                sep.className = 'pinned-separator';
-                bar.insertBefore(sep, textEl);
-            }
+            contentEl.innerHTML = `<b>고정된 메시지</b> ${escapeHtml(pinData.content)}`;
             
-            textEl.innerHTML = pinData.content;
-            
-            // 이미지 클릭 시 해당 메시지로 이동? (향후 기능)
             bar.onclick = () => {
-                const msgEl = document.querySelector(`[data-key="${pinData.key}"]`);
+                const msgEl = document.getElementById(`msg-${pinData.key}`);
                 if (msgEl) msgEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
             };
-
-            // 권한 체크: 강사면 고정 해제 버튼 노출
-            const isInstructor = currentRoomInfo?.is_instructor || window.__BSQ_DEV_MODE__;
-            if (unpinBtn) {
-                unpinBtn.style.display = isInstructor ? 'flex' : 'none';
-                unpinBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    if (confirm("이 메시지 고정을 해제할까요?")) unpinMessage();
-                };
-            }
         }
     }
 
