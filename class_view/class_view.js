@@ -14,7 +14,7 @@ const firebaseConfig = {
 };
 
 const urlParams = new URLSearchParams(window.location.search);
-const classId = urlParams.get('id');
+const classId = urlParams.get('id') || urlParams.get('classId');
 let userId = null;
 let userProfile = null;
 let classData = null;
@@ -199,9 +199,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const introTab = document.querySelector('[data-target="tabIntro"]');
                 introTab?.click();
             });
-            document.getElementById('btnChatInfo')?.addEventListener('click', () => {
-                document.getElementById('commInfoPanel')?.classList.toggle('active');
-            });
+            // 4. 수강 완료 탭 강제 이동 (필요 시)
+            // introTab?.click();
 
             // 모듈형 스크립트 호출
             if (window.BSquareModules) {
@@ -296,6 +295,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } else {
                     grid.style.gridTemplateColumns = '1fr 380px';
                     sidebar.style.display = 'block';
+                    // 채팅 영역 명시적 숨김 (다른 탭 침범 방지)
+                    const unlocked = document.getElementById('chatUnlocked');
+                    const locked = document.getElementById('chatLockedOverlay');
+                    if (unlocked) unlocked.style.display = 'none';
+                    if (locked) locked.style.display = 'none';
                 }
             }
         });

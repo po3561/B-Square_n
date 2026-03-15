@@ -8,8 +8,12 @@
     <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_mobile.css" media="(max-width: 768px)">
     <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css" media="(min-width: 769px)">
     <link rel="stylesheet" href="class_view.css">
+    <link rel="stylesheet" href="../community/community.css">
     <link rel="stylesheet" href="view_chat.css">
     <link rel="stylesheet" href="payment_toast.css">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <!-- Quill.js 리치 텍스트 에디터 -->
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
@@ -138,14 +142,8 @@
                 <!-- TAB: Review -->
                 <div id="tabReview" class="tab-content">
                     <section class="content-card">
-                        <div class="review-header-premium">
-                            <div class="rating-main-summary">
-                                <span id="avgStarsLarge" class="rating-stars-large">☆☆☆☆☆</span>
-                                <div class="rating-text-group">
-                                    <span id="avgRatingVal" class="rating-value">0.0</span>
-                                    <span class="rating-count">총 <span id="reviewTotalCount">0</span>개 후기</span>
-                                </div>
-                            </div>
+                        <div class="review-header-minimal">
+                            <h4>수강생 리얼 후기 <span class="review-count-badge" id="reviewTotalCount">0</span></h4>
                         </div>
                         <h4 style="margin-bottom: 1.5rem;">수강생 리얼 포토 후기</h4>
                         <div class="photo-review-grid" id="photoReviewGrid"></div>
@@ -173,97 +171,111 @@
                 <!-- TAB: Chat (Class Channel) -->
                 <div id="tabChat" class="tab-content chat-tab-wrapper">
                     <div class="chat-tab-inner">
-                        <!-- 채팅 잠금 UI (미수강자) -->
-                        <div class="chat-locked-overlay" id="chatLockedOverlay">
-                            <div class="chat-locked-card">
-                                <span class="lock-emoji">🔒</span>
-                                <h3>클래스 전용 채널</h3>
-                                <p>수강 신청 후 클래스 채널에 참여할 수 있습니다.</p>
+                        <div class="chat-container">
+                            <!-- 채팅 잠금 UI (미수강자) -->
+                            <div class="chat-locked-overlay" id="chatLockedOverlay">
+                                <div class="chat-locked-card">
+                                    <span class="lock-emoji">🔒</span>
+                                    <h3>클래스 전용 채널</h3>
+                                    <p>수강 신청 후 클래스 채널에 참여할 수 있습니다.</p>
+                                </div>
                             </div>
-                        </div>
-                        <!-- 채팅 해제 UI (수강자/강사) -->
-                        <div class="chat-unlocked" id="chatUnlocked" style="display:none; flex: 1; position: relative;">
-                            <section class="comm-main" id="commMain">
-                                <div class="chat-active-area" id="chatActiveArea">
-                                    <div class="chat-top-header" id="chatTopHeader">
-                                        <div class="chat-header-info">
-                                            <div class="chat-logo-mini" id="chatLogoMini"></div>
-                                            <div class="chat-header-text">
-                                                <span class="chat-header-name" id="chatHeaderName">클래스 채널</span>
-                                                <span class="chat-header-status" id="chatHeaderStatus">클래스 채팅</span>
+                            <!-- 채팅 해제 UI (수강자/강사) -->
+                            <div class="chat-unlocked" id="chatUnlocked" style="display:none; flex: 1; position: relative;">
+                                <section class="comm-main" id="commMain">
+                                    <div class="chat-active-area" id="chatActiveArea">
+                                        <div class="chat-top-header" id="chatTopHeader">
+                                            <div class="chat-header-info">
+                                                <div class="chat-logo-mini" id="chatLogoMini"></div>
+                                                <div class="chat-header-text">
+                                                    <span class="chat-header-name" id="chatHeaderName">클래스 채널</span>
+                                                    <span class="chat-header-status" id="chatHeaderStatus">클래스 채팅</span>
+                                                </div>
+                                            </div>
+                                            <div class="chat-header-actions">
+                                                <button class="btn-header-icon" id="btnChatSearch" title="메시지 검색"><i class="fas fa-search"></i></button>
+                                                <button class="btn-header-icon" id="btnThemeToggle" title="테마 전환"><i class="fas fa-moon" id="themeIcon"></i></button>
+                                                <button class="btn-header-icon" id="btnChatInfo" title="참여자 정보"><i class="fas fa-info-circle"></i></button>
                                             </div>
                                         </div>
-                                        <div class="chat-header-actions">
-                                            <button class="btn-header-go-class" id="btnGoToClass">
-                                                🏠 클래스 보러가기
+
+                                        <!-- 메시지 내 검색바 -->
+                                        <div class="chat-search-bar" id="chatSearchBar" style="display:none;">
+                                            <input type="text" id="msgSearchInput" placeholder="메시지에서 검색...">
+                                            <span id="msgSearchCount" class="search-count"></span>
+                                            <button id="msgSearchPrev" class="btn-search-nav">▲</button>
+                                            <button id="msgSearchNext" class="btn-search-nav">▼</button>
+                                            <button id="msgSearchClose" class="btn-search-close">✕</button>
+                                        </div>
+                                        <!-- 고정 메시지 바 -->
+                                        <div class="pinned-msg-bar" id="pinnedMsgBar">
+                                            <i class="fas fa-thumbtack pin-icon"></i>
+                                            <div class="pinned-msg-content" id="pinnedMsgContent">
+                                                <div class="pinned-msg-title">고정된 메시지</div>
+                                                <div class="pinned-msg-text" id="pinnedMsgText">...</div>
+                                            </div>
+                                            <button class="btn-unpin" id="btnUnpin" title="고정 해제" style="display:none;">
+                                                <i class="fas fa-times"></i>
                                             </button>
-                                            <button class="btn-header-icon" id="btnChatSearch" title="메시지 검색">🔍</button>
-                                            <button class="btn-header-icon" id="btnThemeToggle" title="테마 전환">🌙</button>
-                                            <button class="btn-header-icon" id="btnChatInfo" title="참여자 정보">ℹ️</button>
                                         </div>
-                                    </div>
 
-                                    <!-- 메시지 내 검색바 -->
-                                    <div class="chat-search-bar" id="chatSearchBar" style="display:none;">
-                                        <input type="text" id="msgSearchInput" placeholder="메시지에서 검색...">
-                                        <span id="msgSearchCount" class="search-count"></span>
-                                        <button id="msgSearchPrev" class="btn-search-nav">▲</button>
-                                        <button id="msgSearchNext" class="btn-search-nav">▼</button>
-                                        <button id="msgSearchClose" class="btn-search-close">✕</button>
-                                    </div>
+                                        <div class="chat-messages-container" id="chatMessagesContainer"></div>
 
-                                    <div class="chat-messages-container" id="chatMessagesContainer"></div>
-
-                                    <!-- 하단으로 스크롤 버튼 -->
-                                    <button id="btnScrollBottom" class="btn-scroll-bottom" title="최신 메시지로 이동">
-                                        <span class="icon">↓</span>
-                                        <span class="badge" id="scrollBadge" style="display:none;">0</span>
-                                    </button>
-
-                                    <!-- 답장 미리보기 -->
-                                    <div class="reply-preview" id="replyPreview" style="display:none;">
-                                        <div class="reply-preview-content">
-                                            <span class="reply-label">답장</span>
-                                            <span class="reply-text" id="replyText"></span>
-                                        </div>
-                                        <button class="btn-reply-cancel" id="btnReplyCancel">✕</button>
-                                    </div>
-
-                                    <!-- 파일 드롭 오버레이 -->
-                                    <div class="file-drop-overlay" id="fileDropOverlay">
-                                        <div class="file-drop-inner">
-                                            <span>📎</span>
-                                            <p>파일을 여기에 드롭하세요</p>
-                                        </div>
-                                    </div>
-
-                                    <!-- 입력 UI -->
-                                    <div class="chat-input-area">
-                                        <div class="input-pill-wrapper">
-                                            <button class="btn-input-icon-pill" id="btnAttach" title="파일 첨부">📎</button>
-                                            <button class="btn-input-icon-pill" id="btnGathering" title="클래스 모집 카드 보내기" style="display:none;">📅</button>
-                                            <input type="file" id="fileInput" multiple hidden>
-                                            <textarea id="msgInput" placeholder="메시지 작성..." rows="1"></textarea>
-                                            <button class="btn-input-icon-pill" id="btnEmoji" title="이모지">😊</button>
-                                        </div>
-                                        <button class="btn-send-pill" id="btnSend">
-                                            <span>➤</span>
+                                        <!-- 하단으로 스크롤 버튼 -->
+                                        <button id="btnScrollBottom" class="btn-scroll-bottom" title="최신 메시지로 이동">
+                                            <span class="icon">↓</span>
+                                            <span class="badge" id="scrollBadge" style="display:none;">0</span>
                                         </button>
-                                    </div>
-                                </div>
-                            </section>
 
-                            <!-- 정보 패널 (참여자 목록 등) -->
-                            <aside class="comm-info-panel" id="commInfoPanel">
-                                <div class="info-panel-header">
-                                    <h3>클래스 정보</h3>
-                                    <button class="btn-close-panel" id="btnClosePanel">✕</button>
-                                </div>
-                                <div class="info-panel-body" id="infoPanelBody">
-                                    <div id="participantsList" class="chat-participants-row"></div>
-                                    <div id="chatMemberCount" class="chat-member-count-label">0명 참여</div>
-                                </div>
-                            </aside>
+                                        <!-- 파일 드롭 오버레이 -->
+                                        <div class="file-drop-overlay" id="fileDropOverlay">
+                                            <div class="file-drop-inner">
+                                                <span>📎</span>
+                                                <p>파일을 여기에 드롭하세요</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- 답장 프리뷰 (chat_ui.js 연동) -->
+                                        <div id="replyPreview" class="reply-preview-bar" style="display:none;">
+                                            <div class="reply-preview-info">
+                                                <span class="reply-icon">⮑</span>
+                                                <span id="replyText" class="reply-preview-text"></span>
+                                            </div>
+                                            <button id="btnReplyCancel" class="btn-reply-close">✕</button>
+                                        </div>
+
+                                        <!-- 입력 UI -->
+                                        <div class="chat-input-area" id="chatInputArea">
+                                            <div class="input-pill-wrapper">
+                                                <button class="btn-input-icon-pill" id="btnAttach" title="파일 첨부"><i class="fas fa-paperclip"></i></button>
+                                                <button class="btn-input-icon-pill" id="btnGathering" title="클래스 모집 카드 보내기" style="display:none;"><i class="fas fa-calendar-alt"></i></button>
+                                                <input type="file" id="fileInput" multiple hidden>
+                                                <textarea id="msgInput" placeholder="메시지 작성..." rows="1" spellcheck="false"></textarea>
+                                                <button class="btn-input-icon-pill" id="btnEmoji" title="이모지"><i class="fas fa-smile"></i></button>
+                                            </div>
+                                            <button class="btn-send-pill" id="btnSend">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </button>
+
+                                            <!-- 이모지 피커 (chat_ui.js 의존성) -->
+                                            <div class="emoji-picker" id="emojiPicker" style="display:none;">
+                                                <div class="emoji-grid" id="emojiGrid"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- 정보 패널 (참여자 목록 등) -->
+                                <aside class="comm-info-panel" id="commInfoPanel">
+                                    <div class="info-panel-header">
+                                        <h3 id="infoPanelTitle">채널 정보</h3>
+                                        <button class="btn-close-panel" id="btnClosePanel" title="닫기">✕</button>
+                                    </div>
+                                    <div class="info-panel-body" id="infoPanelBody">
+                                        <!-- chat_ui.js 에서 동적 렌더링 -->
+                                    </div>
+                                </aside>
+                            </div>
                         </div>
                     </div>
                 </div>

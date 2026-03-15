@@ -755,7 +755,11 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                     const action = btn.dataset.action;
                     const actionText = action === 'add' ? '수강권 1회 추가' : '수강권 1회 차감';
 
-                    if (!confirm(`${u.name}님의 ${actionText}를 진행하시겠습니까?`)) return;
+                    // u.name은 루프 내부 변수이므로 리스너 스코프에 없음. 데이터셋에서 가져옴
+                    const item = btn.closest('.student-item');
+                    const studentName = item ? item.dataset.name : '수강생';
+
+                    if (!confirm(`${studentName}님의 ${actionText}를 진행하시겠습니까?`)) return;
 
                     try {
                         const passRef = db.ref(`user_passes/${uid}/${classId}`);

@@ -1051,14 +1051,26 @@
     z-index: 10;
 }
 
-/* ---- Info Panel ---- */
+/* ---- Info Panel (Slide Animation) ---- */
 .comm-info-panel {
-    width: 280px;
-    min-width: 280px;
+    width: 320px;
+    min-width: 320px;
     background: var(--comm-sidebar-bg);
     border-left: 1px solid var(--comm-border);
     display: flex;
     flex-direction: column;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
+}
+
+.comm-info-panel.visible {
+    transform: translateX(0);
 }
 
 .info-panel-header {
@@ -1599,7 +1611,79 @@
     font-size: 0.82rem;
     color: var(--comm-text2);
     text-align: center;
-    padding: 8px 0;
+    padding: 20px 0;
+}
+
+/* === Student List Items === */
+.info-student-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.student-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--comm-card-bg);
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.student-item:hover {
+    background: var(--comm-hover);
+    border-color: var(--comm-accent);
+    transform: translateX(-4px);
+}
+
+.student-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #444;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.student-info-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.student-name {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--comm-text);
+}
+
+.student-nickname {
+    font-size: 0.75rem;
+    color: var(--comm-text2);
+}
+
+.student-phone {
+    font-size: 0.8rem;
+    color: var(--comm-accent);
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.student-phone i {
+    font-size: 0.7rem;
+}
+
+.student-phone:hover {
+    text-decoration: underline;
 }
 
 .info-desc {

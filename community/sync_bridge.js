@@ -64,9 +64,16 @@ window.CommunityModules.SyncBridge = (function () {
         }
 
         try {
-            const { data } = await supabase.from('users').select('name, email, profile_image_url, status_message').eq('id', uid).maybeSingle();
+            // nickname, phone 컬럼이 실제 DB에 없으므로 안전한 기본 컬럼만 '명시적'으로 조회
+            const { data, error } = await supabase.from('users').select('id, name, email, profile_image_url').eq('id', uid).maybeSingle();
+            
+            if (error) {
+                console.warn("Supabase profile error (handled):", error);
+                return { name: '사용자', profile_image_url: '' };
+            }
             return data || { name: '사용자', profile_image_url: '' };
         } catch (e) {
+            console.error("getUserProfile catch:", e);
             return { name: '사용자', profile_image_url: '' };
         }
     }
