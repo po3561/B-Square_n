@@ -156,8 +156,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (classData) {
-            // 강사 판별 (1. creator_id 매치, 2. 서브 강사, 3. creator_email 폴백)
+            // 강사 판별 (1. creator_id 매치, 2. 서브 강사, 3. creator_email 폴백, 4. 유저 역할 체크)
             isInstructor = !!(userId && classData.creator_id && userId === classData.creator_id);
+            
+            // 유저 프로필 역할(role) 기반 추가 권한 (admin, operator, instructor 등)
+            if (!isInstructor && userProfile && (userProfile.role === 'admin' || userProfile.role === 'operator' || userProfile.role === 'instructor')) {
+                isInstructor = true;
+                console.log('✅ 유저 프로필 역할(' + userProfile.role + ') 기반 강사 권한 부여');
+            }
 
             // 서브 강사 체크
             if (!isInstructor && userId && Array.isArray(classData.sub_instructors)) {
@@ -168,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!isInstructor && session && session.user && classData.creator_email) {
                 if (session.user.email === classData.creator_email) {
                     isInstructor = true;
-                    console.log('✅ creator_email 매치로 강사 판별');
+                    console.log('✅ creator_email 매치로 강사 권한 부여');
                 }
             }
 
@@ -233,7 +239,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.log("🔑 권한 상태:", { isEnrolled, isInstructor, hasAccess });
 
                 if (window.BSquareModules.initReviews) window.BSquareModules.initReviews(db, classId, userId, supabaseClient, hasAccess, isInstructor);
-                if (window.BSquareModules.initChat) window.BSquareModules.initChat(db, classId, userId, supabaseClient, hasAccess, isInstructor);
+                // 원래 구조대로 커뮤니티 ChatUI 기반 모듈 사용
+                if (window.BSquareModules.initChat) {
+                    window.BSquareModules.initChat(db, classId, userId, supabaseClient, hasAccess, isInstructor);
+                }
                 if (window.BSquareModules.initNotice) window.BSquareModules.initNotice(db, classId, userId, supabaseClient, hasAccess, isInstructor);
 
                 updateEnrollmentUI();
@@ -283,21 +292,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             // [Layout Fix] 채팅 탭일 때 사이드바 숨김 및 폭 확장
             const grid = document.querySelector('.view-grid');
             const sidebar = document.querySelector('.view-sidebar');
+            const unlocked = document.getElementById('chatUnlocked');
+            const locked = document.getElementById('chatLockedOverlay');
+            const activeArea = document.getElementById('chatActiveArea');
+
             if (grid && sidebar) {
                 if (targetId === 'tabChat') {
                     grid.style.gridTemplateColumns = '1fr';
                     sidebar.style.display = 'none';
-                    // 채팅 영역 강제 flex 활성화 (짤림 방지)
-                    const unlocked = document.getElementById('chatUnlocked');
-                    const activeArea = document.getElementById('chatActiveArea');
-                    if (unlocked) unlocked.style.display = 'flex';
-                    if (activeArea) activeArea.style.display = 'flex';
+                    
+                    // 권한 상태(hasAccess)에 따라 채팅창 잠금 해제 제어
+                    const hasAccess = isEnrolled || isInstructor || window.__BSQ_DEV_MODE__;
+                    console.log("📍 [Tab Switch] Chat Access Check:", { hasAccess, isEnrolled, isInstructor });
+
+                    if (hasAccess) {
+                        if (unlocked) unlocked.style.display = 'flex';
+                        if (activeArea) activeArea.style.display = 'flex';
+                        if (locked) locked.style.display = 'none';
+                    } else {
+                        if (unlocked) unlocked.style.display = 'none';
+                        if (activeArea) activeArea.style.display = 'none';
+                        if (locked) locked.style.display = 'flex';
+                    }
                 } else {
                     grid.style.gridTemplateColumns = '1fr 380px';
                     sidebar.style.display = 'block';
                     // 채팅 영역 명시적 숨김 (다른 탭 침범 방지)
-                    const unlocked = document.getElementById('chatUnlocked');
-                    const locked = document.getElementById('chatLockedOverlay');
                     if (unlocked) unlocked.style.display = 'none';
                     if (locked) locked.style.display = 'none';
                 }
@@ -330,11 +350,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (tabChat) {
         tabChat.addEventListener('mouseenter', () => {
             document.body.style.overflow = 'hidden';
-            console.log("🔒 Body scroll locked (Chat hovered)");
         });
         tabChat.addEventListener('mouseleave', () => {
             document.body.style.overflow = '';
-            console.log("🔓 Body scroll unlocked (Chat left)");
         });
     }
 });

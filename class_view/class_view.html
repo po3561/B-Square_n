@@ -181,7 +181,8 @@
                                 </div>
                             </div>
                             <!-- 채팅 해제 UI (수강자/강사) -->
-                            <div class="chat-unlocked" id="chatUnlocked" style="display:none; flex: 1; position: relative;">
+                            <div class="chat-unlocked" id="chatUnlocked"
+                                style="display:none; flex: 1; position: relative;">
                                 <section class="comm-main" id="commMain">
                                     <div class="chat-active-area" id="chatActiveArea">
                                         <div class="chat-top-header" id="chatTopHeader">
@@ -193,9 +194,12 @@
                                                 </div>
                                             </div>
                                             <div class="chat-header-actions">
-                                                <button class="btn-header-icon" id="btnChatSearch" title="메시지 검색"><i class="fas fa-search"></i></button>
-                                                <button class="btn-header-icon" id="btnThemeToggle" title="테마 전환"><i class="fas fa-moon" id="themeIcon"></i></button>
-                                                <button class="btn-header-icon" id="btnChatInfo" title="참여자 정보"><i class="fas fa-info-circle"></i></button>
+                                                <button class="btn-header-icon" id="btnChatSearch" title="메시지 검색"><i
+                                                        class="fas fa-search"></i></button>
+                                                <button class="btn-header-icon" id="btnThemeToggle" title="테마 전환"><i
+                                                        class="fas fa-moon" id="themeIcon"></i></button>
+                                                <button class="btn-header-icon" id="btnChatInfo" title="참여자 정보"><i
+                                                        class="fas fa-info-circle"></i></button>
                                             </div>
                                         </div>
 
@@ -203,20 +207,51 @@
                                         <div class="chat-search-bar" id="chatSearchBar" style="display:none;">
                                             <input type="text" id="msgSearchInput" placeholder="메시지에서 검색...">
                                             <span id="msgSearchCount" class="search-count"></span>
-                                            <button id="msgSearchPrev" class="btn-search-nav">▲</button>
-                                            <button id="msgSearchNext" class="btn-search-nav">▼</button>
                                             <button id="msgSearchClose" class="btn-search-close">✕</button>
                                         </div>
                                         <!-- 고정 메시지 바 -->
                                         <div class="pinned-msg-bar" id="pinnedMsgBar">
                                             <i class="fas fa-thumbtack pin-icon"></i>
-                                            <div class="pinned-msg-content" id="pinnedMsgContent">
-                                                <div class="pinned-msg-title">고정된 메시지</div>
-                                                <div class="pinned-msg-text" id="pinnedMsgText">...</div>
+                                            <div class="pinned-separator"></div>
+                                            <div id="pinnedMsgContent">
+                                                <span class="pinned-msg-title">공지사항</span>
+                                                <span class="pinned-msg-text" id="pinnedMsgText">고정된 메시지가 없습니다.</span>
                                             </div>
-                                            <button class="btn-unpin" id="btnUnpin" title="고정 해제" style="display:none;">
-                                                <i class="fas fa-times"></i>
+                                            <button class="btn-pinned-menu" id="btnPinnedList" title="고정 메시지 전체 보기">
+                                                <i class="fas fa-bars"></i>
                                             </button>
+                                        </div>
+
+                                        <!-- 고정 메시지 전체보기 오버레이 (텔레그램 스타일) -->
+                                        <div class="pinned-list-overlay" id="pinnedListOverlay" style="display:none;">
+                                            <div class="pinned-list-container">
+                                                <div class="pinned-list-header">
+                                                    <div class="header-left">
+                                                        <button id="btnClosePinnedList" class="btn-back-arrow"><i
+                                                                class="fas fa-arrow-left"></i></button>
+                                                        <h3 id="pinnedListTitle">0개의 고정된 메시지</h3>
+                                                    </div>
+                                                </div>
+                                                <div class="pinned-list-body" id="pinnedListBody">
+                                                    <!-- 날짜 헤더 및 고정 메시지 아이템들이 여기에 렌더링됨 -->
+                                                </div>
+                                                <div class="pinned-list-footer" id="pinnedListFooter"
+                                                    style="display:none;">
+                                                    <button id="btnUnpinAll" class="btn-unpin-all">메시지 <span
+                                                            id="pinCountText">0</span>개 고정 해제하기</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 메시지 고정 확인 모달 -->
+                                        <div class="pin-confirm-modal" id="pinConfirmModal" style="display:none;">
+                                            <div class="pin-modal-content">
+                                                <p class="pin-modal-text">메시지를 고정 하시겠습니까?</p>
+                                                <div class="pin-modal-actions">
+                                                    <button id="btnPinCancel" class="btn-pin-cancel">취소</button>
+                                                    <button id="btnPinConfirm" class="btn-pin-confirm">고정</button>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div class="chat-messages-container" id="chatMessagesContainer"></div>
@@ -247,11 +282,16 @@
                                         <!-- 입력 UI -->
                                         <div class="chat-input-area" id="chatInputArea">
                                             <div class="input-pill-wrapper">
-                                                <button class="btn-input-icon-pill" id="btnAttach" title="파일 첨부"><i class="fas fa-paperclip"></i></button>
-                                                <button class="btn-input-icon-pill" id="btnGathering" title="클래스 모집 카드 보내기" style="display:none;"><i class="fas fa-calendar-alt"></i></button>
+                                                <button class="btn-input-icon-pill" id="btnAttach" title="파일 첨부"><i
+                                                        class="fas fa-paperclip"></i></button>
+                                                <button class="btn-input-icon-pill" id="btnGathering"
+                                                    title="클래스 모집 카드 보내기" style="display:none;"><i
+                                                        class="fas fa-calendar-alt"></i></button>
                                                 <input type="file" id="fileInput" multiple hidden>
-                                                <textarea id="msgInput" placeholder="메시지 작성..." rows="1" spellcheck="false"></textarea>
-                                                <button class="btn-input-icon-pill" id="btnEmoji" title="이모지"><i class="fas fa-smile"></i></button>
+                                                <textarea id="msgInput" placeholder="메시지 작성..." rows="1"
+                                                    spellcheck="false"></textarea>
+                                                <button class="btn-input-icon-pill" id="btnEmoji" title="이모지"><i
+                                                        class="fas fa-smile"></i></button>
                                             </div>
                                             <button class="btn-send-pill" id="btnSend">
                                                 <i class="fas fa-paper-plane"></i>
@@ -313,7 +353,9 @@
                     <div id="myPassStatus"
                         style="display:none; padding: 12px; margin: 10px 0; background: rgba(76, 201, 240, 0.1); border: 1px solid rgba(76, 201, 240, 0.3); border-radius: 8px; color: #4cc9f0; font-weight: 600; text-align: center;">
                         <div style="margin-bottom: 8px;">내 보유 수강권: <span id="myPassCountVal">0</span>개</div>
-                        <button id="btnUsePass" style="width:100%; padding:8px; border-radius:6px; background:#4cc9f0; color:#fff; border:none; font-weight:700; cursor:pointer;">🎫 수강권 1회 사용하기</button>
+                        <button id="btnUsePass"
+                            style="width:100%; padding:8px; border-radius:6px; background:#4cc9f0; color:#fff; border:none; font-weight:700; cursor:pointer;">🎫
+                            수강권 1회 사용하기</button>
                     </div>
 
                     <!-- 수강권 구매 옵션 -->
@@ -454,7 +496,8 @@
                         required>
                 </div>
                 <button class="btn-submit" id="btnSendGatheringSubmit"
-                    style="margin-top:10px; padding: 14px; border-radius: 12px; font-weight: bold; background: linear-gradient(135deg, #4361ee, #4cc9f0); color:white; border:none; cursor:pointer;">모집 카드 전송</button>
+                    style="margin-top:10px; padding: 14px; border-radius: 12px; font-weight: bold; background: linear-gradient(135deg, #4361ee, #4cc9f0); color:white; border:none; cursor:pointer;">모집
+                    카드 전송</button>
             </div>
         </div>
     </div>
@@ -543,6 +586,7 @@
     <script src="view_curriculum.js"></script>
     <script src="view_reviews.js"></script>
     <script src="view_chat.js"></script>
+    <script src="simple_class_chat.js"></script>
     <script src="view_edit.js"></script>
     <script src="view_notice.js"></script> <!-- 추가된 공지 모듈 -->
     <script src="class_view.js"></script>

@@ -865,9 +865,33 @@ window.CommunityModules.ChatUI = (function () {
     // ==== 메시지 전송 ====
     async function sendCurrentMessage() {
         const msgInput = document.getElementById('msgInput');
-        const content = msgInput.value.trim();
-        if (!content || !currentRoomId || isSending) return;
+        if (!msgInput) {
+            console.warn('💬 sendCurrentMessage: msgInput 엘리먼트를 찾지 못했습니다.');
+            return;
+        }
 
+        const content = msgInput.value.trim();
+
+        // 디버그 로그: 어떤 이유로 전송이 막히는지 확인
+        if (!content) {
+            console.log('💬 sendCurrentMessage: 내용이 비어 있어 전송하지 않습니다.');
+            return;
+        }
+        if (!currentRoomId) {
+            console.error('💬 sendCurrentMessage: currentRoomId 가 없어 전송할 수 없습니다. ChatUI.openRoom 이 아직 호출되지 않았을 가능성이 큽니다.');
+            alert('채팅방이 아직 준비되지 않았습니다. 잠시 후 다시 시도하거나 새로고침 해주세요.');
+            return;
+        }
+        if (isSending) {
+            console.log('💬 sendCurrentMessage: 이미 전송 중입니다. 중복 전송 방지.');
+            return;
+        }
+
+        console.log('💬 sendCurrentMessage: 전송 시작', {
+            roomId: currentRoomId,
+            roomType: currentRoomType,
+            length: content.length
+        });
         isSending = true; // 전송 시작
         const btnSend = document.getElementById('btnSend');
         if (btnSend) btnSend.style.opacity = '0.5';
@@ -1773,19 +1797,20 @@ window.CommunityModules.ChatUI = (function () {
     async function pinMessage(key, msg) {
         if (!currentRoomId) return;
         const pinData = {
-            key: key,
-            content: msg.content,
-            sender_name: msg.user_name || msg.sender_name || '사용자',
-            pinner_id: bridge().getUserId(),
-            timestamp: Date.now()
+            messageId: key,
+            text: msg.content,
+            senderName: msg.user_name || msg.sender_name || '사용자',
+            pinnerId: bridge().getUserId(),
+            timestamp: firebase.database.ServerValue.TIMESTAMP
         };
-        await bridge().getDb().ref(`pinned_messages/${currentRoomId}`).set(pinData);
+        // .set() 대신 .push()를 사용하여 누적(Accumulate)
+        await bridge().getDb().ref(`pinned_messages/${currentRoomId}`).push(pinData);
         alert("메시지가 고정되었습니다.");
     }
 
-    async function unpinMessage() {
-        if (!currentRoomId) return;
-        await bridge().getDb().ref(`pinned_messages/${currentRoomId}`).remove();
+    async function unpinMessage(pinId) {
+        if (!currentRoomId || !pinId) return;
+        await bridge().getDb().ref(`pinned_messages/${currentRoomId}/${pinId}`).remove();
     }
 
     // ---- 그룹 정보 ----
