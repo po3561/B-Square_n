@@ -53,23 +53,10 @@ window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAcc
         }
 
         // 4. 헤더 액션 이벤트 바인딩
-        const btnChatInfo = document.getElementById('btnChatInfo');
+        // (정보 패널 토글 및 닫기는 chat_ui.js 에서 통합 처리됨)
         const btnThemeToggle = document.getElementById('btnThemeToggle');
         const btnChatSearch = document.getElementById('btnChatSearch');
-        const commInfoPanel = document.getElementById('commInfoPanel');
-        const btnClosePanel = document.getElementById('btnClosePanel');
         const chatSearchBar = document.getElementById('chatSearchBar');
-
-        if (btnChatInfo && commInfoPanel) {
-            btnChatInfo.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const isVisible = commInfoPanel.classList.toggle('visible');
-                if (isVisible) {
-                    renderInfoPanel(db, classId, currentUserId, supabase, isInstructor);
-                }
-            };
-        }
 
         if (btnThemeToggle) {
             btnThemeToggle.onclick = () => {
@@ -100,11 +87,6 @@ window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAcc
             };
         }
 
-        if (btnClosePanel && commInfoPanel) {
-            btnClosePanel.onclick = () => {
-                commInfoPanel.classList.remove('visible');
-            };
-        }
 
         // 5. 참여자 목록 로드 (헤더 뱃지용)
         updateParticipantBadge(db, classId);
@@ -540,28 +522,7 @@ function setupPinnedMessagesChatUI(db, classId, isInstructor) {
         });
     }
 
-    // ---- 우클릭 메뉴 (강사 전용) ----
-    if (isInstructor && chatMessages) {
-        // ChatUI의 기존 우클릭 메뉴와 충돌 방지: capture 단계에서 가로챔
-        chatMessages.addEventListener('contextmenu', (e) => {
-            const msgEl = e.target.closest('[id^="msg-"]');
-            if (!msgEl) return;
-
-            e.preventDefault();
-            e.stopPropagation();
-            if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
-
-            const messageId = msgEl.id.replace(/^msg-/, '');
-            const bubble = msgEl.querySelector('.msg-bubble');
-            const content = (bubble && bubble.textContent ? bubble.textContent : '').trim();
-
-            if (!content) return;
-
-            const alreadyPinned = Object.values(state.pins || {}).some((p) => p.messageId === messageId);
-            showPinMenu(e.clientX, e.clientY, messageId, content, alreadyPinned);
-        }, true);
-    }
-
+    // ---- 우클릭 메뉴 (강사 전용: 이제 chat_ui.js의 고급 메뉴가 담당함) ----
     if (isInstructor && pinnedListBody) {
         pinnedListBody.addEventListener('contextmenu', (e) => {
             const row = e.target.closest('[data-pin-id]');
@@ -571,36 +532,6 @@ function setupPinnedMessagesChatUI(db, classId, isInstructor) {
             const pinId = row.dataset.pinId;
             showUnpinMenu(e.clientX, e.clientY, pinId);
         });
-    }
-
-    function showPinMenu(x, y, messageId, content, alreadyPinned) {
-        closeAllPinMenus();
-        const menu = document.createElement('div');
-        menu.className = 'simple-msg-context-menu';
-        menu.style.position = 'fixed';
-        menu.style.left = x + 'px';
-        menu.style.top = y + 'px';
-
-        menu.innerHTML = `
-            <div class="ctx-item">
-                <div class="ctx-item-label">${alreadyPinned ? '고정 해제하기' : '메시지 고정하기'}</div>
-            </div>
-        `;
-
-        document.body.appendChild(menu);
-
-        menu.querySelector('.ctx-item').addEventListener('click', () => {
-            if (alreadyPinned) {
-                unpinByMessageId(messageId);
-            } else {
-                pinMessage(messageId, content);
-            }
-            closeAllPinMenus();
-        });
-
-        setTimeout(() => {
-            document.addEventListener('click', () => closeAllPinMenus(), { once: true });
-        }, 0);
     }
 
     function showUnpinMenu(x, y, pinId) {

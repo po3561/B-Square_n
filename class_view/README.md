@@ -5,6 +5,7 @@ B-Square 플랫폼의 클래스 상세 페이지 프로젝트입니다. 수강�
 ## 🚀 주요 기능
 
 ### 1. 클래스 정보 제공 (Intro)
+
 - **리치 텍스트 설명**: Quill.js를 활용한 미려한 강의 상세 설명.
 - **시각적 요약**: 학습 목표 및 대상 수강생을 그리드와 리스트 형태로 제공.
 - **히어로 섹션**: 클래스 대표 이미지 슬라이더 및 주요 메타데이터(카테고리, 평점) 표시.
@@ -33,18 +34,20 @@ B-Square 플랫폼의 클래스 상세 페이지 프로젝트입니다. 수강�
 class_view/
 ├── class_view.html       # 메인 구조 및 탭 컨테이너
 ├── class_view.css        # 전체 레이아웃 및 테마 스타일
-├── class_view.js         # 전체 페이지 로직 및 탭 전환 제어
-├── view_intro.js         # [소개] 탭 렌더링 및 로직
+├── class_view.js         # 전체 페이지 로직, 탭 전환, 세션 및 결제(PortOne) 제어
+├── view_intro.js         # [소개] 탭 렌더링 및 Quill.js 연동
+├── view_intro.css        # 소개 페이지 전용 스타일
 ├── view_curriculum.js    # [커리큘럼] 데이터 바인딩 및 UI 제어
+├── view_curriculum.css   # 커리큘럼 UI 스타일
 ├── view_notice.js        # [공지사항] CRUD 및 모달 제어
 ├── view_reviews.js       # [후기] 별점 및 리뷰 목록 처리
-├── view_chat.js          # [채팅] 실시간 메시징 연동
-├── view_edit.js          # [수정] 강사 전용 편집 기능
-├── view_chat.css         # 채팅 UI 전용 스타일
-├── view_intro.css        # 소개 페이지 전용 스타일
-├── view_curriculum.css   # 커리큘럼 UI 스타일
 ├── view_reviews.css      # 후기 및 별점 스타일
-└── payment_toast.css     # 결제 및 알림 토스트 스타일
+├── view_chat.js          # [채팅] 고도화된 실시간 메시징 (고정 메시지, 정보 패널)
+├── view_chat.css         # 채팅 UI 전용 스타일 (Glassmorphism 적용)
+├── view_edit.js          # [수정] 강사 대시보드 (수강생 관리, 쿠폰 발급, 서브 강사 설정)
+├── simple_class_chat.js  # [채팅] 경량화된 대체 채팅 컨트롤러
+├── payment_toast.css     # 결제 및 알림 토스트 스타일
+└── UI_SPEC_CONSOLIDATED.md # UI/UX 통합 기획 및 기술 명세서
 ```
 
 ## 🛠 기술 스택

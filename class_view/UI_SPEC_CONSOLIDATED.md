@@ -50,18 +50,29 @@
   - **참여**: `클래스 참여 (수강권 1회 사용)` - 포인트 컬러 적용
   - **거절**: `다음에 참여` - 경고 컬러(Red) 적용
 
+### [강사 대시보드 (Instructor Dashboard)]
+`view_edit.js`를 통해 강사 및 운영자에게 제공되는 관리 인터페이스입니다.
+
+- **Tab 1: 정보 수정**: 클래스명, 이미지 슬라이더, 대상 수강생, 학습 목표, 요약 및 상세 설명을 Firebase RTDB에 실시간 반영.
+- **Tab 2: 서브 강사**: Supabase 유저 검색을 통해 공동 운영 권한을 부여할 서브 강사 목록 관리.
+- **Tab 3: 수강생 및 결제**: 수강 인원 통계 확인 및 개별 수강생의 수강권(Pass) 수동 증차/차감 기능 제공.
+- **Tab 4: 쿠폰 관리**: 클래스 전용 할인 쿠폰(금액/비율) 생성 및 사용 내역 추적.
+
 ---
 
 ## 3. 인터랙션 및 애니메이션 (Motion)
 
 - **Layout Push**: 정보 패널이 열릴 때 채팅창의 너비가 유동적으로 줄어들며 공간을 확보 (`400ms`, `cubic-bezier(0.25, 1, 0.5, 1)` 이징).
-- **Staggered Entry**: 패널 내의 각 섹션(헤더, 목록, 통계, 버튼)이 아래에서 위로 `15px` 올라오며 순차적으로 등장 (`40ms` 간격).
+- **Staggered Entry**: 패널 및 대시보드 내의 각 섹션이 아래에서 위로 `15px` 올라오며 순차적으로 등장 (`40ms` 간격).
 - **Interactive States**: 모든 클릭 가능한 요소에 대해 Hover 시 1.05배 확대, Press 시 0.95배 축소되는 마이크로 피드백 적용.
 
 ---
 
 ## 4. 기술 명세 (Technical Specs)
 
-- **CSS**: CSS Variables를 사용한 테마 관리 (`[data-theme="light"]`)
-- **JS**: `window.CommunityModules.ChatUI` 모듈을 통한 역할별 템플릿 렌더링
-- **Data**: Firebase/Supabase 실시간 DB 연동을 통한 참여자 상태 및 수강권 실시간 업데이트
+- **Orchestrator**: `class_view.js`가 모든 하위 뷰 모듈(`view_*.js`)을 초기화하고 권한(`hasAccess`, `isInstructor`)을 분배합니다.
+- **Modular components**: 각 탭은 독립적인 JS/CSS 모듈로 분리되어 유지보수성을 높였습니다.
+- **CSS**: CSS Variables를 사용한 테마 관리 (`[data-theme="light"]`) 및 전용 스타일링.
+- **JS**: `window.CommunityModules` 및 `window.BSquareModules` 전역 객체를 통한 모듈 통신.
+- **Data**: Firebase RTDB(실시간 동기화)와 Supabase(관계형 데이터 및 보안)의 하이브리드 연동.
+- **Payment**: PortOne SDK를 통한 PG 결제 프로세스 통합.

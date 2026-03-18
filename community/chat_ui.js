@@ -12,6 +12,10 @@ window.CommunityModules.ChatUI = (function () {
     let editingMsgKey = null;
     let themeStorageKey = 'bsq_theme';
     let isSending = false; // 중복 전송 방지용 플래그
+    let currentPins = {};
+    let activePinRef = null;
+    let presenceRef = null;
+    // 현재 채팅방의 고정 메시지 상태 추적
 
     const EMOJIS = ['😀', '😂', '🥰', '😍', '🤔', '😅', '😎', '🥳', '😢', '😡', '👍', '👎', '❤️', '🔥', '⭐', '🎉', '💯', '🙌', '👏', '🤝', '💪', '🙏', '✨', '💬', '📌', '📎', '🎵', '🎮', '☕', '🍕', '🎊', '💐', '🌈', '🍀', '🐶', '🐱', '🦊', '🐻'];
 
@@ -105,7 +109,7 @@ window.CommunityModules.ChatUI = (function () {
         if (btnSend) {
             btnSend.addEventListener('click', () => sendCurrentMessage());
         }
-        
+
         const msgInput = document.getElementById('msgInput');
         if (msgInput) {
             msgInput.addEventListener('keydown', (e) => {
@@ -125,20 +129,20 @@ window.CommunityModules.ChatUI = (function () {
         btns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-            const html = document.documentElement;
-            const current = html.getAttribute('data-theme') || 'dark';
-            const next = current === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', next);
-            
-            // Sync all theme buttons
-            document.querySelectorAll('#themeIcon').forEach(icon => {
-                icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-            });
-            document.querySelectorAll('#btnThemeToggle').forEach(b => {
-                b.setAttribute('title', next === 'dark' ? '다크 모드' : '라이트 모드');
-            });
-            
-            localStorage.setItem(themeStorageKey, next);
+                const html = document.documentElement;
+                const current = html.getAttribute('data-theme') || 'dark';
+                const next = current === 'dark' ? 'light' : 'dark';
+                html.setAttribute('data-theme', next);
+
+                // Sync all theme buttons
+                document.querySelectorAll('#themeIcon').forEach(icon => {
+                    icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+                });
+                document.querySelectorAll('#btnThemeToggle').forEach(b => {
+                    b.setAttribute('title', next === 'dark' ? '다크 모드' : '라이트 모드');
+                });
+
+                localStorage.setItem(themeStorageKey, next);
             });
         });
     }
@@ -146,9 +150,23 @@ window.CommunityModules.ChatUI = (function () {
     function restoreTheme() {
         const saved = localStorage.getItem(themeStorageKey) || 'dark';
         document.documentElement.setAttribute('data-theme', saved);
-        document.querySelectorAll('#btnThemeToggle').forEach(b => {
-            b.textContent = saved === 'dark' ? '🌙' : '☀️';
+        // Update theme icons and titles based on the restored theme
+        document.querySelectorAll('#themeIcon').forEach(icon => {
+            icon.className = saved === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
         });
+        document.querySelectorAll('#btnThemeToggle').forEach(b => {
+            b.setAttribute('title', saved === 'dark' ? '다크 모드' : '라이트 모드');
+        });
+    }
+
+    function toggleInfoPanel() {
+        const panel = document.getElementById('commInfoPanel');
+        if (panel) {
+            const isVisible = panel.classList.toggle('visible');
+            if (isVisible) {
+                renderInfoPanel();
+            }
+        }
     }
 
     function setupInfoPanelToggle() {
@@ -158,24 +176,26 @@ window.CommunityModules.ChatUI = (function () {
         window.__BSQ_INFO_LISTENER_SET__ = true;
 
         console.log("🛡️ Binding Unified Info Panel Listener...");
-        document.addEventListener('click', (e) => {
-            const btn = e.target.closest('#btnChatInfo');
-            const panel = document.getElementById('commInfoPanel');
-            
-            if (btn) {
-                console.log("ℹ️ Clicked Info Icon - Toggling Panel");
+        // Use explicit binding for better reliability in class_view
+        const btn = document.getElementById('btnChatInfo');
+        if (btn) {
+            btn.onclick = (e) => {
                 e.preventDefault();
-                e.stopPropagation();
-                
-                if (panel) {
-                    const isVisible = panel.classList.toggle('visible');
-                    if (isVisible) {
-                        renderInfoPanel(); 
-                    }
-                }
-                return;
-            }
+                toggleInfoPanel();
+            };
+        }
 
+        // Fallback for dynamically added buttons
+        document.addEventListener('click', e => {
+            const dynamicBtn = e.target.closest('#btnChatInfo');
+            if (dynamicBtn && dynamicBtn !== btn) {
+                e.preventDefault();
+                toggleInfoPanel();
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('commInfoPanel');
             // 외부 클릭 시 닫기
             if (panel && panel.classList.contains('visible')) {
                 const isInside = panel.contains(e.target);
@@ -202,7 +222,7 @@ window.CommunityModules.ChatUI = (function () {
                 e.stopPropagation();
                 const isOpen = searchBar.style.display !== 'none';
                 searchBar.style.display = isOpen ? 'none' : 'flex';
-                if (!isOpen) { 
+                if (!isOpen) {
                     searchInput?.focus();
                 } else {
                     clearSearchHighlights();
@@ -224,9 +244,9 @@ window.CommunityModules.ChatUI = (function () {
         searchInput?.addEventListener('input', () => {
             clearSearchHighlights();
             const query = searchInput.value.trim().toLowerCase();
-            if (!query) { 
-                if (searchCount) searchCount.textContent = ''; 
-                return; 
+            if (!query) {
+                if (searchCount) searchCount.textContent = '';
+                return;
             }
 
             matches = [];
@@ -296,7 +316,7 @@ window.CommunityModules.ChatUI = (function () {
             // 입력창 자동 숨김/보임 (스크롤 방향 감지)
             if (inputArea) {
                 const diff = scrollTop - lastScrollTop;
-                
+
                 if (isNearBottom || scrollTop < 50 || scrollHeight <= clientHeight) {
                     // 맨 하단, 맨 상단, 혹은 스크롤할 내용이 없으면 무조건 보임
                     inputArea.classList.remove('hidden');
@@ -331,9 +351,18 @@ window.CommunityModules.ChatUI = (function () {
 
     // ==== 채팅방 열기 ====
     function openRoom(roomId, roomType, roomInfo) {
+        const db = bridge().getDb();
         if (currentRoomId) {
             const prevPath = currentRoomType === 'class' ? `chats/${currentRoomId}` : currentRoomType === 'group' ? `group_chats/${currentRoomId}/messages` : `dm/${currentRoomId}/messages`;
             bridge().stopListeningMessages(prevPath);
+            if (activePinRef) activePinRef.off();
+            if (presenceRef) presenceRef.off();
+
+            // Cleanup current user's room-specific presence before switching
+            const currentUserId = bridge().getUserId();
+            if (currentUserId && currentUserId !== 'OPERATOR_GHOST') {
+                db.ref(`presence_room/${currentRoomId}/${currentUserId}`).remove();
+            }
         }
 
         currentRoomId = roomId;
@@ -343,7 +372,18 @@ window.CommunityModules.ChatUI = (function () {
         replyTarget = null;
 
         const container = document.getElementById('chatMessagesContainer');
-        container.innerHTML = '';
+        if (container) container.innerHTML = '';
+
+        // Room-specific Presence
+        const currentUserId = bridge().getUserId();
+        if (currentUserId && currentUserId !== 'OPERATOR_GHOST') {
+            const roomPresenceRef = db.ref(`presence_room/${roomId}/${currentUserId}`);
+            roomPresenceRef.set({
+                online: true,
+                last_seen: firebase.database.ServerValue.TIMESTAMP
+            });
+            roomPresenceRef.onDisconnect().remove();
+        }
 
         const noChatSelectedEl = document.getElementById('noChatSelected');
         if (noChatSelectedEl) noChatSelectedEl.style.display = 'none';
@@ -403,7 +443,8 @@ window.CommunityModules.ChatUI = (function () {
         const btnGoToClass = document.getElementById('btnGoToClass');
 
         if (roomType === 'dm' && roomInfo?.target_id) {
-            bridge().watchPresence(roomInfo.target_id, (p) => {
+            if (presenceRef) presenceRef.off(); // Stop previous presence listener
+            presenceRef = bridge().watchPresence(roomInfo.target_id, (p) => {
                 if (statusEl) {
                     statusEl.textContent = p.online ? '온라인' : '오프라인';
                     statusEl.className = 'chat-header-status' + (p.online ? ' online' : '');
@@ -477,7 +518,7 @@ window.CommunityModules.ChatUI = (function () {
                 // 재렌더링 시 내용과 인용구, 리액션 등을 모두 갱신
                 const newContentHtml = await generateMessageContentHtml(msgId, msgData, currentUserId);
                 contentArea.innerHTML = newContentHtml;
-                
+
                 // 수정됨 상태 명시적 추가/갱신
                 const metaRow = row.querySelector('.msg-meta');
                 if (msgData.edited && metaRow) {
@@ -561,7 +602,7 @@ window.CommunityModules.ChatUI = (function () {
 
     async function generateMessageContentHtml(msgId, msgData, currentUserId) {
         let contentHtml = '';
-        
+
         // 1. 답장 인용구 추가
         if (msgData.reply_to && msgData.reply_text) {
             contentHtml += `<div class="msg-reply-quote" onclick="document.getElementById('msg-${msgData.reply_to}')?.scrollIntoView({behavior:'smooth', block:'center'})">
@@ -622,7 +663,7 @@ window.CommunityModules.ChatUI = (function () {
                             <span>${currentCount} / ${maxCap}명</span>
                         </div>
                         <div class="gathering-progress-bar">
-                            <div class="gathering-progress-fill" style="width:${Math.min((currentCount / (maxCap||1)) * 100, 100)}%;"></div>
+                            <div class="gathering-progress-fill" style="width:${Math.min((currentCount / (maxCap || 1)) * 100, 100)}%;"></div>
                         </div>
                     </div>
                 </div>
@@ -632,18 +673,18 @@ window.CommunityModules.ChatUI = (function () {
                         <button class="btn-gathering-action" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--comm-accent); margin-bottom:8px;" onclick="window.open('https://map.naver.com/v5/search/${encodeURIComponent(placeInfo)}')">
                             <i class="fas fa-map-marked-alt"></i> 장소 정보 확인
                         </button>
-                        ${isMine 
-                            ? `<button class="btn-gathering-action" style="background:var(--comm-text); color:#000;" onclick="window.CommunityModules.ChatUI.closeGathering('${currentRoomId}', '${gatherId}')">모임 마감</button>`
-                            : status === 'closed'
-                                ? `<button disabled class="btn-gathering-action">마감됨</button>`
-                                : isFull
-                                    ? `<button disabled class="btn-gathering-action">정원 초과</button>`
-                                    : `
+                        ${isMine
+                    ? `<button class="btn-gathering-action" style="background:var(--comm-text); color:#000;" onclick="window.CommunityModules.ChatUI.closeGathering('${currentRoomId}', '${gatherId}')">모임 마감</button>`
+                    : status === 'closed'
+                        ? `<button disabled class="btn-gathering-action">마감됨</button>`
+                        : isFull
+                            ? `<button disabled class="btn-gathering-action">정원 초과</button>`
+                            : `
                                         <button class="btn-gathering-action" style="background:var(--comm-accent); color:#fff;" onclick="window.CommunityModules.ChatUI.joinGathering('${currentRoomId}', '${gatherId}')">
                                             ${isMonthly ? '모임 참여' : '수강권 사용'}
                                         </button>
                                       `
-                        }
+                }
                     </div>
                 </div>
             </div>`;
@@ -664,15 +705,15 @@ window.CommunityModules.ChatUI = (function () {
     // ==== 리액션 렌더링 ====
     async function renderReactionsHtml(msgId, reactions, currentUserId) {
         if (!reactions || Object.keys(reactions).length === 0) return '';
-        
+
         let html = '<div class="msg-reactions">';
         for (const [emoji, users] of Object.entries(reactions)) {
             const uids = Object.keys(users);
             const count = uids.length;
             if (count === 0) continue;
-            
+
             const isMine = users[currentUserId] === true;
-            
+
             html += `
                 <div class="reaction-pill ${isMine ? 'mine' : ''}" onclick="window.CommunityModules.ChatUI.toggleEmojiReaction('${msgId}', '${emoji}')">
                     <span class="reaction-emoji-sm">${emoji}</span>
@@ -686,10 +727,10 @@ window.CommunityModules.ChatUI = (function () {
 
     async function toggleEmojiReaction(msgId, emoji) {
         const userId = bridge().getUserId();
-        const path = currentRoomType === 'class' ? `chats/${currentRoomId}/${msgId}/reactions/${emoji}/${userId}` : 
-                     currentRoomType === 'group' ? `group_chats/${currentRoomId}/messages/${msgId}/reactions/${emoji}/${userId}` :
-                     `dm/${currentRoomId}/messages/${msgId}/reactions/${emoji}/${userId}`;
-        
+        const path = currentRoomType === 'class' ? `chats/${currentRoomId}/${msgId}/reactions/${emoji}/${userId}` :
+            currentRoomType === 'group' ? `group_chats/${currentRoomId}/messages/${msgId}/reactions/${emoji}/${userId}` :
+                `dm/${currentRoomId}/messages/${msgId}/reactions/${emoji}/${userId}`;
+
         const ref = bridge().getDb().ref(path);
         const snap = await ref.once('value');
         if (snap.exists()) {
@@ -710,6 +751,7 @@ window.CommunityModules.ChatUI = (function () {
 
             // 권한 체크: 강사 또는 운영자(개발모드)
             const isInstructor = currentRoomInfo?.is_instructor || window.__BSQ_DEV_MODE__;
+            const isPinned = !!currentPins[key];
 
             // 퀵 리액션 바 (이미지 참고: 6종 + 확장 버튼)
             const quickReactions = ['🥰', '❤️', '👍', '😢', '👎', '🔥'];
@@ -725,10 +767,14 @@ window.CommunityModules.ChatUI = (function () {
                 <div class="ctx-item" data-action="reply">
                     <div class="ctx-item-label"><i class="fas fa-reply"></i> 답장</div>
                 </div>
-                <div class="ctx-item" data-action="pin">
-                    <div class="ctx-item-label"><i class="fas fa-thumbtack"></i> 고정</div>
-                    ${!isInstructor ? '<style>.ctx-item[data-action="pin"] { display: none; }</style>' : ''}
+                ${isInstructor ? `
+                <div class="ctx-item" id="ctxPinAction" data-action="${isPinned ? 'unpin' : 'pin'}">
+                    <div class="ctx-item-label">
+                        <i class="fas fa-thumbtack" style="${isPinned ? 'transform: rotate(45deg); color: var(--comm-danger);' : ''}"></i> 
+                        ${isPinned ? '고정 해제' : '고정'}
+                    </div>
                 </div>
+                ` : ''}
                 <div class="ctx-item" data-action="copy">
                     <div class="ctx-item-label"><i class="fas fa-copy"></i> 텍스트 복사</div>
                 </div>
@@ -761,7 +807,8 @@ window.CommunityModules.ChatUI = (function () {
                     const action = item.dataset.action;
                     const senderName = msg.user_name || msg.sender_name || '사용자';
                     if (action === 'reply') setReply(key, msg.content, senderName);
-                    else if (action === 'pin') pinMessage(key, msg);
+                    else if (action === 'pin') pinMessage(key, msg.content);
+                    else if (action === 'unpin') unpinMessage(key);
                     else if (action === 'copy') {
                         const txt = (msg.content || '').replace(/<[^>]*>?/gm, ''); // HTML 제거
                         navigator.clipboard?.writeText(txt);
@@ -1272,7 +1319,7 @@ window.CommunityModules.ChatUI = (function () {
             if (!btnScrollBottom) return;
             const threshold = 200;
             const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
-            
+
             if (isNearBottom) {
                 btnScrollBottom.classList.remove('visible');
                 btnScrollBottom.style.display = 'none';
@@ -1333,7 +1380,7 @@ window.CommunityModules.ChatUI = (function () {
         const panel = document.getElementById('commInfoPanel');
         const title = document.getElementById('infoPanelTitle');
         const body = document.getElementById('infoPanelBody');
-        
+
         if (!panel || !body) {
             console.error("❌ CRITICAL: Info panel elements missing!");
             alert("시스템 오류: 정보 패널을 찾을 수 없습니다. (HTML 구조 문제)");
@@ -1347,7 +1394,7 @@ window.CommunityModules.ChatUI = (function () {
 
         try {
             panel.classList.add('visible');
-            
+
             // [UX 보정] 사이드바가 채팅 레이아웃 내부에서만 보이도록 클리핑 제어
             if (panel.style) {
                 panel.style.display = 'flex';
@@ -1355,7 +1402,7 @@ window.CommunityModules.ChatUI = (function () {
                 panel.style.opacity = '1';
                 panel.style.zIndex = '2000';
             }
-            
+
             body.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--comm-text2);"><i class="fas fa-circle-notch fa-spin"></i></div>';
 
             if (!roomId) roomId = currentRoomId;
@@ -1518,136 +1565,224 @@ window.CommunityModules.ChatUI = (function () {
         const passIssued = classData.total_passes_issued || 0;
         const passUsed = classData.total_passes_used || 0;
 
+        // Real-time Presence Count in this room
+        const presencePath = `presence_room/${classId}`;
+        const presenceListener = db.ref(presencePath).on('value', snap => {
+            const count = snap.numChildren();
+            const presenceCountEl = document.getElementById('infoPresenceCount');
+            if (presenceCountEl) presenceCountEl.textContent = `현재 ${count}명 채팅중`;
+        });
+        // We might want to store this listener to detach it later, 
+        // but for now let's focus on fixing the crash.
+
+        // Supabase Data (Category, Total Enrolled)
+        let categoryName = category;
+        let totalEnrolled = 0;
+        try {
+            const { data: cls } = await bridge().getSupabase().from('classes').select('category').eq('id', classId).maybeSingle();
+            if (cls) categoryName = cls.category;
+
+            const { count: enrollCount } = await bridge().getSupabase().from('enrollments').select('id', { count: 'exact', head: true }).eq('class_id', classId);
+            totalEnrolled = enrollCount || 0;
+        } catch (e) { console.warn("Supabase fetch error:", e); }
+
         body.innerHTML = `
-            <div class="staggered-entry">
-                <div class="info-panel-header stagger-1">
-                    <div class="info-header-left">
-                        <i class="fas fa-info-circle" style="color:#888; font-size:1rem; margin-right:8px;"></i>
-                        <div class="info-header-text">
-                            <h4 class="info-header-title">클래스 참여자 / 총 ${classData.enrolled_count || 0}명 수강</h4>
-                            <p class="info-header-subtitle">현재 00명 채팅중</p>
+            <div class="panel-v2-container staggered-entry">
+                <div class="panel-v2-header stagger-1">
+                    <div class="header-main-row">
+                        <div class="header-avatar" style="background-image:url('${imageUrl}')"></div>
+                        <div class="header-title-box">
+                            <h4 class="title-text">클래스 참여자 / <span class="total-count">총 ${totalEnrolled}명 수강</span></h4>
+                            <p class="category-text">${categoryName}</p>
                         </div>
+                        <button class="btn-close-v2" onclick="window.CommunityModules.ChatUI.toggleInfoPanel()">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
-                    <button class="btn-close-panel" onclick="window.CommunityModules.ChatUI.toggleInfoPanel()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-
-                <!-- Instructor Stats (New Reference UI) -->
-                ${isInstructor ? `
-                    <div class="info-section instructor-stats-box stagger-2">
-                        <p>발행 된 수강권 수량 : ${classData.total_passes_issued || 999}개</p>
-                        <p>사용된 수강권 수량 : ${classData.total_passes_used || 582}개</p>
-                    </div>
-                ` : ''}
-
-                <div class="info-divider stagger-2"></div>
-
-                <!-- Participant List Section -->
-                <div class="info-section stagger-2">
-                    <h5 class="info-section-title">수강생 목록</h5>
-                    <div id="infoStudentList" class="info-student-list-grid">
-                        <p class="info-empty">수강생 정보를 불러오는 중...</p>
+                    <div class="header-status-row">
+                        <span id="infoPresenceCount" class="presence-badge pulse">현재 0명 채팅중</span>
                     </div>
                 </div>
 
-                <div class="info-divider stagger-3"></div>
-
-                <!-- Meeting Section (Reference Image Style) -->
-                <div class="info-section stagger-3" style="background:#222; border-radius:15px; padding:20px; margin-bottom:15px;">
-                    <div class="gathering-detail-item" style="margin-bottom:10px;">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span style="font-weight:700;">모임일시 : ${schedule || '-'}</span>
+                <div class="info-section-v2 stagger-2">
+                    <div id="infoStudentList" class="v2-student-list">
+                        <!-- renderInfoStudentList will populate here -->
+                        <div class="v2-loading">수강생 정보를 불러오는 중...</div>
                     </div>
-                    <div class="gathering-detail-item" style="margin-bottom:15px;">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span style="font-weight:700;">모임장소 : ${location || '-'}</span>
-                    </div>
-                    <button class="btn-map-link" style="width:100%; background:#444; color:#fff; border:none; padding:12px; border-radius:10px; font-weight:700; cursor:pointer;" onclick="window.open('https://map.naver.com/v5/search/${encodeURIComponent(location || '')}')">
-                        지도 바로가기
-                    </button>
                 </div>
 
-                <!-- Action Section (Instructor Only) -->
-                ${isInstructor ? `
-                    <div class="info-section stagger-4">
-                        <button class="btn-info-action-xl primary" onclick="window.CommunityModules.ChatUI.closeGathering('${currentRoomId}', 'latest')">
-                            모집 마감
-                        </button>
-                        <div class="gathering-progress-container">
-                            <div class="gathering-progress-bar" style="width: 56.2%;"></div>
+                <div class="info-gathering-v2 stagger-3">
+                    <div class="gathering-card">
+                        <div class="gathering-row">
+                            <div class="gathering-icon-circle"><i class="fas fa-calendar-alt"></i></div>
+                            <span class="gathering-label">모임일시 : ${schedule || '-'}</span>
                         </div>
-                        <div style="display:flex; justify-content:space-between; font-size: 0.8rem; font-weight:800; color:#fff; margin-top:8px;">
-                            <span>참여 : 582 / 999명</span>
-                            <span>최소 100명 필요</span>
+                        <div class="gathering-row" style="margin-top:12px;">
+                            <div class="gathering-icon-circle"><i class="fas fa-map-marker-alt"></i></div>
+                            <span class="gathering-label">모임장소 : ${location || '-'}</span>
                         </div>
-                    </div>
-                ` : `
-                    <div class="info-section dual-action-btns stagger-4">
-                        <button class="btn-info-action-lg primary" onclick="window.CommunityModules.ChatUI.joinGathering('${currentRoomId}', 'latest')">
-                            <span class="btn-main-text">클래스 참여</span>
-                            <span class="btn-sub-text">수강권 1회 사용</span>
+                        <button class="btn-v2-map" onclick="window.open('https://map.naver.com/v5/search/${encodeURIComponent(location || '')}')">
+                            지도 바로가기
                         </button>
-                        <button class="btn-info-action-lg danger" onclick="window.CommunityModules.ChatUI.declineGathering('${currentRoomId}', 'latest')">
-                            다음에 참여
-                        </button>
-                    </div>
-                `}
 
-                <div class="info-divider stagger-5"></div>
+                        <div class="gathering-pass-stats">
+                            <p>발행된 수강권 수량 : ${passIssued}개</p>
+                            <p>사용된 수강권 수량 : ${passUsed}개</p>
+                        </div>
+
+                        <div class="gathering-action-area">
+                            <button class="btn-v2-status-main" disabled style="background:#fff; color:#000; opacity:1;">모집 마감</button>
+                            <div class="gathering-stats-row">
+                                <span class="stats-left">참여 : 1 / ${maxStudents || 100}명</span>
+                                <span class="stats-right">최소 56명 필요</span>
+                            </div>
+                            <div class="v2-progress-container">
+                                <div class="v2-progress-bar" style="width: ${Math.min(100, (passUsed / (passIssued || 1)) * 100)}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
-                <div class="info-section stagger-5" style="padding-bottom: 20px;">
-                    <a href="../class_view/class_view.html?classId=${classId}" class="link-to-detail">
-                        📖 클래스 상세 페이지 바로가기 ➜
+                <div class="panel-v2-footer stagger-4">
+                    <button class="btn-v2-recharge" id="btnRechargePass">
+                        <i class="fas fa-bolt"></i> 수강권 충전하기 (잔여: <span id="myPassCount">0</span>회)
+                    </button>
+                    <a href="../class_view/class_view.html?classId=${classId}" class="btn-v2-detail" target="_blank">
+                        클래스 상세 페이지 바로가기 <i class="fas fa-external-link-alt"></i>
                     </a>
                 </div>
             </div>
         `;
+        renderInfoStudentList(classId);
+    }
 
-        renderInfoStudentList(classId).catch(err => console.error("StudentList error:", err));
-        renderInfoGathering(classId).catch(err => console.error("Gathering error:", err));
+    async function renderInfoStudentList(classId) {
+        const studentList = document.getElementById('infoStudentList');
+        if (!studentList) return;
 
-        // 수강권 개수 업데이트 (실시간)
-        if (currentUserId && currentUserId !== 'OPERATOR_GHOST') {
-            db.ref(`user_passes/${currentUserId}/${classId}/count`).on('value', snap => {
-                const countEl = document.getElementById('myPassCount');
-                if (countEl) countEl.textContent = snap.val() || 0;
-            });
-        }
+        const db = bridge().getDb();
+        const supabase = bridge().getSupabase();
+        const isInstructor = currentRoomInfo?.is_instructor || window.__BSQ_DEV_MODE__;
 
-        // 충전 버튼 이벤트 (global class_view.js 함수 호출)
-        document.getElementById('btnRechargePass')?.addEventListener('click', () => {
-            if (typeof window.openPaymentBottomSheet === 'function') {
-                window.openPaymentBottomSheet();
-            } else {
-                alert("수강권 충전 기능을 초기화 중입니다. 잠시 후 다시 시도해주세요.");
+        try {
+            const enrollSnap = await db.ref(`enrollments/${classId}`).once('value');
+            const enrollments = enrollSnap.val() || {};
+            const userIds = Object.keys(enrollments);
+
+            if (userIds.length === 0) {
+                studentList.innerHTML = '<p class="info-empty">아직 수강생이 없습니다.</p>';
+                return;
             }
-        });
 
-        // 닫기 버튼 이벤트 등록 (한 번만)
-        const btnClose = document.getElementById('btnClosePanel');
-        if (btnClose) {
-            btnClose.onclick = () => {
-                const panel = document.getElementById('commInfoPanel');
-                if (panel) panel.classList.remove('visible');
-            };
+            // Fetch profiles and contacts in batch
+            const { data: users } = await supabase.from('users').select('id, name, nickname, profile_image_url').in('id', userIds);
+            const userMap = {};
+            users?.forEach(u => userMap[u.id] = u);
+
+            const userId = bridge().getUserId();
+            const contactSnap = await db.ref(`contacts/${userId}`).once('value');
+            const contacts = contactSnap.val() || {};
+
+            let html = '';
+            for (const uid of userIds) {
+                const u = userMap[uid] || { name: '사용자', nickname: '사용자' };
+                const isAdded = !!contacts[uid];
+
+                // Real-time Pass Count for each student
+                const passSnap = await db.ref(`user_passes/${uid}/${classId}`).get();
+                const passData = passSnap.val() || { count: 0 };
+
+                html += `
+                    <div class="v2-student-card">
+                        <div class="v2-student-avatar-box">
+                            <div class="v2-student-avatar" style="background-image:url('${u.profile_image_url || ''}')"></div>
+                        </div>
+                        <div class="v2-student-info">
+                            <div class="v2-nickname">${u.nickname || u.name}</div>
+                            ${isInstructor ? `
+                                <div class="v2-real-info">${u.name} | 010-****-****</div>
+                            ` : ''}
+                        </div>
+                        <div class="v2-pass-badge">
+                            <span class="pass-label">잔여 수강권 수</span>
+                            <span class="pass-val">${passData.count}</span>
+                        </div>
+                        <button class="btn-v2-add-friend" onclick="window.CommunityModules.ChatUI.v2ToggleContact('${uid}', '${u.nickname || u.name}', '${u.profile_image_url || ''}')">
+                            ${isAdded ? '친구 삭제' : '친구 추가'}
+                        </button>
+                    </div>
+                `;
+            }
+            studentList.innerHTML = html;
+        } catch (e) {
+            console.error("Student list error:", e);
+            studentList.innerHTML = '<p class="info-empty">정보 로드 실패</p>';
         }
     }
 
-    async function renderInfoGathering(classId) {
-        const gatheringSection = document.getElementById('infoGatheringSection');
-        if (!gatheringSection) return;
-
-        // Fetch latest gathering card from chat
+    // Helper for v2 contact toggle
+    async function v2ToggleContact(targetId, name, avatarUrl) {
+        const userId = bridge().getUserId();
+        if (!userId || userId === 'OPERATOR_GHOST') return;
         const db = bridge().getDb();
-        // 클래스 아이티 하위의 채팅 목록에서 type이 gathering_card인 것 중 마지막 하나
-        const snap = await db.ref(`chats/${classId}`).orderByChild('type').equalTo('gathering_card').limitToLast(1).once('value');
-        const data = snap.val();
-        
-        if (data) {
-            const gatherId = Object.keys(data)[0];
-            const g = data[gatherId];
-            gatheringSection.innerHTML = `
+        try {
+            const snap = await db.ref(`contacts/${userId}/${targetId}`).once('value');
+            if (snap.exists()) {
+                await db.ref(`contacts/${userId}/${targetId}`).remove();
+            } else {
+                await db.ref(`contacts/${userId}/${targetId}`).set({
+                    name, avatar: avatarUrl, added_at: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+            // Re-render student list to update button state
+            renderInfoStudentList(currentClassId || currentRoomId);
+        } catch (e) { console.error(e); }
+    }
+
+    renderInfoStudentList(classId).catch(err => console.error("StudentList error:", err));
+    renderInfoGathering(classId).catch(err => console.error("Gathering error:", err));
+
+    // 수강권 개수 업데이트 (실시간)
+    if (currentUserId && currentUserId !== 'OPERATOR_GHOST') {
+        db.ref(`user_passes/${currentUserId}/${classId}/count`).on('value', snap => {
+            const countEl = document.getElementById('myPassCount');
+            if (countEl) countEl.textContent = snap.val() || 0;
+        });
+    }
+
+    // 충전 버튼 이벤트 (global class_view.js 함수 호출)
+    document.getElementById('btnRechargePass')?.addEventListener('click', () => {
+        if (typeof window.openPaymentBottomSheet === 'function') {
+            window.openPaymentBottomSheet();
+        } else {
+            alert("수강권 충전 기능을 초기화 중입니다. 잠시 후 다시 시도해주세요.");
+        }
+    });
+
+    // 닫기 버튼 이벤트 등록 (한 번만)
+    const btnClose = document.getElementById('btnClosePanel');
+    if (btnClose) {
+        btnClose.onclick = () => {
+            const panel = document.getElementById('commInfoPanel');
+            if (panel) panel.classList.remove('visible');
+        };
+    }
+}
+
+    async function renderInfoGathering(classId) {
+    const gatheringSection = document.getElementById('infoGatheringSection');
+    if (!gatheringSection) return;
+
+    // Fetch latest gathering card from chat
+    const db = bridge().getDb();
+    // 클래스 아이티 하위의 채팅 목록에서 type이 gathering_card인 것 중 마지막 하나
+    const snap = await db.ref(`chats/${classId}`).orderByChild('type').equalTo('gathering_card').limitToLast(1).once('value');
+    const data = snap.val();
+
+    if (data) {
+        const gatherId = Object.keys(data)[0];
+        const g = data[gatherId];
+        gatheringSection.innerHTML = `
                 <div class="info-divider"></div>
                 <div class="info-section">
                     <h5 class="info-section-title">최근 모임(모집) 정보</h5>
@@ -1670,54 +1805,54 @@ window.CommunityModules.ChatUI = (function () {
                     </div>
                 </div>
             `;
-        } else {
-            gatheringSection.innerHTML = ''; // 없으면 비움
-        }
+    } else {
+        gatheringSection.innerHTML = ''; // 없으면 비움
+    }
+}
+
+async function renderInfoStudentList(classId) {
+    const listEl = document.getElementById('infoStudentList');
+    if (!listEl) return;
+    const db = bridge().getDb();
+    const enrollSnap = await db.ref('enrollments').once('value');
+    const enrollments = enrollSnap.val() || {};
+
+    // 현재 사용자가 강사/운영자인지 확인 (roomInfo or dev mode)
+    const isInstructor = currentRoomInfo?.is_instructor || window.__BSQ_DEV_MODE__;
+
+    const targetUids = [];
+    for (const [uid, classes] of Object.entries(enrollments)) {
+        if (classes[classId]) targetUids.push(uid);
     }
 
-    async function renderInfoStudentList(classId) {
-        const listEl = document.getElementById('infoStudentList');
-        if (!listEl) return;
-        const db = bridge().getDb();
-        const enrollSnap = await db.ref('enrollments').once('value');
-        const enrollments = enrollSnap.val() || {};
-        
-        // 현재 사용자가 강사/운영자인지 확인 (roomInfo or dev mode)
-        const isInstructor = currentRoomInfo?.is_instructor || window.__BSQ_DEV_MODE__;
+    if (targetUids.length === 0) {
+        listEl.innerHTML = '<p class="info-empty">수강생이 없습니다.</p>';
+        return;
+    }
 
-        const targetUids = [];
-        for (const [uid, classes] of Object.entries(enrollments)) {
-            if (classes[classId]) targetUids.push(uid);
+    // 병렬로 프로필 데이터 가져오기
+    const profilePromises = targetUids.map(uid => bridge().getUserProfile(uid));
+    const profiles = await Promise.all(profilePromises);
+
+    let studentsHtml = '<div class="student-list-container">';
+
+    for (let i = 0; i < profiles.length; i++) {
+        const profile = profiles[i];
+        const uid = targetUids[i];
+
+        let uc = 0;
+        if (isInstructor && uid !== 'OPERATOR_GHOST') {
+            try {
+                const psnap = await db.ref(`user_passes/${uid}/${classId}/count`).once('value');
+                uc = psnap.val() || 0;
+            } catch (e) { }
         }
 
-        if (targetUids.length === 0) {
-            listEl.innerHTML = '<p class="info-empty">수강생이 없습니다.</p>';
-            return;
-        }
+        const nickname = profile.nickname || profile.name || '수강생';
+        const realName = profile.name || '사용자 이름';
+        const phone = profile.phone || '전화번호';
 
-        // 병렬로 프로필 데이터 가져오기
-        const profilePromises = targetUids.map(uid => bridge().getUserProfile(uid));
-        const profiles = await Promise.all(profilePromises);
-
-        let studentsHtml = '<div class="student-list-container">';
-        
-        for (let i = 0; i < profiles.length; i++) {
-            const profile = profiles[i];
-            const uid = targetUids[i];
-            
-            let uc = 0;
-            if (isInstructor && uid !== 'OPERATOR_GHOST') {
-                try {
-                    const psnap = await db.ref(`user_passes/${uid}/${classId}/count`).once('value');
-                    uc = psnap.val() || 0;
-                } catch(e) {}
-            }
-
-            const nickname = profile.nickname || profile.name || '수강생';
-            const realName = profile.name || '사용자 이름';
-            const phone = profile.phone || '전화번호';
-            
-            studentsHtml += `
+        studentsHtml += `
                 <div class="participant-row-item">
                     <div class="participant-avatar" style="background-color: ${stringToColor(nickname)}; ${profile.profile_image_url ? `background-image:url(${profile.profile_image_url})` : ''}">
                         ${!profile.profile_image_url ? nickname.charAt(0) : ''}
@@ -1739,129 +1874,150 @@ window.CommunityModules.ChatUI = (function () {
                 </div>
             `;
 
-            // Presence watch (실시간 초록불)
-            bridge().watchPresence(uid, (p) => {
-                const dot = document.getElementById(`presence-dot-${uid}`);
-                if (dot) {
-                    dot.className = p.online ? 'online-indicator online' : 'online-indicator';
-                }
-            });
-        }
-        
-        studentsHtml += '</div>';
-        listEl.innerHTML = studentsHtml;
-    }
-
-    async function changeClassImage(classId) {
-        const url = prompt("클래스 프로필 이미지 URL을 입력해주세요:");
-        if (url) {
-            await bridge().getDb().ref(`classes/${classId}/image_url`).set(url);
-            alert("이미지가 업데이트되었습니다.");
-            // Refresh info panel
-            renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo);
-        }
-    }
-
-    // ==== 고정 메시지 (Pin) ====
-    function listenPinnedMessage(roomId) {
-        const pinRef = bridge().getDb().ref(`pinned_messages/${roomId}`);
-        pinRef.on('value', (snap) => {
-            renderPinnedBar(snap.val());
+        // Presence watch (실시간 초록불)
+        bridge().watchPresence(uid, (p) => {
+            const dot = document.getElementById(`presence-dot-${uid}`);
+            if (dot) {
+                dot.className = p.online ? 'online-indicator online' : 'online-indicator';
+            }
         });
     }
 
-    function renderPinnedBar(pinData) {
-        const bar = document.getElementById('pinnedMsgBar');
-        const contentEl = document.getElementById('pinnedMsgContent');
-        const container = document.getElementById('chatMessagesContainer');
+    studentsHtml += '</div>';
+    listEl.innerHTML = studentsHtml;
+}
 
-        if (!pinData || !pinData.content) {
-            if (bar) bar.style.display = 'none';
-            if (container) container.classList.remove('has-pin');
-            return;
-        }
+async function changeClassImage(classId) {
+    const url = prompt("클래스 프로필 이미지 URL을 입력해주세요:");
+    if (url) {
+        await bridge().getDb().ref(`classes/${classId}/image_url`).set(url);
+        alert("이미지가 업데이트되었습니다.");
+        // Refresh info panel
+        renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo);
+    }
+}
 
-        if (bar && contentEl) {
-            bar.style.display = 'flex';
-            if (container) container.classList.add('has-pin');
-            
-            contentEl.innerHTML = `<b>고정된 메시지</b> ${escapeHtml(pinData.content)}`;
-            
-            bar.onclick = () => {
-                const msgEl = document.getElementById(`msg-${pinData.key}`);
-                if (msgEl) msgEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            };
-        }
+// ==== 고정 메시지 (Pin) ====
+function listenPinnedMessage(roomId) {
+    const pinRef = bridge().getDb().ref(`pinned_messages/${roomId}`);
+    pinRef.on('value', (snap) => {
+        const data = snap.val() || {};
+        currentPins = {};
+        Object.entries(data).forEach(([pinId, pinObj]) => {
+            if (pinObj.messageId) currentPins[pinObj.messageId] = pinId;
+        });
+        renderPinnedBar(data);
+    });
+}
+
+function renderPinnedBar(pinData) {
+    const bar = document.getElementById('pinnedMsgBar');
+    const contentEl = document.getElementById('pinnedMsgContent');
+    const container = document.getElementById('chatMessagesContainer');
+
+    if (!pinData) {
+        if (bar) bar.style.display = 'none';
+        if (container) container.classList.remove('has-pin');
+        return;
     }
 
-    async function pinMessage(key, msg) {
-        if (!currentRoomId) return;
-        const pinData = {
-            messageId: key,
-            text: msg.content,
-            senderName: msg.user_name || msg.sender_name || '사용자',
-            pinnerId: bridge().getUserId(),
-            timestamp: firebase.database.ServerValue.TIMESTAMP
+    // Get latest pin
+    const pinsArr = Object.entries(pinData).map(([id, v]) => ({ id, ...v }));
+    if (pinsArr.length === 0) {
+        if (bar) bar.style.display = 'none';
+        if (container) container.classList.remove('has-pin');
+        return;
+    }
+    pinsArr.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+    const latest = pinsArr[pinsArr.length - 1];
+
+    if (bar && contentEl) {
+        bar.style.display = 'flex';
+        if (container) container.classList.add('has-pin');
+
+        const txt = latest.text || latest.content || '';
+        contentEl.innerHTML = `<span class="pinned-msg-title">고정된 메시지</span> <span class="pinned-msg-text">${escapeHtml(txt)}</span>`;
+
+        bar.onclick = () => {
+            const msgId = latest.messageId;
+            const msgEl = document.getElementById(`msg-${msgId}`);
+            if (msgEl) {
+                msgEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                msgEl.classList.add('highlight-pin');
+                setTimeout(() => msgEl.classList.remove('highlight-pin'), 2000);
+            }
         };
-        // .set() 대신 .push()를 사용하여 누적(Accumulate)
-        await bridge().getDb().ref(`pinned_messages/${currentRoomId}`).push(pinData);
-        alert("메시지가 고정되었습니다.");
     }
+}
 
-    async function unpinMessage(pinId) {
-        if (!currentRoomId || !pinId) return;
-        await bridge().getDb().ref(`pinned_messages/${currentRoomId}/${pinId}`).remove();
-    }
+async function pinMessage(key, content) {
+    if (!currentRoomId) return;
+    const db = bridge().getDb();
+    // Use message ID as the unique key to ensure idempotency
+    await db.ref(`pinned_messages/${currentRoomId}/${key}`).set({
+        messageId: key,
+        text: content,
+        pinnerId: bridge().getUserId(),
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+    alert("메시지가 고정되었습니다.");
+}
 
-    // ---- 그룹 정보 ----
-    function renderGroupInfo(body, groupId, roomInfo) {
-        const name = roomInfo?.group_name || '그룹';
-        body.innerHTML = `
+async function unpinMessage(key) {
+    if (!currentRoomId || !key) return;
+    const db = bridge().getDb();
+    await db.ref(`pinned_messages/${currentRoomId}/${key}`).remove();
+}
+
+// ---- 그룹 정보 ----
+function renderGroupInfo(body, groupId, roomInfo) {
+    const name = roomInfo?.group_name || '그룹';
+    body.innerHTML = `
             <div class="info-profile-section">
                 <div class="info-avatar">👥</div>
                 <h4 class="info-name">${name}</h4>
                 <p class="info-id">그룹 채팅</p>
             </div>
         `;
-    }
-    function closeAllMenus() {
-        document.querySelectorAll('.msg-context-menu').forEach(m => m.remove());
-        document.querySelectorAll('.emoji-picker-popup').forEach(p => p.remove());
-    }
+}
+function closeAllMenus() {
+    document.querySelectorAll('.msg-context-menu').forEach(m => m.remove());
+    document.querySelectorAll('.emoji-picker-popup').forEach(p => p.remove());
+}
 
-    function showEmojiPickerAt(msgId, targetEl) {
-        closeAllMenus();
-        const picker = document.createElement('div');
-        picker.className = 'msg-context-menu emoji-picker-popup';
-        picker.style.cssText = 'display:grid; grid-template-columns:repeat(6, 1fr); gap:4px; padding:12px; min-width:240px;';
-        
-        EMOJIS.forEach(emoji => {
-            const span = document.createElement('span');
-            span.className = 'quick-emoji';
-            span.textContent = emoji;
-            span.onclick = () => {
-                toggleEmojiReaction(msgId, emoji);
-                closeAllMenus();
-            };
-            picker.appendChild(span);
-        });
+function showEmojiPickerAt(msgId, targetEl) {
+    closeAllMenus();
+    const picker = document.createElement('div');
+    picker.className = 'msg-context-menu emoji-picker-popup';
+    picker.style.cssText = 'display:grid; grid-template-columns:repeat(6, 1fr); gap:4px; padding:12px; min-width:240px;';
 
-        const rect = targetEl.getBoundingClientRect();
-        picker.style.position = 'fixed';
-        picker.style.left = Math.min(rect.left, window.innerWidth - 260) + 'px';
-        picker.style.top = Math.max(10, rect.top - 200) + 'px';
-        document.body.appendChild(picker);
+    EMOJIS.forEach(emoji => {
+        const span = document.createElement('span');
+        span.className = 'quick-emoji';
+        span.textContent = emoji;
+        span.onclick = () => {
+            toggleEmojiReaction(msgId, emoji);
+            closeAllMenus();
+        };
+        picker.appendChild(span);
+    });
 
-        setTimeout(() => document.addEventListener('click', (e) => {
-            if (!picker.contains(e.target)) closeAllMenus();
-        }, { once: true }), 100);
-    }
+    const rect = targetEl.getBoundingClientRect();
+    picker.style.position = 'fixed';
+    picker.style.left = Math.min(rect.left, window.innerWidth - 260) + 'px';
+    picker.style.top = Math.max(10, rect.top - 200) + 'px';
+    document.body.appendChild(picker);
 
-    return {
-        init, openRoom, sendCurrentMessage, renderInfoPanel,
-        getCurrentRoomId: () => currentRoomId,
-        getCurrentRoomType: () => currentRoomType,
-        sendGatheringCard, joinGathering, closeGathering,
-        toggleEmojiReaction, closeAllMenus, showEmojiPickerAt
-    };
-})();
+    setTimeout(() => document.addEventListener('click', (e) => {
+        if (!picker.contains(e.target)) closeAllMenus();
+    }, { once: true }), 100);
+}
+
+return {
+    init, openRoom, sendCurrentMessage, renderInfoPanel,
+    getCurrentRoomId: () => currentRoomId,
+    getCurrentRoomType: () => currentRoomType,
+    sendGatheringCard, joinGathering, closeGathering,
+    toggleEmojiReaction, closeAllMenus, showEmojiPickerAt
+};
+}) ();
