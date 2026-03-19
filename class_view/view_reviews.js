@@ -1,131 +1,92 @@
-// view_reviews.js - Review System with Instructor Role
+// view_reviews.js - Review System (D1 API 기반 적용)
 window.BSquareModules = window.BSquareModules || {};
-window.BSquareModules.initReviews = function (db, classId, userId, supabase, hasAccess, isInstructor) {
-    console.log("⭐ Reviews Module Initializing... | Access:", hasAccess, "| Instructor:", isInstructor);
-    loadReviews(db, classId, userId, isInstructor);
-    setupReviewForm(db, classId, userId, supabase, hasAccess, isInstructor);
+window.BSquareModules.initReviews = function (_, classId, userId, __, hasAccess, isInstructor) {
+    console.log("⭐ Reviews Module Initializing (D1)... | Access:", hasAccess, "| Instructor:", isInstructor);
+    loadReviews(classId, isInstructor);
+    setupReviewForm(classId, userId, hasAccess, isInstructor);
 };
 
-function loadReviews(db, classId, userId, isInstructor) {
+async function loadReviews(classId, isInstructor) {
     const reviewList = document.getElementById('reviewsList');
     const photoGrid = document.getElementById('photoReviewGrid');
-    const avgRatingVal = document.getElementById('avgRatingVal');
-    const avgStarsLarge = document.getElementById('avgStarsLarge');
-    const reviewTotalCount = document.getElementById('reviewTotalCount');
     const heroAvgRating = document.getElementById('heroAvgRating');
-    const heroAvgStars = document.getElementById('heroAvgStars');
     const heroReviewCount = document.getElementById('heroReviewCount');
-    // 사이드바 리뷰 요소
-    const sideAvgStars = document.getElementById('sideAvgStars');
-    const sideAvgRating = document.getElementById('sideAvgRating');
-    const sideReviewCount = document.getElementById('sideReviewCount');
+    const avgRatingVal = document.getElementById('avgRatingVal');
+    const reviewTotalCount = document.getElementById('reviewTotalCount');
+    const avgStarsLarge = document.getElementById('avgStarsLarge');
 
     try {
-        db.ref(`reviews/${classId}`).on('value', (snapshot) => {
-            const reviews = snapshot.val();
-            if (!reviews) {
-                if (reviewList) reviewList.innerHTML = '<p class="empty-state">아직 작성된 후기가 없습니다.</p>';
-                if (photoGrid) photoGrid.innerHTML = '';
-                if (heroAvgRating) heroAvgRating.textContent = '0.0';
-                if (heroReviewCount) heroReviewCount.textContent = '0';
-                if (heroAvgStars) heroAvgStars.textContent = '⭐';
-                if (avgRatingVal) avgRatingVal.textContent = '0.0';
-                if (reviewTotalCount) reviewTotalCount.textContent = '0';
-                if (avgStarsLarge) avgStarsLarge.textContent = '☆☆☆☆☆';
-                return;
-            }
+        const result = await window.BSQ.api(`/api/reviews?class_id=${classId}`);
+        if (!result.success || !result.data || result.data.length === 0) {
+            if (reviewList) reviewList.innerHTML = '<p class="empty-state">아직 작성된 후기가 없습니다.</p>';
+            if (photoGrid) photoGrid.innerHTML = '';
+            if (heroAvgRating) heroAvgRating.textContent = '0.0';
+            if (heroReviewCount) heroReviewCount.textContent = '0';
+            if (avgRatingVal) avgRatingVal.textContent = '0.0';
+            if (reviewTotalCount) reviewTotalCount.textContent = '0';
+            if (avgStarsLarge) avgStarsLarge.textContent = '☆☆☆☆☆';
+            return;
+        }
 
-            const entries = Object.entries(reviews);
-            const items = entries.map(([key, val]) => ({ ...val, _key: key })).reverse();
-            const count = items.length;
-            const sum = items.reduce((a, b) => a + parseInt(b.rating || 5), 0);
-            const avg = (sum / count).toFixed(1);
-            const rounded = Math.round(parseFloat(avg));
-            const starsText = '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+        const items = result.data;
+        const count = result.summary?.count || items.length;
+        const avg = result.summary?.avg_rating || '5.0';
+        const rounded = Math.round(parseFloat(avg));
+        const starsText = '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
 
-            if (reviewTotalCount) reviewTotalCount.textContent = count;
-            if (avgRatingVal) avgRatingVal.textContent = avg;
-            if (avgStarsLarge) avgStarsLarge.textContent = starsText;
-            if (heroAvgRating) heroAvgRating.textContent = avg;
-            if (heroReviewCount) heroReviewCount.textContent = count;
-            if (heroAvgStars) heroAvgStars.textContent = '⭐';
-            // 사이드바 리뷰 업데이트
-            if (sideAvgStars) sideAvgStars.textContent = '⭐';
-            if (sideAvgRating) sideAvgRating.textContent = avg;
-            if (sideReviewCount) sideReviewCount.textContent = count;
+        if (heroAvgRating) heroAvgRating.textContent = avg;
+        if (heroReviewCount) heroReviewCount.textContent = count;
+        if (avgRatingVal) avgRatingVal.textContent = avg;
+        if (reviewTotalCount) reviewTotalCount.textContent = count;
+        if (avgStarsLarge) avgStarsLarge.textContent = starsText;
 
-            if (photoGrid) {
-                const reviewImages = items.filter(r => r.image_url).map(r => r.image_url);
-                photoGrid.innerHTML = reviewImages.length > 0 ? reviewImages.slice(0, 5).map((url, idx) => `
-                    <div class="photo-review-item">
-                        <img src="${url}" alt="Review Image">
-                        ${idx === 4 && reviewImages.length > 5 ? `<div class="more-photos-overlay">+${reviewImages.length - 5}</div>` : ''}
-                    </div>
-                `).join('') : '';
-            }
+        // 사이드바
+        const sideAvgRating = document.getElementById('sideAvgRating');
+        const sideReviewCount = document.getElementById('sideReviewCount');
+        if (sideAvgRating) sideAvgRating.textContent = avg;
+        if (sideReviewCount) sideReviewCount.textContent = count;
 
-            if (reviewList) {
-                reviewList.innerHTML = items.map(r => {
-                    const stars = '★'.repeat(r.rating || 5) + '☆'.repeat(5 - (r.rating || 5));
-                    const dateStr = new Date(r.created_at).toLocaleDateString();
-                    const helpfulCount = r.helpful_count || 0;
-                    const isCreatorReview = r.is_instructor;
-                    const defaultProfile = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
-                    const avatarUrl = r.profile_image_url || defaultProfile;
+        if (reviewList) {
+            reviewList.innerHTML = items.map(r => {
+                const stars = '★'.repeat(r.rating || 5) + '☆'.repeat(5 - (r.rating || 5));
+                const dateStr = new Date(r.created_at).toLocaleDateString();
+                const avatarUrl = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
-                    return `
-                    <div class="review-item-premium">
-                        <div class="rip-header">
-                            <div class="rip-user" style="display:flex; align-items:center; gap:8px;">
-                                <img src="${avatarUrl}" alt="profile" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color);">
-                                <div style="display:flex; flex-direction:column;">
-                                    <div style="display:flex; align-items:center; gap:6px;">
-                                        <span class="rip-name" style="color:var(--text-primary); font-weight:700;">${r.user_name}</span>
-                                        ${isCreatorReview ? '<span class="rip-instructor-badge" style="background:linear-gradient(135deg,#6e8efb,#a777e3);color:#fff;padding:2px 6px;border-radius:4px;font-size:0.65rem;">강사</span>' : ''}
-                                    </div>
-                                    <span class="rip-stars" style="color:#ffb100; font-size:0.8rem;">${stars}</span>
+                return `
+                <div class="review-item-premium">
+                    <div class="rip-header">
+                        <div class="rip-user" style="display:flex; align-items:center; gap:8px;">
+                            <img src="${avatarUrl}" alt="profile" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color);">
+                            <div style="display:flex; flex-direction:column;">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <span class="rip-name" style="color:var(--text-primary); font-weight:700;">${r.user_name}</span>
                                 </div>
-                            </div>
-                            <div class="rip-header-right">
-                                <span class="rip-date">${dateStr}</span>
-                                ${isInstructor ? `<button class="btn-delete-review" data-key="${r._key}" title="삭제">✕</button>` : ''}
+                                <span class="rip-stars" style="color:#ffb100; font-size:0.8rem;">${stars}</span>
                             </div>
                         </div>
-                        <div class="rip-body">
-                            <p class="rip-text">${r.content}</p>
-                        </div>
-                        <div class="rip-footer">
-                            <button class="btn-helpful">👍 ${helpfulCount}명에게 도움 됐어요</button>
+                        <div class="rip-header-right">
+                            <span class="rip-date">${dateStr}</span>
                         </div>
                     </div>
-                `}).join('');
-
-                // 강사 삭제 버튼 이벤트
-                if (isInstructor) {
-                    reviewList.querySelectorAll('.btn-delete-review').forEach(btn => {
-                        btn.addEventListener('click', async () => {
-                            if (!confirm('이 후기를 삭제하시겠습니까?')) return;
-                            const key = btn.dataset.key;
-                            try {
-                                await db.ref(`reviews/${classId}/${key}`).remove();
-                                if (typeof showToast === 'function') showToast('success', '삭제 완료', '후기가 삭제되었습니다.');
-                            } catch (err) {
-                                console.error("Review delete error:", err);
-                            }
-                        });
-                    });
-                }
-            }
-        }, (err) => {
-            console.warn("Reviews access denied:", err.message);
-            if (reviewList) reviewList.innerHTML = '<p class="empty-state">후기를 불러올 수 없습니다.</p>';
-        });
+                    <div class="rip-body">
+                        <p class="rip-text">${r.content}</p>
+                    </div>
+                    ${r.instructor_reply ? `
+                    <div class="rip-reply" style="margin-top:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px;">
+                        <strong>↳ 강사의 답변:</strong>
+                        <p style="margin-top:5px; font-size:0.9rem;">${r.instructor_reply}</p>
+                    </div>` : ''}
+                </div>
+                `;
+            }).join('');
+        }
     } catch (err) {
         console.error("Reviews Loading Error:", err);
+        if (reviewList) reviewList.innerHTML = '<p class="empty-state">후기를 불러올 수 없습니다.</p>';
     }
 }
 
-function setupReviewForm(db, classId, userId, supabase, hasAccess, isInstructor) {
+function setupReviewForm(classId, userId, hasAccess, isInstructor) {
     const lockedForm = document.getElementById('reviewFormLocked');
     const unlockedForm = document.getElementById('reviewFormUnlocked');
     const btnSubmit = document.getElementById('btnSubmitReview');
@@ -140,48 +101,44 @@ function setupReviewForm(db, classId, userId, supabase, hasAccess, isInstructor)
 
     if (!btnSubmit) return;
 
-    // Remove stale event listeners by cloning the button
     const newBtnSubmit = btnSubmit.cloneNode(true);
     btnSubmit.parentNode.replaceChild(newBtnSubmit, btnSubmit);
 
     newBtnSubmit.addEventListener('click', async () => {
-        if (!userId) {
-            if (typeof showToast === 'function') showToast('info', '로그인 필요', '로그인 후 후기를 작성할 수 있습니다.');
-            return;
-        }
-        if (!hasAccess) {
-            if (typeof showToast === 'function') showToast('info', '수강 필요', '수강 신청 후 후기를 작성할 수 있습니다.');
-            return;
-        }
+        if (!userId) return showToast('info', '로그인 필요', '로그인 후 후기를 작성할 수 있습니다.');
+        if (!hasAccess) return showToast('info', '수강 필요', '수강 신청 후 후기를 작성할 수 있습니다.');
 
         const content = document.getElementById('reviewText').value.trim();
         const rating = document.querySelector('input[name="rating"]:checked')?.value;
 
-        if (!rating) { if (typeof showToast === 'function') showToast('info', '별점 선택', '별점을 선택해주세요.'); return; }
-        if (!content) { if (typeof showToast === 'function') showToast('info', '내용 입력', '후기 내용을 입력해주세요.'); return; }
+        if (!rating) return showToast('info', '별점 선택', '별점을 선택해주세요.');
+        if (!content) return showToast('info', '내용 입력', '후기 내용을 입력해주세요.');
+
+        newBtnSubmit.disabled = true;
+        newBtnSubmit.textContent = '등록 중...';
 
         try {
-            const { data: profile } = await supabase.from('users').select('name, profile_image_url').eq('id', userId).maybeSingle();
-            const reviewData = {
-                user_id: userId,
-                user_name: profile?.name || "익명",
-                profile_image_url: profile?.profile_image_url || "https://cdn-icons-png.flaticon.com/512/847/847969.png",
-                rating: parseInt(rating),
-                content: content,
-                created_at: firebase.database.ServerValue.TIMESTAMP,
-                helpful_count: 0,
-                is_instructor: isInstructor
-            };
+            const userName = window.BSQ?.session?.user?.name || "익명";
+            const result = await window.BSQ.api('/api/reviews', {
+                method: 'POST',
+                body: JSON.stringify({ class_id: classId, user_id: userId, user_name: userName, rating: parseInt(rating), content })
+            });
 
-            await db.ref(`reviews/${classId}`).push(reviewData);
-            document.getElementById('reviewText').value = '';
-            const checked = document.querySelector('input[name="rating"]:checked');
-            if (checked) checked.checked = false;
-
-            if (typeof showToast === 'function') showToast('success', '후기 등록 완료 ✍️', '소중한 후기 감사합니다!');
+            if (result.success) {
+                document.getElementById('reviewText').value = '';
+                const checked = document.querySelector('input[name="rating"]:checked');
+                if (checked) checked.checked = false;
+                showToast('success', '후기 등록 완료 ✍️', '소중한 후기 감사합니다!');
+                loadReviews(classId, isInstructor);
+            } else {
+                showToast('error', '등록 실패', result.error || '오류가 발생했습니다.');
+            }
         } catch (err) {
-            console.error("Review submit error:", err);
-            if (typeof showToast === 'function') showToast('error', '등록 실패', '후기 등록에 실패했습니다.');
+            console.error(err);
+            showToast('error', '등록 실패', '서버 통신 중 오류가 발생했습니다.');
+        } finally {
+            newBtnSubmit.disabled = false;
+            newBtnSubmit.textContent = '후기 등록하기';
         }
     });
 }

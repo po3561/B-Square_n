@@ -10,31 +10,18 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     // ========================
     // 1. Supabase 강사 프로필 로드
     // ========================
-    let instructorName = '강사';
-    let instructorEmail = '';
-    let instructorAvatar = '';
+    // ========================
+    // 1. D1 강사 프로필 및 통계 로드 (classData 기반)
+    // ========================
+    const instructorName = classData.creator_name || '강사';
+    const instructorEmail = classData.creator_email || '';
+    const instructorAvatar = classData.creator_profile_image || '';
 
-    try {
-        const { data: profile } = await supabase.from('users').select('name, email, profile_image_url').eq('id', userId).maybeSingle();
-        if (profile) {
-            instructorName = profile.name || '강사';
-            instructorEmail = profile.email || '';
-            instructorAvatar = profile.profile_image_url || '';
-        }
-    } catch (e) { console.warn("Instructor profile load failed:", e); }
-
-    // Firebase 통계 로드
-    let enrollCount = 0, reviewCount = 0, chatCount = 0, avgRating = 0;
-    try {
-        const reviewSnap = await db.ref(`reviews/${classId}`).once('value');
-        const reviewData = reviewSnap.val() || {};
-        const reviews = Object.values(reviewData);
-        reviewCount = reviews.length;
-        if (reviewCount > 0) avgRating = (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviewCount).toFixed(1);
-
-        const chatSnap = await db.ref(`chats/${classId}`).once('value');
-        chatCount = chatSnap.numChildren();
-    } catch (e) { console.warn("Stats load failed:", e); }
+    // D1 API 조회에서 넘겨받은 통계
+    const enrollCount = classData.enrollment_count || 0;
+    const reviewCount = classData.review_count || 0;
+    const avgRating = classData.avg_rating || '0.0';
+    const dailyChatAvg = classData.daily_chat_avg || 0; // 채팅 하루 평균 (API 응답 확장 시 연동)
 
     // ========================
     // 2. 데이터 준비
@@ -84,7 +71,7 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                     <div class="edit-stat-card"><span class="stat-num">${enrollCount}</span><span class="stat-label">수강생</span></div>
                     <div class="edit-stat-card"><span class="stat-num">${avgRating}</span><span class="stat-label">평점</span></div>
                     <div class="edit-stat-card"><span class="stat-num">${reviewCount}</span><span class="stat-label">후기</span></div>
-                    <div class="edit-stat-card"><span class="stat-num">${chatCount}</span><span class="stat-label">채팅</span></div>
+                    <div class="edit-stat-card"><span class="stat-num">${dailyChatAvg}</span><span class="stat-label">일평균 채팅</span></div>
                 </div>
             </div>
 
@@ -119,9 +106,8 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                             <div class="edit-field">
                                 <label>클래스 유형</label>
                                 <select id="editClassType">
-                                    <option value="VOD" ${classData.class_type === 'VOD' ? 'selected' : ''}>VOD (녹화 강의)</option>
-                                    <option value="LIVE" ${classData.class_type === 'LIVE' ? 'selected' : ''}>LIVE (실시간)</option>
-                                    <option value="KIT" ${classData.class_type === 'KIT' ? 'selected' : ''}>KIT (키트 포함)</option>
+                                    <option value="ONLINE" ${classData.class_type === 'ONLINE' ? 'selected' : ''}>온라인 (Online)</option>
+                                    <option value="OFFLINE" ${classData.class_type === 'OFFLINE' ? 'selected' : ''}>오프라인 (Offline)</option>
                                 </select>
                             </div>
                         </div>
@@ -171,8 +157,9 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                             <textarea id="editSummary" rows="2" placeholder="클래스를 한 줄로 설명하세요">${classData.summary || ''}</textarea>
                         </div>
                         <div class="edit-field">
-                            <label>상세 설명</label>
-                            <textarea id="editDescription" rows="8" placeholder="클래스에 대해 자세히 설명하세요">${classData.description || ''}</textarea>
+                            <label>상세 설명 (Rich Text 지원)</label>
+                            <div id="editDescriptionContainer" style="height: 300px; background: rgba(0,0,0,0.2); border-radius: 8px; color: #fff;"></div>
+                            <textarea id="editDescription" style="display:none;"></textarea>
                         </div>
                     </div>
 
@@ -203,10 +190,10 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
 
                     <!-- 저장 -->
                     <div class="edit-actions">
-                        <button type="submit" class="btn-edit-save" id="btnEditSave">
+                        <button type="submit" class="btn-edit-save" id="btnEditSave" style="border-radius: 20px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(109, 143, 255, 0.3); background: #6D8FFF; border: none; padding: 12px 24px; color: white; font-weight: 500;">
                             <span>💾 변경 사항 저장</span>
                         </button>
-                        <p class="edit-save-hint">저장 시 Firebase에 실시간 반영되어 모든 사용자에게 즉시 적용됩니다.</p>
+                        <p class="edit-save-hint" style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.5); margin-top: 10px;">저장 시 D1 데이터베이스에 실시간 반영되어 즉시 노출됩니다.</p>
                     </div>
                 </form>
             </div>
@@ -281,6 +268,36 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
 
         </div>
     `;
+
+    // ========================
+    // 3-1. Quill 리치 텍스트 에디터 연동
+    // ========================
+    let quillObj;
+    setTimeout(() => {
+        const container = document.getElementById('editDescriptionContainer');
+        if (container && window.Quill) {
+            quillObj = new Quill('#editDescriptionContainer', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link', 'image', 'video'],
+                        ['clean']
+                    ]
+                }
+            });
+            quillObj.root.innerHTML = classData.description || '';
+            
+            // 변경 내용을 textarea에 동기화
+            quillObj.on('text-change', () => {
+                document.getElementById('editDescription').value = quillObj.root.innerHTML;
+            });
+            document.getElementById('editDescription').value = quillObj.root.innerHTML;
+        }
+    }, 100);
 
     // ========================
     // 4. 이미지 드래그앤드롭 시스템
@@ -468,12 +485,20 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                 image_urls: editImages
             };
 
-            console.log("📤 Saving to Firebase:", `classes/${classId}`, Object.keys(updates));
-            await db.ref(`classes/${classId}`).update(updates);
-            console.log("✅ Firebase update successful");
+            console.log("📤 Saving to D1 Database (API):", updates);
+            // D1 업데이트 API 통신
+            const response = await window.BSQ.api('/api/classes/update', {
+                method: 'PUT',
+                body: JSON.stringify({
+                    class_id: classId,
+                    updates: updates
+                })
+            });
 
-            // 서브 강사 정보도 저장
-            await db.ref(`classes/${classId}/sub_instructors`).set(subInstructors);
+            if (!response.success) {
+                throw new Error(response.error || '업데이트 실패');
+            }
+            console.log("✅ D1 update successful");
 
             // 현재 페이지 UI 실시간 반영
             Object.assign(classData, updates);
@@ -522,9 +547,13 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
             btn.addEventListener('click', () => {
                 subInstructors.splice(parseInt(btn.dataset.idx), 1);
                 renderSubInstructors();
-                // 즉시 DB 반영
-                db.ref(`classes/${classId}/sub_instructors`).set(subInstructors);
-                if (typeof showToast === 'function') showToast('info', '서브 강사 제거', '목록에서 제거되었습니다.');
+                // 즉시 DB 반영 (D1 API)
+                window.BSQ.api('/api/classes/update', {
+                    method: 'PUT',
+                    body: JSON.stringify({ class_id: classId, updates: { sub_instructors: subInstructors } })
+                }).then(res => {
+                    if (res.success && typeof showToast === 'function') showToast('info', '서브 강사 제거', '목록에서 제거되었습니다.');
+                }).catch(err => console.error(err));
             });
         });
     }
@@ -582,8 +611,19 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                         subInstructors.push(newSub);
                         renderSubInstructors();
 
-                        // 즉시 DB 반영
-                        await db.ref(`classes/${classId}/sub_instructors`).set(subInstructors);
+                        // 즉시 DB 반영 (D1 API)
+                        const res = await window.BSQ.api('/api/classes/update', {
+                            method: 'PUT',
+                            body: JSON.stringify({ class_id: classId, updates: { sub_instructors: subInstructors } })
+                        });
+
+                        if (!res.success) {
+                            alert('서브 강사 등록에 실패했습니다: ' + res.error);
+                            // 롤백
+                            subInstructors.pop();
+                            renderSubInstructors();
+                            return;
+                        }
 
                         subSearchInput.value = '';
                         subResults.style.display = 'none';
@@ -638,242 +678,136 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     async function loadStudents(classId, db, supabase) {
         const statsArea = document.getElementById('studentStatsArea');
         const listArea = document.getElementById('studentListArea');
+        if(!statsArea || !listArea) return;
+
+        statsArea.innerHTML = '<div class="edit-loading">데이터를 불러오는 중...</div>';
+        listArea.innerHTML = '<div class="edit-loading">수강생 목록 로드 중...</div>';
 
         try {
-            // 1) 전체 수강생 내역 로드
-            const enrollSnap = await db.ref(`enrollments`).once('value');
-            const passesSnap = await db.ref(`user_passes`).once('value');
+            // D1 API: 해당 클래스의 수강생 목록 조회
+            const res = await window.BSQ.api(`/api/enrollments?class_id=${classId}`);
+            if (res.success && res.data) {
+                const students = res.data.enrollments || [];
+                statsArea.innerHTML = `
+                    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+                        <div class="edit-stat-card"><span class="stat-num">${students.length}</span><span class="stat-label">총 수강생</span></div>
+                        <div class="edit-stat-card"><span class="stat-num">${students.filter(s => s.payment_method === 'card').length}</span><span class="stat-label">유료 결제</span></div>
+                        <div class="edit-stat-card"><span class="stat-num">${students.filter(s => s.payment_method === 'free').length}</span><span class="stat-label">무료 신청</span></div>
+                    </div>
+                `;
 
-            const enrollments = enrollSnap.val() || {};
-            const userPasses = passesSnap.val() || {};
+                if (students.length === 0) {
+                    listArea.innerHTML = '<p class="edit-empty-msg">아직 수강생이 없습니다.</p>';
+                } else {
+                    listArea.innerHTML = students.map(s => `
+                        <div class="student-row" style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <div>
+                                <div style="font-weight:600;">${s.user_name || '익명'}</div>
+                                <div style="font-size:0.8rem; color:#888;">${s.user_email || ''}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:0.8rem; color:var(--comm-accent);">${s.payment_method === 'card' ? '유료 수강' : '무료 수강'}</div>
+                                <div style="font-size:0.7rem; color:#666;">${new Date(s.created_at).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        } catch (err) {
+            statsArea.innerHTML = '<p style="color:red;">데이터 로드 실패</p>';
+        }
+    }
 
-            let totalStudents = 0;
-            let totalPaid = 0;
-            let totalFree = 0;
+    // ========================
+    // 11. 쿠폰 관리 로드
+    // ========================
+    async function loadCoupons(classId, db) {
+        const couponListArea = document.getElementById('couponListArea');
+        if(!couponListArea) return;
 
-            const students = [];
-            const userIds = [];
+        couponListArea.innerHTML = '<div class="edit-loading">쿠폰 목록 로드 중...</div>';
 
-            for (const uid in enrollments) {
-                if (enrollments[uid][classId]) {
-                    const e = enrollments[uid][classId];
-                    userIds.push(uid);
+        try {
+            const res = await window.BSQ.api(`/api/coupons?class_id=${classId}`);
+            if (res.success && res.data) {
+                const coupons = Array.isArray(res.data) ? res.data : [res.data];
+                if (coupons.length === 0 || !coupons[0].code) {
+                    couponListArea.innerHTML = '<p class="edit-empty-msg">발행된 쿠폰이 없습니다.</p>';
+                } else {
+                    couponListArea.innerHTML = coupons.map(c => `
+                        <div class="coupon-item" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.05);">
+                            <div>
+                                <div style="font-weight:800; color:var(--comm-accent); letter-spacing:1px;">${c.code}</div>
+                                <div style="font-size:0.8rem; color:#aaa;">${c.type === 'percent' ? c.value + '%' : c.value.toLocaleString() + '원'} 할인</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:0.75rem;">사용: ${c.used_count || 0} / ${c.max_limit === 0 ? '무제한' : c.max_limit}</div>
+                                <button class="btn-delete-coupon" data-code="${c.code}" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:0.8rem; margin-top:4px;">삭제</button>
+                            </div>
+                        </div>
+                    `).join('');
 
-                    const isFree = e.amount === 0 || e.pay_method === 'free';
-                    if (isFree) totalFree++;
-                    else totalPaid++;
-                    totalStudents++;
-
-                    const passInfo = userPasses[uid] && userPasses[uid][classId] ? userPasses[uid][classId] : null;
-
-                    students.push({
-                        uid,
-                        enrolled_at: e.enrolled_at,
-                        amount: e.amount,
-                        pay_method: e.pay_method,
-                        passInfo
+                    // 쿠폰 삭제 이벤트
+                    couponListArea.querySelectorAll('.btn-delete-coupon').forEach(btn => {
+                        btn.onclick = async () => {
+                            if (!confirm('쿠폰을 삭제하시겠습니까?')) return;
+                            const res = await window.BSQ.api(`/api/coupons?class_id=${classId}&code=${btn.dataset.code}`, { method: 'DELETE' });
+                            if (res.success) {
+                                showToast('info', '쿠폰 삭제', '쿠폰이 성공적으로 삭제되었습니다.');
+                                loadCoupons(classId, db);
+                            }
+                        };
                     });
                 }
             }
-
-            statsArea.innerHTML = `
-                <div style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
-                    <div style="flex:1; min-width:120px; background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
-                        <div style="font-size:0.8rem; color:#aaa;">총 수강생</div>
-                        <div style="font-size:1.5rem; font-weight:700; color:#fff;">${totalStudents}명</div>
-                    </div>
-                    <div style="flex:1; min-width:120px; background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
-                        <div style="font-size:0.8rem; color:#aaa;">유료 수강생</div>
-                        <div style="font-size:1.5rem; font-weight:700; color:#4CAF50;">${totalPaid}명</div>
-                    </div>
-                    <div style="flex:1; min-width:120px; background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
-                        <div style="font-size:0.8rem; color:#aaa;">무료/관리자지정</div>
-                        <div style="font-size:1.5rem; font-weight:700; color:#2196F3;">${totalFree}명</div>
-                    </div>
-                </div>
-            `;
-
-            if (students.length === 0) {
-                listArea.innerHTML = '<div style="color:#aaa; text-align:center; padding:20px;">수강생이 없습니다.</div>';
-                return;
-            }
-
-            // Supabase에서 유저 정보 일괄 조회
-            let userMap = {};
-            if (userIds.length > 0) {
-                try {
-                    const { data } = await supabase.from('users').select('id, name, email').in('id', userIds);
-                    if (data) {
-                        data.forEach(u => userMap[u.id] = u);
-                    }
-                } catch (err) { console.warn(err); }
-            }
-
-            listArea.innerHTML = students.sort((a, b) => b.enrolled_at - a.enrolled_at).map(s => {
-                const u = userMap[s.uid] || { name: '알 수 없음', email: '' };
-                const dateStr = s.enrolled_at ? new Date(s.enrolled_at).toLocaleDateString() : '-';
-                const passStr = s.passInfo
-                    ? (s.passInfo.monthly ? '<span style="color:#FF9800">[월정액 구독중]</span>' : `<span style="color:#4CAF50">[잔여 수강권: ${s.passInfo.count}회]</span>`)
-                    : '<span style="color:#888">[패스 기록 없음]</span>';
-
-                return `
-                    <div class="student-item" data-email="${u.email}" data-name="${u.name}" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.05); padding:12px 0;">
-                        <div>
-                            <div style="font-weight:600;">${u.name} <span style="font-size:0.8rem; color:#888;">${u.email}</span></div>
-                            <div style="font-size:0.8rem; color:#aaa; margin-top:4px;">
-                                결제액: ${s.amount === 0 ? '무료' : s.amount.toLocaleString() + '원'} (${dateStr}) ${passStr}
-                            </div>
-                        </div>
-                        <div style="display:flex; gap:5px;">
-                            <button class="btn-manage-pass" data-uid="${s.uid}" data-action="add" style="background:#4CAF50; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:0.8rem;">권한 +1</button>
-                            <button class="btn-manage-pass" data-uid="${s.uid}" data-action="remove" style="background:#F44336; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:0.8rem;">권한 -1</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // 검색 기능
-            const searchInput = document.getElementById('studentSearchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    const q = e.target.value.toLowerCase();
-                    document.querySelectorAll('.student-item').forEach(item => {
-                        const name = item.dataset.name.toLowerCase();
-                        const email = item.dataset.email.toLowerCase();
-                        if (name.includes(q) || email.includes(q)) {
-                            item.style.display = 'flex';
-                        } else {
-                            item.style.display = 'none';
-                        }
-                    });
-                });
-            }
-
-            listArea.querySelectorAll('.btn-manage-pass').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const uid = btn.dataset.uid;
-                    const action = btn.dataset.action;
-                    const actionText = action === 'add' ? '수강권 1회 추가' : '수강권 1회 차감';
-
-                    // u.name은 루프 내부 변수이므로 리스너 스코프에 없음. 데이터셋에서 가져옴
-                    const item = btn.closest('.student-item');
-                    const studentName = item ? item.dataset.name : '수강생';
-
-                    if (!confirm(`${studentName}님의 ${actionText}를 진행하시겠습니까?`)) return;
-
-                    try {
-                        const passRef = db.ref(`user_passes/${uid}/${classId}`);
-                        const passSnap = await passRef.once('value');
-                        let currentPass = passSnap.val() || { count: 0, monthly: false };
-
-                        let amount = 0;
-                        if (action === 'add') {
-                            currentPass.count = (currentPass.count || 0) + 1;
-                            amount = 1;
-                        } else if (action === 'remove') {
-                            currentPass.count = Math.max(0, (currentPass.count || 0) - 1);
-                            amount = -1;
-                        }
-
-                        currentPass.updated_at = firebase.database.ServerValue.TIMESTAMP;
-                        await passRef.set(currentPass);
-
-                        // 로그 기록 추가
-                        await passRef.child('logs').push({
-                            type: action === 'add' ? 'recharge' : 'deduction',
-                            amount: amount,
-                            remaining: currentPass.count,
-                            timestamp: firebase.database.ServerValue.TIMESTAMP,
-                            note: '강사(관리자) 수동 관리'
-                        });
-
-                        alert(`수강권이 변경되었습니다. (현재 잔여수량: ${currentPass.count}회)`);
-                        loadStudents(classId, db, supabase);
-                    } catch (err) {
-                        console.error("Pass management error:", err);
-                        alert("수강권 변경 중 오류가 발생했습니다.");
-                    }
-                });
-            });
-
-        } catch (e) {
-            console.error(e);
-            listArea.innerHTML = '<div style="color:red;">데이터 로드 중 오류가 발생했습니다.</div>';
-        }
-    }
-
-    // ========================
-    // 11. 쿠폰 관리 로직
-    // ========================
-    async function loadCoupons(classId, db) {
-        const listArea = document.getElementById('couponListArea');
-        try {
-            const snap = await db.ref(`coupons/${classId}`).once('value');
-            const coupons = snap.val() || {};
-
-            const entries = Object.entries(coupons);
-            if (entries.length === 0) {
-                listArea.innerHTML = '<div style="color:#aaa; text-align:center; padding:20px;">발행된 쿠폰이 없습니다.</div>';
-                return;
-            }
-
-            listArea.innerHTML = entries.map(([code, c]) => {
-                const typeStr = c.type === 'percent' ? `${c.value}% 할인` : `${(c.value || 0).toLocaleString()}원 할인`;
-                const limitStr = c.limit_count === 0 ? '무제한' : `${c.used_count || 0} / ${c.limit_count} 사용됨`;
-                return `
-                    <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-weight:700; color:var(--comm-accent); font-size:1.1rem; margin-bottom:4px;">${code}</div>
-                            <div style="font-size:0.85rem; color:#ccc;">${typeStr} | 수량: ${limitStr}</div>
-                        </div>
-                        <button class="btn-delete-coupon" data-code="${code}" style="background:none; border:1px solid #F44336; color:#F44336; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.8rem;">폐기하기</button>
-                    </div>
-                `;
-            }).join('');
-
-            listArea.querySelectorAll('.btn-delete-coupon').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    if (confirm('진행 중인 모든 할인이 중지됩니다. 이 쿠폰을 정말 폐기하시겠습니까?')) {
-                        await db.ref(`coupons/${classId}/${btn.dataset.code}`).remove();
-                        loadCoupons(classId, db);
-                    }
-                });
-            });
-
-        } catch (e) {
-            console.error(e);
-            listArea.innerHTML = '<div style="color:red;">쿠폰을 불러오는 데 실패했습니다.</div>';
-        }
-    }
-
-    document.getElementById('btnCreateCoupon')?.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const code = document.getElementById('newCouponCode').value.trim().toUpperCase();
-        const val = parseInt(document.getElementById('newCouponValue').value);
-        const type = document.getElementById('newCouponType').value;
-        const limit = parseInt(document.getElementById('newCouponLimit').value) || 0;
-
-        if (!code || isNaN(val)) {
-            alert('쿠폰 코드와 할인 금액(비율)을 올바르게 입력해주세요.');
-            return;
-        }
-
-        try {
-            await db.ref(`coupons/${classId}/${code}`).set({
-                type,
-                value: val,
-                limit_count: limit,
-                used_count: 0,
-                created_at: firebase.database.ServerValue.TIMESTAMP
-            });
-            alert('성공적으로 새 쿠폰이 발급되었습니다!');
-            document.getElementById('newCouponCode').value = '';
-            document.getElementById('newCouponValue').value = '';
-            document.getElementById('newCouponLimit').value = '0';
-            loadCoupons(classId, db);
         } catch (err) {
-            console.error(err);
-            alert('쿠폰 생성에 실패했습니다.');
+            couponListArea.innerHTML = '<p style="color:red;">쿠폰 로드 실패</p>';
         }
-    });
+    }
+
+    const btnCreateCoupon = document.getElementById('btnCreateCoupon');
+    if(btnCreateCoupon) {
+        btnCreateCoupon.onclick = async (e) => {
+            e.preventDefault();
+            const code = document.getElementById('newCouponCode').value.trim();
+            const value = parseInt(document.getElementById('newCouponValue').value);
+            const type = document.getElementById('newCouponType').value;
+            const limit = parseInt(document.getElementById('newCouponLimit').value) || 0;
+
+            if (!code || isNaN(value)) {
+                alert('쿠폰 코드와 할인 금액/비율을 입력해주세요.');
+                return;
+            }
+
+            btnCreateCoupon.disabled = true;
+            btnCreateCoupon.textContent = '생성 중...';
+
+            try {
+                const res = await window.BSQ.api('/api/coupons', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        class_id: classId,
+                        code: code,
+                        type: type,
+                        value: value,
+                        max_limit: limit
+                    })
+                });
+
+                if (res.success) {
+                    showToast('success', '쿠폰 발급 완료 🎟️', `[${code}] 쿠폰이 생성되었습니다.`);
+                    document.getElementById('newCouponCode').value = '';
+                    document.getElementById('newCouponValue').value = '';
+                    loadCoupons(classId, db);
+                } else {
+                    alert('쿠폰 생성 실패: ' + res.error);
+                }
+            } catch (err) {
+                alert('통신 오류 발생');
+            } finally {
+                btnCreateCoupon.disabled = false;
+                btnCreateCoupon.textContent = '쿠폰 생성';
+            }
+        };
+    }
 };

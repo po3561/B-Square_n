@@ -1,101 +1,57 @@
-// notice.js - 공지사항 통합 (운영 공지 + 클래스 공지) + 읽기/좋아요/댓글/조회수
+// notice.js - 공지사항 통합 (D1 API 기반)
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("📢 B-Square Notice Page Initializing...");
+    console.log("📢 B-Square Notice Page Initializing (D1 API)...");
 
-    // Supabase & Firebase 초기화 대기 (header.js에서 처리됨)
-    const waitForInit = () => new Promise((resolve) => {
-        const check = () => {
-            if (window.supabaseClient && (typeof firebase !== 'undefined' && firebase.apps.length > 0)) {
-                resolve();
-            } else {
-                setTimeout(check, 100);
-            }
-        };
-        check();
-        setTimeout(resolve, 3000);
-    });
+    // BSQ.ready 대기
+    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
 
-    await waitForInit();
-
-    const supabase = window.supabaseClient;
-    const db = firebase.database();
-
-    // Auth Check (header.js에서 유저메뉴 처리됨)
     let currentUser = null;
-    try {
-        const { data: authData } = await supabase.auth.getSession();
-        if (authData?.session) {
-            const { data: profile } = await supabase.from('users').select('*').eq('id', authData.session.user.id).maybeSingle();
-            currentUser = profile;
-        }
-    } catch (e) {
-        console.warn("Auth check failed:", e);
+    const session = window.BSQ?.session;
+    if (session) {
+        currentUser = session.user;
     }
 
-    // ★ 개발자 모드: 가상 운영자 계정으로 상호작용 가능
+    // ★ 개발자 모드 가상 운영자
     if (!currentUser && window.__BSQ_DEV_MODE__) {
-        currentUser = window.__BSQ_OPERATOR_PROFILE__ || {
-            id: 'OPERATOR_GHOST',
-            name: '운영자',
-            email: 'operator@b-square.kr'
-        };
+        currentUser = window.__BSQ_OPERATOR_PROFILE__ || { id: 'OPERATOR_GHOST', name: '운영자', email: 'operator@b-square.kr' };
     }
 
     // 전역 State
-    const state = {
-        notices: [],        // 운영 공지
-        classNotices: [],   // 클래스 공지
-        faqs: [],
-        searchQuery: ''
-    };
+    const state = { notices: [], classNotices: [], faqs: [], searchQuery: '' };
 
     // DOM Elements
     const noticeListEl = document.getElementById('noticeList');
     const faqListEl = document.getElementById('faqList');
     const searchInput = document.getElementById('noticeSearchIP');
 
-    // ==== INIT FETCH ====
-    loadNotices();
-    loadClassNotices();
-    loadFaqs();
+    // 초기 로드
+    await Promise.all([loadNotices(), loadClassNotices(), loadFaqs()]);
 
-    // ==== 운영 공지 로드 ====
-    function loadNotices() {
-        db.ref('notices').on('value', (snap) => {
-            state.notices = [];
-            snap.forEach(child => {
-                const data = child.val();
-                if (!data.is_hidden || window.__BSQ_DEV_MODE__) {
-                    state.notices.push({
-                        id: child.key,
-                        source: 'official',
-                        ...data
-                    });
-                }
-            });
+    // ==== 운영 공지 로드 (D1 API) ====
+    async function loadNotices() {
+        const result = await window.BSQ.api('/api/notices');
+        if (result.success && result.data) {
+            state.notices = result.data.map(n => ({ ...n, source: 'official' }));
             renderNotices();
-        });
+        }
     }
 
-    // ==== 클래스 공지 통합 로드 ====
-    function loadClassNotices() {
-        db.ref('class_notices').on('value', (snap) => {
-            state.classNotices = [];
-            snap.forEach(classSnap => {
-                const classId = classSnap.key;
-                classSnap.forEach(noticeSnap => {
-                    const data = noticeSnap.val();
-                    state.classNotices.push({
-                        id: noticeSnap.key,
-                        source: 'class',
-                        classId: classId,
-                        className: data.class_name || '클래스',
-                        ...data
-                    });
-                });
-            });
+    // ==== 클래스 공지 로드 ====
+    async function loadClassNotices() {
+        const result = await window.BSQ.api('/api/class-notices');
+        if (result.success && result.data) {
+            state.classNotices = result.data.map(n => ({ ...n, source: 'class' }));
             renderClassNotices();
-        });
+        }
+    }
+
+    // ==== FAQ 로드 ====
+    async function loadFaqs() {
+        const result = await window.BSQ.api('/api/faqs');
+        if (result.success && result.data) {
+            state.faqs = result.data;
+            renderFaqs();
+        }
     }
 
     // ==== 공지 렌더링 (운영) ====
@@ -103,19 +59,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!noticeListEl) return;
 
         let combined = [...state.notices];
-
         const query = state.searchQuery.toLowerCase();
         if (query) {
-            combined = combined.filter(n =>
-                (n.title || '').toLowerCase().includes(query) ||
-                (n.content || '').toLowerCase().includes(query)
-            );
+            combined = combined.filter(n => (n.title || '').toLowerCase().includes(query) || (n.content || '').toLowerCase().includes(query));
         }
 
         combined.sort((a, b) => {
             if (a.type === 'important' && b.type !== 'important') return -1;
             if (a.type !== 'important' && b.type === 'important') return 1;
-            return (b.created_at || 0) - (a.created_at || 0);
+            return new Date(b.created_at || 0) - new Date(a.created_at || 0);
         });
 
         if (combined.length === 0) {
@@ -125,7 +77,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         noticeListEl.innerHTML = combined.map(n => {
             const dateStr = n.created_at ? new Date(n.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '-';
-
             let badgeClass = n.type === 'important' ? 'important' : 'normal';
             let badgeText = n.type === 'important' ? '중요' : '일반';
             const rowClass = n.type === 'important' ? 'is-important' : '';
@@ -142,20 +93,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
 
         document.querySelectorAll('#noticeList .notice-item').forEach(item => {
-            item.addEventListener('click', () => {
-                openViewer(item.dataset.id);
-            });
+            item.addEventListener('click', () => openViewer(item.dataset.id));
         });
     }
 
-    // ==== 렌더링 (클래스별 공지) ====
+    // ==== 클래스 공지 렌더링 ====
     function renderClassNotices() {
         const classNoticeListEl = document.getElementById('classNoticeList');
         if (!classNoticeListEl) return;
 
         let combined = [...state.classNotices];
-
-        combined.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+        combined.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
         if (combined.length === 0) {
             classNoticeListEl.innerHTML = `<div class="empty-state">등록된 클래스 공지사항이 없습니다.</div>`;
@@ -165,8 +113,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         classNoticeListEl.innerHTML = combined.map(n => {
             const dateStr = n.created_at ? new Date(n.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '-';
             return `
-                <div class="notice-item normal" data-classid="${n.classId || ''}">
-                    <div class="item-type"><span class="item-badge class-notice">${n.className || '클래스'}</span></div>
+                <div class="notice-item normal" data-classid="${n.class_id || ''}">
+                    <div class="item-type"><span class="item-badge class-notice">${n.class_name || '클래스'}</span></div>
                     <div class="item-title">${n.title}</div>
                     <div class="item-author">${n.author_name || '강사'}</div>
                     <div class="item-date">${dateStr}</div>
@@ -178,28 +126,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('#classNoticeList .notice-item').forEach(item => {
             item.addEventListener('click', () => {
                 const classId = item.dataset.classid;
-                if (classId) {
-                    window.location.href = `../class_view/class_view.html?id=${classId}`;
-                }
+                if (classId) window.location.href = `../class_view/class_view.html?id=${classId}`;
             });
         });
     }
 
-    // ==== FAQS LOAD ====
-    function loadFaqs() {
-        db.ref('faqs').on('value', (snap) => {
-            state.faqs = [];
-            snap.forEach(child => {
-                const data = child.val();
-                if (!data.is_hidden || window.__BSQ_DEV_MODE__) {
-                    state.faqs.push({ id: child.key, ...data });
-                }
-            });
-            state.faqs.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
-            renderFaqs();
-        });
-    }
-
+    // ==== FAQ 렌더링 ====
     function renderFaqs() {
         if (!faqListEl) return;
         if (state.faqs.length === 0) {
@@ -218,8 +150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
 
         document.querySelectorAll('.faq-item').forEach(item => {
-            const q = item.querySelector('.faq-question');
-            q.addEventListener('click', () => {
+            item.querySelector('.faq-question').addEventListener('click', () => {
                 const isActive = item.classList.contains('active');
                 document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
                 if (!isActive) item.classList.add('active');
@@ -232,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderNotices();
     });
 
-    // ==== VIEWER LOGIC ====
+    // ==== VIEWER LOGIC (D1 API) ====
     const viewerModal = document.getElementById('viewerModal');
     let currentOpenNoticeId = null;
 
@@ -241,27 +172,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         const notice = state.notices.find(n => n.id === noticeId);
         if (!notice) return;
 
-        db.ref(`notices/${noticeId}/views`).transaction((currentViews) => {
-            return (currentViews || 0) + 1;
+        // 조회수 증가 (D1 API)
+        window.BSQ.api('/api/notices', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'increment_views', notice_id: noticeId })
         });
 
         document.getElementById('viewerTypeBadge').className = notice.type === 'important' ? 'item-badge important' : 'item-badge normal';
         document.getElementById('viewerTypeBadge').textContent = notice.type === 'important' ? '중요' : '일반';
-
         document.getElementById('viewerTitle').textContent = notice.title;
         document.getElementById('viewerAuthor').textContent = `작성자: ${notice.author_name || '관리자'}`;
         document.getElementById('viewerDate').textContent = `등록일: ${new Date(notice.created_at).toLocaleString()}`;
         document.getElementById('viewerViews').textContent = `조회수: ${(notice.views || 0) + 1}`;
-
         document.getElementById('viewerContent').innerHTML = (notice.content || '').replace(/\n/g, '<br>');
 
-        if (window.NoticeAdmin && window.NoticeAdmin.onViewerOpen) {
-            window.NoticeAdmin.onViewerOpen(notice);
-        }
+        if (window.NoticeAdmin && window.NoticeAdmin.onViewerOpen) window.NoticeAdmin.onViewerOpen(notice);
 
         viewerModal.style.display = 'flex';
-        loadLikes(noticeId);
-        loadComments(noticeId);
+        loadNoticeDetail(noticeId);
+    }
+
+    async function loadNoticeDetail(noticeId) {
+        const result = await window.BSQ.api(`/api/notices?id=${noticeId}`);
+        if (!result.success || !result.data) return;
+
+        const data = result.data;
+        document.getElementById('likeCount').textContent = data.like_count || 0;
+        document.getElementById('commentCount').textContent = (data.comments || []).length;
+
+        const commentsList = document.getElementById('commentsList');
+        commentsList.innerHTML = (data.comments || []).map(c => `
+            <div class="comment-item">
+                <div class="comment-meta">
+                    <span class="comment-author">${c.user_name}</span>
+                    <span class="comment-date">${new Date(c.created_at).toLocaleString()}</span>
+                </div>
+                <div class="comment-text">${(c.content || '').replace(/\n/g, '<br>')}</div>
+            </div>
+        `).join('');
+
+        // 좋아요 활성 상태 (간단 처리)
+        const btnLike = document.getElementById('btnLikeNotice');
+        if (btnLike) btnLike.classList.remove('active');
     }
 
     document.getElementById('btnViewerClose')?.addEventListener('click', () => {
@@ -269,71 +221,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentOpenNoticeId = null;
     });
 
-    // ==== LIKES ====
-    const btnLike = document.getElementById('btnLikeNotice');
-    function loadLikes(noticeId) {
-        db.ref(`notice_likes/notices/${noticeId}`).on('value', (snap) => {
-            const likesCount = snap.numChildren();
-            document.getElementById('likeCount').textContent = likesCount;
-
-            if (currentUser && snap.hasChild(currentUser.id)) {
-                btnLike.classList.add('active');
-            } else {
-                btnLike.classList.remove('active');
-            }
-        });
-    }
-
-    btnLike?.addEventListener('click', async () => {
+    // ==== LIKES (D1 API) ====
+    document.getElementById('btnLikeNotice')?.addEventListener('click', async () => {
         if (!currentUser) return alert('로그인이 필요합니다.');
         if (!currentOpenNoticeId) return;
 
-        const ref = db.ref(`notice_likes/notices/${currentOpenNoticeId}/${currentUser.id}`);
-        const snap = await ref.once('value');
-        if (snap.exists()) {
-            await ref.remove();
-        } else {
-            await ref.set(true);
+        const result = await window.BSQ.api('/api/notices', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'toggle_like', notice_id: currentOpenNoticeId, user_id: currentUser.id })
+        });
+
+        if (result.success) {
+            document.getElementById('likeCount').textContent = result.data.count;
+            const btnLike = document.getElementById('btnLikeNotice');
+            if (result.data.liked) btnLike.classList.add('active');
+            else btnLike.classList.remove('active');
         }
     });
 
-    // ==== COMMENTS ====
-    const btnSubmitComment = document.getElementById('btnSubmitComment');
-    const commentInput = document.getElementById('commentInput');
-    const commentsList = document.getElementById('commentsList');
-
-    function loadComments(noticeId) {
-        db.ref(`notice_comments/notices/${noticeId}`).on('value', (snap) => {
-            document.getElementById('commentCount').textContent = snap.numChildren();
-            const comments = [];
-            snap.forEach(c => { comments.push({ id: c.key, ...c.val() }); });
-
-            commentsList.innerHTML = comments.map(c => `
-                <div class="comment-item">
-                    <div class="comment-meta">
-                        <span class="comment-author">${c.user_name}</span>
-                        <span class="comment-date">${new Date(c.created_at).toLocaleString()}</span>
-                    </div>
-                    <div class="comment-text">${(c.content || '').replace(/\n/g, '<br>')}</div>
-                </div>
-            `).join('');
-        });
-    }
-
-    btnSubmitComment?.addEventListener('click', async () => {
+    // ==== COMMENTS (D1 API) ====
+    document.getElementById('btnSubmitComment')?.addEventListener('click', async () => {
         if (!currentUser) return alert('로그인이 필요합니다.');
         if (!currentOpenNoticeId) return;
 
+        const commentInput = document.getElementById('commentInput');
         const content = commentInput.value.trim();
         if (!content) return;
 
-        await db.ref(`notice_comments/notices/${currentOpenNoticeId}`).push({
-            user_id: currentUser.id,
-            user_name: currentUser.name || '사용자',
-            content: content,
-            created_at: firebase.database.ServerValue.TIMESTAMP
+        await window.BSQ.api('/api/notices', {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'add_comment',
+                notice_id: currentOpenNoticeId,
+                user_id: currentUser.id,
+                user_name: currentUser.name || '사용자',
+                content
+            })
         });
 
         commentInput.value = '';
+        loadNoticeDetail(currentOpenNoticeId);
     });
 });

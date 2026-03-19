@@ -4,9 +4,7 @@
 (function () {
     'use strict';
 
-    // ---- 설정 ----
-    const SUPABASE_URL = "https://tqyckxgtavviatkfsymb.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxeWNreGd0YXZ2aWF0a2ZzeW1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1NTQ1MjYsImV4cCI6MjA4NzEzMDUyNn0.Lc6Q9Q8qavIPI13bFdQEf0Mhmv4XOS41WtEr7CVXCCw";
+    // ---- 설정 (D1 API 모드 — Supabase/Firebase 설정 제거됨) ----
 
     // ---- 경로 계산 ----
     const scriptTag = document.currentScript;
@@ -238,29 +236,13 @@
         closeBtn?.addEventListener('click', closeDrawer);
     }
 
-    // ---- Supabase 초기화 및 유저 메뉴 ----
+    // ---- D1 API 기반 인증 상태 관리 ----
     async function initAuth() {
-        // Supabase 클라이언트 보장
-        let client = window.supabaseClient;
-        if (!client && window.supabase) {
-            client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            window.supabaseClient = client;
-        }
-
-        // Firebase 초기화 보장
-        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-            firebase.initializeApp({
-                apiKey: "AIzaSyDStdCCFWhlgcgDPXeKgSAwfTtbP9mjNyc",
-                authDomain: "b-square-39b11.firebaseapp.com",
-                databaseURL: "https://b-square-39b11-default-rtdb.firebaseio.com",
-                projectId: "b-square-39b11",
-                storageBucket: "b-square-39b11.firebasestorage.app",
-                messagingSenderId: "1012056920961",
-                appId: "1:1012056920961:web:8342bfdf123b78f6a38e80"
-            });
-        }
-        if (typeof firebase !== 'undefined' && firebase.database) {
-            window.firebaseDB = firebase.database();
+        // BSQ.ready 대기 (bsq_server.js에서 세션 체크 완료)
+        if (window.BSQ && window.BSQ.ready) {
+            await window.BSQ.ready;
+        } else {
+            await new Promise(resolve => setTimeout(resolve, 1500));
         }
 
         // ★ 개발자 모드: 가상 운영자 계정으로 즉시 로그인 표시
@@ -269,26 +251,12 @@
             return;
         }
 
-        // 세션 확인
-        let currentUser = null;
-        let currentSession = null;
-
-        if (client) {
-            try {
-                const { data } = await client.auth.getSession();
-                currentSession = data?.session;
-                if (currentSession) {
-                    const userId = currentSession.user.id;
-                    const { data: profile } = await client.from('users').select('name, profile_image_url').eq('id', userId).maybeSingle();
-                    currentUser = profile;
-                }
-            } catch (e) {
-                console.warn("[header.js] Session check failed:", e);
-            }
-        }
+        // BSQ.session에서 인증 상태 확인
+        const session = window.BSQ?.session;
+        const user = session?.user || null;
 
         // 유저 메뉴 렌더링
-        renderUserMenu(currentSession, currentUser);
+        renderUserMenu(session, user);
 
         // ★ 개발자 모드 후발 활성화 대응
         window.addEventListener('bsq_dev_mode_activated', () => {
@@ -316,15 +284,15 @@
     }
 
     // 일반 유저 메뉴 렌더링
-    function renderUserMenu(currentSession, currentUser) {
+    function renderUserMenu(session, user) {
         document.querySelectorAll('#userMenu').forEach(menuEl => {
-            if (currentSession && currentUser) {
+            if (session && user) {
                 menuEl.innerHTML = `
                     <a href="${prefix}mi_pesg/mypage.html" class="user-profile-btn" style="text-decoration:none;">
-                        <div class="user-avatar" style="background-image:url(${currentUser.profile_image_url || ''});">
-                            ${!currentUser.profile_image_url ? '👤' : ''}
+                        <div class="user-avatar" style="background-image:url(${user.profile_image_url || ''});">
+                            ${!user.profile_image_url ? '👤' : ''}
                         </div>
-                        <span class="user-name">${currentUser.name || '사용자'}</span>
+                        <span class="user-name">${user.name || '사용자'}</span>
                     </a>
                     <button type="button" class="btn-logout" onclick="handleGlobalLogout()" style="color:var(--text-secondary);font-size:0.8rem;background:none;border:none;cursor:pointer;">로그아웃</button>
                 `;
@@ -334,12 +302,12 @@
         });
     }
 
-    // ---- 전역 로그아웃 ----
+    // ---- 전역 로그아웃 (D1 API 기반) ----
     window.handleGlobalLogout = async function () {
-        if (window.supabaseClient) {
-            await window.supabaseClient.auth.signOut();
-            window.location.href = homePrefix + 'index.html';
+        if (window.BSQ && window.BSQ.logout) {
+            await window.BSQ.logout();
         }
+        window.location.href = homePrefix + 'index.html';
     };
 
     // ---- 실행 ----

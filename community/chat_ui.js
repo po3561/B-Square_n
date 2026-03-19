@@ -1611,7 +1611,7 @@ window.CommunityModules.ChatUI = (function () {
                     </div>
                 </div>
 
-                <div class="info-gathering-v2 stagger-3">
+                <div class="info-gathering-v2 stagger-3" id="infoGatheringV2Container">
                     <div class="gathering-card">
                         <div class="gathering-row">
                             <div class="gathering-icon-circle"><i class="fas fa-calendar-alt"></i></div>
@@ -1735,16 +1735,18 @@ window.CommunityModules.ChatUI = (function () {
                 });
             }
             // Re-render student list to update button state
-            renderInfoStudentList(currentClassId || currentRoomId);
+            // Re-render student list to update button state
+            renderInfoStudentList(currentRoomId);
         } catch (e) { console.error(e); }
     }
 
-    renderInfoStudentList(classId).catch(err => console.error("StudentList error:", err));
-    renderInfoGathering(classId).catch(err => console.error("Gathering error:", err));
+    renderInfoStudentList(currentRoomId).catch(err => console.error("StudentList error:", err));
+    renderInfoGathering(currentRoomId).catch(err => console.error("Gathering error:", err));
 
     // 수강권 개수 업데이트 (실시간)
-    if (currentUserId && currentUserId !== 'OPERATOR_GHOST') {
-        db.ref(`user_passes/${currentUserId}/${classId}/count`).on('value', snap => {
+    const myId = bridge().getUserId();
+    if (myId && myId !== 'OPERATOR_GHOST') {
+        bridge().getDb().ref(`user_passes/${myId}/${currentRoomId}/count`).on('value', snap => {
             const countEl = document.getElementById('myPassCount');
             if (countEl) countEl.textContent = snap.val() || 0;
         });
@@ -1767,125 +1769,67 @@ window.CommunityModules.ChatUI = (function () {
             if (panel) panel.classList.remove('visible');
         };
     }
-}
 
     async function renderInfoGathering(classId) {
-    const gatheringSection = document.getElementById('infoGatheringSection');
-    if (!gatheringSection) return;
+        const gatheringSection = document.getElementById('infoGatheringV2Container');
+        if (!gatheringSection) return;
 
-    // Fetch latest gathering card from chat
-    const db = bridge().getDb();
-    // 클래스 아이티 하위의 채팅 목록에서 type이 gathering_card인 것 중 마지막 하나
-    const snap = await db.ref(`chats/${classId}`).orderByChild('type').equalTo('gathering_card').limitToLast(1).once('value');
-    const data = snap.val();
+        try {
+            // Fetch latest gathering card from chat
+            const db = bridge().getDb();
+            const snap = await db.ref(`chats/${classId}`).orderByChild('type').equalTo('gathering').limitToLast(1).once('value');
+            const data = snap.val();
 
-    if (data) {
-        const gatherId = Object.keys(data)[0];
-        const g = data[gatherId];
-        gatheringSection.innerHTML = `
-                <div class="info-divider"></div>
-                <div class="info-section">
-                    <h5 class="info-section-title">최근 모임(모집) 정보</h5>
-                    <div class="info-gathering-box">
-                        <p class="gathering-box-title">${g.gather_title || '클래스 모임'}</p>
-                        <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
-                            <p class="gathering-box-row">
-                                <span class="gathering-box-label">일정</span>
-                                <span class="gathering-box-value">${g.gather_time || '-'}</span>
-                            </p>
-                            <p class="gathering-box-row">
-                                <span class="gathering-box-label">장소</span>
-                                <span class="gathering-box-value">${g.gather_place || '-'}</span>
-                            </p>
-                            <p class="gathering-box-row">
-                                <span class="gathering-box-label">인원</span>
-                                <span class="gathering-box-value">${g.current_count || 0} / ${g.max_capacity || 0}명</span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `;
-    } else {
-        gatheringSection.innerHTML = ''; // 없으면 비움
-    }
-}
+            if (data) {
+                const gatherId = Object.keys(data)[0];
+                const msgData = JSON.parse(data[gatherId].message);
+                
+                // Fetch real-time count from gatherings table if possible, or just use msgData
+                // For B-Square_n, gatherings are in D1, but for Firebase we might have them in RTDB
+                // Let's use the D1 API to get latest gathering status
+                const res = await window.BSQ.api(`/api/gatherings?class_id=${classId}&limit=1`);
+                const latest = (res.success && res.data && res.data.length > 0) ? res.data[0] : null;
 
-async function renderInfoStudentList(classId) {
-    const listEl = document.getElementById('infoStudentList');
-    if (!listEl) return;
-    const db = bridge().getDb();
-    const enrollSnap = await db.ref('enrollments').once('value');
-    const enrollments = enrollSnap.val() || {};
+                if (latest) {
+                    const progress = Math.min(100, (latest.current_count / (latest.capacity_max || 1)) * 100);
+                    const isClosed = latest.status === 'closed' || new Date(latest.deadline_at) < new Date();
 
-    // 현재 사용자가 강사/운영자인지 확인 (roomInfo or dev mode)
-    const isInstructor = currentRoomInfo?.is_instructor || window.__BSQ_DEV_MODE__;
-
-    const targetUids = [];
-    for (const [uid, classes] of Object.entries(enrollments)) {
-        if (classes[classId]) targetUids.push(uid);
-    }
-
-    if (targetUids.length === 0) {
-        listEl.innerHTML = '<p class="info-empty">수강생이 없습니다.</p>';
-        return;
-    }
-
-    // 병렬로 프로필 데이터 가져오기
-    const profilePromises = targetUids.map(uid => bridge().getUserProfile(uid));
-    const profiles = await Promise.all(profilePromises);
-
-    let studentsHtml = '<div class="student-list-container">';
-
-    for (let i = 0; i < profiles.length; i++) {
-        const profile = profiles[i];
-        const uid = targetUids[i];
-
-        let uc = 0;
-        if (isInstructor && uid !== 'OPERATOR_GHOST') {
-            try {
-                const psnap = await db.ref(`user_passes/${uid}/${classId}/count`).once('value');
-                uc = psnap.val() || 0;
-            } catch (e) { }
-        }
-
-        const nickname = profile.nickname || profile.name || '수강생';
-        const realName = profile.name || '사용자 이름';
-        const phone = profile.phone || '전화번호';
-
-        studentsHtml += `
-                <div class="participant-row-item">
-                    <div class="participant-avatar" style="background-color: ${stringToColor(nickname)}; ${profile.profile_image_url ? `background-image:url(${profile.profile_image_url})` : ''}">
-                        ${!profile.profile_image_url ? nickname.charAt(0) : ''}
-                        <span class="online-indicator" id="presence-dot-${uid}"></span>
-                    </div>
-                    <div class="participant-info-block">
-                        <div class="participant-name-line">
-                            <span class="nick">${nickname}</span>
-                            ${isInstructor ? `
-                                <div class="instructor-private-info">
-                                    <span class="real">${realName}</span>
-                                    <span class="phone">${phone}</span>
+                    gatheringSection.innerHTML = `
+                        <div class="gathering-card premium-shadow">
+                            <div class="gathering-tag">진행 중인 모집</div>
+                            <h4 class="gathering-title-v2">${latest.title}</h4>
+                            
+                            <div class="gathering-info-grid">
+                                <div class="info-item">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>${new Date(latest.gathering_at).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                                 </div>
-                            ` : ''}
+                                <div class="info-item">
+                                    <i class="fas fa-users"></i>
+                                    <span>${latest.current_count} / ${latest.capacity_max}명 참여</span>
+                                </div>
+                            </div>
+                            
+                            <div class="gathering-action-area">
+                                <div class="v2-progress-container">
+                                    <div class="v2-progress-bar" style="width: ${progress}%;"></div>
+                                </div>
+                                <button class="btn-v2-status-main" disabled style="background:${isClosed ? 'rgba(255,59,48,0.2)' : 'var(--comm-accent)'}; color:${isClosed ? '#FF3B30' : '#fff'}; opacity:1; margin-top:10px;">
+                                    ${isClosed ? '모집 마감' : '모집 중'}
+                                </button>
+                            </div>
                         </div>
-                        ${isInstructor ? `<span class="pass-tag">연계 수강권 ${uc}수</span>` : ''}
-                    </div>
-                    <button class="btn-add-friend" onclick="window.CommunityModules.ChatUI.addFriend('${uid}')">친구 추가</button>
-                </div>
-            `;
-
-        // Presence watch (실시간 초록불)
-        bridge().watchPresence(uid, (p) => {
-            const dot = document.getElementById(`presence-dot-${uid}`);
-            if (dot) {
-                dot.className = p.online ? 'online-indicator online' : 'online-indicator';
+                    `;
+                    return;
+                }
             }
-        });
+            // No active gathering
+            gatheringSection.style.display = 'none';
+        } catch (e) {
+            console.warn("renderInfoGathering error:", e);
+            gatheringSection.style.display = 'none';
+        }
     }
-
-    studentsHtml += '</div>';
-    listEl.innerHTML = studentsHtml;
-}
 
 async function changeClassImage(classId) {
     const url = prompt("클래스 프로필 이미지 URL을 입력해주세요:");
@@ -1980,10 +1924,7 @@ function renderGroupInfo(body, groupId, roomInfo) {
             </div>
         `;
 }
-function closeAllMenus() {
-    document.querySelectorAll('.msg-context-menu').forEach(m => m.remove());
-    document.querySelectorAll('.emoji-picker-popup').forEach(p => p.remove());
-}
+
 
 function showEmojiPickerAt(msgId, targetEl) {
     closeAllMenus();

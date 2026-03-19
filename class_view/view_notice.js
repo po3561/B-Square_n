@@ -1,19 +1,12 @@
-// view_notice.js - 클래스 개별 공지사항 모듈
+// view_notice.js - 클래스 개별 공지사항 모듈 (D1 API 기반)
 window.BSquareModules = window.BSquareModules || {};
 
-window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient, hasAccess, isInstructor) {
-    console.log("📢 initNotice called for class:", classId);
+window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, isInstructor) {
+    console.log("📢 initNotice called for class (D1 API):", classId);
 
     const listContainer = document.getElementById('classNoticeList');
     const btnCreate = document.getElementById('btnCreateClassNotice');
-
-    // Editor UI Elements
-    const editorModal = document.getElementById('classNoticeEditorModal');
-    const ceTargetId = document.getElementById('ceTargetId');
-    const ceTitle = document.getElementById('ceTitle');
-    const ceContent = document.getElementById('ceContent');
-    const ceModalTitle = document.getElementById('ceModalTitle');
-
+    
     // Viewer UI Elements
     const viewerModal = document.getElementById('classNoticeViewerModal');
     const cvTitle = document.getElementById('cvTitle');
@@ -21,90 +14,58 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
     const cvDate = document.getElementById('cvDate');
     const cvViews = document.getElementById('cvViews');
     const cvContent = document.getElementById('cvContent');
-    const btnCvLike = document.getElementById('btnCvLike');
-    const cvLikeCount = document.getElementById('cvLikeCount');
-    const cvAdminActions = document.getElementById('cvAdminActions');
-
-    const cvCommentsList = document.getElementById('cvCommentsList');
-    const cvCommentInput = document.getElementById('cvCommentInput');
-    const cvCommentCount = document.getElementById('cvCommentCount');
+    const cvAdminActions = document.getElementById('cvAdminActions'); // 현재 읽기 전용이므로 숨김
 
     let notices = [];
-    let currentOpenNoticeId = null;
-    let hasAdminPrivilege = false;
+    const hasAdminPrivilege = isInstructor || window.__BSQ_DEV_MODE__ === true;
 
-    // Quill JS 초기화
-    let quill;
-    if (document.getElementById('ceEditorContainer')) {
-        quill = new Quill('#ceEditorContainer', {
-            theme: 'snow',
-            placeholder: '내용을 입력하세요...',
-            modules: {
-                toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ 'color': [] }, { 'background': [] }],
-                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                    ['link', 'image', 'video'],
-                    ['clean']
-                ]
-            }
-        });
-    }
-
-    // 1. 강사/관리자일 경우 작성 버튼 노출 (레이스 컨디션 대응)
-    async function applyAdminUI() {
-        hasAdminPrivilege = isInstructor || window.__BSQ_DEV_MODE__ === true;
-
-        if (!hasAdminPrivilege && supabaseClient) {
-            try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (session && session.user) {
-                    const { data: profile } = await supabaseClient
-                        .from('profiles')
-                        .select('role')
-                        .eq('id', session.user.id)
-                        .single();
-
-                    const userEmail = session.user.email || '';
-                    const isSuperAdmin = (profile && profile.role === 'admin') || userEmail.startsWith('ej210651392');
-
-                    if (isSuperAdmin) {
-                        hasAdminPrivilege = true;
-                    }
-                }
-            } catch (err) {
-                console.warn("Notice admin check failed", err);
-            }
-        }
-
-        if (hasAdminPrivilege) {
-            if (btnCreate) btnCreate.style.display = 'block';
+    if (btnCreate) {
+        if (!hasAdminPrivilege) {
+            btnCreate.style.display = 'none';
         } else {
-            if (btnCreate) btnCreate.style.display = 'none';
+            btnCreate.style.display = 'inline-block';
+            btnCreate.addEventListener('click', async () => {
+                const title = prompt("공지사항 제목을 입력하세요:");
+                if (!title) return;
+                const content = prompt("공지사항 내용을 입력하세요:");
+                if (!content) return;
+                
+                try {
+                    const res = await window.BSQ.api('/api/class-notices', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            class_id: classId,
+                            title: title,
+                            content: content,
+                            author_name: userProfile?.name || '강사'
+                        })
+                    });
+                    if (res.success) {
+                        alert("공지사항이 등록되었습니다.");
+                        loadClassNotices();
+                    } else {
+                        alert("공지 작성 실패: " + res.error);
+                    }
+                } catch (e) {
+                    alert("서버 연결에 실패했습니다.");
+                }
+            });
         }
     }
 
-    applyAdminUI();
-
-    window.addEventListener('bsq_dev_mode_activated', () => {
-        applyAdminUI();
-    });
-
-    // 2. 공지사항 데이터 불러오기
-    function loadClassNotices() {
+    async function loadClassNotices() {
         if (!classId) return;
-        db.ref(`class_notices/${classId}`).on('value', (snap) => {
-            notices = [];
-            snap.forEach(child => {
-                notices.push({ id: child.key, ...child.val() });
-            });
-            notices.sort((a, b) => b.created_at - a.created_at);
-            renderNoticeList();
-        });
+        try {
+            const res = await window.BSQ.api(`/api/class-notices?class_id=${classId}`);
+            if (res.success) {
+                notices = res.data || [];
+                renderNoticeList();
+            }
+        } catch (err) {
+            console.error("Notice load error:", err);
+        }
     }
 
-    // 3. 리스트 렌더링
     function renderNoticeList() {
         if (!listContainer) return;
         if (notices.length === 0) {
@@ -121,7 +82,6 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
                         <span style="background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; color: var(--comm-text2);">${dateStr}</span>
                     </div>
                     <div style="display: flex; gap: 15px; font-size: 0.85rem; color: var(--comm-text2); align-items:center;">
-                        <img src="${n.profile_image_url || 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png'}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;border:1px solid var(--border-color);">
                         <span style="font-weight:600;">${n.author_name || '강사'}</span>
                         <span>👁️ ${n.views || 0}</span>
                     </div>
@@ -129,233 +89,30 @@ window.BSquareModules.initNotice = function (db, classId, userId, supabaseClient
             `;
         }).join('');
 
-        // Event Binding
         listContainer.querySelectorAll('.notice-item').forEach(item => {
-            // Hover styling
             item.addEventListener('mouseenter', () => item.style.backgroundColor = 'rgba(255,255,255,0.03)');
             item.addEventListener('mouseleave', () => item.style.backgroundColor = 'transparent');
-
-            // Click to view
             item.addEventListener('click', () => openViewer(item.dataset.id));
         });
     }
 
-    // 4. 새 공지사항 및 수정 모달 (Editor)
-    btnCreate?.addEventListener('click', () => {
-        openEditor(null);
-    });
-
-    function openEditor(noticeData) {
-        if (noticeData) {
-            ceModalTitle.textContent = '공지사항 수정';
-            ceTargetId.value = noticeData.id;
-            ceTitle.value = noticeData.title;
-            if (quill) quill.root.innerHTML = noticeData.content || '';
-            else ceContent.value = noticeData.content || '';
-        } else {
-            ceModalTitle.textContent = '새 공지사항 등록';
-            ceTargetId.value = '';
-            ceTitle.value = '';
-            if (quill) quill.root.innerHTML = '';
-            else ceContent.value = '';
-        }
-        editorModal.style.display = 'flex';
-    }
-
-    document.getElementById('btnCeClose')?.addEventListener('click', () => editorModal.style.display = 'none');
-    document.getElementById('btnCeCancel')?.addEventListener('click', () => editorModal.style.display = 'none');
-
-    document.getElementById('btnCeSubmit')?.addEventListener('click', async () => {
-        const id = ceTargetId.value;
-        const title = ceTitle.value.trim();
-        let content = '';
-        if (quill) {
-            content = quill.root.innerHTML.trim();
-            if (content === '<p><br></p>') content = '';
-        } else {
-            content = ceContent.value.trim();
-        }
-
-        if (!title || !content) return alert('제목과 내용을 모두 입력해주세요.');
-
-        const btn = document.getElementById('btnCeSubmit');
-        btn.textContent = '저장 중...';
-        btn.disabled = true;
-
-        try {
-            let authorName = '강사';
-            let profileImageUrl = 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png';
-            if (userId) {
-                const { data: profile } = await supabaseClient.from('users').select('name, profile_image_url').eq('id', userId).maybeSingle();
-                if (profile && profile.name) authorName = profile.name;
-                if (profile && profile.profile_image_url) profileImageUrl = profile.profile_image_url;
-            }
-
-            const payload = {
-                title: title,
-                content: content,
-                profile_image_url: profileImageUrl,
-                updated_at: firebase.database.ServerValue.TIMESTAMP
-            };
-
-            if (id) {
-                await db.ref(`class_notices/${classId}/${id}`).update(payload);
-            } else {
-                payload.author_id = window.__BSQ_DEV_MODE__ ? 'OPERATOR_GHOST' : userId;
-                payload.author_name = window.__BSQ_DEV_MODE__ ? '운영자' : authorName;
-                payload.created_at = firebase.database.ServerValue.TIMESTAMP;
-                payload.views = 0;
-                // 메인 공지 페이지 연동용 클래스명
-                const heroTitle = document.getElementById('heroTitle');
-                payload.class_name = heroTitle ? heroTitle.textContent : '클래스';
-                await db.ref(`class_notices/${classId}`).push(payload);
-            }
-
-            editorModal.style.display = 'none';
-            if (viewerModal.style.display === 'flex') {
-                viewerModal.style.display = 'none'; // Re-render closes viewer
-            }
-        } catch (e) {
-            console.error('Notice save failed', e);
-            alert('저장에 실패했습니다.');
-        } finally {
-            btn.textContent = '저장';
-            btn.disabled = false;
-        }
-    });
-
-    // 5. 공지사항 상세 보기 (Viewer)
     function openViewer(id) {
-        currentOpenNoticeId = id;
         const n = notices.find(x => x.id === id);
         if (!n) return;
-
-        // DB 조회수 증가
-        db.ref(`class_notices/${classId}/${id}/views`).transaction((currentViews) => {
-            return (currentViews || 0) + 1;
-        });
 
         cvTitle.textContent = n.title;
         cvAuthor.textContent = `작성자: ${n.author_name || '강사'}`;
         cvDate.textContent = `등록일: ${new Date(n.created_at).toLocaleString()}`;
-        cvViews.textContent = `조회수: ${(n.views || 0) + 1}`;
-        cvContent.innerHTML = n.content.replace(/\n/g, '<br>');
-
-        // 강사면 수정/삭제 표시
-        if (hasAdminPrivilege) {
-            cvAdminActions.style.display = 'flex';
-        } else {
-            cvAdminActions.style.display = 'none';
-        }
-
+        cvViews.textContent = `조회수: ${n.views || 0}`;
+        cvContent.innerHTML = n.content ? n.content.replace(/\n/g, '<br>') : '';
+        
+        if (cvAdminActions) cvAdminActions.style.display = 'none';
         viewerModal.style.display = 'flex';
-        loadLikes(id);
-        loadComments(id);
     }
 
     document.getElementById('btnCvClose')?.addEventListener('click', () => {
         viewerModal.style.display = 'none';
-        currentOpenNoticeId = null;
     });
 
-    // 상세 보기 > 액션 (수정/삭제)
-    document.getElementById('btnCvEdit')?.addEventListener('click', () => {
-        const n = notices.find(x => x.id === currentOpenNoticeId);
-        if (n) openEditor(n);
-    });
-
-    document.getElementById('btnCvDelete')?.addEventListener('click', async () => {
-        if (!confirm('이 공지사항을 삭제하시겠습니까?')) return;
-        try {
-            await db.ref(`class_notices/${classId}/${currentOpenNoticeId}`).remove();
-            alert('삭제되었습니다.');
-            viewerModal.style.display = 'none';
-        } catch (e) {
-            alert('삭제에 실패했습니다.');
-        }
-    });
-
-    // 6. 좋아요 연동
-    function loadLikes(id) {
-        db.ref(`notice_likes/class_notices/${classId}/${id}`).on('value', (snap) => {
-            cvLikeCount.textContent = snap.numChildren();
-            if (userId && snap.hasChild(userId)) {
-                btnCvLike.classList.add('active');
-                btnCvLike.style.background = '#ff4d4d';
-                btnCvLike.style.color = '#fff';
-            } else {
-                btnCvLike.classList.remove('active');
-                btnCvLike.style.background = 'rgba(255,70,70,0.1)';
-                btnCvLike.style.color = '#ff4d4d';
-            }
-        });
-    }
-
-    btnCvLike?.addEventListener('click', async () => {
-        if (!userId) {
-            if (window.__BSQ_DEV_MODE__) {
-                userId = 'OPERATOR_GHOST';
-            } else {
-                return alert('로그인이 필요합니다.');
-            }
-        }
-        if (!currentOpenNoticeId) return;
-
-        const ref = db.ref(`notice_likes/class_notices/${classId}/${currentOpenNoticeId}/${userId}`);
-        const snap = await ref.once('value');
-        if (snap.exists()) {
-            await ref.remove(); // Unlike
-        } else {
-            await ref.set(true); // Like
-        }
-    });
-
-    // 7. 댓글 연동
-    function loadComments(id) {
-        db.ref(`notice_comments/class_notices/${classId}/${id}`).on('value', (snap) => {
-            cvCommentCount.textContent = snap.numChildren();
-            const comments = [];
-            snap.forEach(c => { comments.push({ id: c.key, ...c.val() }); });
-
-            cvCommentsList.innerHTML = comments.map(c => `
-                <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 12px; margin-bottom:10px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem;">
-                        <span style="font-weight: 600; color: var(--comm-accent);">${c.user_name}</span>
-                        <span style="color: var(--comm-text2);">${new Date(c.created_at).toLocaleString()}</span>
-                    </div>
-                    <div style="font-size: 0.95rem; line-height: 1.5;">${c.content.replace(/\n/g, '<br>')}</div>
-                </div>
-            `).join('');
-        });
-    }
-
-    document.getElementById('btnCvSubmitComment')?.addEventListener('click', async () => {
-        let activeUserId = userId;
-        let activeUserName = '사용자';
-
-        if (window.__BSQ_DEV_MODE__) {
-            activeUserId = 'OPERATOR_GHOST';
-            activeUserName = '운영자';
-        } else {
-            if (!activeUserId) return alert('로그인이 필요합니다.');
-            const { data: profile } = await supabaseClient.from('users').select('name').eq('id', activeUserId).maybeSingle();
-            if (profile) activeUserName = profile.name;
-        }
-
-        if (!currentOpenNoticeId) return;
-        const content = cvCommentInput.value.trim();
-        if (!content) return;
-
-        await db.ref(`notice_comments/class_notices/${classId}/${currentOpenNoticeId}`).push({
-            user_id: activeUserId,
-            user_name: activeUserName,
-            content: content,
-            created_at: firebase.database.ServerValue.TIMESTAMP
-        });
-
-        cvCommentInput.value = '';
-    });
-
-    // Initialize
     loadClassNotices();
 };

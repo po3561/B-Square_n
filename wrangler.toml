@@ -1,0 +1,7 @@
+name = "b-square-web"
+compatibility_date = "2024-03-19"
+
+[[d1_databases]]
+binding = "DB" 
+database_name = "b-square-db"
+database_id = "31bf5020-d710-4e27-adc1-2ba073f66490"

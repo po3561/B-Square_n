@@ -22,10 +22,6 @@
     <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
 
     <!-- SDKs -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="../bsq_server.js"></script>
 </head>
 
@@ -195,11 +191,11 @@
                                             </div>
                                             <div class="chat-header-actions">
                                                 <button class="btn-header-icon" id="btnChatSearch" title="메시지 검색"><i
-                                                        class="fas fa-search"></i></button>
+                                                        class="fa-solid fa-magnifying-glass"></i></button>
                                                 <button class="btn-header-icon" id="btnThemeToggle" title="테마 전환"><i
-                                                        class="fas fa-moon" id="themeIcon"></i></button>
+                                                        class="fa-solid fa-moon" id="themeIcon"></i></button>
                                                 <button class="btn-header-icon" id="btnChatInfo" title="참여자 정보"><i
-                                                        class="fas fa-info-circle"></i></button>
+                                                        class="fa-solid fa-circle-info"></i></button>
                                             </div>
                                         </div>
 
@@ -218,7 +214,7 @@
                                                 <span class="pinned-msg-text" id="pinnedMsgText">고정된 메시지가 없습니다.</span>
                                             </div>
                                             <button class="btn-pinned-menu" id="btnPinnedList" title="고정 메시지 전체 보기">
-                                                <i class="fas fa-bars"></i>
+                                                <i class="fa-solid fa-bars-staggered"></i>
                                             </button>
                                         </div>
 
@@ -254,6 +250,7 @@
                                             </div>
                                         </div>
 
+
                                         <div class="chat-messages-container" id="chatMessagesContainer"></div>
 
                                         <!-- 하단으로 스크롤 버튼 -->
@@ -283,24 +280,28 @@
                                         <div class="chat-input-area" id="chatInputArea">
                                             <div class="input-pill-wrapper">
                                                 <button class="btn-input-icon-pill" id="btnAttach" title="파일 첨부"><i
-                                                        class="fas fa-paperclip"></i></button>
+                                                        class="fa-solid fa-paperclip"></i></button>
                                                 <button class="btn-input-icon-pill" id="btnGathering"
                                                     title="클래스 모집 카드 보내기" style="display:none;"><i
-                                                        class="fas fa-calendar-alt"></i></button>
+                                                        class="fa-solid fa-calendar-check"></i></button>
                                                 <input type="file" id="fileInput" multiple hidden>
                                                 <textarea id="msgInput" placeholder="메시지 작성..." rows="1"
                                                     spellcheck="false"></textarea>
                                                 <button class="btn-input-icon-pill" id="btnEmoji" title="이모지"><i
-                                                        class="fas fa-smile"></i></button>
+                                                        class="fa-regular fa-face-smile-wink"></i></button>
                                             </div>
-                                            <button class="btn-send-pill" id="btnSend">
-                                                <i class="fas fa-paper-plane"></i>
+                                            <button class="btn-send-pill" id="btnSend" title="메시지 전송">
+                                                <i class="fa-solid fa-paper-plane"></i>
                                             </button>
 
-                                            <!-- 이모지 피커 (chat_ui.js 의존성) -->
                                             <div class="emoji-picker" id="emojiPicker" style="display:none;">
                                                 <div class="emoji-grid" id="emojiGrid"></div>
                                             </div>
+                                        </div>
+
+                                        <!-- 채팅창 높이 조절 리사이저 핸들 -->
+                                        <div id="chatResizer" class="chat-resizer-handle">
+                                            <div class="resizer-bar"></div>
                                         </div>
                                     </div>
                                 </section>
@@ -333,10 +334,7 @@
             <!-- Sticky Sidebar -->
             <aside class="view-sidebar">
                 <div class="sticky-card-premium">
-                    <div class="creator-box">
-                        <div class="creator-img-mini"></div>
-                        <span class="creator-name-txt">크리에이터 님</span>
-                    </div>
+                    <!-- 크리에이터 박스 제거 (요청사항) -->
                     <h2 class="side-main-title" id="sidebarTitle">클래스 제목</h2>
                     <div class="side-category-line">
                         <span id="sidebarCategory">카테고리</span>
@@ -468,36 +466,107 @@
         </div>
     </div>
 
-    <!-- 모집 카드 만들기 모달 -->
-    <div class="modal-overlay" id="gatheringModal" style="display:none;">
-        <div class="modal-content" style="max-width: 400px; padding: 2rem;">
+    <!-- 모집 카드 만들기 모달 (강사용 기능 고도화) -->
+    <div class="modal-overlay" id="gatheringModal"
+        style="display:none; z-index: 10000; align-items:center; justify-content:center;">
+        <div class="modal-content"
+            style="max-width: 440px; width: 90%; padding: 2.2rem; background: rgba(30, 30, 35, 0.95); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5); backdrop-filter: blur(20px);">
             <div class="modal-header"
-                style="display:flex; justify-content:space-between; margin-bottom: 20px; border-bottom:none; padding:0;">
-                <h3 style="margin: 0; font-size: 1.2rem;">📅 클래스 모집 카드 보내기</h3>
-                <button class="btn-close-modal" id="btnCloseGatheringModal"
-                    style="background:none; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+                style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 24px; border-bottom:none; padding:0;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.3rem; font-weight: 800; color: #fff;">📅 클래스 모임 일정 생성</h3>
+                    <p style="margin: 6px 0 0 0; font-size: 0.85rem; color: #888;">수강생 채널에 즉시 모임 카드(투표/일정)가 전송됩니다.</p>
+                </div>
+                <button class="btn-close-modal" id="btnGatheringClose"
+                    style="background:none; border:none; color:#aaa; font-size:1.4rem; cursor:pointer; padding:4px;">✕</button>
             </div>
-            <div class="modal-body" style="display:flex; flex-direction:column; gap:12px; padding:0;">
-                <input type="text" id="gatherTitle" placeholder="모집 제목 (예: 5월 첫 모임)"
-                    style="padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:white; outline:none;"
-                    required>
-                <input type="text" id="gatherTime" placeholder="모임 시간 (예: 4월 24일 토요일 14:00)"
-                    style="padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:white; outline:none;"
-                    required>
-                <input type="text" id="gatherPlace" placeholder="모임 장소 (예: 서면 놀이마루)"
-                    style="padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:white; outline:none;"
-                    required>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <input type="number" id="gatherMin" placeholder="최소 인원 (예: 2)"
-                        style="padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:white; outline:none;"
-                        required>
-                    <input type="number" id="gatherMax" placeholder="최대 정원 (예: 10)"
-                        style="padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:white; outline:none;"
+
+            <div class="modal-body" style="display:flex; flex-direction:column; gap:16px; padding:0;">
+                <!-- 1. 커리큘럼 선택 드롭다운 -->
+                <div>
+                    <label
+                        style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">진행
+                        커리큘럼 선택</label>
+                    <div style="position:relative;">
+                        <select id="gatherCurriculum"
+                            style="width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; appearance:none; font-family:inherit; font-size:0.95rem;">
+                            <!-- JS를 통해 동적 커리큘럼 리스트 주입 -->
+                            <option value="none" selected>자유 모임 (커리큘럼 미지정)</option>
+                            <option value="ch1">1강: 오리엔테이션 및 자기소개</option>
+                            <option value="ch2">2강: 실전 기초 다지기</option>
+                        </select>
+                        <i class="fas fa-chevron-down"
+                            style="position:absolute; right:15px; top:50%; transform:translateY(-50%); color:#888; pointer-events:none;"></i>
+                    </div>
+                </div>
+
+                <!-- 2. 모임명 -->
+                <div>
+                    <label
+                        style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">모임명</label>
+                    <input type="text" id="gatheringTitle" placeholder="예: 5월 첫 모임 및 환영식"
+                        style="width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.95rem; font-family:inherit;"
                         required>
                 </div>
-                <button class="btn-submit" id="btnSendGatheringSubmit"
-                    style="margin-top:10px; padding: 14px; border-radius: 12px; font-weight: bold; background: linear-gradient(135deg, #4361ee, #4cc9f0); color:white; border:none; cursor:pointer;">모집
-                    카드 전송</button>
+
+                <!-- 3. 모임 일자 및 시간 (달력 팝업) -->
+                <div>
+                    <label
+                        style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">모임
+                        일자 및 시간 (달력 선택)</label>
+                    <div style="position:relative;">
+                        <input type="datetime-local" id="gatheringAt"
+                            style="width:100%; padding:14px 14px 14px 40px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.95rem; font-family:inherit; color-scheme: dark;"
+                            required>
+                        <i class="fa-regular fa-calendar-days"
+                            style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#4cc9f0;"></i>
+                    </div>
+                </div>
+
+                <!-- 4. 장소 -->
+                <div>
+                    <label
+                        style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">모임
+                        장소</label>
+                    <input type="text" id="gatheringLocation" placeholder="주소 또는 장소명 (예: 강남역 투썸플레이스)"
+                        style="width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.95rem; font-family:inherit;"
+                        required>
+                </div>
+
+                <!-- 4-1. 상세 설명 -->
+                <div>
+                    <label
+                        style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">상세 설명 (필수 아님)</label>
+                    <textarea id="gatheringDesc" placeholder="모임에 대한 간단한 설명을 입력해주세요."
+                        style="width:100%; height:80px; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.95rem; font-family:inherit; resize:none;"></textarea>
+                </div>
+
+                <!-- 5. 최소 / 최대 인원수 -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                    <div>
+                        <label
+                            style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">최소
+                            인원</label>
+                        <input type="number" id="gatherMin" value="2" min="1" placeholder="예: 2"
+                            style="width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.95rem; text-align:center;"
+                            required>
+                    </div>
+                    <div>
+                        <label
+                            style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">최대
+                            정원</label>
+                        <input type="number" id="gatheringCapacity" value="10" min="2" placeholder="예: 10"
+                            style="width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.95rem; text-align:center;"
+                            required>
+                    </div>
+                </div>
+
+                <div style="margin-top:20px;">
+                    <button class="btn-submit" id="btnGatheringSubmit"
+                        style="width:100%; padding: 16px; border-radius: 12px; font-weight: 800; font-size: 1.05rem; background: linear-gradient(135deg, #007aff, #005bb5); color:white; border:none; cursor:pointer; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3); transition: transform 0.2s, box-shadow 0.2s;">
+                        모집 카드 생성 및 전송
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -585,7 +654,6 @@
     <script src="view_intro.js"></script>
     <script src="view_curriculum.js"></script>
     <script src="view_reviews.js"></script>
-    <script src="view_chat.js"></script>
     <script src="simple_class_chat.js"></script>
     <script src="view_edit.js"></script>
     <script src="view_notice.js"></script> <!-- 추가된 공지 모듈 -->

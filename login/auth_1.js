@@ -1,7 +1,7 @@
+// auth_1.js — B-Square 로그인 (D1 API 기반)
 document.addEventListener('DOMContentLoaded', async () => {
-    // ★ BSQ.ready 대기로 Supabase 통일
+    // BSQ.ready 대기
     if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
-    const supabase = window.BSQ?.supabase || window.supabaseClient;
 
     const loginForm = document.getElementById('loginForm');
     const loginUsernameInput = document.getElementById('loginUsername');
@@ -33,29 +33,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     localStorage.removeItem('savedBsquareId');
                 }
 
-                // [조회] 이메일 형식 체크 후 아이디면 이메일 찾기
-                let loginEmail = username;
-                if (!username.includes('@')) {
-                    const { data: userData, error: userError } = await supabase
-                        .from('users')
-                        .select('email')
-                        .eq('username', username)
-                        .maybeSingle();
+                // ★ D1 API 로그인 호출
+                const result = await window.BSQ.login(username, password);
 
-                    if (userError || !userData) {
-                        throw new Error('존재하지 않는 사용자 정보입니다.');
-                    }
-                    loginEmail = userData.email;
-                }
-
-                // [인증]
-                const { data, error: loginError } = await supabase.auth.signInWithPassword({
-                    email: loginEmail,
-                    password: password,
-                });
-
-                if (loginError) {
-                    throw new Error('아이디 또는 비밀번호를 다시 확인해주세요.');
+                if (!result.success) {
+                    throw new Error(result.error || '로그인에 실패했습니다.');
                 }
 
                 // [성공]

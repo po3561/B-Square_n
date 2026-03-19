@@ -1,50 +1,27 @@
-// class_list.js — 클래스 목록 로딩, 카테고리 필터, 정렬, 검색
-// header.js가 Supabase/Firebase 초기화 및 유저 메뉴를 처리함
-
+// class_list.js — 클래스 목록 (D1 API 기반)
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Supabase/Firebase 가져오기 (header.js에서 이미 초기화됨)
-    const waitForInit = () => new Promise((resolve) => {
-        const check = () => {
-            if (window.supabaseClient && (typeof firebase !== 'undefined' && firebase.apps.length > 0)) {
-                resolve();
-            } else {
-                setTimeout(check, 100);
-            }
-        };
-        check();
-        setTimeout(resolve, 3000);
-    });
+    // BSQ.ready 대기
+    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
 
-    await waitForInit();
-
-    const supabaseClient = window.supabaseClient;
-    const db = window.firebaseDB || (typeof firebase !== 'undefined' ? firebase.database() : null);
-
-    if (!db) {
-        console.warn('[class_list.js] Firebase DB not available');
-        return;
-    }
-
-    // 2. 상태 변수
+    // 상태 변수
     let allClasses = [];
     let currentCategory = 'all';
     let currentSort = 'newest';
     let searchQuery = '';
 
-    // 3. Firebase에서 클래스 목록 로드
+    // ★ D1 API에서 클래스 목록 로드
     try {
-        const snapshot = await db.ref('classes').once('value');
-        const data = snapshot.val();
-        if (data) {
-            allClasses = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+        const result = await window.BSQ.api('/api/classes?limit=200');
+        if (result.success && result.data) {
+            allClasses = result.data;
         }
     } catch (err) {
-        console.error('[class_list.js] Firebase load error:', err);
+        console.error('[class_list.js] D1 API load error:', err);
     }
 
     renderClasses();
 
-    // 4. 카테고리 필터 이벤트
+    // 카테고리 필터 이벤트
     const categoryLinks = document.querySelectorAll('#categoryFilter a');
     categoryLinks.forEach(link => {
         link.addEventListener('click', (e) => {
@@ -53,17 +30,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             link.classList.add('active');
             currentCategory = link.dataset.cat;
 
-            // 카테고리 변경 시 타이틀도 업데이트
             const titleEl = document.querySelector('.group-title');
             if (titleEl) {
                 titleEl.textContent = currentCategory === 'all' ? '전체 클래스 목록' : `${currentCategory} 클래스`;
             }
-
             renderClasses();
         });
     });
 
-    // 5. 정렬 이벤트
+    // 정렬 이벤트
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
         sortSelect.addEventListener('change', (e) => {
@@ -72,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 6. 검색 이벤트 (디바운스 적용)
+    // 검색 이벤트 (디바운스)
     const searchInput = document.getElementById('classSearchInput');
     let searchTimer = null;
     if (searchInput) {
@@ -85,29 +60,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 7. 정렬 함수
+    // 정렬 함수
     function sortClasses(classes) {
         const sorted = [...classes];
         switch (currentSort) {
             case 'newest':
-                sorted.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+                sorted.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
                 break;
             case 'popular':
                 sorted.sort((a, b) => (b.like_count || 0) - (a.like_count || 0));
                 break;
             case 'price-low':
-                sorted.sort((a, b) => {
-                    const priceA = getEffectivePrice(a);
-                    const priceB = getEffectivePrice(b);
-                    return priceA - priceB;
-                });
+                sorted.sort((a, b) => getEffectivePrice(a) - getEffectivePrice(b));
                 break;
             case 'price-high':
-                sorted.sort((a, b) => {
-                    const priceA = getEffectivePrice(a);
-                    const priceB = getEffectivePrice(b);
-                    return priceB - priceA;
-                });
+                sorted.sort((a, b) => getEffectivePrice(b) - getEffectivePrice(a));
                 break;
         }
         return sorted;
@@ -119,18 +86,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         return discount > 0 ? original * (1 - discount / 100) : original;
     }
 
-    // 8. 클래스 렌더링
+    // 클래스 렌더링
     function renderClasses() {
         const grid = document.getElementById('allClassGrid');
         if (!grid) return;
 
-        // 카테고리 필터
         let filteredClasses = allClasses;
         if (currentCategory !== 'all') {
             filteredClasses = filteredClasses.filter(c => c.category === currentCategory);
         }
 
-        // 검색 필터
         if (searchQuery) {
             filteredClasses = filteredClasses.filter(c => {
                 const title = (c.title || '').toLowerCase();
@@ -140,10 +105,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // 정렬
         filteredClasses = sortClasses(filteredClasses);
 
-        // 카운트 표시
         const countEl = document.getElementById('totalClassCount');
         if (countEl) countEl.textContent = `총 ${filteredClasses.length}개`;
 
@@ -157,19 +120,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const now = Date.now();
         const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
 
-        const cardsHtml = filteredClasses.map((cls, idx) => {
-            const isNew = cls.created_at && (now - cls.created_at < FORTY_EIGHT_HOURS);
-            const newBadgeHtml = isNew ? `<div class="badge-new">NEW</div>` : '';
+        grid.innerHTML = filteredClasses.map((cls, idx) => {
+            const createdTime = cls.created_at ? new Date(cls.created_at).getTime() : 0;
+            const isNew = createdTime && (now - createdTime < FORTY_EIGHT_HOURS);
+            const newBadge = isNew ? `<div class="badge-new">NEW</div>` : '';
             const discountRate = parseInt(cls.discount_rate) || 0;
             const originalPrice = parseInt(cls.price) || 0;
             const currentPrice = getEffectivePrice(cls);
             const imageUrl = cls.image_url || 'https://via.placeholder.com/400x250';
-            const satisfaction = Math.floor(Math.random() * 30 + 60);
+            const avgRating = cls.avg_rating ? parseFloat(cls.avg_rating).toFixed(1) : null;
+            const ratingText = avgRating ? `⭐ ${avgRating}(${cls.review_count})` : '👍 만족';
 
             return `
                 <div class="class-card card-animate" style="animation-delay: ${idx * 0.05}s"
                      onclick="location.href='../class_view/class_view.html?id=${cls.id}'" role="button" tabindex="0">
-                    ${newBadgeHtml}
+                    ${newBadge}
                     <div class="card-thumbnail">
                         <img src="${imageUrl}" alt="${cls.title || '클래스'}" loading="lazy">
                         <button class="btn-bookmark" aria-label="찜하기" onclick="event.stopPropagation()">🤍</button>
@@ -182,9 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <span class="category">${cls.category || '미분류'}</span>
                         <h4 class="title">${cls.title || '제목 없음'}</h4>
                         <span class="creator">${cls.creator_name || '크리에이터'}</span>
-                        <div class="meta">
-                            <span class="rating">👍 ${satisfaction}% 만족도</span>
-                        </div>
+                        <div class="meta"><span class="rating">${ratingText}</span></div>
                         <div class="price-area">
                             ${discountRate > 0 ? `<span class="original-price">${originalPrice.toLocaleString()}원</span>` : ''}
                             <span class="current-price">${currentPrice === 0 ? '무료' : currentPrice.toLocaleString() + '원'}</span>
@@ -193,7 +156,5 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
             `;
         }).join('');
-
-        grid.innerHTML = cardsHtml;
     }
 });

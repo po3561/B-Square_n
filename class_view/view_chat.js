@@ -102,259 +102,80 @@ window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAcc
 };
 
 /**
- * 정보 패널 렌더링 (UI_SPEC_CONSOLIDATED.md 기반)
+ * 정보 패널 렌더링 (D1 마이그레이션 임시 뷰)
  */
 async function renderInfoPanel(db, classId, userId, supabase, isInstructor) {
     const panelBody = document.getElementById('infoPanelBody');
     const panelTitle = document.getElementById('infoPanelTitle');
     if (!panelBody) return;
 
-    panelTitle.textContent = isInstructor ? '클래스 참여자 / 총 000명 수강' : '클래스 정보';
-    panelBody.innerHTML = '<div class="info-empty">데이터를 불러오는 중...</div>';
+    panelBody.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">데이터 로딩 중...</div>';
 
     try {
-        // 1. 기본 데이터 로드
-        const enrollRef = db.ref('enrollments');
-        const snap = await enrollRef.once('value');
-        const allEnrollments = snap.val() || {};
-        const participantsUids = [];
-        for (const uid in allEnrollments) {
-            if (allEnrollments[uid][classId]) participantsUids.push(uid);
-        }
-
-        const participantCount = participantsUids.length;
-
-        // 참여자가 아예 없으면 간단 메시지 후 종료
-        if (participantCount === 0) {
-            if (isInstructor && panelTitle) {
-                panelTitle.textContent = '클래스 참여자 / 총 0명 수강';
-            }
-            panelBody.innerHTML = '<div class="info-empty">아직 참여 중인 수강생이 없습니다.</div>';
-            return;
-        }
-
-        // 클래스 정보 (수강권 통계, 모임 정보 등)
-        const classSnap = await db.ref(`classes/${classId}`).once('value');
-        const classInfo = classSnap.val() || {};
-
-        // 2. 참여자 상세 정보 로드 (Supabase) - nickname 컬럼 없이 name만 사용
-        const { data: users, error: usersError } = await supabase
-            .from('users')
-            .select('id, name, profile_image_url, phone')
-            .in('id', participantsUids);
-
-        if (usersError) {
-            console.error('Supabase users 조회 실패:', usersError);
-            panelBody.innerHTML = '<div class="info-empty">참여자 정보를 불러오지 못했습니다.</div>';
-            return;
-        }
-
-        if (!users || users.length === 0) {
-            panelBody.innerHTML = '<div class="info-empty">참여자 정보를 찾을 수 없습니다.</div>';
-            return;
-        }
-
-        // 3. 수강권 데이터 로드 (user_passes/{userId}/{classId})
-        const passesSnap = await db.ref('user_passes').once('value');
-        const allPasses = passesSnap.val() || {};
-
-        let totalPassesUsed = 0;
-        let totalPassesIssued = 0;
-        participantsUids.forEach((uid) => {
-            const p = allPasses[uid] && allPasses[uid][classId];
-            if (!p) return;
-            totalPassesIssued += p.issued_count || 0;
-            totalPassesUsed += p.used_count || 0;
-        });
-
-        // 클래스에 집계 필드가 있으면 우선 사용
-        if (typeof classInfo.total_passes_issued === 'number') {
-            totalPassesIssued = classInfo.total_passes_issued;
-        }
-        if (typeof classInfo.total_passes_used === 'number') {
-            totalPassesUsed = classInfo.total_passes_used;
-        }
-
-        // 4. 모임 정보 로드
-        const gatherSnap = await db.ref(`classes/${classId}/gathering`).once('value');
-        const gather = gatherSnap.val() || {
-            title: classInfo.title || '클래스 모임',
-            time: '모임 일시 미정',
-            place: classInfo.location || '장소 미정',
-            min: 1,
-            max: participantCount || 1,
-            current: participantCount,
-            status: 'open'
-        };
-
-        let html = '<div class="staggered-entry">';
-
-        if (isInstructor) {
-            // 상단 타이틀에 실제 수강 인원 반영
-            if (panelTitle) {
-                panelTitle.textContent = `클래스 참여자 / 총 ${participantCount}명 수강`;
-            }
-
-            // [A. 강사 뷰]
-            // 1. 수강권 통계
-            html += `
-                <div class="instructor-stats-box stagger-1">
-                    <div style="color:var(--comm-accent); font-size:0.8rem; margin-bottom:4px;">📊 수강권 사용 현황</div>
-                    <div style="display:flex; justify-content:space-between; align-items:baseline;">
-                        <span style="font-size:1.4rem; font-weight:900;">${totalPassesUsed} / ${totalPassesIssued}</span>
-                        <span style="font-size:0.85rem; color:var(--comm-text2);">회 사용됨</span>
-                    </div>
-                </div>
-            `;
-
-            // 2. 참여자 목록 (상세)
-            html += '<div class="info-section-title stagger-2">참여자 목록</div>';
-            html += '<div class="info-student-list-grid stagger-3">';
-            users.forEach((user) => {
-                const p = allPasses[user.id] && allPasses[user.id][classId];
-                const remain = p && typeof p.count === 'number' ? p.count : 0;
-                html += `
-                    <div class="participant-row-item">
-                        <div class="participant-avatar" style="${user.profile_image_url ? `background-image:url(${user.profile_image_url})` : ''}">
-                            <div class="online-indicator online"></div>
+        // 1. 모임 현황 가져오기
+        const gatherRes = await window.BSQ.api(`/api/gatherings?class_id=${classId}`);
+        let gatheringsHtml = '';
+        
+        if (gatherRes.success && gatherRes.data && gatherRes.data.length > 0) {
+            gatheringsHtml = `
+                <div class="info-section">
+                    <h4 style="color:var(--accent-color); font-size:1rem; margin-bottom:12px;">🗓️ 진행 예정 모임</h4>
+                    ${gatherRes.data.map(g => `
+                        <div class="gathering-mini-item" style="background:rgba(255,255,255,0.05); border-radius:12px; padding:12px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.05);">
+                            <div style="font-weight:700; color:#fff; margin-bottom:4px;">${g.title}</div>
+                            <div style="font-size:0.85rem; color:#aaa;"><i class="fas fa-map-marker-alt" style="width:14px;"></i> ${g.location || '장소 미정'}</div>
+                            <div style="font-size:0.85rem; color:#aaa;"><i class="fas fa-clock" style="width:14px;"></i> ${new Date(g.gathering_at).toLocaleString('ko-KR')}</div>
                         </div>
-                        <div class="participant-info-block">
-                            <div class="participant-name-line">
-                                <span class="nick">${user.name}</span>
-                                <div class="instructor-private-info">
-                                    <span class="real">(${user.name})</span>
-                                    <a href="tel:${user.phone}" class="phone">${user.phone || '연락처 없음'}</a>
-                                </div>
-                            </div>
-                            <div class="participant-pass-tag">잔여 ${remain}회</div>
-                        </div>
-                    </div>
-                `;
-            });
-            html += '</div>';
-
-            // 3. 모임 정보 + 지도 바로가기
-            const progress = Math.min(100, (gather.current / (gather.max || 1)) * 100);
-            const kakaoUrl = `https://map.kakao.com/?q=${encodeURIComponent(gather.place || '')}`;
-            html += `
-                <div class="info-section-title stagger-3" style="margin-top:24px;">가장 최근 모임 정보</div>
-                <div class="info-gathering-card-dark stagger-3">
-                    <div class="gathering-card-row">
-                        <span class="gathering-label">모임일시</span>
-                        <span class="gathering-value">${gather.time}</span>
-                    </div>
-                    <div class="gathering-card-row">
-                        <span class="gathering-label">모임장소</span>
-                        <span class="gathering-value">${gather.place}</span>
-                    </div>
-                    <button class="btn-gathering-map-info hover-lift" onclick="window.open('${kakaoUrl}', '_blank')">
-                        지도 바로가기
-                    </button>
+                    `).join('')}
                 </div>
             `;
-
-            // 4. 모집 마감 버튼
-            html += `
-                <div style="margin-top:24px;" class="stagger-4">
-                    <button id="btnCloseGatheringPanel" class="btn-info-action-xl dark btn-press">
-                        모집 마감
-                    </button>
-                </div>
-            `;
-
-            // 5. 하단 참여 인원 + 프로그레스 바
-            html += `
-                <div class="info-panel-footer-progress stagger-5">
-                    <div class="footer-progress-label-row">
-                        <span>참여 : ${gather.current} / ${gather.max}명</span>
-                        <span class="footer-progress-sub-label">최소 ${gather.min}명 필요</span>
-                    </div>
-                    <div class="info-progress-container-thin">
-                        <div class="info-progress-bar-fill" style="width:${progress}%"></div>
-                    </div>
-                </div>
-            `;
-
         } else {
-            // [B. 수강생 뷰]
-            // 1. 모임 정보 (프로그레스 바)
-            const progress = Math.min(100, (gather.current / gather.max) * 100);
-            html += `
-                <div class="info-section-title stagger-1">예정된 모임</div>
-                <div class="info-gathering-card-dark stagger-2">
-                    <div class="gathering-card-row">
-                        <span class="gathering-label">일시</span>
-                        <span class="gathering-value">${gather.time}</span>
-                    </div>
-                    <div class="gathering-card-row">
-                        <span class="gathering-label">장소</span>
-                        <span class="gathering-value">${gather.place}</span>
-                    </div>
-                    <div style="margin-top:15px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span class="participation-label">참여 인원 (${gather.current}/${gather.max})</span>
-                            <span class="min-required-label">최소 ${gather.min}명 필요</span>
-                        </div>
-                        <div class="info-progress-container-thin">
-                            <div class="info-progress-bar-fill" style="width:${progress}%"></div>
-                        </div>
-                    </div>
-                    <button class="btn-gathering-map-info hover-lift">지도 보기</button>
-                </div>
-            `;
-
-            // 2. 참여자 목록 (프라이버시)
-            html += '<div class="info-section-title stagger-3">참여 중인 학우</div>';
-            html += '<div class="info-student-list-grid stagger-4">';
-            users.forEach((user) => {
-                html += `
-                    <div class="participant-row-item">
-                        <div class="participant-avatar" style="${user.profile_image_url ? `background-image:url(${user.profile_image_url})` : ''}">
-                        </div>
-                        <div class="participant-info-block">
-                            <span class="nick">${user.name || '익명의 수강생'}</span>
-                        </div>
-                    </div>
-                `;
-            });
-            html += '</div>';
-
-            // 3. 이원화 액션 버튼
-            html += `
-                <div class="dual-action-btns stagger-5" style="margin-top:30px;">
-                    <button class="btn-info-action-lg primary btn-press" onclick="alert('클래스 참여 신청 완료!')">
-                        <span class="btn-main-text">클래스 참여</span>
-                        <span class="btn-sub-text">수강권 1회 사용</span>
-                    </button>
-                    <button class="btn-info-action-lg danger btn-press" onclick="document.getElementById('commInfoPanel').classList.remove('visible')">
-                        <span class="btn-main-text">다음에 참여</span>
-                    </button>
+            gatheringsHtml = `
+                <div class="info-section" style="padding:20px; text-align:center; color:#666;">
+                    진행 중인 모임이 없습니다.
                 </div>
             `;
         }
 
-        html += '</div>';
-        panelBody.innerHTML = html;
-
-        // 모집 마감 버튼 핸들러 (강사용)
-        if (isInstructor) {
-            const btnCloseGathering = document.getElementById('btnCloseGatheringPanel');
-            if (btnCloseGathering) {
-                btnCloseGathering.onclick = async () => {
-                    try {
-                        await db.ref(`classes/${classId}/gathering/status`).set('closed');
-                        alert('모집이 마감되었습니다.');
-                    } catch (e) {
-                        console.error('모집 마감 처리 실패:', e);
-                        alert('모집 마감 처리 중 오류가 발생했습니다.');
-                    }
-                };
-            }
-        }
+        panelBody.innerHTML = `
+            ${gatheringsHtml}
+            <div class="info-section">
+                <!-- 참여자 목록 등 추가 예정 -->
+                <h4 style="color:#fff; font-size:1rem; margin-bottom:12px; margin-top:20px;">👥 클래스 멤버</h4>
+                <div id="panelMemberList" style="display:flex; flex-direction:column; gap:8px;">
+                    <p style="color:#666; font-size:0.9rem;">멤버 정보를 불러오고 있습니다...</p>
+                </div>
+            </div>
+        `;
+        
+        // 추가 정보(멤버 등) 비동기 로드
+        updatePanelMemberList(db, classId, isInstructor);
 
     } catch (err) {
-        console.error("Info Panel Render Error:", err);
-        panelBody.innerHTML = '<div class="info-empty">정보를 불러오지 못했습니다.</div>';
+        panelBody.innerHTML = `<div style="padding:20px; color:#ff4d4d;">오류 발생: ${err.message}</div>`;
+    }
+}
+
+async function updatePanelMemberList(db, classId, isInstructor) {
+    const listEl = document.getElementById('panelMemberList');
+    if (!listEl) return;
+
+    // D1 class_participants 테이블에서 가져오기
+    try {
+        const res = await window.BSQ.api(`/api/classes/${classId}/members`);
+        if (res.success && res.data) {
+            listEl.innerHTML = res.data.map(m => `
+                <div style="display:flex; align-items:center; gap:10px; padding:8px; background:rgba(255,255,255,0.03); border-radius:8px;">
+                    <img src="${m.profile_image_url || '/api/placeholder/40/40'}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+                    <div style="flex:1;">
+                        <div style="font-size:0.9rem; color:#fff; font-weight:600;">${m.nickname || m.name} ${m.role === 'instructor' ? '👑' : ''}</div>
+                        ${isInstructor && m.phone ? `<div style="font-size:0.75rem; color:#888;">${m.phone}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (e) {
+        listEl.innerHTML = '<p style="color:#666; font-size:0.8rem;">멤버 정보를 가져올 수 없습니다.</p>';
     }
 }
 
@@ -384,211 +205,12 @@ function updateParticipantBadge(db, classId) {
 }
 
 // =========================
-// Pinned messages (ChatUI)
+// Pinned messages (ChatUI) - D1 마이그레이션 안내 처리
 // =========================
 function setupPinnedMessagesChatUI(db, classId, isInstructor) {
-    if (!db || !classId) return;
-
-    const state = {
-        pins: {} // { pinId: { messageId, content, timestamp } }
-    };
-
     const pinnedBar = document.getElementById('pinnedMsgBar');
-    const pinnedText = document.getElementById('pinnedMsgText');
-    const pinnedContent = document.getElementById('pinnedMsgContent');
-    const btnPinnedList = document.getElementById('btnPinnedList');
-    const pinnedListOverlay = document.getElementById('pinnedListOverlay');
-    const pinnedListBody = document.getElementById('pinnedListBody');
-    const pinnedListTitle = document.getElementById('pinnedListTitle');
-    const btnClosePinnedList = document.getElementById('btnClosePinnedList');
-
-    const chatMessages = document.getElementById('chatMessagesContainer');
-    const chatInput = document.getElementById('chatInputArea');
-    const pinnedBarTop = document.getElementById('pinnedMsgBar');
-
-    // 초기 상태 보정 (HTML에 display:none 인라인이 있는 경우)
-    if (pinnedListOverlay) {
-        pinnedListOverlay.classList.remove('visible');
-        pinnedListOverlay.style.display = 'none';
-    }
-
-    const pinsRef = db.ref('pinned_messages/' + classId);
-
-    pinsRef.on('value', (snap) => {
-        state.pins = snap.val() || {};
-        const pinsArr = Object.entries(state.pins).map(([id, v]) => ({ id, ...v }));
-
-        if (!pinnedBar || !pinnedText) return;
-
-        if (pinsArr.length === 0) {
-            pinnedBar.style.display = 'none';
-            if (pinnedListBody) pinnedListBody.innerHTML = '';
-            if (pinnedListTitle) pinnedListTitle.textContent = '0개의 고정된 메시지';
-            return;
-        }
-
-        pinsArr.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-        const latest = pinsArr[pinsArr.length - 1];
-
-        pinnedBar.style.display = 'flex';
-        pinnedText.textContent = latest.content || '';
-        if (pinnedContent) pinnedContent.onclick = () => scrollToMessageInChatUI(latest.messageId);
-
-        // 고정 메시지 전용 화면(오버레이) 렌더링 — 채팅 버블 형태
-        if (pinnedListBody && pinnedListTitle) {
-            pinnedListTitle.textContent = `${pinsArr.length}개의 고정된 메시지`;
-            pinnedListBody.innerHTML = '';
-
-            let lastDateLabel = '';
-            [...pinsArr].reverse().forEach((pin) => {
-                const ts = pin.timestamp ? new Date(pin.timestamp) : null;
-                const dateLabel = ts ? `${ts.getMonth() + 1}월 ${ts.getDate()}일` : '';
-                const timeStr = ts ? ts.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
-
-                if (dateLabel && dateLabel !== lastDateLabel) {
-                    lastDateLabel = dateLabel;
-                    const dateDiv = document.createElement('div');
-                    dateDiv.className = 'pin-date-header';
-                    dateDiv.textContent = dateLabel;
-                    pinnedListBody.appendChild(dateDiv);
-                }
-
-                const row = document.createElement('div');
-                row.className = 'chat-msg';
-                row.dataset.pinId = pin.id;
-                row.dataset.messageId = pin.messageId;
-
-                const bubble = document.createElement('div');
-                bubble.className = 'msg-bubble';
-                bubble.textContent = pin.content || '';
-
-                const meta = document.createElement('div');
-                meta.className = 'msg-meta';
-                const timeSpan = document.createElement('span');
-                timeSpan.className = 'msg-time-sm';
-                timeSpan.textContent = timeStr;
-                meta.appendChild(timeSpan);
-
-                row.appendChild(bubble);
-                row.appendChild(meta);
-
-                row.onclick = () => {
-                    hidePinnedScreen();
-                    scrollToMessageInChatUI(pin.messageId);
-                };
-
-                pinnedListBody.appendChild(row);
-            });
-        }
-    });
-
-    function showPinnedScreen() {
-        if (pinnedListOverlay) {
-            pinnedListOverlay.style.display = 'flex';
-            pinnedListOverlay.classList.add('visible');
-        }
-        chatMessages && chatMessages.classList.add('chat-pane-hidden');
-        chatInput && chatInput.classList.add('chat-pane-hidden');
-        pinnedBarTop && pinnedBarTop.classList.add('chat-pane-hidden');
-    }
-
-    function hidePinnedScreen() {
-        if (pinnedListOverlay) {
-            pinnedListOverlay.classList.remove('visible');
-            pinnedListOverlay.style.display = 'none';
-        }
-        chatMessages && chatMessages.classList.remove('chat-pane-hidden');
-        chatInput && chatInput.classList.remove('chat-pane-hidden');
-        pinnedBarTop && pinnedBarTop.classList.remove('chat-pane-hidden');
-    }
-
-    if (btnPinnedList && pinnedListOverlay) {
-        btnPinnedList.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            showPinnedScreen();
-        };
-    }
-    if (btnClosePinnedList && pinnedListOverlay) {
-        btnClosePinnedList.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            hidePinnedScreen();
-        };
-    }
-    if (pinnedListOverlay) {
-        pinnedListOverlay.addEventListener('click', (e) => {
-            if (e.target === pinnedListOverlay) hidePinnedScreen();
-        });
-    }
-
-    // ---- 우클릭 메뉴 (강사 전용: 이제 chat_ui.js의 고급 메뉴가 담당함) ----
-    if (isInstructor && pinnedListBody) {
-        pinnedListBody.addEventListener('contextmenu', (e) => {
-            const row = e.target.closest('[data-pin-id]');
-            if (!row) return;
-            e.preventDefault();
-            e.stopPropagation();
-            const pinId = row.dataset.pinId;
-            showUnpinMenu(e.clientX, e.clientY, pinId);
-        });
-    }
-
-    function showUnpinMenu(x, y, pinId) {
-        closeAllPinMenus();
-        const menu = document.createElement('div');
-        menu.className = 'simple-msg-context-menu';
-        menu.style.position = 'fixed';
-        menu.style.left = x + 'px';
-        menu.style.top = y + 'px';
-        menu.innerHTML = `
-            <div class="ctx-item">
-                <div class="ctx-item-label">고정 해제하기</div>
-            </div>
-        `;
-        document.body.appendChild(menu);
-        menu.querySelector('.ctx-item').addEventListener('click', () => {
-            unpinById(pinId);
-            closeAllPinMenus();
-        });
-        setTimeout(() => {
-            document.addEventListener('click', () => closeAllPinMenus(), { once: true });
-        }, 0);
-    }
-
-    function closeAllPinMenus() {
-        document.querySelectorAll('.simple-msg-context-menu').forEach((el) => el.remove());
-    }
-
-    function pinMessage(messageId, content) {
-        pinsRef.push({
-            messageId,
-            content,
-            timestamp: firebase.database.ServerValue.TIMESTAMP,
-        }).catch((err) => {
-            console.error('❌ pinned_messages push 실패', err);
-            alert('메시지 고정에 실패했습니다.');
-        });
-    }
-
-    function unpinByMessageId(messageId) {
-        const pins = state.pins || {};
-        const updates = {};
-        Object.entries(pins).forEach(([id, v]) => {
-            if (v.messageId === messageId) updates[id] = null;
-        });
-        if (Object.keys(updates).length === 0) return;
-        pinsRef.update(updates).catch((err) => {
-            console.error('❌ pinned_messages unpin(update) 실패', err);
-            alert('고정 해제에 실패했습니다.');
-        });
-    }
-
-    function unpinById(pinId) {
-        pinsRef.child(pinId).remove().catch((err) => {
-            console.error('❌ pinned_messages unpin(remove) 실패', err);
-            alert('고정 해제에 실패했습니다.');
-        });
+    if (pinnedBar) {
+        pinnedBar.style.display = 'none'; // 당분간 핀 메시지 상단바 숨김
     }
 }
 

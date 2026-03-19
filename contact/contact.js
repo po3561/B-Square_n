@@ -1,11 +1,8 @@
-// contact.js - B-Square 문의 페이지 로직
+// contact.js - B-Square 문의 페이지 (D1 API 기반)
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('📞 Contact Page Initializing...');
+    console.log('📞 Contact Page Initializing (D1 API)...');
 
-    // bsq_server.js 초기화 대기
-    if (window.BSQ) await window.BSQ.ready;
-
-    const db = window.BSQ?.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
 
     // ---- 카카오 채널 연결 ----
     const btnKakao = document.getElementById('btnKakaoChannel');
@@ -19,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.open('http://pf.kakao.com/_ScJxon/chat', '_blank');
     });
 
-    // ---- 문의 제출 ----
+    // ---- 문의 제출 (D1 API) ----
     const form = document.getElementById('inquiryForm');
     form?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -30,37 +27,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         const title = document.getElementById('inqTitle').value.trim();
         const content = document.getElementById('inqContent').value.trim();
 
-        if (!name || !email || !title || !content) {
-            return alert('필수 항목을 모두 입력해주세요.');
-        }
+        if (!name || !email || !title || !content) return alert('필수 항목을 모두 입력해주세요.');
 
         const btn = document.getElementById('btnSubmitInquiry');
         btn.textContent = '접수 중...';
         btn.disabled = true;
 
         try {
-            const payload = {
-                name,
-                email,
-                category,
-                title,
-                content,
-                status: 'pending',
-                created_at: firebase.database.ServerValue.TIMESTAMP
-            };
+            const payload = { name, email, category, title, content };
+            if (window.__BSQ_DEV_MODE__) payload.submitted_by = 'OPERATOR_GHOST';
 
-            // 개발자 모드 운영자 정보 추가
-            if (window.__BSQ_DEV_MODE__ && window.__BSQ_OPERATOR_PROFILE__) {
-                payload.submitted_by = 'OPERATOR_GHOST';
-            }
+            const result = await window.BSQ.api('/api/inquiries', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
 
-            if (db) {
-                await db.ref('inquiries').push(payload);
-                alert('✅ 문의가 성공적으로 접수되었습니다!\n빠른 시일 내 답변드리겠습니다.');
-                form.reset();
-            } else {
-                throw new Error('서버 연결을 확인해주세요.');
-            }
+            if (!result.success) throw new Error(result.error || '서버 오류');
+
+            alert('✅ 문의가 성공적으로 접수되었습니다!\n빠른 시일 내 답변드리겠습니다.');
+            form.reset();
         } catch (err) {
             console.error('문의 접수 실패:', err);
             alert('문의 접수에 실패했습니다: ' + err.message);
@@ -77,55 +62,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         const adminSection = document.getElementById('adminInquiries');
         if (adminSection) adminSection.style.display = 'block';
 
-        if (!db) return;
+        loadInquiries();
+    }
 
-        // 실시간 문의 목록 로드
-        db.ref('inquiries').orderByChild('created_at').on('value', (snap) => {
-            const list = document.getElementById('inquiryList');
-            if (!list) return;
+    async function loadInquiries() {
+        const list = document.getElementById('inquiryList');
+        if (!list) return;
 
-            const inquiries = [];
-            snap.forEach(child => {
-                inquiries.push({ id: child.key, ...child.val() });
-            });
-            inquiries.reverse(); // 최신순
+        const result = await window.BSQ.api('/api/inquiries');
+        if (!result.success) return;
 
-            if (inquiries.length === 0) {
-                list.innerHTML = '<div class="empty-state">접수된 문의가 없습니다.</div>';
-                return;
-            }
+        const inquiries = result.data || [];
+        if (inquiries.length === 0) {
+            list.innerHTML = '<div class="empty-state">접수된 문의가 없습니다.</div>';
+            return;
+        }
 
-            list.innerHTML = inquiries.map(inq => {
-                const date = inq.created_at ? new Date(inq.created_at).toLocaleString('ko-KR') : '-';
-                const badgeClass = inq.status === 'replied' ? 'replied' : 'pending';
-                const badgeText = inq.status === 'replied' ? '답변완료' : '대기중';
+        list.innerHTML = inquiries.map(inq => {
+            const date = inq.created_at ? new Date(inq.created_at).toLocaleString('ko-KR') : '-';
+            const badgeClass = inq.status === 'replied' ? 'replied' : 'pending';
+            const badgeText = inq.status === 'replied' ? '답변완료' : '대기중';
 
-                return `
-                    <div class="inquiry-item" data-id="${inq.id}">
-                        <div class="inq-header">
-                            <span class="inq-title"><span class="inq-badge ${badgeClass}">${badgeText}</span>${inq.title}</span>
-                            <span class="inq-date">${date}</span>
-                        </div>
-                        <div class="inq-meta">${inq.name} · ${inq.email} · ${inq.category || '일반'}</div>
+            return `
+                <div class="inquiry-item" data-id="${inq.id}">
+                    <div class="inq-header">
+                        <span class="inq-title"><span class="inq-badge ${badgeClass}">${badgeText}</span>${inq.title}</span>
+                        <span class="inq-date">${date}</span>
                     </div>
-                `;
-            }).join('');
+                    <div class="inq-meta">${inq.name} · ${inq.email} · ${inq.category || '일반'}</div>
+                </div>
+            `;
+        }).join('');
 
-            // 클릭 시 상세 보기
-            list.querySelectorAll('.inquiry-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const inq = inquiries.find(i => i.id === item.dataset.id);
-                    if (inq) {
-                        alert(`[${inq.category}] ${inq.title}\n\n보낸 사람: ${inq.name} (${inq.email})\n\n${inq.content}`);
-                    }
-                });
+        list.querySelectorAll('.inquiry-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const inq = inquiries.find(i => i.id === item.dataset.id);
+                if (inq) alert(`[${inq.category}] ${inq.title}\n\n보낸 사람: ${inq.name} (${inq.email})\n\n${inq.content}`);
             });
         });
     }
 
-    // 즉시 체크 또는 이벤트 대기
-    if (window.__BSQ_DEV_MODE__) {
-        initAdminMode();
-    }
+    if (window.__BSQ_DEV_MODE__) initAdminMode();
     window.addEventListener('bsq_dev_mode_activated', initAdminMode);
 });
