@@ -11,6 +11,7 @@ export async function onRequest(context) {
     if (method === 'GET') {
         const category = url.searchParams.get('category') || '';
         const query = url.searchParams.get('q') || '';
+        const creatorId = url.searchParams.get('creator_id') || '';
         const limit = Math.min(parseInt(url.searchParams.get('limit')) || 50, 100);
         const offset = parseInt(url.searchParams.get('offset')) || 0;
 
@@ -21,6 +22,10 @@ export async function onRequest(context) {
             if (category) {
                 sql += ' AND c.category LIKE ?';
                 params.push(`%${category}%`);
+            }
+            if (creatorId) {
+                sql += ' AND c.creator_id = ?';
+                params.push(creatorId);
             }
             if (query) {
                 sql += ' AND (c.title LIKE ? OR c.category LIKE ? OR c.keywords LIKE ?)';
@@ -97,31 +102,53 @@ export async function onRequest(context) {
         }
     }
 
-    // DELETE: 클래스 삭제
+    // DELETE: 클래스 영구 삭제 (모든 연관 데이터 정리)
     if (method === 'DELETE') {
-        try {
-            const id = url.searchParams.get('id');
-            if (!id) return Response.json({ success: false, error: 'ID is required' }, { status: 400 });
+        const id = url.searchParams.get('id');
+        if (!id) return Response.json({ success: false, error: 'ID가 필요합니다.' }, { status: 400 });
 
-            // 연관 데이터 전체 삭제
+        try {
+            console.log(`[API /classes DELETE] Starting Hard Delete for class: ${id}`);
+
+            // 1. 자식 테이블 레코드 삭제 (외래 키 제약 조건 해결)
+            // 모임 관련 (참여자 -> 모임 순)
+            await db.prepare('DELETE FROM gathering_participants WHERE gathering_id IN (SELECT id FROM class_gatherings WHERE class_id = ?)').bind(id).run();
+            await db.prepare('DELETE FROM class_gatherings WHERE class_id = ?').bind(id).run();
+            
+            // 일반 수강 관련 테이블들
             const tables = [
                 'enrollments', 'reviews', 'chats', 'class_notices', 'coupons', 
-                'class_participants', 'class_boards', 'class_gatherings', 
-                'user_passes', 'user_passes_fb'
+                'class_participants', 'class_boards', 'user_passes', 'user_passes_fb'
             ];
 
             for (const table of tables) {
-                await db.prepare(`DELETE FROM ${table} WHERE class_id = ?`).bind(id).run();
+                try {
+                    await db.prepare(`DELETE FROM ${table} WHERE class_id = ?`).bind(id).run();
+                } catch (e) {
+                    console.warn(`[API cleanup] Skipped ${table}:`, e.message);
+                }
+            }
+            
+            // 연락처 참조 제거 (source_class_id)
+            await db.prepare('UPDATE contacts SET source_class_id = NULL WHERE source_class_id = ?').bind(id).run();
+
+            // 2. 메인 클래스 테이블에서 영구 삭제
+            const result = await db.prepare('DELETE FROM classes WHERE id = ?').bind(id).run();
+
+            if (result.meta.changes === 0) {
+                return Response.json({ success: false, error: '삭제할 클래스를 찾을 수 없습니다.' }, { status: 404 });
             }
 
-            // 최종적으로 클래스 삭제
-            await db.prepare('DELETE FROM classes WHERE id = ?').bind(id).run();
-            
-            return Response.json({ success: true, message: 'Class and all related data deleted successfully' });
+            console.log(`[API /classes DELETE] Successfully purged class: ${id}`);
+            return Response.json({ 
+                success: true, 
+                message: '클래스와 모든 연관 데이터가 영구적으로 삭제되었습니다.',
+                id: id
+            });
 
         } catch (error) {
-            console.error('[API /classes DELETE] Error:', error);
-            return Response.json({ success: false, error: error.message }, { status: 500 });
+            console.error('[API /classes DELETE] Fatal Error:', error);
+            return Response.json({ success: false, error: '영구 삭제 중 오류가 발생했습니다.', detail: error.message }, { status: 500 });
         }
     }
 

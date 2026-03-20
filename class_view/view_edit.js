@@ -520,6 +520,7 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                 throw new Error(response.error || '업데이트 실패');
             }
             console.log("✅ D1 update successful");
+            if (window.BSQ?.triggerSync) window.BSQ.triggerSync('edit');
 
             // 현재 페이지 UI 실시간 반영
             Object.assign(classData, updates);
@@ -712,8 +713,8 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                 statsArea.innerHTML = `
                     <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
                         <div class="edit-stat-card"><span class="stat-num">${students.length}</span><span class="stat-label">총 수강생</span></div>
-                        <div class="edit-stat-card"><span class="stat-num">${students.filter(s => s.payment_method === 'card').length}</span><span class="stat-label">유료 결제</span></div>
-                        <div class="edit-stat-card"><span class="stat-num">${students.filter(s => s.payment_method === 'free').length}</span><span class="stat-label">무료 신청</span></div>
+                        <div class="edit-stat-card"><span class="stat-num">${students.filter(s => s.pay_method === 'card').length}</span><span class="stat-label">유료 결제</span></div>
+                        <div class="edit-stat-card"><span class="stat-num">${students.filter(s => s.pay_method === 'free').length}</span><span class="stat-label">무료 신청</span></div>
                     </div>
                 `;
 
@@ -723,12 +724,12 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                     listArea.innerHTML = students.map(s => `
                         <div class="student-row" style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid rgba(255,255,255,0.05);">
                             <div>
-                                <div style="font-weight:600;">${s.user_name || '익명'}</div>
-                                <div style="font-size:0.8rem; color:#888;">${s.user_email || ''}</div>
+                                <div style="font-weight:600;">${s.name || '익명'}</div>
+                                <div style="font-size:0.8rem; color:#888;">${s.email || ''}</div>
                             </div>
                             <div style="text-align:right;">
-                                <div style="font-size:0.8rem; color:var(--comm-accent);">${s.payment_method === 'card' ? '유료 수강' : '무료 수강'}</div>
-                                <div style="font-size:0.7rem; color:#666;">${new Date(s.created_at).toLocaleDateString()}</div>
+                                <div style="font-size:0.8rem; color:var(--comm-accent);">${s.pay_method === 'card' ? '유료 수강' : '무료 수강'}</div>
+                                <div style="font-size:0.7rem; color:#666;">${new Date(s.enrolled_at).toLocaleDateString()}</div>
                             </div>
                         </div>
                     `).join('');
@@ -861,9 +862,11 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
 
                 if (res.success) {
                     alert('클래스가 성공적으로 삭제되었습니다.');
-                    location.href = '/'; // 메인 페이지로 이동
+                    if (window.BSQ?.triggerSync) window.BSQ.triggerSync('delete');
+                    // 메인 페이지로 이동 (서브디렉토리 구조 고려)
+                    window.location.href = '../index.html'; 
                 } else {
-                    alert('삭제 실패: ' + (res.error || '알 수 없는 오류'));
+                    alert('삭제 실패: ' + (res.error || '연관된 데이터가 있어 삭제할 수 없습니다.'));
                     btnDeleteFinal.disabled = false;
                     btnDeleteFinal.textContent = '🗑️ 클래스 영구 삭제';
                 }

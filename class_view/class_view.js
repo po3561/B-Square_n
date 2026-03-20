@@ -325,6 +325,7 @@ async function handleFreeEnrollment() {
         isEnrolled = true;
         updateEnrollmentUI();
         showToast('success', '수강 신청 완료! 🎉', `"${classData?.title}" 클래스를 무료로 시작합니다.`);
+        if (window.BSQ?.triggerSync) window.BSQ.triggerSync('enroll');
         setTimeout(() => window.location.reload(), 1500);
     } catch (err) {
         console.error("Free enrollment error:", err);
@@ -551,6 +552,7 @@ async function finalizeEnrollment(rsp) {
         isEnrolled = true;
         updateEnrollmentUI();
         showToast('success', '결제 완료! 🎉', `"${classData.title}" 클래스 수강이 시작됩니다.`);
+        if (window.BSQ?.triggerSync) window.BSQ.triggerSync('enroll');
         setTimeout(() => window.location.reload(), 1500);
     } catch (err) {
         console.error("Enrollment save error:", err);

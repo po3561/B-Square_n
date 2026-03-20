@@ -363,11 +363,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (btnUploadImage) btnUploadImage.style.display = uploadedImages.length >= 6 ? 'none' : 'flex';
     }
 
+    // --- 폼 제출 방지 (엔터 키 오작동 방지) ---
+    form.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            return false;
+        }
+    });
+
     // --- 최종 제출 ---
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        // [안전 장치] 마지막 단계가 아니면 제출 중단
         const isFree = form.querySelector('input[name="isFree"]:checked')?.value === 'true';
+        const finalStep = isFree ? 6 : totalSteps;
+        if (currentStep < finalStep) {
+            console.warn("⚠️ Early submission blocked. Current step:", currentStep);
+            return;
+        }
 
         if (uploadedImages.length < 3) {
             alert("최소 3장의 커버 이미지를 등록해 주세요.");
@@ -440,6 +454,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!result.success) throw new Error(result.error || '실패');
 
             alert("클래스가 성공적으로 개설되었습니다!");
+            if (window.BSQ?.triggerSync) window.BSQ.triggerSync('create');
             window.location.href = '../mi_pesg/mypage.html';
 
         } catch (error) {

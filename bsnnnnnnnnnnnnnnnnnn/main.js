@@ -6,6 +6,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 메인 페이지 데이터 로드 및 렌더링
     initMainPage();
 
+    // [신규] 실시간 동기화 리스너
+    window.addEventListener('bsq_sync', (e) => {
+        console.log('[BSQ Sync] 데이터 갱신 요청 감지:', e.detail);
+        initMainPage();
+    });
+
     // 광고 배너 로드
     initBanners();
 
