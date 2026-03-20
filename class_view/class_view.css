@@ -35,10 +35,28 @@
 }
 
 /* Quill HTML 뷰어 */
+.html-viewer {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
 .html-viewer,
 .html-viewer * {
     color: #ffffff !important;
     background-color: transparent !important;
+    max-width: 100%; /* 내부 요소들이 부모를 넘지 못하도록 강제 */
+    box-sizing: border-box;
+}
+
+.html-viewer img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1rem 0;
+    border-radius: 8px;
 }
 
 .html-viewer h1,
@@ -246,7 +264,7 @@
    ======================== */
 .view-grid {
     display: grid;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: minmax(0, 1fr) 380px;
     gap: 3rem;
     padding: 2rem 0;
 }

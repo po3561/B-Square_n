@@ -1,6 +1,7 @@
 // GET /api/notices — 공지 목록
-// POST /api/notices — 공지 작성 (관리자)
-// PUT /api/notices/views — 조회수 증가
+// POST /api/notices — 공지 작성/수정 (관리자)
+// DELETE /api/notices — 공지 삭제 (관리자)
+
 export async function onRequestGet(context) {
   const { request, env } = context;
   const cors = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
@@ -8,14 +9,11 @@ export async function onRequestGet(context) {
   const noticeId = url.searchParams.get('id');
 
   try {
-    // 단일 공지 조회
     if (noticeId) {
       const notice = await env.DB.prepare('SELECT * FROM notices WHERE id = ?').bind(noticeId).first();
       if (!notice) return new Response(JSON.stringify({ success: false, error: '공지를 찾을 수 없습니다.' }), { status: 404, headers: cors });
 
-      // 좋아요 수
       const likeCount = await env.DB.prepare('SELECT COUNT(*) as cnt FROM notice_likes WHERE notice_id = ?').bind(noticeId).first();
-      // 댓글
       const { results: comments } = await env.DB.prepare('SELECT * FROM notice_comments WHERE notice_id = ? ORDER BY created_at ASC').bind(noticeId).all();
 
       return new Response(JSON.stringify({
@@ -24,7 +22,6 @@ export async function onRequestGet(context) {
       }), { headers: cors });
     }
 
-    // 전체 목록
     const { results } = await env.DB.prepare(
       'SELECT * FROM notices WHERE is_hidden = 0 ORDER BY CASE WHEN type = "important" THEN 0 ELSE 1 END, created_at DESC'
     ).all();
@@ -42,7 +39,7 @@ export async function onRequestPost(context) {
   try {
     const body = await request.json();
 
-    // 조회수 증가 요청
+    // 조회수 증가
     if (body.action === 'increment_views' && body.notice_id) {
       await env.DB.prepare('UPDATE notices SET views = views + 1 WHERE id = ?').bind(body.notice_id).run();
       return new Response(JSON.stringify({ success: true }), { headers: cors });
@@ -67,11 +64,20 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ success: true, data: { id: commentId } }), { status: 201, headers: cors });
     }
 
-    // 공지 생성
+    // 공지 생성 또는 수정
     if (body.title) {
-      const id = 'ntc_' + crypto.randomUUID().replace(/-/g, '').substring(0, 12);
-      await env.DB.prepare('INSERT INTO notices (id, title, content, type, author_name) VALUES (?, ?, ?, ?, ?)').bind(id, body.title, body.content || '', body.type || 'normal', body.author_name || '관리자').run();
-      return new Response(JSON.stringify({ success: true, data: { id } }), { status: 201, headers: cors });
+      if (body.id) {
+        // 수정
+        await env.DB.prepare('UPDATE notices SET title = ?, content = ?, type = ?, is_hidden = ?, updated_at = datetime("now") WHERE id = ?')
+          .bind(body.title, body.content || '', body.type || 'normal', body.is_hidden ? 1 : 0, body.id)
+          .run();
+        return new Response(JSON.stringify({ success: true, message: 'Updated' }), { headers: cors });
+      } else {
+        // 생성
+        const id = 'ntc_' + crypto.randomUUID().replace(/-/g, '').substring(0, 12);
+        await env.DB.prepare('INSERT INTO notices (id, title, content, type, author_name) VALUES (?, ?, ?, ?, ?)').bind(id, body.title, body.content || '', body.type || 'normal', body.author_name || '관리자').run();
+        return new Response(JSON.stringify({ success: true, data: { id } }), { status: 201, headers: cors });
+      }
     }
 
     return new Response(JSON.stringify({ success: false, error: '요청 형식 오류' }), { status: 400, headers: cors });
@@ -80,6 +86,24 @@ export async function onRequestPost(context) {
   }
 }
 
+export async function onRequestDelete(context) {
+  const { request, env } = context;
+  const cors = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
+  const url = new URL(request.url);
+  const id = url.searchParams.get('id');
+
+  if (!id) return new Response(JSON.stringify({ success: false, error: 'ID is required' }), { status: 400, headers: cors });
+
+  try {
+    await env.DB.prepare('DELETE FROM notices WHERE id = ?').bind(id).run();
+    await env.DB.prepare('DELETE FROM notice_likes WHERE notice_id = ?').bind(id).run();
+    await env.DB.prepare('DELETE FROM notice_comments WHERE notice_id = ?').bind(id).run();
+    return new Response(JSON.stringify({ success: true, message: 'Deleted' }), { headers: cors });
+  } catch (err) {
+    return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500, headers: cors });
+  }
+}
+
 export async function onRequestOptions() {
-  return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } });
+  return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } });
 }

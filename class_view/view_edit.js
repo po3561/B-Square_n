@@ -86,6 +86,7 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                 <button type="button" class="db-tab-btn" data-target="dbTabInstructors" style="background:none; border:none; color:#888; padding:10px 15px; cursor:pointer; font-weight:600;">👥 서브 강사</button>
                 <button type="button" class="db-tab-btn" data-target="dbTabStudents" style="background:none; border:none; color:#888; padding:10px 15px; cursor:pointer; font-weight:600;">🎓 수강생 및 결제</button>
                 <button type="button" class="db-tab-btn" data-target="dbTabCoupons" style="background:none; border:none; color:#888; padding:10px 15px; cursor:pointer; font-weight:600;">🎟️ 쿠폰 관리</button>
+                <button type="button" class="db-tab-btn" data-target="dbTabDelete" style="background:none; border:none; color:#ff4d4d; padding:10px 15px; cursor:pointer; font-weight:600;">🗑️ 클래스 삭제</button>
             </div>
 
             <!-- TAB 1: 정보 수정 -->
@@ -262,6 +263,26 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                     <h4 class="edit-section-title">📚 발행된 쿠폰 내역</h4>
                     <div id="couponListArea">
                         불러오는 중...
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: 클래스 삭제 -->
+            <div id="dbTabDelete" class="db-tab-content" style="display:none;">
+                <div class="edit-section" style="background:rgba(255,77,77,0.05); border:1px solid rgba(255,77,77,0.2); padding:2rem; border-radius:15px; text-align:center;">
+                    <h4 style="color:#ff4d4d; font-size:1.4rem; margin-bottom:1rem;">⚠️ 클래스 삭제 주의사항</h4>
+                    <p style="color:#ccc; margin-bottom:1.5rem; line-height:1.6;">
+                        클래스를 삭제하면 모든 수강생 정보, 후기, 채팅 메시지, 쿠폰 등<br>
+                        <strong>관련된 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.</strong><br>
+                        정말 삭제하시겠습니까?
+                    </p>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:15px;">
+                        <input type="text" id="deleteConfirmInput" placeholder="삭제를 원하시면 클래스 제목을 정확히 입력하세요" 
+                            style="width:100%; max-width:400px; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.3); color:#fff; text-align:center;">
+                        <button class="btn-submit" id="btnDeleteClassFinal" 
+                            style="background:#ff4d4d; border:none; padding:12px 40px; border-radius:30px; color:#fff; font-weight:800; cursor:pointer; box-shadow: 0 4px 15px rgba(255,77,77,0.3);">
+                            🗑️ 클래스 영구 삭제
+                        </button>
                     </div>
                 </div>
             </div>
@@ -737,12 +758,12 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                     couponListArea.innerHTML = coupons.map(c => `
                         <div class="coupon-item" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.05);">
                             <div>
-                                <div style="font-weight:800; color:var(--comm-accent); letter-spacing:1px;">${c.code}</div>
+                                <div style="font-weight:800; color:var(--comm-accent); letter-spacing:1px;">${c.coupon_code}</div>
                                 <div style="font-size:0.8rem; color:#aaa;">${c.type === 'percent' ? c.value + '%' : c.value.toLocaleString() + '원'} 할인</div>
                             </div>
                             <div style="text-align:right;">
-                                <div style="font-size:0.75rem;">사용: ${c.used_count || 0} / ${c.max_limit === 0 ? '무제한' : c.max_limit}</div>
-                                <button class="btn-delete-coupon" data-code="${c.code}" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:0.8rem; margin-top:4px;">삭제</button>
+                                <div style="font-size:0.75rem;">사용: ${c.used_count || 0} / ${c.limit_count === 0 ? '무제한' : c.limit_count}</div>
+                                <button class="btn-delete-coupon" data-code="${c.coupon_code}" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:0.8rem; margin-top:4px;">삭제</button>
                             </div>
                         </div>
                     `).join('');
@@ -807,6 +828,49 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
             } finally {
                 btnCreateCoupon.disabled = false;
                 btnCreateCoupon.textContent = '쿠폰 생성';
+            }
+        };
+    }
+
+    // ========================
+    // 12. 클래스 삭제 로직
+    // ========================
+    const btnDeleteFinal = document.getElementById('btnDeleteClassFinal');
+    if (btnDeleteFinal) {
+        btnDeleteFinal.onclick = async () => {
+            const confirmInput = document.getElementById('deleteConfirmInput');
+            const userInput = confirmInput.value.trim();
+            const classTitle = classData.title.trim();
+
+            if (userInput !== classTitle) {
+                alert('클래스 제목이 일치하지 않습니다. 삭제를 원하시면 정확히 입력해 주세요.');
+                return;
+            }
+
+            if (!confirm(`'${classTitle}' 클래스를 정말로 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+                return;
+            }
+
+            btnDeleteFinal.disabled = true;
+            btnDeleteFinal.textContent = '🗑️ 삭제 중...';
+
+            try {
+                const res = await window.BSQ.api(`/api/classes?id=${classId}`, {
+                    method: 'DELETE'
+                });
+
+                if (res.success) {
+                    alert('클래스가 성공적으로 삭제되었습니다.');
+                    location.href = '/'; // 메인 페이지로 이동
+                } else {
+                    alert('삭제 실패: ' + (res.error || '알 수 없는 오류'));
+                    btnDeleteFinal.disabled = false;
+                    btnDeleteFinal.textContent = '🗑️ 클래스 영구 삭제';
+                }
+            } catch (err) {
+                alert('통신 오류가 발생했습니다.');
+                btnDeleteFinal.disabled = false;
+                btnDeleteFinal.textContent = '🗑️ 클래스 영구 삭제';
             }
         };
     }

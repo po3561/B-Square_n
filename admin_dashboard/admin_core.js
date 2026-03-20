@@ -23,60 +23,47 @@ document.addEventListener('DOMContentLoaded', async () => {
  * Boots unauthorized users back to the index page immediately.
  */
 async function verifyAdminAccess() {
-    const adminUserName = document.getElementById('adminUserName');
+    const adminUserNameLabel = document.getElementById('adminUserName');
 
     // ★ bsq_server.js 의 전역 초기화 완전 대기
     if (window.BSQ && window.BSQ.ready) {
         await window.BSQ.ready;
     } else {
-        await new Promise(resolve => setTimeout(resolve, 800));
+        // Fallback wait
+        await new Promise(resolve => setTimeout(resolve, 1000));
     }
+
+    const isLoggedIn = window.BSQ?.isLoggedIn?.();
+    const user = window.BSQ?.getUser?.();
 
     let isAuthorized = false;
-    let userName = "총괄 운영자";
+    let displayName = "운영자";
 
-    // 1. 전역 DEV_MODE 플래그 체크 (가장 확실한 방법)
-    if (window.__BSQ_DEV_MODE__) {
-        isAuthorized = true;
-    }
+    if (isLoggedIn && user) {
+        // 관리자 권한 체크 (role 또는 하드코딩된 관리자 이메일/ID)
+        const isAdminRole = user.role === 'admin' || user.user_type === 'admin';
+        const isDevUser = ['promise1', 'promise9907@naver.com', 'ej210651392@naver.com', 'po3561@naver.com'].includes(user.email || user.username);
 
-    // 2. Firebase Auth 하드코딩 폴백
-    if (!isAuthorized) {
-        const fbUser = typeof firebase !== 'undefined' ? firebase.auth().currentUser : null;
-        if (fbUser && (fbUser.email === 'promise9907@naver.com' || fbUser.email === 'ej210651392@naver.com' || fbUser.email === 'po3561@naver.com')) {
+        if (isAdminRole || isDevUser) {
             isAuthorized = true;
-            userName = fbUser.displayName || fbUser.email.split('@')[0];
-        }
-    }
-
-    // 3. Supabase Auth 
-    if (!isAuthorized && window.supabaseClient) {
-        try {
-            const { data: { session } } = await window.supabaseClient.auth.getSession();
-            if (session && session.user) {
-                const userEmail = session.user.email || '';
-                const { data: profile } = await window.supabaseClient.from('users').select('name, username').eq('id', session.user.id).maybeSingle();
-                const currentUsername = profile?.username || '';
-
-                if (userEmail === 'promise9907@naver.com' || userEmail === 'ej210651392@naver.com' || userEmail === 'po3561@naver.com' || userEmail.includes('promise1') || currentUsername === 'promise1') {
-                    isAuthorized = true;
-                    if (profile && profile.name) userName = profile.name;
-                }
-            }
-        } catch (err) {
-            console.error("Admin Supabase Check Failed", err);
+            displayName = user.name || user.username || "운영자";
+            window.__BSQ_DEV_MODE__ = true; // 관리자 모드 플래그 활성화
+            console.log("[Admin Core] Admin access granted for:", displayName);
         }
     }
 
     if (!isAuthorized) {
         console.warn("🚫 UNAUTHORIZED ACCESS ATTEMPT TO ADMIN DASHBOARD");
-        alert("접근 권한이 없습니다. 관리자 계정으로 로그인해주세요.");
-        window.location.replace('../index.html');
+        alert("관리자 권한이 없습니다. 관리자 계정으로 로그인해주세요.");
+        // 로그인 페이지로 리다이렉트 (현재 위치를 redirect 파라미터로 전달)
+        const loginUrl = '../auth_1/auth_1.html?redirect=' + encodeURIComponent(window.location.href);
+        window.location.replace(loginUrl);
         return;
     }
 
-    console.log("✅ Admin Access Granted for:", userName);
-    if (adminUserName) adminUserName.textContent = userName;
+    if (adminUserNameLabel) {
+        adminUserNameLabel.textContent = displayName;
+    }
 }
 
 /**

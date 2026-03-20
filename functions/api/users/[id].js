@@ -27,7 +27,7 @@ export async function onRequestPut(context) {
 
   try {
     const body = await request.json();
-    const allowedFields = ['name', 'phone', 'profile_image_url', 'sns_link', 'preferred_category', 'birth_year', 'birth_month', 'birth_day', 'gender', 'nationality'];
+    const allowedFields = ['name', 'phone', 'profile_image_url', 'sns_link', 'preferred_category', 'birth_year', 'birth_month', 'birth_day', 'gender', 'nationality', 'role'];
 
     const updates = [];
     const values = [];

@@ -11,39 +11,7 @@
     padding: 0 2rem;
 }
 
-.category-header-section {
-    margin-bottom: 3rem;
-    display: flex;
-    justify-content: center;
-}
-
-.category-grid ul {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-}
-
-.category-grid li a {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: var(--card-bg, rgba(30, 30, 30, 0.6));
-    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
-    border-radius: 30px;
-    color: var(--text-secondary, #a0a0a0);
-    font-weight: 500;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-}
-
-.category-grid li a:hover,
-.category-grid li a.active {
-    background: var(--accent-color, #ffffff);
-    color: var(--bg-color, #0d0d0d);
-    border-color: var(--accent-color, #ffffff);
-}
+/* Category grid styles are now handled by .category-sidebar in style_pc.css */
 
 .class-page-overrides .class-grid-header {
     display: flex;
@@ -188,38 +156,7 @@
         padding-top: 1.5rem;
     }
 
-    .category-header-section {
-        margin-bottom: 2rem;
-    }
-
-    .category-grid ul {
-        gap: 8px;
-        justify-content: flex-start;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-bottom: 10px;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .category-grid ul::-webkit-scrollbar {
-        height: 6px;
-    }
-
-    .category-grid ul::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 3px;
-    }
-
-    .category-grid li {
-        scroll-snap-align: start;
-        flex-shrink: 0;
-    }
-
-    .category-grid li a {
-        padding: 8px 16px;
-        font-size: 0.85rem;
-    }
+    /* Mobile category styles are now handled by @media in style_pc.css */
 
     .class-page-overrides .class-grid-header {
         flex-direction: column;

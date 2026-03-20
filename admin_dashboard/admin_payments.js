@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// 1. Load Payment/Transaction List (D1 API)
 async function loadAdminPayments() {
     const tbody = document.getElementById('adminPaymentsTableBody');
     if (!tbody) return;
@@ -38,70 +39,59 @@ async function loadAdminPayments() {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem;">결제 내역을 불러오는 중입니다...</td></tr>';
 
     try {
-        const db = firebase.database();
-        // Fallback or read from a defined payments node
-        const snap = await db.ref('user_passes').once('value'); 
-        const passesData = snap.val();
+        if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
+        const res = await window.BSQ.api('/api/admin/transactions');
 
-        if (!passesData) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color:var(--admin-text-muted);">결제 내역이 없습니다.</td></tr>';
+        if (!res || !res.success) {
+            throw new Error(res?.error || 'Failed to fetch transactions');
+        }
+
+        const transactions = res.data || [];
+
+        if (transactions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color:var(--admin-text-muted);">결제/수강 내역이 없습니다.</td></tr>';
             return;
         }
 
-        // Aggregate across all users for admin view
-        const allTransactions = [];
-        Object.entries(passesData).forEach(([userId, classObj]) => {
-            Object.entries(classObj).forEach(([classId, passes]) => {
-                const passesArray = Array.isArray(passes) ? passes : Object.values(passes);
-                passesArray.forEach(p => {
-                    allTransactions.push({
-                        userId: userId,
-                        classId: classId,
-                        ...p
-                    });
-                });
-            });
-        });
-
-        allTransactions.sort((a, b) => (b.purchased_at || 0) - (a.purchased_at || 0));
-
-        if (allTransactions.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color:var(--admin-text-muted);">결제 내역이 없습니다.</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = allTransactions.map(tx => {
-            const dateStr = tx.purchased_at ? new Date(tx.purchased_at).toLocaleString('ko-KR') : '-';
-            const price = tx.price ? parseInt(tx.price).toLocaleString() : '0';
+        tbody.innerHTML = transactions.map(tx => {
+            const dateStr = tx.created_at ? new Date(tx.created_at).toLocaleString('ko-KR') : '-';
+            const priceStr = tx.amount_paid ? parseInt(tx.amount_paid).toLocaleString() : '0';
             
-            let statusBadge = '<span class="admin-badge success payment-status" data-status="paid">결제 완료</span>';
-            let typeBadge = '<span class="admin-badge primary">일반 수강권</span>';
-
-            if (tx.pass_type === 'monthly') typeBadge = '<span class="admin-badge" style="background:rgba(167,119,227,0.1); color:#a777e3;">월정액 (구독)</span>';
-            if (tx.pass_type === 'count') typeBadge = `<span class="admin-badge muted">회차권 (${tx.total_count}회)</span>`;
-
-            // Mocking a refund state for UI demonstration if price is negative/refunded
-            if (tx.status === 'refunded') {
-                statusBadge = '<span class="admin-badge danger payment-status" data-status="refunded">환불됨</span>';
-            }
+            const statusLabel = tx.status === 'active' ? '결제 완료' : (tx.status === 'refunded' ? '환불됨' : tx.status);
+            const statusClass = tx.status === 'active' ? 'success' : 'danger';
+            
+            let statusBadge = `<span class="admin-badge ${statusClass} payment-status" data-status="${tx.status}">${statusLabel}</span>`;
+            
+            // 결제 수단 한글화
+            const methodMap = {
+                'card': '신용카드',
+                'trans': '계좌이체',
+                'vbank': '가상계좌',
+                'phone': '휴대폰결제',
+                'free': '무료/쿠폰'
+            };
+            const methodLabel = methodMap[tx.payment_method] || tx.payment_method || '일반결제';
 
             return `
                 <tr>
                     <td style="font-size:0.85rem; color:var(--admin-text-muted);">${dateStr}</td>
-                    <td style="font-weight:600;">UID: ${tx.userId.substring(0,6)}...</td>
                     <td>
-                        <div style="font-weight:600; color:var(--admin-text-main); margin-bottom:4px;">Class: ${tx.classId.substring(0,8)}...</div>
-                        ${typeBadge}
+                        <div style="font-weight:600; color:var(--admin-text-main);">${tx.user_name || '이름 없음'}</div>
+                        <div style="font-size:0.8rem; color:var(--admin-text-muted);">ID: ${tx.user_id?.substring(0,8)}...</div>
                     </td>
-                    <td><span class="admin-badge muted">신용카드/간편결제</span></td>
-                    <td style="font-weight:700;">₩${price}</td>
+                    <td>
+                        <div style="font-weight:600; color:var(--admin-text-main); margin-bottom:4px;">${tx.class_title || '삭제된 클래스'}</div>
+                        <div style="font-size:0.8rem; color:var(--admin-text-muted);">ID: ${tx.class_id?.substring(0,8)}...</div>
+                    </td>
+                    <td><span class="admin-badge muted">${methodLabel}</span></td>
+                    <td style="font-weight:700;">₩${priceStr}</td>
                     <td>${statusBadge}</td>
                 </tr>
             `;
         }).join('');
 
     } catch (err) {
-        console.error("Failed to load payments", err);
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color:var(--admin-danger);">데이터 로딩 실패</td></tr>';
+        console.error("Failed to load transactions from D1:", err);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color:var(--admin-danger);">데이터 로딩 실패: ' + err.message + '</td></tr>';
     }
 }

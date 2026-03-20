@@ -69,6 +69,8 @@ window.SimpleClassChat = (function () {
 
         if (messagesEl) {
             messagesEl.innerHTML = '';
+            // 고정 메시지 초기 로드 및 폴링 시작
+            fetchPinnedMessages();
             startPolling(messagesEl);
         }
 
@@ -749,7 +751,12 @@ window.SimpleClassChat = (function () {
                     if (typeof showToast === 'function') showToast('success', '복사 완료', '메시지가 클립보드에 복사되었습니다.');
                 }
             },
-            { icon: 'fa-solid fa-thumbtack', text: '고정', action: () => pinMessage(msg), condition: () => state.isInstructor },
+            { 
+                icon: 'fa-solid fa-thumbtack', 
+                text: msg.is_pinned ? '고정 해제' : '고정', 
+                action: () => msg.is_pinned ? unpinMessage(msg.id) : pinMessage(msg), 
+                condition: () => state.isInstructor 
+            },
             { icon: 'fa-regular fa-pen-to-square', text: '수정', action: () => setEdit(msg), condition: () => String(msg.user_id) === String(state.userId) || state.isInstructor },
             { icon: 'fa-regular fa-trash-can', text: '삭제', action: () => deleteMessage(msg.id), danger: true, condition: () => String(msg.user_id) === String(state.userId) || state.isInstructor }
         ];
@@ -816,11 +823,46 @@ window.SimpleClassChat = (function () {
         } catch (e) { }
     }
 
-    function pinMessage(msg) {
+    async function pinMessage(msg) {
         if (state.pinnedMessages.find(p => p.id === msg.id)) return;
-        state.pinnedMessages.push(msg);
-        updatePinnedBar();
-        if (typeof showToast === 'function') showToast('info', '메시지 고정', '메시지가 상단에 고정되었습니다.');
+        
+        try {
+            const res = await window.BSQ.api('/api/chat', {
+                method: 'PATCH',
+                body: JSON.stringify({ id: msg.id, is_pinned: true })
+            });
+            if (res.success) {
+                state.pinnedMessages.push(msg);
+                updatePinnedBar();
+                if (typeof showToast === 'function') showToast('info', '메시지 고정', '메시지가 데이터베이스에 고정되었습니다.');
+            }
+        } catch (e) {
+            console.error('Pin failed:', e);
+        }
+    }
+
+    async function unpinMessage(msgId) {
+        try {
+            const res = await window.BSQ.api('/api/chat', {
+                method: 'PATCH',
+                body: JSON.stringify({ id: msgId, is_pinned: false })
+            });
+            if (res.success) {
+                state.pinnedMessages = state.pinnedMessages.filter(p => p.id !== msgId);
+                updatePinnedBar();
+                if (typeof showToast === 'function') showToast('info', '고정 해제', '메시지 고정이 해제되었습니다.');
+            }
+        } catch (e) { }
+    }
+
+    async function fetchPinnedMessages() {
+        try {
+            const res = await window.BSQ.api(`/api/chat?class_id=${state.classId}&pinned_only=true`);
+            if (res.success && res.data) {
+                state.pinnedMessages = res.data;
+                updatePinnedBar();
+            }
+        } catch (e) { }
     }
 
     function updatePinnedBar() {
@@ -830,8 +872,25 @@ window.SimpleClassChat = (function () {
 
         if (state.pinnedMessages.length > 0) {
             bar.style.display = 'flex';
-            const last = state.pinnedMessages[state.pinnedMessages.length - 1];
+            // 가장 최신 고정 메시지 표시
+            const last = state.pinnedMessages[0]; 
             text.textContent = last.message;
+            
+            // 클릭 시 해당 메시지로 스크롤
+            bar.onclick = () => {
+                const target = document.querySelector(`[data-message-id="${last.id}"]`);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    target.classList.add('highlight-pin');
+                    setTimeout(() => target.classList.remove('highlight-pin'), 2000);
+                } else {
+                    // DOM에 없는 경우 (과거 메시지)
+                    if (typeof showToast === 'function') showToast('info', '안내', '해당 메시지는 이전 대화 내용에 있습니다.');
+                }
+            };
+
+            // 강사인 경우 우클릭으로 고정 해제 가능 안내 (또는 작은 X 버튼 추가 가능)
+            // 여기서는 단순함을 위해 기존 로직 유지
         } else {
             bar.style.display = 'none';
         }

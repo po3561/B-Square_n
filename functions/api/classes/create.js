@@ -23,10 +23,14 @@ export async function onRequestPost(context) {
       INSERT INTO classes (
         id, creator_id, creator_email, title, category, keywords, summary, 
         description, description_text, price, discount_rate, coupon_pack, 
-        class_type, operating_mode, capacity_min, capacity_max, image_url, 
-        image_urls, curriculum, sub_instructors, target_audience, objectives
+        class_type, operating_mode, capacity_min, capacity_max, 
+        tickets_price_one_time, tickets_pass_count, tickets_price_multi, tickets_price_monthly,
+        payment_card, payment_bank_transfer, payment_bank_name, payment_bank_account, payment_bank_holder,
+        is_free, instructor_phone, instructor_name, instructor_email,
+        image_url, image_urls, curriculum, sub_instructors, target_audience, objectives,
+        coupon_detail
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       classId,
       body.creator_id,
@@ -44,12 +48,26 @@ export async function onRequestPost(context) {
       body.operating_mode || 'ONEDAY',
       body.capacity?.min || null,
       body.capacity?.max || null,
+      body.price_one_time || null,
+      body.pass_count || null,
+      body.price_multi || null,
+      body.price_monthly || null,
+      1, // payment_card (UI pills removed, default to allow)
+      1, // payment_bank_transfer (UI pills removed, default to allow)
+      body.bank_info?.name || null,
+      body.bank_info?.account || null,
+      body.bank_info?.holder || null,
+      body.is_free ? 1 : 0,
+      body.instructor_phone || null,
+      body.instructor_name || null,
+      body.instructor_email || null,
       body.image_url || null,
       image_urls,
       curriculum,
       sub_instructors,
       target_audience,
-      objectives
+      objectives,
+      body.coupon_detail || null
     ).run();
 
     return new Response(JSON.stringify({ success: true, data: { id: classId } }), { status: 201, headers: cors });

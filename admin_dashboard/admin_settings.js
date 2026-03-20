@@ -214,16 +214,23 @@ window.addBannerItem = function(imgUrl = '', linkUrl = '') {
 
 async function loadSiteSettings(type) {
     try {
-        const db = firebase.database();
-        const snap = await db.ref('site_settings').once('value');
-        const settings = snap.val() || {};
+        if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
+        const res = await window.BSQ.api('/api/site-settings');
+
+        if (!res || !res.success) {
+            throw new Error(res?.error || 'Failed to load settings');
+        }
+
+        const settings = res.data || {};
+        // 전역 캐시 업데이트 (배너 업데이트 등을 위해)
+        window.__BSQ_SITE_SETTINGS__ = settings;
 
         if (type === 'homepage') {
-            document.getElementById('settingSiteName').value = settings.siteName || '';
-            document.getElementById('settingSiteURL').value = settings.siteURL || '';
+            document.getElementById('settingSiteName').value = settings.site_name || '';
+            document.getElementById('settingSiteURL').value = settings.site_url || '';
             
-            const logoURL = settings.logoURL || '';
-            const faviconURL = settings.faviconURL || '';
+            const logoURL = settings.logo_url || '';
+            const faviconURL = settings.favicon_url || '';
             
             document.getElementById('settingLogoURL').value = logoURL;
             if (logoURL) {
@@ -252,13 +259,13 @@ async function loadSiteSettings(type) {
             }
         } 
         else if (type === 'footer') {
-            document.getElementById('setFooterCompany').value = settings.companyName || '';
-            document.getElementById('setFooterCEO').value = settings.ceoName || '';
+            document.getElementById('setFooterCompany').value = settings.company_name || '';
+            document.getElementById('setFooterCEO').value = settings.ceo_name || '';
             document.getElementById('setFooterAddress').value = settings.address || '';
-            document.getElementById('setFooterBizNum').value = settings.bizNum || '';
-            document.getElementById('setFooterMailNum').value = settings.mailOrderNum || '';
-            document.getElementById('setFooterCS').value = settings.csPhone || '';
-            document.getElementById('setFooterEmail').value = settings.csEmail || '';
+            document.getElementById('setFooterBizNum').value = settings.biz_num || '';
+            document.getElementById('setFooterMailNum').value = settings.mail_order_num || '';
+            document.getElementById('setFooterCS').value = settings.cs_phone || '';
+            document.getElementById('setFooterEmail').value = settings.cs_email || '';
         } 
         else if (type === 'seo') {
             const seo = settings.seo || {};
@@ -268,35 +275,32 @@ async function loadSiteSettings(type) {
             document.getElementById('seoImage').value = seo.image || '';
         }
     } catch (err) {
-        console.error("Failed to load site settings", err);
-        if (err.message && err.message.toLowerCase().includes('permission_denied')) {
-            const banner = document.getElementById('globalErrorBanner');
-            if (banner) {
-                banner.style.display = 'flex';
-                banner.innerHTML = `
-                    <div style="flex:1;">
-                        <strong style="display:block; margin-bottom:0.3rem;">데이터베이스 접근이 거부되었습니다. (Permission Denied)</strong>
-                        <span style="font-size:0.85rem; opacity:0.9; display:block; margin-bottom:0.3rem;">Firebase 익명 로그인이 꺼져있거나 규칙이 누락되었습니다.</span>
-                        <span style="font-size:0.8rem; opacity:0.8; display:block;">해결 방법 1: Firebase Console -> Authentication -> Sign-in method -> 익명(Anonymous) 사용 설정<br>
-                        해결 방법 2: firebase_rules.json 최신 버전을 복사 후 Realtime Database -> 규칙(Rules)에 게시</span>
-                    </div>
-                    <button onclick="this.parentElement.style.display='none'" style="background:none; border:none; color:inherit; font-size:1.2rem; cursor:pointer; padding:0 0.5rem;">&times;</button>
-                `;
-            }
-        }
+        console.error("Failed to load site settings from D1:", err);
+        alert("설정을 불러오는데 실패했습니다: " + err.message);
     }
 }
 
 async function saveSiteSettings(type) {
+    const btn = document.querySelector(`.btn-primary[onclick="saveSiteSettings('${type}')"]`) || document.getElementById('btnSaveSettings');
+    if (btn) {
+        btn.disabled = true;
+        const originalText = btn.textContent;
+        btn.textContent = '저장 중...';
+    }
+
     try {
-        const db = firebase.database();
-        const updates = {};
+        // 기존 캐시된 데이터 가져오기
+        if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
+        const resCurrent = await window.BSQ.api('/api/site-settings');
+        const currentData = resCurrent.success ? resCurrent.data : {};
+
+        const payload = { ...currentData };
 
         if (type === 'homepage') {
-            updates['site_settings/siteName'] = document.getElementById('settingSiteName').value.trim();
-            updates['site_settings/siteURL'] = document.getElementById('settingSiteURL').value.trim();
-            updates['site_settings/logoURL'] = document.getElementById('settingLogoURL').value.trim();
-            updates['site_settings/faviconURL'] = document.getElementById('settingFaviconURL').value.trim();
+            payload.site_name = document.getElementById('settingSiteName').value.trim();
+            payload.site_url = document.getElementById('settingSiteURL').value.trim();
+            payload.logo_url = document.getElementById('settingLogoURL').value.trim();
+            payload.favicon_url = document.getElementById('settingFaviconURL').value.trim();
 
             const bannerItems = document.querySelectorAll('.banner-item');
             const banners = Array.from(bannerItems).map(item => {
@@ -304,21 +308,21 @@ async function saveSiteSettings(type) {
                     imgUrl: item.querySelector('.banner-img-input').value.trim(),
                     linkUrl: item.querySelector('.banner-link-input').value.trim()
                 };
-            }).filter(b => b.imgUrl !== ''); // 빈 이미지는 무시
+            }).filter(b => b.imgUrl !== '');
             
-            updates['site_settings/banners'] = banners;
+            payload.banners = banners;
         } 
         else if (type === 'footer') {
-            updates['site_settings/companyName'] = document.getElementById('setFooterCompany').value.trim();
-            updates['site_settings/ceoName'] = document.getElementById('setFooterCEO').value.trim();
-            updates['site_settings/address'] = document.getElementById('setFooterAddress').value.trim();
-            updates['site_settings/bizNum'] = document.getElementById('setFooterBizNum').value.trim();
-            updates['site_settings/mailOrderNum'] = document.getElementById('setFooterMailNum').value.trim();
-            updates['site_settings/csPhone'] = document.getElementById('setFooterCS').value.trim();
-            updates['site_settings/csEmail'] = document.getElementById('setFooterEmail').value.trim();
+            payload.company_name = document.getElementById('setFooterCompany').value.trim();
+            payload.ceo_name = document.getElementById('setFooterCEO').value.trim();
+            payload.address = document.getElementById('setFooterAddress').value.trim();
+            payload.biz_num = document.getElementById('setFooterBizNum').value.trim();
+            payload.mail_order_num = document.getElementById('setFooterMailNum').value.trim();
+            payload.cs_phone = document.getElementById('setFooterCS').value.trim();
+            payload.cs_email = document.getElementById('setFooterEmail').value.trim();
         } 
         else if (type === 'seo') {
-            updates['site_settings/seo'] = {
+            payload.seo = {
                 title: document.getElementById('seoTitle').value.trim(),
                 description: document.getElementById('seoDescription').value.trim(),
                 keywords: document.getElementById('seoKeywords').value.trim(),
@@ -326,32 +330,25 @@ async function saveSiteSettings(type) {
             };
         }
 
-        await db.ref().update(updates);
-        
-        let msg = "저장되었습니다.";
-        if (type === 'homepage') msg = "홈페이지 설정이 저장되었습니다.";
-        else if (type === 'footer') msg = "푸터 설정이 저장되었습니다.";
-        else if (type === 'seo') msg = "SEO 설정이 저장되었습니다.";
-        
-        alert(msg);
+        const res = await window.BSQ.api('/api/site-settings', {
+            method: 'POST',
+            body: payload
+        });
+
+        if (res && res.success) {
+            alert("설정이 저장되었습니다.");
+            loadSiteSettings(type);
+        } else {
+            throw new Error(res?.error || "Save failed");
+        }
         
     } catch (err) {
-        console.error("Failed to save site settings", err);
-        if (err.message && err.message.toLowerCase().includes('permission_denied')) {
-            const banner = document.getElementById('globalErrorBanner');
-            if (banner) {
-                banner.style.display = 'flex';
-                banner.innerHTML = `
-                    <div style="flex:1;">
-                        <strong style="display:block; margin-bottom:0.3rem;">데이터베이스 저장이 거부되었습니다. (Permission Denied)</strong>
-                        <span style="font-size:0.85rem; opacity:0.9; display:block; margin-bottom:0.3rem;">Firebase 익명 로그인이 꺼져있거나 규칙이 누락되었습니다.</span>
-                        <span style="font-size:0.8rem; opacity:0.8; display:block;">해결 방법 1: Firebase Console -> Authentication -> Sign-in method -> 익명(Anonymous) 사용 설정<br>
-                        해결 방법 2: firebase_rules.json 최신 버전을 복사 후 Realtime Database -> 규칙(Rules)에 게시</span>
-                    </div>
-                    <button onclick="this.parentElement.style.display='none'" style="background:none; border:none; color:inherit; font-size:1.2rem; cursor:pointer; padding:0 0.5rem;">&times;</button>
-                `;
-            }
+        console.error("Failed to save site settings to D1:", err);
+        alert("설정 저장에 실패했습니다: " + err.message);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = '설정 저장하기';
         }
-        alert("설정 저장에 실패했습니다.");
     }
 }

@@ -78,7 +78,12 @@ CREATE TABLE classes (
   target_audience TEXT,
   objectives TEXT,
   is_approved INTEGER DEFAULT 0,
+  is_free INTEGER DEFAULT 0,
+  instructor_phone TEXT,
+  instructor_name TEXT,
+  instructor_email TEXT,
   current_participants INTEGER DEFAULT 0,
+  coupon_detail TEXT, 
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

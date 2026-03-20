@@ -15,9 +15,14 @@
     // Wrangler에서 직접 접속 시 → 상대 경로 사용
     // ==================================================
     const WRANGLER_PORT = 8788;
+    const _currentHost = window.location.hostname;
     const _currentPort = parseInt(window.location.port) || (window.location.protocol === 'https:' ? 443 : 80);
+    const _isLocalhost = (_currentHost === 'localhost' || _currentHost === '127.0.0.1');
     const _isWrangler = _currentPort === WRANGLER_PORT;
-    const API_BASE = _isWrangler ? '' : `http://127.0.0.1:${WRANGLER_PORT}`;
+
+    // 로컬 환경(localhost/127.0.0.1)이면서 Wrangler 포트(8788)가 아닐 때만 로컬 프록시 사용
+    // 그 외(Wrangler 직접 실행 또는 실제 배포 환경)에서는 상대 경로('') 사용
+    const API_BASE = (_isLocalhost && !_isWrangler) ? `http://127.0.0.1:${WRANGLER_PORT}` : '';
 
     if (!_isWrangler) {
         console.log(`[BSQ Server] ⚡ API 프록시 활성: 현재 포트(${_currentPort}) → Wrangler(${WRANGLER_PORT})`);
@@ -43,7 +48,7 @@
             });
             const result = await response.json();
             if (!result.success) {
-                console.warn(`[BSQ API] ${endpoint} 실패:`, result.error);
+                console.warn(`[BSQ API] ${endpoint} 실패:`, result.error, result.detail || '');
             }
             return result;
         } catch (error) {

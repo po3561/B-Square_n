@@ -58,6 +58,7 @@ export async function onRequestPost(context) {
 
   try {
     const body = await request.json();
+    console.log('[API] Enrollment Request:', body);
     const { user_id, class_id, payment_method, amount_paid, coupon_id } = body;
 
     if (!user_id || !class_id) {
@@ -66,27 +67,27 @@ export async function onRequestPost(context) {
 
     // 중복 수강 체크
     const existing = await env.DB.prepare(
-      'SELECT id FROM enrollments WHERE user_id = ? AND class_id = ?'
+      'SELECT user_id FROM enrollments WHERE user_id = ? AND class_id = ?'
     ).bind(user_id, class_id).first();
 
     if (existing) {
       return new Response(JSON.stringify({ success: false, error: '이미 수강 등록된 클래스입니다.' }), { status: 409, headers: cors });
     }
 
-    const enrollId = 'enrl_' + crypto.randomUUID().replace(/-/g, '').substring(0, 12);
-
     await env.DB.prepare(`
-      INSERT INTO enrollments (id, user_id, class_id, payment_method, amount_paid, coupon_id, status)
-      VALUES (?, ?, ?, ?, ?, ?, 'active')
-    `).bind(enrollId, user_id, class_id, payment_method || 'free', amount_paid || 0, coupon_id || null).run();
+      INSERT INTO enrollments (user_id, class_id, pay_method, amount, applied_coupon, status)
+      VALUES (?, ?, ?, ?, ?, 'active')
+    `).bind(user_id, class_id, payment_method || 'free', amount_paid || 0, coupon_id || null).run();
 
     // 쿠폰 사용 처리
     if (coupon_id) {
-      await env.DB.prepare('UPDATE coupons SET is_used = 1 WHERE id = ?').bind(coupon_id).run();
+      await env.DB.prepare('UPDATE coupons SET used_count = used_count + 1 WHERE coupon_code = ? AND class_id = ?')
+        .bind(coupon_id, class_id).run();
     }
 
-    return new Response(JSON.stringify({ success: true, data: { id: enrollId } }), { status: 201, headers: cors });
+    return new Response(JSON.stringify({ success: true, data: { user_id, class_id } }), { status: 201, headers: cors });
   } catch (err) {
+    console.error('[API] Enrollment Error:', err);
     return new Response(JSON.stringify({ success: false, error: '수강 등록 오류', detail: err.message }), { status: 500, headers: cors });
   }
 }

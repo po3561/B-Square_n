@@ -26,8 +26,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     categoryLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            categoryLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
+            
+            // li 요소에서 active 클래스 제어
+            document.querySelectorAll('#categoryFilter li').forEach(li => li.classList.remove('active'));
+            link.parentElement.classList.add('active');
+            
             currentCategory = link.dataset.cat;
 
             const titleEl = document.querySelector('.group-title');

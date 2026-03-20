@@ -1,21 +1,7 @@
-// notice_admin.js - 운영자/개발자모드 전용 (작성, 수정, 삭제, 숨김)
+// notice_admin.js - 운영자전용 (D1 API 기반)
 document.addEventListener('DOMContentLoaded', async () => {
-    // bsq_server.js 초기화 대기 (Firebase 익명 인증 완료 보장)
-    if (window.BSQ) {
-        await window.BSQ.ready;
-    } else {
-        // 폴백: Firebase 직접 대기
-        await new Promise((resolve) => {
-            const check = () => {
-                if (typeof firebase !== 'undefined' && firebase.apps.length > 0) resolve();
-                else setTimeout(check, 100);
-            };
-            check();
-            setTimeout(resolve, 3000);
-        });
-    }
-
-    const db = window.BSQ?.db || firebase.database();
+    // bsq_server.js 초기화 대기
+    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
 
     // Quill JS 초기화
     let quill;
@@ -36,31 +22,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Admin Check Logic
+    // Admin Check Logic (D1 Session)
     async function applyAdminUI() {
-        let isAdmin = window.__BSQ_DEV_MODE__ === true;
-
-        // ★ 개발자 모드 운영자는 무조건 관리자
-        if (window.__BSQ_OPERATOR_PROFILE__?.is_operator) {
-            isAdmin = true;
-        }
-
-        if (!isAdmin && window.supabaseClient) {
-            try {
-                const { data: { session } } = await window.supabaseClient.auth.getSession();
-                if (session && session.user) {
-                    const { data: profile } = await window.supabaseClient
-                        .from('users')
-                        .select('role, user_type')
-                        .eq('id', session.user.id)
-                        .maybeSingle();
-                    const userEmail = session.user.email || '';
-                    if ((profile && (profile.role === 'admin' || profile.user_type === 'admin')) || userEmail.startsWith('ej210651392')) {
-                        isAdmin = true;
-                    }
-                }
-            } catch (err) {
-                console.error("Admin check failed:", err);
+        const user = window.BSQ?.getUser();
+        const isLoggedIn = window.BSQ?.isLoggedIn();
+        
+        let isAdmin = false;
+        if (isLoggedIn && user) {
+            if (user.role === 'admin' || user.user_type === 'admin' || window.__BSQ_DEV_MODE__) {
+                isAdmin = true;
             }
         }
 
@@ -73,13 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return isAdmin;
     }
 
-    let isAdmin = false;
-    applyAdminUI().then(res => { isAdmin = res; });
-
-    // Dev Mode 레이스 컨디션 대응 (이벤트 리스너)
-    window.addEventListener('bsq_dev_mode_activated', async () => {
-        isAdmin = await applyAdminUI();
-    });
+    let isAdmin = await applyAdminUI();
 
     // Modal Elements
     const editorModal = document.getElementById('editorModal');
@@ -92,7 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const typeImportant = document.getElementById('typeImportant');
 
     const groupType = document.getElementById('groupType');
-    const groupHidden = document.getElementById('groupHidden');
     const modalTitle = document.getElementById('editorModalTitle');
 
     let currentViewerItem = null;
@@ -158,9 +121,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         editorModal.style.display = 'none';
     });
 
-    // Save Data
+    // Save Data (D1 API)
     document.getElementById('btnEditorSubmit')?.addEventListener('click', async () => {
-        const type = editDataType.value;
+        const dataType = editDataType.value;
         const id = editTargetId.value;
         const title = editTitle.value.trim();
         let content = '';
@@ -181,50 +144,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.disabled = true;
 
         try {
-            if (type === 'notice') {
-                const noticeType = typeImportant.checked ? 'important' : 'normal';
-                const payload = {
+            const user = window.BSQ?.getUser();
+            const endpoint = dataType === 'notice' ? '/api/notices' : '/api/faqs';
+            
+            let payload = {};
+            if (dataType === 'notice') {
+                payload = {
+                    id: id || undefined,
                     title: title,
                     content: content,
-                    type: noticeType,
+                    type: typeImportant.checked ? 'important' : 'normal',
                     is_hidden: isHidden,
-                    updated_at: firebase.database.ServerValue.TIMESTAMP
+                    author_name: user?.name || '운영자'
                 };
-
-                if (id) {
-                    await db.ref(`notices/${id}`).update(payload);
-                } else {
-                    payload.author_id = 'OPERATOR_GHOST';
-                    payload.author_name = '운영자';
-                    payload.created_at = firebase.database.ServerValue.TIMESTAMP;
-                    payload.views = 0;
-                    await db.ref('notices').push(payload);
-                }
             } else {
-                const payload = {
+                payload = {
+                    id: id || undefined,
                     question: title,
                     answer: content,
-                    is_hidden: isHidden,
-                    updated_at: firebase.database.ServerValue.TIMESTAMP
+                    is_hidden: isHidden
                 };
-
-                if (id) {
-                    await db.ref(`faqs/${id}`).update(payload);
-                } else {
-                    payload.author_id = 'OPERATOR_GHOST';
-                    payload.created_at = firebase.database.ServerValue.TIMESTAMP;
-                    await db.ref('faqs').push(payload);
-                }
             }
 
-            // Close Modal
+            const res = await window.BSQ.api(endpoint, {
+                method: 'POST',
+                body: payload
+            });
+
+            if (!res || !res.success) throw new Error(res?.error || "Save failed");
+
             editorModal.style.display = 'none';
-            // Alert and reset
             alert('성공적으로 저장되었습니다.');
-            document.getElementById('viewerModal').style.display = 'none'; // Re-render triggers from notice.js
+            
+            // 페이지 새로고침 또는 UI 갱신 (관찰자/이벤트 처리 권장)
+            location.reload(); 
         } catch (e) {
-            console.error('Save failed:', e);
-            alert('저장에 실패했습니다.');
+            console.error('Save failed in D1:', e);
+            alert('저장에 실패했습니다: ' + e.message);
         } finally {
             btn.textContent = '저장';
             btn.disabled = false;
@@ -236,11 +192,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         onViewerOpen: (noticeData) => {
             currentViewerItem = noticeData;
             const actionDiv = document.getElementById('adminViewerActions');
-            if (isAdmin || window.__BSQ_DEV_MODE__ === true) {
-                actionDiv.style.display = 'flex';
-                actionDiv.style.gap = '10px';
-            } else {
-                actionDiv.style.display = 'none';
+            if (actionDiv) {
+                if (isAdmin) {
+                    actionDiv.style.display = 'flex';
+                    actionDiv.style.gap = '10px';
+                } else {
+                    actionDiv.style.display = 'none';
+                }
             }
         }
     };
@@ -251,16 +209,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         openEditor('notice', currentViewerItem);
     });
 
-    // Delete inside Viewer
+    // Delete inside Viewer (D1 API)
     document.getElementById('btnDeleteNoticeItem')?.addEventListener('click', async () => {
         if (!currentViewerItem) return;
         if (confirm('이 공지사항을 정말 삭제하시겠습니까?')) {
             try {
-                await db.ref(`notices/${currentViewerItem.id}`).remove();
+                const res = await window.BSQ.api(`/api/notices?id=${currentViewerItem.id}`, {
+                    method: 'DELETE'
+                });
+                if (!res || !res.success) throw new Error(res?.error || "Delete failed");
+                
                 alert('삭제되었습니다.');
-                document.getElementById('viewerModal').style.display = 'none';
+                location.reload();
             } catch (e) {
-                alert('삭제 실패');
+                console.error("Delete failed in D1:", e);
+                alert('삭제 실패: ' + e.message);
             }
         }
     });

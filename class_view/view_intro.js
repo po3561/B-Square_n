@@ -40,7 +40,6 @@ function renderIntroContent(data) {
 
     // 3. Basic Info (Summary/Description) stays in HTML IDs
     const summaryEl = document.getElementById('viewSummary');
-    const descEl = document.getElementById('viewDescription');
     if (summaryEl) summaryEl.textContent = data.summary || "";
-    if (descEl) descEl.innerHTML = (data.description || "").replace(/\n/g, '<br>');
+    // description rendering is handled in class_view.js renderCorePageInfo
 }
