@@ -565,6 +565,16 @@ async function finalizeEnrollment(rsp) {
 function renderCorePageInfo(data) {
     document.getElementById('viewTitle').textContent = data.title;
     document.getElementById('sidebarTitle').textContent = data.title;
+    // 채팅 헤더에 클래스명 채팅채널 표시
+    const chatHeaderName = document.getElementById('chatHeaderName');
+    if (chatHeaderName) chatHeaderName.textContent = `${data.title} 채팅채널`;
+    // 채팅 헤더 아바타에 클래스 썸네일 설정
+    const chatHeaderAvatar = document.getElementById('chatHeaderAvatar');
+    if (chatHeaderAvatar && data.thumbnail_url) {
+        chatHeaderAvatar.style.backgroundImage = `url(${data.thumbnail_url})`;
+        chatHeaderAvatar.style.backgroundSize = 'cover';
+        chatHeaderAvatar.style.backgroundPosition = 'center';
+    }
     document.getElementById('viewCategory').textContent = data.category || '기타';
     document.getElementById('sidebarCategory').textContent = data.category || '기타';
 

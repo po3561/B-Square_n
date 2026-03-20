@@ -1,33 +1,24 @@
-// view_chat.js - Class Channel with Lock/Unlock + UI Spec Consolidated Implementation
+// view_chat.js - Class Channel with Lock/Unlock + D1 API 기반 정보 패널
 window.BSquareModules = window.BSquareModules || {};
 window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAccess, isInstructor) {
     console.log("💬 Chat Module Initializing... | Access:", hasAccess, "| Instructor:", isInstructor);
 
-    // 총괄 개발자 모드 무적 패스
-    if (window.__BSQ_DEV_MODE__) {
-        hasAccess = true;
-    }
+    if (window.__BSQ_DEV_MODE__) hasAccess = true;
 
     const lockedOverlay = document.getElementById('chatLockedOverlay');
     const unlockedArea = document.getElementById('chatUnlocked');
 
     if (hasAccess && (userId || window.__BSQ_DEV_MODE__)) {
-        // 수강자 / 강사 / 운영자: 채팅 해제
         if (lockedOverlay) lockedOverlay.style.display = 'none';
-        if (unlockedArea) unlockedArea.style.display = 'flex'; // flex for comm-main layout
+        if (unlockedArea) unlockedArea.style.display = 'flex';
 
-        // 1. 커뮤니티 모듈 연결
         const SyncBridge = window.CommunityModules.SyncBridge;
         const ChatUI = window.CommunityModules.ChatUI;
-
-        // 운영자 고스트 계정 처리
         const currentUserId = window.__BSQ_DEV_MODE__ ? 'OPERATOR_GHOST' : userId;
 
-        // 초기화 ('class' 전용 테마 키 사용)
-        SyncBridge.init(db, supabase, currentUserId);
+        SyncBridge.init(null, null, currentUserId);
         ChatUI.init({ themeKey: 'bsq_theme_class' });
 
-        // 2. 클래스 채팅방 열기 (타이틀 가져오기)
         const classTitle = document.getElementById('sidebarTitle')?.textContent || '클래스';
         ChatUI.openRoom(classId, 'class', {
             class_name: classTitle,
@@ -35,190 +26,257 @@ window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAcc
             class_id: classId
         });
 
-        // 3. 전송 이벤트 바인딩
+        // 전송 이벤트 바인딩
         const btnSend = document.getElementById('btnSend');
         const msgInput = document.getElementById('msgInput');
-
-        if (btnSend) {
-            btnSend.onclick = () => ChatUI.sendCurrentMessage();
-        }
-
+        if (btnSend) btnSend.onclick = () => ChatUI.sendCurrentMessage();
         if (msgInput) {
             msgInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    ChatUI.sendCurrentMessage();
-                }
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ChatUI.sendCurrentMessage(); }
             });
         }
 
-        // 4. 헤더 액션 이벤트 바인딩
-        // (정보 패널 토글 및 닫기는 chat_ui.js 에서 통합 처리됨)
+        // 테마 토글
         const btnThemeToggle = document.getElementById('btnThemeToggle');
-        const btnChatSearch = document.getElementById('btnChatSearch');
-        const chatSearchBar = document.getElementById('chatSearchBar');
-
         if (btnThemeToggle) {
             btnThemeToggle.onclick = () => {
-                const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-theme', newTheme);
-                const themeIcon = document.getElementById('themeIcon');
-                if (themeIcon) {
-                    themeIcon.className = newTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-                }
-                localStorage.setItem('bsq_theme_class', newTheme);
+                const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                const next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                const icon = document.getElementById('themeIcon');
+                if (icon) icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+                localStorage.setItem('bsq_theme_class', next);
             };
-            // 초기 테마 설정 로드
-            const savedTheme = localStorage.getItem('bsq_theme_class') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            const themeIcon = document.getElementById('themeIcon');
-            if (themeIcon) themeIcon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+            const saved = localStorage.getItem('bsq_theme_class') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.className = saved === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
         }
 
-        if (btnChatSearch && chatSearchBar) {
-            btnChatSearch.onclick = () => {
-                const isSearchVisible = chatSearchBar.style.display === 'flex';
-                chatSearchBar.style.display = isSearchVisible ? 'none' : 'flex';
-                if (!isSearchVisible) document.getElementById('msgSearchInput')?.focus();
+        // 검색 바
+        const btnSearch = document.getElementById('btnChatSearch');
+        const searchBar = document.getElementById('chatSearchBar');
+        if (btnSearch && searchBar) {
+            btnSearch.onclick = () => {
+                const vis = searchBar.style.display === 'flex';
+                searchBar.style.display = vis ? 'none' : 'flex';
+                if (!vis) document.getElementById('msgSearchInput')?.focus();
             };
-            document.getElementById('msgSearchClose').onclick = () => {
-                chatSearchBar.style.display = 'none';
-            };
+            document.getElementById('msgSearchClose').onclick = () => { searchBar.style.display = 'none'; };
         }
 
+        // 참여자 수 뱃지 (D1 API)
+        updateParticipantBadgeD1(classId);
 
-        // 5. 참여자 목록 로드 (헤더 뱃지용)
-        updateParticipantBadge(db, classId);
-
-        // 6. 고정 메시지 (상단 바 + 햄버거 전환 + 우클릭 메뉴) — SimpleClassChat 버전 이식
-        setupPinnedMessagesChatUI(db, classId, isInstructor);
+        // 정보 패널 렌더링 설정
+        setupInfoPanel(classId, isInstructor);
 
     } else {
-        // 미수강자: 채팅 잠금
         if (lockedOverlay) lockedOverlay.style.display = 'flex';
         if (unlockedArea) unlockedArea.style.display = 'none';
     }
 };
 
-/**
- * 정보 패널 렌더링 (D1 마이그레이션 임시 뷰)
- */
-async function renderInfoPanel(db, classId, userId, supabase, isInstructor) {
+// =======================================
+// 정보 패널 렌더링 (D1 API + 강사/수강생 뷰)
+// =======================================
+function setupInfoPanel(classId, isInstructor) {
+    const btnInfo = document.getElementById('btnChatInfo');
+    const panel = document.getElementById('commInfoPanel');
+    const btnClose = document.getElementById('btnClosePanel');
+
+    if (btnInfo) {
+        btnInfo.onclick = (e) => {
+            e.stopPropagation();
+            if (panel) {
+                const isVisible = panel.classList.toggle('visible');
+                if (isVisible) renderClassInfoPanel(classId, isInstructor);
+            }
+        };
+    }
+    if (btnClose) {
+        btnClose.onclick = () => panel?.classList.remove('visible');
+    }
+}
+
+async function renderClassInfoPanel(classId, isInstructor) {
     const panelBody = document.getElementById('infoPanelBody');
-    const panelTitle = document.getElementById('infoPanelTitle');
     if (!panelBody) return;
 
-    panelBody.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">데이터 로딩 중...</div>';
+    panelBody.innerHTML = '<div style="padding:20px; text-align:center; color:#888;"><div class="loading-spinner"></div>데이터 로딩 중...</div>';
+
+    const view = (isInstructor || window.__BSQ_DEV_MODE__) ? 'instructor' : 'student';
 
     try {
-        // 1. 모임 현황 가져오기
-        const gatherRes = await window.BSQ.api(`/api/gatherings?class_id=${classId}`);
-        let gatheringsHtml = '';
+        // 1. 멤버 목록 + 통계
+        const memberRes = await window.BSQ.api(`/api/classes/members?class_id=${classId}&view=${view}`);
         
-        if (gatherRes.success && gatherRes.data && gatherRes.data.length > 0) {
-            gatheringsHtml = `
-                <div class="info-section">
-                    <h4 style="color:var(--accent-color); font-size:1rem; margin-bottom:12px;">🗓️ 진행 예정 모임</h4>
-                    ${gatherRes.data.map(g => `
-                        <div class="gathering-mini-item" style="background:rgba(255,255,255,0.05); border-radius:12px; padding:12px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.05);">
-                            <div style="font-weight:700; color:#fff; margin-bottom:4px;">${g.title}</div>
-                            <div style="font-size:0.85rem; color:#aaa;"><i class="fas fa-map-marker-alt" style="width:14px;"></i> ${g.location || '장소 미정'}</div>
-                            <div style="font-size:0.85rem; color:#aaa;"><i class="fas fa-clock" style="width:14px;"></i> ${new Date(g.gathering_at).toLocaleString('ko-KR')}</div>
+        // 2. 모임 정보
+        let gatheringsHtml = '';
+        try {
+            const gatherRes = await window.BSQ.api(`/api/gatherings?class_id=${classId}`);
+            if (gatherRes?.success && gatherRes.data?.length > 0) {
+                gatheringsHtml = renderGatheringsSection(gatherRes.data);
+            }
+        } catch (e) { /* 모임 API 없으면 스킵 */ }
+
+        if (!memberRes?.success) {
+            panelBody.innerHTML = '<div style="padding:20px; color:#ff4d4d;">멤버 정보를 불러올 수 없습니다.</div>';
+            return;
+        }
+
+        const { class_info, members, total_members, pass_stats } = memberRes.data;
+
+        // 헤더 섹션
+        const headerHtml = `
+            <div class="info-panel-class-header" style="padding:16px 0; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:16px;">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                    <div style="width:12px; height:12px; border-radius:50%; background:#4ade80; flex-shrink:0;"></div>
+                    <div>
+                        <strong style="font-size:1.05rem; color:#fff;">클래스 참여자 / 총 ${total_members}명 수강</strong>
+                        <div style="font-size:0.8rem; color:#888; margin-top:2px;">${class_info.category || ''}</div>
+                    </div>
+                </div>
+                <div style="text-align:right; font-size:0.85rem; color:#aaa;">현재 ${total_members}명 채팅중</div>
+            </div>
+        `;
+
+        // 멤버 목록 섹션
+        const membersHtml = members.map(m => {
+            const isInstr = m.role === 'instructor';
+            const onlineIndicator = `<div style="width:10px;height:10px;border-radius:50%;background:${isInstr ? '#4ade80' : '#60a5fa'};flex-shrink:0;"></div>`;
+            
+            let detailsHtml = '';
+            if (view === 'instructor') {
+                detailsHtml = `
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        ${m.name ? `<span style="font-size:0.8rem; color:#ccc; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:4px;">사용자 이름<br>${m.name}</span>` : ''}
+                        ${m.phone ? `<span style="font-size:0.8rem; color:#ccc; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:4px;">전화번호<br>${m.phone}</span>` : ''}
+                        <span style="font-size:0.8rem; color:#ccc; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:4px;">잔여<br>수강권 ${m.remaining_passes || 0}</span>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="member-row" style="display:flex; align-items:center; gap:12px; padding:12px; background:rgba(255,255,255,0.03); border-radius:12px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.05);">
+                    ${onlineIndicator}
+                    <div style="width:40px;height:40px;border-radius:50%;background:#333;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                        ${m.profile_image_url ? `<img src="${m.profile_image_url}" style="width:100%;height:100%;object-fit:cover;">` : '<span style="font-size:1.2rem;">👤</span>'}
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:700; color:#fff; font-size:0.95rem; margin-bottom:4px;">
+                            ${m.nickname || '닉네임'} ${isInstr ? '<span style="background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:800;margin-left:4px;">강사</span>' : ''}
                         </div>
-                    `).join('')}
+                        ${detailsHtml}
+                    </div>
+                    <button onclick="addFriend('${m.user_id}')" style="padding:6px 14px; border-radius:8px; background:linear-gradient(135deg,#6e8efb,#a777e3); color:white; border:none; font-size:0.8rem; font-weight:700; cursor:pointer; white-space:nowrap;">친구 추가</button>
                 </div>
             `;
-        } else {
-            gatheringsHtml = `
-                <div class="info-section" style="padding:20px; text-align:center; color:#666;">
-                    진행 중인 모임이 없습니다.
+        }).join('');
+
+        // 수강권 통계 (강사 뷰만)
+        let passStatsHtml = '';
+        if (view === 'instructor') {
+            passStatsHtml = `
+                <div style="padding:16px; background:rgba(255,255,255,0.03); border-radius:12px; margin-top:16px; border:1px solid rgba(255,255,255,0.05);">
+                    <div style="font-weight:700; color:#fff; margin-bottom:12px;">📊 수강권 현황</div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="color:#aaa;">발행된 수강권 수량</span>
+                        <strong style="color:#4ade80;">${pass_stats.total_issued}개</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#aaa;">사용된 수강권 수량</span>
+                        <strong style="color:#f97316;">${pass_stats.total_used}개</strong>
+                    </div>
                 </div>
             `;
         }
 
         panelBody.innerHTML = `
+            ${headerHtml}
+            <div style="display:flex; flex-direction:column;">${membersHtml}</div>
             ${gatheringsHtml}
-            <div class="info-section">
-                <!-- 참여자 목록 등 추가 예정 -->
-                <h4 style="color:#fff; font-size:1rem; margin-bottom:12px; margin-top:20px;">👥 클래스 멤버</h4>
-                <div id="panelMemberList" style="display:flex; flex-direction:column; gap:8px;">
-                    <p style="color:#666; font-size:0.9rem;">멤버 정보를 불러오고 있습니다...</p>
-                </div>
-            </div>
+            ${passStatsHtml}
         `;
-        
-        // 추가 정보(멤버 등) 비동기 로드
-        updatePanelMemberList(db, classId, isInstructor);
 
     } catch (err) {
         panelBody.innerHTML = `<div style="padding:20px; color:#ff4d4d;">오류 발생: ${err.message}</div>`;
     }
 }
 
-async function updatePanelMemberList(db, classId, isInstructor) {
-    const listEl = document.getElementById('panelMemberList');
-    if (!listEl) return;
-
-    // D1 class_participants 테이블에서 가져오기
-    try {
-        const res = await window.BSQ.api(`/api/classes/${classId}/members`);
-        if (res.success && res.data) {
-            listEl.innerHTML = res.data.map(m => `
-                <div style="display:flex; align-items:center; gap:10px; padding:8px; background:rgba(255,255,255,0.03); border-radius:8px;">
-                    <img src="${m.profile_image_url || '/api/placeholder/40/40'}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
-                    <div style="flex:1;">
-                        <div style="font-size:0.9rem; color:#fff; font-weight:600;">${m.nickname || m.name} ${m.role === 'instructor' ? '👑' : ''}</div>
-                        ${isInstructor && m.phone ? `<div style="font-size:0.75rem; color:#888;">${m.phone}</div>` : ''}
+function renderGatheringsSection(gatherings) {
+    return `
+        <div style="margin-top:20px; padding:16px; background:rgba(255,255,255,0.03); border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+            ${gatherings.map(g => {
+                const dateStr = g.gathering_at ? new Date(g.gathering_at).toLocaleString('ko-KR') : '미정';
+                return `
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:#aaa;"></div>
+                            <span style="color:#fff; font-size:0.9rem;">모임일시 : ${dateStr}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:#aaa;"></div>
+                            <span style="color:#fff; font-size:0.9rem;">모임장소 : ${g.location || '미정'}</span>
+                        </div>
+                        <button onclick="window.open('https://map.naver.com/v5/search/${encodeURIComponent(g.location || '')}')" 
+                            style="width:100%; padding:12px; border-radius:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; font-weight:700; cursor:pointer; font-size:0.95rem;">
+                            지도 바로가기
+                        </button>
+                        ${g.current_count !== undefined ? `
+                            <div style="margin-top:10px; font-size:0.85rem; color:#aaa;">
+                                참여 : ${g.current_count || 0} / ${g.max_capacity || '∞'}명
+                                ${g.min_capacity ? `<span style="float:right;">최소 ${g.min_capacity}명 필요</span>` : ''}
+                            </div>
+                        ` : ''}
                     </div>
-                </div>
-            `).join('');
-        }
+                `;
+            }).join('<div style="border-top:1px solid rgba(255,255,255,0.06);margin:12px 0;"></div>')}
+        </div>
+    `;
+}
+
+// 친구 추가 글로벌 함수
+window.addFriend = async function(targetUserId) {
+    const userId = window.CommunityModules?.SyncBridge?.getUserId();
+    if (!userId || userId === targetUserId) return;
+
+    try {
+        const res = await window.BSQ.api('/api/contacts', {
+            method: 'POST',
+            body: JSON.stringify({ user_id: userId, target_user_id: targetUserId })
+        });
+        alert(res?.success ? '친구가 추가되었습니다!' : '추가 실패: ' + (res?.error || ''));
     } catch (e) {
-        listEl.innerHTML = '<p style="color:#666; font-size:0.8rem;">멤버 정보를 가져올 수 없습니다.</p>';
+        alert('친구 추가 중 오류 발생');
     }
-}
+};
 
-function updateParticipantBadge(db, classId) {
-    const enrollRef = db.ref('enrollments');
-    enrollRef.on('value', (snap) => {
-        const allEnrollments = snap.val() || {};
-        let count = 0;
-        for (const uid in allEnrollments) {
-            if (allEnrollments[uid][classId]) count++;
-        }
+// 참여자 수 뱃지 (D1 API)
+async function updateParticipantBadgeD1(classId) {
+    try {
+        const res = await window.BSQ.api(`/api/classes/members?class_id=${classId}&view=student`);
+        if (res?.success) {
+            const count = res.data.total_members || 0;
+            const countEl = document.getElementById('chatMemberCount');
+            if (countEl) countEl.textContent = `${count}명 참여 중`;
 
-        const countEl = document.getElementById('chatMemberCount');
-        if (countEl) countEl.textContent = `${count}명 참여 중`;
-
-        const chatTabBtn = document.querySelector('[data-target="tabChat"]');
-        if (chatTabBtn && count > 0) {
-            let badge = chatTabBtn.querySelector('.tab-participant-badge');
-            if (!badge) {
-                badge = document.createElement('span');
-                badge.className = 'tab-participant-badge';
-                chatTabBtn.appendChild(badge);
+            const chatTabBtn = document.querySelector('[data-target="tabChat"]');
+            if (chatTabBtn && count > 0) {
+                let badge = chatTabBtn.querySelector('.tab-participant-badge');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'tab-participant-badge';
+                    chatTabBtn.appendChild(badge);
+                }
+                badge.textContent = count;
             }
-            badge.textContent = count;
         }
-    });
+    } catch (e) { console.warn("Badge update error:", e); }
 }
 
-// =========================
-// Pinned messages (ChatUI) - D1 마이그레이션 안내 처리
-// =========================
+// 핀 메시지 (D1에서는 비활성)
 function setupPinnedMessagesChatUI(db, classId, isInstructor) {
     const pinnedBar = document.getElementById('pinnedMsgBar');
-    if (pinnedBar) {
-        pinnedBar.style.display = 'none'; // 당분간 핀 메시지 상단바 숨김
-    }
-}
-
-function scrollToMessageInChatUI(messageId) {
-    if (!messageId) return;
-    const el = document.getElementById(`msg-${messageId}`);
-    if (!el) return;
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    el.classList.add('highlight-pin');
-    setTimeout(() => el.classList.remove('highlight-pin'), 1500);
+    if (pinnedBar) pinnedBar.style.display = 'none';
 }

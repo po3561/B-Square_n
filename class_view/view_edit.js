@@ -231,36 +231,38 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
 
             <!-- TAB 4: 쿠폰 관리 -->
             <div id="dbTabCoupons" class="db-tab-content" style="display:none;">
-                <div class="edit-section" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:10px; margin-bottom:1.5rem;">
-                    <h4 class="edit-section-title">🎟️ 새 쿠폰 발급하기</h4>
-                    <div class="edit-field-row">
+                <div style="background:linear-gradient(135deg, rgba(175,82,222,0.1), rgba(0,122,255,0.05)); border:1px solid rgba(175,82,222,0.15); padding:1.5rem; border-radius:16px; margin-bottom:1.5rem;">
+                    <h4 style="margin:0 0 1rem 0; display:flex; align-items:center; gap:8px; font-size:1.05rem;">
+                        <i class="fa-solid fa-ticket" style="color:#AF52DE;"></i> 새 쿠폰 발급
+                    </h4>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         <div class="edit-field">
-                            <label>쿠폰 코드 (영문/숫자)</label>
-                            <input type="text" id="newCouponCode" placeholder="예: SUMMER2026">
+                            <label style="font-size:0.8rem; color:#aaa; display:flex; align-items:center; gap:4px;"><i class="fa-solid fa-barcode" style="font-size:0.7rem;"></i> 쿠폰 코드</label>
+                            <input type="text" id="newCouponCode" placeholder="예: SUMMER2026" style="text-transform:uppercase;">
                         </div>
                         <div class="edit-field">
-                            <label>할인 금액(원) / 비율(%)</label>
-                            <input type="number" id="newCouponValue" placeholder="할인 액수 또는 비율">
+                            <label style="font-size:0.8rem; color:#aaa; display:flex; align-items:center; gap:4px;"><i class="fa-solid fa-won-sign" style="font-size:0.7rem;"></i> 할인 값</label>
+                            <input type="number" id="newCouponValue" placeholder="금액 또는 비율">
                         </div>
                         <div class="edit-field">
-                            <label>할인 타입</label>
-                            <select id="newCouponType">
-                                <option value="amount">원 할인</option>
-                                <option value="percent">% 할인</option>
+                            <label style="font-size:0.8rem; color:#aaa; display:flex; align-items:center; gap:4px;"><i class="fa-solid fa-tags" style="font-size:0.7rem;"></i> 할인 타입</label>
+                            <select id="newCouponType" style="padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff;">
+                                <option value="amount">₩ 원 할인</option>
+                                <option value="percent">% 비율 할인</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="edit-field-row" style="margin-top:10px;">
                         <div class="edit-field">
-                            <label>총 발행 수량 (0은 무제한)</label>
-                            <input type="number" id="newCouponLimit" value="0" min="0">
+                            <label style="font-size:0.8rem; color:#aaa; display:flex; align-items:center; gap:4px;"><i class="fa-solid fa-infinity" style="font-size:0.7rem;"></i> 발행 수량</label>
+                            <input type="number" id="newCouponLimit" value="0" min="0" placeholder="0 = 무제한">
                         </div>
                     </div>
-                    <button class="btn-submit" id="btnCreateCoupon" style="margin-top:10px;">쿠폰 생성</button>
+                    <button class="btn-submit" id="btnCreateCoupon" style="margin-top:14px; width:100%; padding:12px; border-radius:10px; background:linear-gradient(135deg,#AF52DE,#5856D6); border:none; color:#fff; font-weight:700; font-size:0.95rem; cursor:pointer; transition:all 0.3s; box-shadow:0 4px 15px rgba(175,82,222,0.3);">
+                        <i class="fa-solid fa-plus"></i> 쿠폰 생성
+                    </button>
                 </div>
                 
                 <div class="edit-section">
-                    <h4 class="edit-section-title">📚 발행된 쿠폰 내역</h4>
+                    <h4 class="edit-section-title" style="display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-clock-rotate-left" style="color:var(--comm-accent);"></i> 발행 내역</h4>
                     <div id="couponListArea">
                         불러오는 중...
                     </div>
@@ -710,29 +712,70 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
             const res = await window.BSQ.api(`/api/enrollments?class_id=${classId}`);
             if (res.success && res.data) {
                 const students = res.data.enrollments || [];
+                // 수강권 발행/사용 통계
+                let totalIssued = 0, totalUsed = 0;
+                try {
+                    const passRes = await window.BSQ.api(`/api/passes/issue?class_id=${classId}`);
+                    if (passRes.success && passRes.data) {
+                        totalIssued = passRes.data.reduce((sum, p) => sum + (p.quantity || 1), 0);
+                    }
+                } catch(e) {}
+                students.forEach(s => { totalUsed += (s.used_passes || 0); });
                 statsArea.innerHTML = `
                     <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
                         <div class="edit-stat-card"><span class="stat-num">${students.length}</span><span class="stat-label">총 수강생</span></div>
-                        <div class="edit-stat-card"><span class="stat-num">${students.filter(s => s.pay_method === 'card').length}</span><span class="stat-label">유료 결제</span></div>
-                        <div class="edit-stat-card"><span class="stat-num">${students.filter(s => s.pay_method === 'free').length}</span><span class="stat-label">무료 신청</span></div>
+                        <div class="edit-stat-card"><span class="stat-num">${totalIssued}</span><span class="stat-label">누적 발행</span></div>
+                        <div class="edit-stat-card"><span class="stat-num">${totalUsed}</span><span class="stat-label">사용 수강권</span></div>
                     </div>
                 `;
 
                 if (students.length === 0) {
                     listArea.innerHTML = '<p class="edit-empty-msg">아직 수강생이 없습니다.</p>';
                 } else {
-                    listArea.innerHTML = students.map(s => `
+                    listArea.innerHTML = students.map(s => {
+                        const roleBadge = s.role === 'instructor' ? '<span style="background:rgba(255,214,10,0.15);color:#FFD60A;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:700;">👑 강사</span>'
+                                        : s.role === 'sub_instructor' ? '<span style="background:rgba(175,82,222,0.15);color:#AF52DE;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:700;">🎓 서브강사</span>'
+                                        : '<span style="background:rgba(142,142,147,0.1);color:#8E8E93;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:700;">수강생</span>';
+                        return `
                         <div class="student-row" style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid rgba(255,255,255,0.05);">
-                            <div>
-                                <div style="font-weight:600;">${s.name || '익명'}</div>
-                                <div style="font-size:0.8rem; color:#888;">${s.email || ''}</div>
+                            <div style="flex:1;">
+                                <div style="font-weight:600; display:flex; align-items:center; gap:6px;">${s.name || '익명'} ${roleBadge}</div>
+                                <div style="font-size:0.8rem; color:#888;">${s.email || ''} ${s.phone || ''}</div>
                             </div>
-                            <div style="text-align:right;">
-                                <div style="font-size:0.8rem; color:var(--comm-accent);">${s.pay_method === 'card' ? '유료 수강' : '무료 수강'}</div>
-                                <div style="font-size:0.7rem; color:#666;">${new Date(s.enrolled_at).toLocaleDateString()}</div>
+                            <div style="text-align:right; display:flex; align-items:center; gap:8px;">
+                                <div>
+                                    <div style="font-size:0.8rem; color:var(--comm-accent);">${s.pay_method === 'card' ? '유료 수강' : '무료 수강'}</div>
+                                    <div style="font-size:0.7rem; color:#666;">${new Date(s.enrolled_at).toLocaleDateString()}</div>
+                                </div>
+                                <button class="btn-issue-pass" data-uid="${s.user_id}" data-name="${s.name || '익명'}"
+                                    style="padding:6px 12px; border-radius:8px; background:rgba(76,201,240,0.15); color:#4cc9f0; border:1px solid rgba(76,201,240,0.25); cursor:pointer; font-weight:700; font-size:0.75rem; white-space:nowrap; transition:all 0.2s;">
+                                    🎫 +1
+                                </button>
                             </div>
                         </div>
-                    `).join('');
+                    `;
+                    }).join('');
+
+                    // 수강권 발행 버튼 이벤트
+                    listArea.querySelectorAll('.btn-issue-pass').forEach(btn => {
+                        btn.onclick = async () => {
+                            const uid = btn.dataset.uid;
+                            const uname = btn.dataset.name;
+                            if (!confirm(`${uname}에게 수강권 1개를 발행하시겠습니까?`)) return;
+                            btn.disabled = true; btn.textContent = '...';
+                            try {
+                                const issueRes = await window.BSQ.api('/api/passes/issue', {
+                                    method: 'POST',
+                                    body: JSON.stringify({ class_id: classId, user_id: uid, amount: 1, reason: 'manual', issued_by: userId })
+                                });
+                                if (issueRes.success) {
+                                    if (typeof showToast === 'function') showToast('success', '수강권 발행', `${uname}에게 수강권 1개 발행 완료`);
+                                    loadStudents(classId, db, supabase);
+                                } else { alert('발행 실패: ' + (issueRes.error || '')); }
+                            } catch (e) { alert('오류: ' + e.message); }
+                            btn.disabled = false; btn.textContent = '🎫 +1';
+                        };
+                    });
                 }
             }
         } catch (err) {
@@ -753,7 +796,7 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
             const res = await window.BSQ.api(`/api/coupons?class_id=${classId}`);
             if (res.success && res.data) {
                 const coupons = Array.isArray(res.data) ? res.data : [res.data];
-                if (coupons.length === 0 || !coupons[0].code) {
+                if (coupons.length === 0 || !coupons[0].coupon_code) {
                     couponListArea.innerHTML = '<p class="edit-empty-msg">발행된 쿠폰이 없습니다.</p>';
                 } else {
                     couponListArea.innerHTML = coupons.map(c => `

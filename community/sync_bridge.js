@@ -1,105 +1,103 @@
-// sync_bridge.js - 모듈4: 이벤트 감지 + 서버 간 데이터 동기화
+// sync_bridge.js - 모듈4: 서버 데이터 동기화 (D1 API 버전)
+// Firebase/Supabase 의존성 완전 제거 → BSQ.api 기반
 window.CommunityModules = window.CommunityModules || {};
 
 window.CommunityModules.SyncBridge = (function () {
-    let db = null;
-    let supabase = null;
     let userId = null;
-    let listeners = {};
     let eventHandlers = {};
+    let pollIntervals = {};
 
     function init(_db, _supabase, _userId) {
-        db = _db;
-        supabase = _supabase;
+        // _db, _supabase 파라미터는 이전 호환성 유지용 (사용하지 않음)
         userId = _userId;
-        console.log("🔄 SyncBridge initialized | userId:", userId);
-        setupPresence();
+        console.log("🔄 SyncBridge initialized (D1 API) | userId:", userId);
     }
 
-    // ---- 온라인 상태 관리 ----
-    function setupPresence() {
-        if (!userId) return;
-        if (window.__BSQ_DEV_MODE__) return; // 운영자는 흔적을 남기지 않음
+    // ---- D1 API 기반 메시지 리스닝 (폴링) ----
+    function listenMessages(roomId, type, onAdd) {
+        // 폴링 간격: 3초
+        if (pollIntervals[roomId]) clearInterval(pollIntervals[roomId]);
+        
+        let lastTimestamp = null;
 
-        const presenceRef = db.ref(`presence/${userId}`);
-        presenceRef.set({ online: true, last_seen: firebase.database.ServerValue.TIMESTAMP });
-        presenceRef.onDisconnect().set({ online: false, last_seen: firebase.database.ServerValue.TIMESTAMP });
+        async function poll() {
+            try {
+                let endpoint;
+                if (type === 'dm') {
+                    endpoint = `/api/dm?room_id=${roomId}&limit=100`;
+                } else if (type === 'class') {
+                    endpoint = `/api/chat?class_id=${roomId}&limit=100`;
+                } else if (type === 'group') {
+                    endpoint = `/api/dm?room_id=${roomId}&limit=100`; // 그룹 채팅도 dm 테이블 사용
+                }
+                
+                const res = await window.BSQ.api(endpoint);
+                if (res?.success && res.data) {
+                    res.data.forEach(msg => {
+                        const msgTime = msg.timestamp || msg.created_at || '';
+                        if (!lastTimestamp || msgTime > lastTimestamp) {
+                            onAdd(msg.push_key || msg.id, msg);
+                        }
+                    });
+                    
+                    if (res.data.length > 0) {
+                        const lastMsg = res.data[res.data.length - 1];
+                        lastTimestamp = lastMsg.timestamp || lastMsg.created_at;
+                    }
+                }
+            } catch (e) {
+                console.warn("Poll error:", e);
+            }
+        }
+
+        poll(); // 즉시 1회 실행
+        pollIntervals[roomId] = setInterval(poll, 3000);
     }
 
-    function watchPresence(targetUserId, callback) {
-        const ref = db.ref(`presence/${targetUserId}`);
-        ref.on('value', snap => {
-            const data = snap.val() || { online: false };
-            callback(data);
-        });
-        registerListener(`presence_${targetUserId}`, ref);
-    }
-
-    // ---- Firebase 리스너 관리 ----
-    function listenMessages(path, onAdd, onChange, onRemove) {
-        const ref = db.ref(path).orderByChild('timestamp').limitToLast(50);
-        ref.on('child_added', snap => onAdd(snap.key, snap.val()));
-        ref.on('child_changed', snap => onChange(snap.key, snap.val()));
-        ref.on('child_removed', snap => onRemove(snap.key, snap.val()));
-        registerListener(`msg_${path}`, ref);
-    }
-
-    function stopListeningMessages(path) {
-        const key = `msg_${path}`;
-        if (listeners[key]) {
-            listeners[key].off();
-            delete listeners[key];
+    function stopListeningMessages(roomId) {
+        if (pollIntervals[roomId]) {
+            clearInterval(pollIntervals[roomId]);
+            delete pollIntervals[roomId];
         }
     }
 
-    function registerListener(key, ref) {
-        if (listeners[key]) listeners[key].off();
-        listeners[key] = ref;
-    }
-
-    // ---- Supabase 프로필 로드 ----
+    // ---- D1 API 기반 프로필 로드 ----
     async function getUserProfile(uid) {
         if (uid === 'OPERATOR_GHOST') {
             return { name: '운영자', profile_image_url: 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png', is_operator: true };
         }
 
         try {
-            // nickname, phone 컬럼이 실제 DB에 없으므로 안전한 기본 컬럼만 '명시적'으로 조회
-            const { data, error } = await supabase.from('users').select('id, name, email, profile_image_url').eq('id', uid).maybeSingle();
-            
-            if (error) {
-                console.warn("Supabase profile error (handled):", error);
-                return { name: '사용자', profile_image_url: '' };
+            const res = await window.BSQ.api(`/api/users/${uid}`);
+            if (res?.success && res.data) {
+                return res.data;
             }
-            return data || { name: '사용자', profile_image_url: '' };
+            return { name: '사용자', profile_image_url: '' };
         } catch (e) {
-            console.error("getUserProfile catch:", e);
+            console.warn("getUserProfile error:", e);
             return { name: '사용자', profile_image_url: '' };
         }
     }
 
     async function searchUsers(query) {
         try {
-            const { data } = await supabase.from('users').select('id, name, email, profile_image_url')
-                .ilike('name', `%${query}%`).limit(20);
-            return (data || []).filter(u => u.id !== userId);
+            const res = await window.BSQ.api(`/api/users/search?q=${encodeURIComponent(query)}`);
+            if (res?.success) {
+                return (res.data || []).filter(u => u.id !== userId);
+            }
+            return [];
         } catch (e) {
             return [];
         }
     }
 
-    // ---- 읽지 않은 메시지 카운트 업데이트 ----
+    // ---- 읽지 않은 메시지 카운트 ----
     function updateUnread(roomId, count) {
-        if (!userId) return;
-        db.ref(`user_chats/${userId}/${roomId}/unread_count`).set(count);
+        // D1에서는 폴링으로 처리하므로 별도 구현 불필요 (로컬 상태만 관리)
     }
 
-    function markAsRead(roomId) {
-        if (!userId) return;
-        db.ref(`user_chats/${userId}/${roomId}`).update({
-            unread_count: 0,
-            last_seen: firebase.database.ServerValue.TIMESTAMP
-        });
+    async function markAsRead(roomId) {
+        // user_chats의 unread_count를 0으로 설정하는 것은 서버 호출 불필요 — 로컬만 처리
     }
 
     // ---- 이벤트 시스템 ----
@@ -116,18 +114,20 @@ window.CommunityModules.SyncBridge = (function () {
 
     // ---- 정리 ----
     function cleanup() {
-        Object.values(listeners).forEach(ref => ref.off());
-        listeners = {};
+        Object.keys(pollIntervals).forEach(key => clearInterval(pollIntervals[key]));
+        pollIntervals = {};
     }
 
     return {
-        init, setupPresence, watchPresence,
+        init, 
+        watchPresence: () => {}, // D1에서는 지원하지 않음
+        setupPresence: () => {}, // D1에서는 지원하지 않음
         listenMessages, stopListeningMessages,
         getUserProfile, searchUsers,
         updateUnread, markAsRead,
         on, emit, cleanup,
-        getDb: () => db,
-        getSupabase: () => supabase,
+        getDb: () => null,
+        getSupabase: () => null,
         getUserId: () => userId
     };
 })();

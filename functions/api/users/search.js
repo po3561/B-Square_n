@@ -15,13 +15,13 @@ export async function onRequestGet(context) {
   try {
     // 이름 또는 이메일로 검색 (대소문자 구분 없이)
     const sql = `
-      SELECT id, name, email, profile_image_url 
+      SELECT id, name, nickname, email, profile_image_url 
       FROM users 
-      WHERE (name LIKE ? OR email LIKE ?)
-      LIMIT 10
+      WHERE (name LIKE ? OR nickname LIKE ? OR email LIKE ?)
+      LIMIT 20
     `;
     const searchTerm = `%${query}%`;
-    const { results } = await db.prepare(sql).bind(searchTerm, searchTerm).all();
+    const { results } = await db.prepare(sql).bind(searchTerm, searchTerm, searchTerm).all();
 
     return new Response(JSON.stringify({ success: true, data: results }), { headers: cors });
   } catch (error) {

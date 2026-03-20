@@ -6,18 +6,26 @@ export async function onRequestGet(context) {
   const class_id = url.searchParams.get('class_id');
   const action = url.searchParams.get('action');
 
-  if (!class_id && action !== 'detail') return new Response(JSON.stringify({ success: false, error: 'class_id 필요' }), { status: 400, headers: cors });
+  if (!class_id && action !== 'detail' && action !== 'participants') return new Response(JSON.stringify({ success: false, error: 'class_id 필요' }), { status: 400, headers: cors });
 
   try {
     if (action === 'participants') {
       const gathering_id = url.searchParams.get('gathering_id');
-      const { results } = await env.DB.prepare(`
-        SELECT p.*, u.name, u.profile_image_url
-        FROM gathering_participants p
-        JOIN users u ON p.user_id = u.id
-        WHERE p.gathering_id = ?
-      `).bind(gathering_id).all();
-      return new Response(JSON.stringify({ success: true, data: results }), { headers: cors });
+      try {
+        const { results } = await env.DB.prepare(`
+          SELECT p.*, u.name, u.profile_image_url
+          FROM gathering_participants p
+          LEFT JOIN users u ON p.user_id = u.user_id
+          WHERE p.gathering_id = ?
+        `).bind(gathering_id).all();
+        return new Response(JSON.stringify({ success: true, data: results }), { headers: cors });
+      } catch (joinErr) {
+        // users JOIN 실패 시 participants만
+        const { results } = await env.DB.prepare(
+          'SELECT * FROM gathering_participants WHERE gathering_id = ?'
+        ).bind(gathering_id).all();
+        return new Response(JSON.stringify({ success: true, data: results }), { headers: cors });
+      }
     }
     
     if (action === 'detail') {

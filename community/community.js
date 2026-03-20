@@ -1,65 +1,51 @@
-// community.js - 커뮤니티 채팅 메인 컨트롤러
-// Firebase + Supabase 오케스트레이터
+// community.js - 커뮤니티 채팅 메인 컨트롤러 (D1 API 버전)
+// Firebase/Supabase 의존성 완전 제거 → BSQ.api 기반
 document.addEventListener('DOMContentLoaded', async () => {
-    // ---- BSQ.ready 대기 (폴링 제거) ----
-    if (window.BSQ && window.BSQ.ready) {
-        await window.BSQ.ready;
-    } else {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-    }
-
-    const db = firebase.database();
-    const supabase = window.supabaseClient;
+    // ---- BSQ.ready 대기 ----
+    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
 
     // ---- 세션 및 운영자 확인 ----
     const isOperator = window.__BSQ_DEV_MODE__ === true;
-    let session = null;
+    const session = window.BSQ?.session;
 
-    try {
-        if (supabase && supabase.auth) {
-            const { data } = await supabase.auth.getSession();
-            session = data?.session || null;
-        }
-    } catch (e) {
-        console.warn('Session check error:', e);
-    }
-
-    // ★ 운영자 모드면 로그인 없이 진입 가능
     if ((!session || !session.user) && !isOperator) {
         renderLoginPrompt();
         return;
     }
 
     const userId = isOperator ? 'OPERATOR_GHOST' : session.user.id;
-    // header.js에서 유저 메뉴를 이미 처리하므로, 운영자 표시만 추가
+
     if (isOperator) {
         const userMenu = document.getElementById('userMenu');
         if (userMenu) userMenu.innerHTML = `<div class="user-profile-btn"><span class="user-avatar">🛡️</span><span class="user-name">운영자 님</span></div>`;
     }
 
-    // ---- 모듈 초기화 ----
+    // ---- 모듈 초기화 (D1 API 기반) ----
     const SyncBridge = window.CommunityModules.SyncBridge;
-    const DM = window.CommunityModules.DM;
     const ChatList = window.CommunityModules.ChatList;
     const ChatUI = window.CommunityModules.ChatUI;
 
-    SyncBridge.init(db, supabase, userId);
-    ChatUI.init();
+    SyncBridge.init(null, null, userId); // Firebase/Supabase 인자 null
+
+    if (ChatUI && typeof ChatUI.init === 'function') ChatUI.init();
 
     // 방 선택 콜백
     ChatList.init((roomId, type, roomInfo) => {
-        ChatUI.openRoom(roomId, type, roomInfo);
+        if (ChatUI && typeof ChatUI.openRoom === 'function') {
+            ChatUI.openRoom(roomId, type, roomInfo);
+        }
         ChatList.setActiveRoom(roomId);
-        // 모바일: 사이드바 숨기기
         document.getElementById('commSidebar')?.classList.add('hidden');
     });
 
     // 전송 버튼
-    document.getElementById('btnSend')?.addEventListener('click', () => ChatUI.sendCurrentMessage());
+    document.getElementById('btnSend')?.addEventListener('click', () => {
+        if (ChatUI && typeof ChatUI.sendCurrentMessage === 'function') ChatUI.sendCurrentMessage();
+    });
     document.getElementById('msgInput')?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            ChatUI.sendCurrentMessage();
+            if (ChatUI && typeof ChatUI.sendCurrentMessage === 'function') ChatUI.sendCurrentMessage();
         }
     });
 
@@ -68,59 +54,67 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('commSidebar')?.classList.remove('hidden');
     });
 
-    // 클래스 채팅 자동 등록
-    registerClassChats(db, userId);
+    // 클래스 채팅 자동 등록 (D1 API)
+    registerClassChats(userId);
 
     // ---- 햄버거 메뉴 ----
-    setupHamburgerMenu(supabase, userId, db, SyncBridge, DM, ChatUI, ChatList);
+    setupHamburgerMenu(userId, SyncBridge, ChatUI, ChatList);
 
     // ---- 새 대화 모달 ----
-    setupNewChatModal(supabase, userId, SyncBridge, DM, ChatUI, ChatList);
+    setupNewChatModal(userId, SyncBridge, ChatUI, ChatList);
+
+    // ---- 그룹 채팅 모달 ----
+    setupGroupChatModal(userId, SyncBridge, ChatList);
+
+    // ---- 연락처 모달 ----
+    setupContactModal(userId, SyncBridge, ChatUI, ChatList);
 
     // ---- 정보 패널 ----
     setupInfoPanel();
 
-    console.log("✅ Community loaded for:", userId);
+    console.log("✅ Community loaded (D1 API) for:", userId);
 });
 
-// ---- 클래스 채팅 자동 등록 ----
-async function registerClassChats(db, userId) {
+// ---- 클래스 채팅 자동 등록 (D1 API) ----
+async function registerClassChats(userId) {
     try {
-        const enrollSnap = await db.ref(`enrollments/${userId}`).once('value');
-        const enrollments = enrollSnap.val() || {};
-        for (const [classId, data] of Object.entries(enrollments)) {
-            if (data.status === 'approved' || data.status === 'enrolled' || data.status === 'paid' || data.enrolled) {
-                const classSnap = await db.ref(`classes/${classId}`).once('value');
-                const classData = classSnap.val();
-                if (classData) {
-                    await db.ref(`user_chats/${userId}/${classId}`).update({
-                        type: 'class',
-                        class_name: classData.title || '클래스',
-                        class_image: classData.image_url || ''
-                    });
-                }
-            }
-        }
+        const enrollRes = await window.BSQ.api(`/api/enrollments?user_id=${userId}`);
+        const enrollments = enrollRes?.success ? (enrollRes.data?.enrollments || enrollRes.data || []) : [];
 
-        const classesSnap = await db.ref('classes').once('value');
-        const allClasses = classesSnap.val() || {};
-        for (const [classId, classData] of Object.entries(allClasses)) {
-            if (classData.creator_id === userId || window.__BSQ_DEV_MODE__) {
-                await db.ref(`user_chats/${userId}/${classId}`).update({
-                    type: 'class',
-                    class_name: classData.title || '클래스',
-                    class_image: classData.image_url || '',
-                    is_instructor: true
-                });
-            }
+        for (const enroll of enrollments) {
+            // user_chats에 이미 등록되어있는지 확인 후 자동 추가
+            await window.BSQ.api('/api/user-chats', {
+                method: 'POST',
+                body: JSON.stringify({
+                    user_id: userId,
+                    target_user_id: enroll.class_id, // class_id를 room_id로 사용
+                    target_name: enroll.title || '클래스',
+                    target_avatar: enroll.image_url || ''
+                })
+            }).catch(() => {});
         }
     } catch (e) {
-        console.warn("Class chats registration:", e.message);
+        console.warn("클래스 채팅 자동 등록 실패:", e);
+    }
+}
+
+// ---- 로그인 프롬프트 ----
+function renderLoginPrompt() {
+    const main = document.querySelector('.comm-container');
+    if (main) {
+        main.innerHTML = `
+            <div style="display:flex; align-items:center; justify-content:center; height:100vh; width:100%; flex-direction:column; gap:20px; text-align:center;">
+                <span style="font-size:4rem;">🔒</span>
+                <h2 style="margin:0;">로그인이 필요합니다</h2>
+                <p style="color:#888;">커뮤니티 기능은 로그인 후 이용 가능합니다.</p>
+                <button onclick="location.href='../login/login.html'" style="padding:12px 32px; border-radius:12px; background:linear-gradient(135deg,#6e8efb,#a777e3); color:white; border:none; font-weight:bold; cursor:pointer;">로그인하기</button>
+            </div>
+        `;
     }
 }
 
 // ---- 햄버거 메뉴 ----
-function setupHamburgerMenu(supabase, userId, db, SyncBridge, DM, ChatUI, ChatList) {
+function setupHamburgerMenu(userId, SyncBridge, ChatUI, ChatList) {
     const btn = document.getElementById('btnHamburger');
     const menu = document.getElementById('hamburgerMenu');
     if (!btn || !menu) return;
@@ -128,334 +122,68 @@ function setupHamburgerMenu(supabase, userId, db, SyncBridge, DM, ChatUI, ChatLi
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
         menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-        console.log("Hamburger menu toggled", menu.style.display);
     });
-
-    // Prevent clicks inside the menu from closing it immediately
-    menu.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
-
     document.addEventListener('click', () => { menu.style.display = 'none'; });
 
-    // 단체 채팅 만들기
-    document.getElementById('hmGroupChat')?.addEventListener('click', () => {
-        menu.style.display = 'none';
-        setupGroupChatModal(supabase, userId, db, SyncBridge, ChatUI, ChatList);
-        document.getElementById('groupChatModal').style.display = 'flex';
-    });
-
-    // 클래스 목록
-    document.getElementById('hmClassList')?.addEventListener('click', () => {
-        menu.style.display = 'none';
-        window.location.href = '../class/class_list.html';
-    });
-
-    // 연락처
+    document.getElementById('hmClassList')?.addEventListener('click', () => { location.href = '../class_list/class_list.html'; });
+    document.getElementById('hmBillingInfo')?.addEventListener('click', () => { location.href = '../mi_pesg/mypage.html'; });
+    document.getElementById('hmSettings')?.addEventListener('click', () => { location.href = '../mi_pesg/mypage.html'; });
     document.getElementById('hmContacts')?.addEventListener('click', () => {
-        menu.style.display = 'none';
-        setupContactModal(supabase, userId, db);
         document.getElementById('contactModal').style.display = 'flex';
-    });
-
-    // 결제 정보 (마이페이지)
-    document.getElementById('hmBillingInfo')?.addEventListener('click', () => {
-        menu.style.display = 'none';
-        window.location.href = '../mi_pesg/mypage.html';
-    });
-
-    // 설정
-    document.getElementById('hmSettings')?.addEventListener('click', () => {
-        menu.style.display = 'none';
-        // 임시 설정 모달 / 페이지 (현재는 알림으로 대체)
-        alert('설정 기능 준비 중입니다.');
+        loadContacts(userId);
     });
 }
 
-// ---- 단체 채팅 만들기 모달 ----
-function setupGroupChatModal(supabase, userId, db, SyncBridge, ChatUI, ChatList) {
-    const modal = document.getElementById('groupChatModal');
-    const input = document.getElementById('groupSearchInput');
-    const nameInput = document.getElementById('groupNameInput');
-    const results = document.getElementById('groupSearchResults');
-    const selectedEl = document.getElementById('selectedMembers');
-    const btnCreate = document.getElementById('btnCreateGroup');
-
-    let selectedMembers = [];
-
-    document.getElementById('btnCloseGroupModal')?.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-    modal?.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
-
-    // 이름 입력 초기화
-    if (nameInput) nameInput.value = '';
-    if (input) input.value = '';
-    if (results) results.innerHTML = '';
-    selectedMembers = [];
-    renderSelected();
-
-    let searchTimeout;
-    input?.addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(async () => {
-            const q = input.value.trim();
-            if (!q) { results.innerHTML = ''; return; }
-            const users = await SyncBridge.searchUsers(q);
-            results.innerHTML = users.filter(u => !selectedMembers.find(m => m.id === u.id))
-                .map(u => `
-                    <div class="user-result-item" data-uid="${u.id}" data-name="${u.name || u.email}">
-                        <div class="user-result-avatar" style="${u.profile_image_url ? `background-image:url(${u.profile_image_url})` : ''}">${!u.profile_image_url ? '👤' : ''}</div>
-                        <div><div class="user-result-name">${u.name || u.email}</div></div>
-                    </div>
-                `).join('') || '<p style="color:var(--comm-text2);text-align:center;font-size:0.85rem;">사용자를 찾을 수 없습니다</p>';
-
-            results.querySelectorAll('.user-result-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    selectedMembers.push({ id: item.dataset.uid, name: item.dataset.name });
-                    renderSelected();
-                    input.value = '';
-                    results.innerHTML = '';
-                });
-            });
-        }, 300);
-    });
-
-    function renderSelected() {
-        selectedEl.innerHTML = selectedMembers.map(m =>
-            `<div class="member-chip">${m.name}<button onclick="this.parentElement.remove()" data-id="${m.id}">✕</button></div>`
-        ).join('');
-        selectedEl.querySelectorAll('.member-chip button').forEach(btn => {
-            btn.addEventListener('click', () => {
-                selectedMembers = selectedMembers.filter(m => m.id !== btn.dataset.id);
-                renderSelected();
-            });
-        });
-        if (btnCreate) btnCreate.disabled = selectedMembers.length === 0;
-    }
-
-    // 그룹 생성
-    btnCreate.onclick = async () => {
-        if (selectedMembers.length === 0) return;
-        const groupName = nameInput?.value.trim() || selectedMembers.map(m => m.name).join(', ');
-        const members = [userId, ...selectedMembers.map(m => m.id)];
-
-        try {
-            const groupId = 'group_' + Date.now();
-            await db.ref(`group_chats/${groupId}/meta`).set({
-                name: groupName,
-                members,
-                created_by: userId,
-                created_at: firebase.database.ServerValue.TIMESTAMP
-            });
-
-            // 모든 멤버의 user_chats에 등록
-            for (const memberId of members) {
-                await db.ref(`user_chats/${memberId}/${groupId}`).set({
-                    type: 'group',
-                    group_name: groupName,
-                    group_image: '',
-                    unread_count: 0
-                });
-            }
-
-            modal.style.display = 'none';
-            ChatList.loadChatRooms();
-
-            // 바로 열기
-            ChatUI.openRoom(groupId, 'group', { group_name: groupName });
-            document.getElementById('commSidebar')?.classList.add('hidden');
-        } catch (e) {
-            console.error('Group creation failed:', e);
-            alert('그룹 생성 실패: ' + e.message);
-        }
-    };
-}
-
-// ---- 연락처 모달 ----
-function setupContactModal(supabase, userId, db) {
-    const modal = document.getElementById('contactModal');
-    const input = document.getElementById('contactSearchInput');
-    const results = document.getElementById('contactSearchResults');
-    const list = document.getElementById('contactList');
-
-    document.getElementById('btnCloseContactModal')?.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-    modal?.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
-
-    // 기존 연락처 로드
-    loadContacts();
-
-    let searchTimeout;
-    input?.addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(async () => {
-            const q = input.value.trim();
-            if (!q) { results.innerHTML = ''; return; }
-
-            try {
-                const { data: byName } = await supabase.from('users')
-                    .select('id, name, email, profile_image_url')
-                    .ilike('name', `%${q}%`).limit(10);
-                const { data: byEmail } = await supabase.from('users')
-                    .select('id, name, email, profile_image_url')
-                    .ilike('email', `%${q}%`).limit(10);
-
-                const map = {};
-                [...(byName || []), ...(byEmail || [])].forEach(u => {
-                    if (u.id !== userId) map[u.id] = u;
-                });
-                const users = Object.values(map);
-
-                results.innerHTML = users.map(u => `
-                    <div class="user-result-item" data-uid="${u.id}" data-name="${u.name || u.email}" data-avatar="${u.profile_image_url || ''}">
-                        <div class="user-result-avatar" style="${u.profile_image_url ? `background-image:url(${u.profile_image_url})` : ''}">${!u.profile_image_url ? '👤' : ''}</div>
-                        <div>
-                            <div class="user-result-name">${u.name || u.email}</div>
-                            <div style="font-size:0.75rem;color:var(--comm-text2);">${u.email || ''}</div>
-                        </div>
-                    </div>
-                `).join('') || '<p style="color:var(--comm-text2);text-align:center;font-size:0.85rem;">사용자를 찾을 수 없습니다</p>';
-
-                results.querySelectorAll('.user-result-item').forEach(item => {
-                    item.addEventListener('click', async () => {
-                        await db.ref(`contacts/${userId}/${item.dataset.uid}`).set({
-                            name: item.dataset.name,
-                            avatar: item.dataset.avatar,
-                            added_at: firebase.database.ServerValue.TIMESTAMP
-                        });
-                        input.value = '';
-                        results.innerHTML = '';
-                        loadContacts();
-                    });
-                });
-            } catch (e) { console.error(e); }
-        }, 300);
-    });
-
-    async function loadContacts() {
-        if (!list) return;
-        try {
-            const snap = await db.ref(`contacts/${userId}`).once('value');
-            const data = snap.val() || {};
-            const entries = Object.entries(data);
-
-            if (entries.length === 0) {
-                list.innerHTML = '<p style="color:var(--comm-text2);text-align:center;font-size:0.85rem;">연락처가 없습니다</p>';
-                return;
-            }
-
-            list.innerHTML = entries.map(([uid, info]) => `
-                <div class="contact-item">
-                    <div class="contact-avatar" style="${info.avatar ? `background-image:url(${info.avatar})` : ''}">${!info.avatar ? '👤' : ''}</div>
-                    <span class="contact-name">${info.name}</span>
-                    <button onclick="firebase.database().ref('contacts/${userId}/${uid}').remove().then(()=>this.closest('.contact-item').remove())" title="삭제">🗑️</button>
-                </div>
-            `).join('');
-        } catch (e) {
-            list.innerHTML = '<p style="color:var(--comm-text2);text-align:center;">로드 실패</p>';
-        }
-    }
-}
-
-// ---- 새 대화 모달 ----
-function setupNewChatModal(supabase, userId, SyncBridge, DM, ChatUI, ChatList) {
+// ---- 새 대화 모달 (D1 API) ----
+function setupNewChatModal(userId, SyncBridge, ChatUI, ChatList) {
     const modal = document.getElementById('newChatModal');
-    const input = document.getElementById('userSearchInput');
-    const results = document.getElementById('userSearchResults');
+    const closeBtn = document.getElementById('btnCloseModal');
+    const searchInput = document.getElementById('userSearchInput');
+    const resultsList = document.getElementById('userSearchResults');
 
     document.getElementById('btnNewChat')?.addEventListener('click', () => {
-        const menu = document.getElementById('hamburgerMenu');
-        if (menu) menu.style.display = 'none';
-        modal.style.display = 'flex';
-        input.value = '';
-        results.innerHTML = '';
-        input.focus();
+        if (modal) modal.style.display = 'flex';
     });
+    closeBtn?.addEventListener('click', () => { modal.style.display = 'none'; });
 
-    document.getElementById('btnCloseModal')?.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
+    let searchTimer;
+    searchInput?.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(async () => {
+            const query = searchInput.value.trim();
+            if (query.length < 2) { resultsList.innerHTML = ''; return; }
 
-    modal?.addEventListener('click', (e) => {
-        if (e.target === modal) modal.style.display = 'none';
-    });
-
-    // 폴더 관리 모달 닫기
-    document.getElementById('btnCloseFolderModal')?.addEventListener('click', () => {
-        document.getElementById('folderModal').style.display = 'none';
-    });
-
-    let searchTimeout;
-    input?.addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-
-        // --- Secret Mode ---
-        if (input.value.trim() === '예수그리스도의 계시라') {
-            window.open('https://web.telegram.org/k/', '_blank');
-            input.value = '';
-            results.innerHTML = '';
-            modal.style.display = 'none';
-            return;
-        }
-
-        searchTimeout = setTimeout(async () => {
-            const q = input.value.trim();
-            if (!q) { results.innerHTML = ''; return; }
-
-            let users = [];
-            try {
-                const { data: byName } = await supabase.from('users')
-                    .select('id, name, email, profile_image_url')
-                    .ilike('name', `%${q}%`).limit(20);
-                const { data: byEmail } = await supabase.from('users')
-                    .select('id, name, email, profile_image_url')
-                    .ilike('email', `%${q}%`).limit(20);
-
-                const map = {};
-                [...(byName || []), ...(byEmail || [])].forEach(u => {
-                    if (u.id !== userId) map[u.id] = u;
-                });
-                users = Object.values(map);
-            } catch (e) {
-                console.error('User search error:', e);
-            }
-
-            results.innerHTML = users.map(u => `
-                <div class="user-result-item" data-uid="${u.id}">
-                    <div class="user-result-avatar" style="${u.profile_image_url ? `background-image:url(${u.profile_image_url})` : ''}">
+            const users = await SyncBridge.searchUsers(query);
+            resultsList.innerHTML = users.map(u => `
+                <div class="user-search-item" data-uid="${u.id}" data-name="${u.name || ''}" data-avatar="${u.profile_image_url || ''}">
+                    <div class="user-avatar-mini" style="${u.profile_image_url ? `background-image:url(${u.profile_image_url})` : ''}">
                         ${!u.profile_image_url ? '👤' : ''}
                     </div>
                     <div>
-                        <div class="user-result-name">${u.name || u.email}</div>
-                        <div style="font-size:0.75rem;color:#888;">${u.email || ''}</div>
+                        <strong>${u.name || '사용자'}</strong>
+                        <span style="font-size:0.8rem; color:#888; margin-left:8px;">${u.email || ''}</span>
                     </div>
                 </div>
-            `).join('') || '<p style="color:#666;text-align:center;padding:1rem;">사용자를 찾을 수 없습니다</p>';
+            `).join('') || '<p style="color:#888; text-align:center; padding:1rem;">검색 결과 없음</p>';
 
-            results.querySelectorAll('.user-result-item').forEach(item => {
+            resultsList.querySelectorAll('.user-search-item').forEach(item => {
                 item.addEventListener('click', async () => {
                     const targetId = item.dataset.uid;
-                    console.log('📨 Starting DM with:', targetId);
+                    const targetName = item.dataset.name;
+                    const targetAvatar = item.dataset.avatar;
 
-                    try {
-                        const roomId = await DM.openOrCreateRoom(targetId);
-                        console.log('✅ Room created/found:', roomId);
+                    // DM 생성
+                    const res = await window.BSQ.api('/api/user-chats', {
+                        method: 'POST',
+                        body: JSON.stringify({ user_id: userId, target_user_id: targetId, target_name: targetName, target_avatar: targetAvatar })
+                    });
+
+                    if (res?.success) {
                         modal.style.display = 'none';
-
-                        const profile = await SyncBridge.getUserProfile(targetId);
-                        ChatUI.openRoom(roomId, 'dm', {
-                            target_id: targetId,
-                            target_name: profile.name || '사용자',
-                            target_avatar: profile.profile_image_url || ''
-                        });
-
-                        document.getElementById('commSidebar')?.classList.add('hidden');
                         ChatList.loadChatRooms();
-                    } catch (err) {
-                        console.error('❌ DM 생성 오류:', err);
-                        alert('채팅방 생성 중 오류가 발생했습니다: ' + err.message);
+                        alert(`${targetName}님과의 대화방이 생성되었습니다.`);
+                    } else {
+                        alert('대화방 생성 실패: ' + (res?.error || ''));
                     }
                 });
             });
@@ -463,45 +191,165 @@ function setupNewChatModal(supabase, userId, SyncBridge, DM, ChatUI, ChatList) {
     });
 }
 
-// ---- 정보 패널 ----
-function setupInfoPanel() {
-    const btn = document.getElementById('btnChatInfo');
-    const close = document.getElementById('btnClosePanel');
+// ---- 그룹 채팅 모달 (D1 API) ----
+function setupGroupChatModal(userId, SyncBridge, ChatList) {
+    const modal = document.getElementById('groupChatModal');
+    const closeBtn = document.getElementById('btnCloseGroupModal');
+    const searchInput = document.getElementById('groupSearchInput');
+    const resultsList = document.getElementById('groupSearchResults');
+    const selectedMembers = document.getElementById('selectedMembers');
+    const btnCreate = document.getElementById('btnCreateGroup');
 
-    // ℹ️ 버튼 → ChatUI의 정보 패널 렌더링
-    btn?.addEventListener('click', () => {
-        const ChatUI = window.CommunityModules.ChatUI;
-        const roomId = ChatUI.getCurrentRoomId();
-        const roomType = ChatUI.getCurrentRoomType();
-        if (roomId) {
-            // roomInfo는 roomsCache에서 가져올 수 없으므로 기본 정보 전달
-            const headerName = document.getElementById('chatHeaderName')?.textContent || '';
-            const roomInfo = roomType === 'dm'
-                ? { target_name: headerName }
-                : roomType === 'class'
-                    ? { class_name: headerName }
-                    : { group_name: headerName };
-            ChatUI.renderInfoPanel(roomId, roomType, roomInfo);
+    let membersList = [];
+
+    document.getElementById('hmGroupChat')?.addEventListener('click', () => {
+        if (modal) modal.style.display = 'flex';
+    });
+    closeBtn?.addEventListener('click', () => { modal.style.display = 'none'; });
+
+    let searchTimer;
+    searchInput?.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(async () => {
+            const query = searchInput.value.trim();
+            if (query.length < 2) { resultsList.innerHTML = ''; return; }
+
+            const users = await SyncBridge.searchUsers(query);
+            resultsList.innerHTML = users.filter(u => !membersList.includes(u.id)).map(u => `
+                <div class="user-search-item" data-uid="${u.id}" data-name="${u.name || '사용자'}">
+                    <div class="user-avatar-mini">👤</div>
+                    <strong>${u.name || '사용자'}</strong>
+                </div>
+            `).join('');
+
+            resultsList.querySelectorAll('.user-search-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const uid = item.dataset.uid;
+                    const name = item.dataset.name;
+                    if (!membersList.includes(uid)) {
+                        membersList.push(uid);
+                        renderSelectedMembers();
+                    }
+                });
+            });
+        }, 300);
+    });
+
+    function renderSelectedMembers() {
+        if (!selectedMembers) return;
+        selectedMembers.innerHTML = membersList.map(uid =>
+            `<span class="member-chip">${uid.substring(0, 8)}... <button onclick="this.parentElement.remove()">✕</button></span>`
+        ).join('');
+    }
+
+    btnCreate?.addEventListener('click', async () => {
+        const name = document.getElementById('groupNameInput')?.value.trim();
+        if (!name) { alert('그룹 이름을 입력하세요.'); return; }
+
+        const res = await window.BSQ.api('/api/group-chats', {
+            method: 'POST',
+            body: JSON.stringify({ name, members: membersList, created_by: userId })
+        });
+
+        if (res?.success) {
+            modal.style.display = 'none';
+            ChatList.loadChatRooms();
+            alert('그룹 채팅이 생성되었습니다.');
+            membersList = [];
+        } else {
+            alert('그룹 생성 실패: ' + (res?.error || ''));
         }
     });
+}
 
-    close?.addEventListener('click', () => {
-        document.getElementById('commInfoPanel').style.display = 'none';
+// ---- 연락처 모달 (D1 API) ----
+function setupContactModal(userId, SyncBridge, ChatUI, ChatList) {
+    const modal = document.getElementById('contactModal');
+    const closeBtn = document.getElementById('btnCloseContactModal');
+    const searchInput = document.getElementById('contactSearchInput');
+    const resultsList = document.getElementById('contactSearchResults');
+
+    closeBtn?.addEventListener('click', () => { modal.style.display = 'none'; });
+
+    let searchTimer;
+    searchInput?.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(async () => {
+            const query = searchInput.value.trim();
+            if (query.length < 2) { resultsList.innerHTML = ''; return; }
+
+            const users = await SyncBridge.searchUsers(query);
+            resultsList.innerHTML = users.map(u => `
+                <div class="user-search-item" data-uid="${u.id}" data-name="${u.name || '사용자'}">
+                    <div class="user-avatar-mini">👤</div>
+                    <strong>${u.name || '사용자'}</strong>
+                    <button class="btn-add-contact" data-uid="${u.id}" data-name="${u.name || ''}">+ 추가</button>
+                </div>
+            `).join('');
+
+            resultsList.querySelectorAll('.btn-add-contact').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const res = await window.BSQ.api('/api/contacts', {
+                        method: 'POST',
+                        body: JSON.stringify({ user_id: userId, target_user_id: btn.dataset.uid, name: btn.dataset.name })
+                    });
+                    if (res?.success) {
+                        alert('연락처에 추가되었습니다.');
+                        loadContacts(userId);
+                    }
+                });
+            });
+        }, 300);
     });
 }
 
-// ---- 로그인 안내 ----
-function renderLoginPrompt() {
-    const container = document.querySelector('.comm-container');
-    if (!container) return;
-    container.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:center;height:100%;width:100%;flex-direction:column;gap:1rem;">
-            <span style="font-size:3rem;">🔒</span>
-            <h2 style="color:#e8e8e8;">로그인이 필요합니다</h2>
-            <p style="color:#888;">커뮤니티를 이용하려면 먼저 로그인해주세요.</p>
-            <a href="../login/login.html" style="padding:12px 32px;background:linear-gradient(135deg,#6e8efb,#a777e3);color:#fff;border-radius:12px;text-decoration:none;font-weight:700;">로그인하기</a>
-        </div>
-    `;
+async function loadContacts(userId) {
+    const contactList = document.getElementById('contactList');
+    if (!contactList) return;
+
+    try {
+        const res = await window.BSQ.api(`/api/contacts?user_id=${userId}`);
+        const contacts = res?.success ? (res.data || []) : [];
+
+        if (contacts.length === 0) {
+            contactList.innerHTML = '<p style="color:#888; text-align:center; padding:1rem;">등록된 연락처가 없습니다.</p>';
+            return;
+        }
+
+        contactList.innerHTML = contacts.map(c => `
+            <div class="contact-item" style="display:flex; align-items:center; gap:12px; padding:10px; border-radius:12px; background:rgba(255,255,255,0.03); margin-bottom:8px;">
+                <div style="width:40px;height:40px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">
+                    ${c.avatar ? `<img src="${c.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : '👤'}
+                </div>
+                <div style="flex:1;">
+                    <strong>${c.name || c.real_name || '사용자'}</strong>
+                    ${c.memo ? `<p style="font-size:0.8rem;color:#888;margin:0;">${c.memo}</p>` : ''}
+                </div>
+                <button style="background:none;border:none;color:#ff4757;cursor:pointer;" onclick="deleteContact('${userId}','${c.target_user_id}')">🗑️</button>
+            </div>
+        `).join('');
+    } catch (e) {
+        contactList.innerHTML = '<p style="color:#ff4757; text-align:center;">연락처 로드 실패</p>';
+    }
 }
 
-// renderUserMenu는 header.js에서 처리 — 중복 제거됨
+window.deleteContact = async function(userId, targetId) {
+    if (!confirm('이 연락처를 삭제하시겠습니까?')) return;
+    await window.BSQ.api(`/api/contacts?user_id=${userId}&target_user_id=${targetId}`, { method: 'DELETE' });
+    loadContacts(userId);
+};
+
+// ---- 정보 패널 ----
+function setupInfoPanel() {
+    const panel = document.getElementById('commInfoPanel');
+    const btnInfo = document.getElementById('btnChatInfo');
+    const btnClose = document.getElementById('btnClosePanel');
+
+    btnInfo?.addEventListener('click', () => {
+        panel?.classList.toggle('open');
+    });
+    btnClose?.addEventListener('click', () => {
+        panel?.classList.remove('open');
+    });
+}

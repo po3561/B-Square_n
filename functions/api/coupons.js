@@ -14,6 +14,19 @@ export async function onRequestGet(context) {
   const code = url.searchParams.get('code');
 
   try {
+    // 테이블 자동 생성
+    await env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS coupons (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        class_id TEXT NOT NULL,
+        coupon_code TEXT NOT NULL,
+        type TEXT DEFAULT 'amount',
+        value REAL DEFAULT 0,
+        limit_count INTEGER DEFAULT 0,
+        used_count INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now'))
+      )
+    `).run();
     if (code && class_id) {
       // 낱개 조회 (검증용)
       const coupon = await env.DB.prepare(
@@ -58,9 +71,32 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ success: false, error: '필수 데이터가 누락되었습니다.' }), { status: 400, headers: cors });
     }
 
+    // 테이블 없으면 자동 생성
+    await env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS coupons (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        class_id TEXT NOT NULL,
+        coupon_code TEXT NOT NULL,
+        type TEXT DEFAULT 'amount',
+        value REAL DEFAULT 0,
+        limit_count INTEGER DEFAULT 0,
+        used_count INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now'))
+      )
+    `).run();
+
+    // 중복 체크
+    const existing = await env.DB.prepare(
+      'SELECT * FROM coupons WHERE class_id = ? AND coupon_code = ?'
+    ).bind(class_id, code).first();
+
+    if (existing) {
+      return new Response(JSON.stringify({ success: false, error: `쿠폰 코드 "${code}"가 이미 존재합니다. 다른 코드를 사용해주세요.` }), { status: 400, headers: cors });
+    }
+
     await env.DB.prepare(
       'INSERT INTO coupons (class_id, coupon_code, type, value, limit_count, used_count) VALUES (?, ?, ?, ?, ?, 0)'
-    ).bind(class_id, code, type, value, max_limit || 0).run();
+    ).bind(class_id, code, type || 'amount', value || 0, max_limit || 0).run();
 
     return new Response(JSON.stringify({ success: true, message: '쿠폰이 발급되었습니다.' }), { headers: cors });
   } catch (err) {

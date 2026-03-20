@@ -62,9 +62,10 @@ window.SimpleClassChat = (function () {
         setupPinnedActions();
         setupGatheringActions();
 
-        if (state.isInstructor) {
-            const btnGathering = document.getElementById('btnGathering');
-            if (btnGathering) btnGathering.style.display = 'flex';
+        // 달력(모집카드 생성) 아이콘: 강사만 보이게
+        const btnGathering = document.getElementById('btnGathering');
+        if (btnGathering) {
+            btnGathering.style.display = state.isInstructor ? 'flex' : 'none';
         }
 
         if (messagesEl) {
@@ -556,6 +557,10 @@ window.SimpleClassChat = (function () {
                         </div>
                     </div>
 
+                    <a href="https://map.naver.com/v5/search/${encodeURIComponent(gData.location || '')}" target="_blank" class="gathering-map-btn" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:9px;border-radius:8px;background:rgba(0,122,255,0.1);color:#007AFF;text-decoration:none;font-weight:700;font-size:0.85rem;border:1px solid rgba(0,122,255,0.15);margin-bottom:8px;transition:all 0.2s;">
+                        <i class="fas fa-map-location-dot"></i> 지도 바로가기
+                    </a>
+
                     <div class="gathering-timer-v2" data-deadline="${gData.deadline_at}">
                         <div class="timer-label">모집 마감 카운트다운</div>
                         <div class="timer-value">계산 중...</div>
@@ -572,7 +577,7 @@ window.SimpleClassChat = (function () {
                     </div>
 
                     <div class="gathering-actions-v2">
-                        <!-- 동적 바인딩 (참여/취소/마감) -->
+                        <!-- 동적 바인딩 (참여/취소/마감/불참) -->
                     </div>
                 `;
                 bubble.appendChild(gCard);
@@ -631,10 +636,20 @@ window.SimpleClassChat = (function () {
                     }
 
                     if (state.isInstructor) {
-                        actionsBox.innerHTML = '<button class="btn-gathering-action-premium btn-close-v2"><i class="fas fa-lock"></i> 모집 조기 마감하기</button>';
+                        actionsBox.innerHTML = `
+                            <button class="btn-gathering-action-premium btn-close-v2" style="margin-bottom:6px;"><i class="fas fa-lock"></i> 모집 조기 마감하기</button>
+                            <button class="btn-gathering-action-premium btn-absence-v2" style="background:rgba(255,149,0,0.15);color:#FF9500;border:1px solid rgba(255,149,0,0.25);"><i class="fas fa-user-slash"></i> 불참</button>
+                        `;
                         actionsBox.querySelector('.btn-close-v2').onclick = async () => {
                             if (confirm('이 모임의 모집을 조기 마감하시겠습니까?')) {
                                 await window.BSQ.api('/api/gatherings', { method: 'POST', body: JSON.stringify({ action: 'close', gathering_id: gatheringId }) });
+                                updateUI();
+                            }
+                        };
+                        actionsBox.querySelector('.btn-absence-v2').onclick = async () => {
+                            if (confirm('이 모임에 불참하시겠습니까?')) {
+                                await window.BSQ.api('/api/gatherings', { method: 'POST', body: JSON.stringify({ action: 'leave', gathering_id: gatheringId, user_id: state.userId }) });
+                                if (typeof showToast === 'function') showToast('info', '모임 불참', '불참 처리되었습니다.');
                                 updateUI();
                             }
                         };
@@ -911,7 +926,6 @@ window.SimpleClassChat = (function () {
     }
 
     function addReaction(msgId, emoji) {
-        // DB 연동은 추후 확장, 현재는 UI 피드백만
         if (typeof showToast === 'function') showToast('success', '리액션', `${emoji} 반응을 남겼습니다.`);
     }
 
@@ -920,7 +934,6 @@ window.SimpleClassChat = (function () {
         const wrapper = document.querySelector('.chat-tab-wrapper');
         if (!resizer || !wrapper) return;
 
-        // 저장된 높이값 불러오기
         const savedHeight = localStorage.getItem('bsq_chat_height');
         if (savedHeight) {
             wrapper.style.setProperty('height', `${savedHeight}px`, 'important');
@@ -938,15 +951,11 @@ window.SimpleClassChat = (function () {
 
         window.addEventListener('mousemove', (e) => {
             if (!isResizing) return;
-
             const deltaY = e.clientY - lastY;
             const currentHeight = wrapper.offsetHeight;
             let newHeight = currentHeight + deltaY;
-
-            // 최소/최대 제약 (600px ~ 5000px)
             if (newHeight < 600) newHeight = 600;
             if (newHeight > 11000) newHeight = 11000;
-
             wrapper.style.setProperty('height', `${newHeight}px`, 'important');
             lastY = e.clientY;
         });
@@ -955,7 +964,6 @@ window.SimpleClassChat = (function () {
             if (isResizing) {
                 isResizing = false;
                 document.body.style.cursor = 'default';
-                // 높이 저장
                 localStorage.setItem('bsq_chat_height', wrapper.offsetHeight);
             }
         });
@@ -965,72 +973,243 @@ window.SimpleClassChat = (function () {
         const panelBody = document.getElementById('infoPanelBody');
         const panelTitle = document.getElementById('infoPanelTitle');
         if (!panelBody) return;
+        if (panelTitle) panelTitle.textContent = '채널 정보';
 
-        panelBody.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">데이터 로딩 중...</div>';
+        panelBody.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-secondary);"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block;"></i> 로딩 중...</div>';
 
         try {
-            // 1. 모임 현황 가져오기
-            const gatherRes = await window.BSQ.api(`/api/gatherings?class_id=${state.classId}`);
-            let gatheringsHtml = '';
-            
-            if (gatherRes.success && gatherRes.data && gatherRes.data.length > 0) {
-                gatheringsHtml = `
-                    <div class="info-section">
-                        <h4 style="color:var(--accent-color); font-size:1rem; margin-bottom:12px;">🗓️ 진행 예정 모임</h4>
-                        ${gatherRes.data.map(g => `
-                            <div class="gathering-mini-item" style="background:rgba(255,255,255,0.05); border-radius:12px; padding:12px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.05);">
-                                <div style="font-weight:700; color:#fff; margin-bottom:4px;">${g.title}</div>
-                                <div style="font-size:0.85rem; color:#aaa;"><i class="fas fa-map-marker-alt" style="width:14px;"></i> ${g.location || '장소 미정'}</div>
-                                <div style="font-size:0.85rem; color:#aaa;"><i class="fas fa-clock" style="width:14px;"></i> ${new Date(g.gathering_at).toLocaleString('ko-KR')}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            } else {
-                gatheringsHtml = `
-                    <div class="info-section" style="padding:20px; text-align:center; color:#666;">
-                        진행 중인 모임이 없습니다.
-                    </div>
-                `;
-            }
+            const viewMode = state.isInstructor ? 'instructor' : 'student';
+            let members = [], total_members = 0, pass_stats = {}, class_info = {};
+            let gatherings = [];
 
-            panelBody.innerHTML = `
-                ${gatheringsHtml}
-                <div class="info-section">
-                    <h4 style="color:#fff; font-size:1rem; margin-bottom:12px; margin-top:20px;">👥 클래스 멤버</h4>
-                    <div id="panelMemberList" style="display:flex; flex-direction:column; gap:8px;">
-                        <p style="color:#666; font-size:0.9rem;">멤버 정보를 불러오고 있습니다...</p>
+            try {
+                const memberRes = await window.BSQ.api(`/api/classes/members?class_id=${state.classId}&view=${viewMode}`);
+                if (memberRes?.success && memberRes.data) {
+                    members = memberRes.data.members || [];
+                    total_members = memberRes.data.total_members || 0;
+                    pass_stats = memberRes.data.pass_stats || {};
+                    class_info = memberRes.data.class_info || {};
+                }
+            } catch (e) { console.warn('[InfoPanel] Members API failed:', e); }
+
+            try {
+                const gatherRes = await window.BSQ.api(`/api/gatherings?class_id=${state.classId}`);
+                if (gatherRes?.success && gatherRes.data) gatherings = gatherRes.data;
+            } catch (e) { console.warn('[InfoPanel] Gatherings API failed:', e); }
+
+            const category = class_info.category || '카테고리';
+
+            // ===== 1. 헤더 =====
+            const headerHtml = `
+                <div class="ip-section ip-header-section">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                        <span style="width:10px;height:10px;border-radius:50%;background:#34C759;display:inline-block;box-shadow:0 0 6px rgba(52,199,89,0.5);"></span>
+                        <span style="font-weight:800; font-size:0.95rem;">클래스 참여자 / 총 ${total_members}명</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding-left:18px;">
+                        <span class="ip-sub-text">${category}</span>
+                        <span class="ip-sub-text"><i class="fa-solid fa-circle" style="color:#34C759;font-size:0.4rem;vertical-align:middle;margin-right:3px;"></i>현재 ${total_members}명</span>
                     </div>
                 </div>
             `;
-            
-            // 추가 정보(멤버 등) 비동기 로드
-            updatePanelMemberList();
+
+            // ===== 2. 멤버 리스트 =====
+            const dotColors = ['#34C759','#5AC8FA','#AF52DE','#FF9500','#FF2D55','#5856D6','#FF3B30','#007AFF'];
+            let memberListHtml = '';
+            if (members.length > 0) {
+                memberListHtml = '<div class="ip-section" style="padding:0;">';
+                memberListHtml += members.map((m, idx) => {
+                    const dc = dotColors[idx % dotColors.length];
+                    const nickname = m.nickname || '사용자';
+                    const isInstr = m.role === 'instructor';
+                    const isSub = m.role === 'sub_instructor';
+                    const roleBadge = isInstr ? '<span class="ip-role-badge ip-role-instructor"><i class="fa-solid fa-crown"></i> 강사</span>'
+                                   : isSub   ? '<span class="ip-role-badge ip-role-sub"><i class="fa-solid fa-chalkboard-user"></i> 서브강사</span>'
+                                   :           '<span class="ip-role-badge ip-role-student"><i class="fa-solid fa-user"></i> 수강생</span>';
+
+                    const avatarUrl = m.profile_image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=random&color=fff&size=40`;
+
+                    let detailHtml = '';
+                    if (state.isInstructor && (m.name || m.phone)) {
+                        detailHtml = `<div class="ip-member-detail">${m.name || ''} ${m.phone ? '· ' + m.phone : ''}</div>`;
+                    }
+
+                    const passHtml = (state.isInstructor && m.remaining_passes !== undefined) ? `
+                        <div class="ip-pass-badge">
+                            <i class="fa-solid fa-ticket"></i> ${m.remaining_passes ?? 0}
+                        </div>
+                    ` : '';
+
+                    const isSelf = String(m.user_id) === String(state.userId);
+                    const friendBtnHtml = isSelf ? '' : `
+                        <button class="ip-btn-friend" data-target-uid="${m.user_id}" data-target-name="${nickname}" title="친구 추가">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </button>
+                    `;
+
+                    return `
+                        <div class="ip-member-card">
+                            <div class="ip-member-avatar" style="background-image:url('${avatarUrl}');">
+                                <span class="ip-online-dot" style="background:${dc};"></span>
+                            </div>
+                            <div class="ip-member-info">
+                                <div class="ip-member-name">${nickname} ${roleBadge}</div>
+                                ${detailHtml}
+                            </div>
+                            ${passHtml}
+                            ${friendBtnHtml}
+                        </div>
+                    `;
+                }).join('');
+                memberListHtml += '</div>';
+            } else {
+                memberListHtml = '<div class="ip-section" style="text-align:center; padding:20px;"><span class="ip-sub-text">등록된 수강생이 없습니다.</span></div>';
+            }
+
+            // ===== 3. 모임 정보 =====
+            let gatheringHtml = '';
+            if (gatherings.length > 0) {
+                gatheringHtml = gatherings.map(g => {
+                    const gDate = new Date(g.gathering_at);
+                    const dateStr = `${gDate.getFullYear()}년 ${gDate.getMonth()+1}월 ${gDate.getDate()}일 / ${String(gDate.getHours()).padStart(2,'0')}:${String(gDate.getMinutes()).padStart(2,'0')}`;
+                    const location = g.location || '장소 미정';
+                    const mapUrl = `https://map.kakao.com/?q=${encodeURIComponent(location)}`;
+                    const now = new Date();
+                    const isClosed = g.status === 'closed' || (g.deadline_at && now >= new Date(g.deadline_at));
+                    const currentP = g.current_participants || 0;
+                    const maxP = g.capacity_max || 10;
+                    const pct = maxP > 0 ? Math.min((currentP / maxP) * 100, 100) : 0;
+
+                    return `
+                        <div class="ip-section ip-gathering-card">
+                            <div class="ip-gathering-row"><i class="fa-regular fa-calendar"></i> ${dateStr}</div>
+                            <div class="ip-gathering-row"><i class="fa-solid fa-location-dot"></i> ${location}</div>
+                            <a href="${mapUrl}" target="_blank" class="ip-btn-map">
+                                <i class="fa-solid fa-map-location-dot"></i> 지도 바로가기
+                            </a>
+                            ${state.isInstructor ? `
+                            <div class="ip-pass-stats">
+                                <div><i class="fa-solid fa-ticket"></i> 발행 <b>${pass_stats.total_issued || 0}</b>개</div>
+                                <div><i class="fa-solid fa-check-circle"></i> 사용 <b>${pass_stats.total_used || 0}</b>개</div>
+                            </div>
+                            ` : ''}
+                            <div class="ip-recruit-badge ${isClosed ? 'closed' : 'open'}">${isClosed ? '모집 마감' : '모집 진행중'}</div>
+                            <div class="ip-progress-section">
+                                <div class="ip-progress-label">
+                                    <span>참여</span>
+                                    <span>${currentP} / ${maxP}명</span>
+                                </div>
+                                <div class="ip-progress-bar"><div class="ip-progress-fill" style="width:${pct}%"></div></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // ===== 4. 채팅 설정 =====
+            const savedHeight = localStorage.getItem('bsq_chat_height') || '800';
+            const savedRatio = localStorage.getItem('bsq_chat_ratio') || '50';
+            const chatSettingsHtml = `
+                <div class="ip-section ip-settings-section">
+                    <h4 class="ip-settings-title"><i class="fa-solid fa-sliders"></i> 채팅 인터페이스 설정</h4>
+                    <div class="ip-slider-group">
+                        <div class="ip-slider-label"><span>채팅창 높이</span><span id="chatHeightVal" class="ip-slider-value">${savedHeight}px</span></div>
+                        <input type="range" id="chatHeightSlider" min="400" max="2000" step="50" value="${savedHeight}" class="ip-slider"
+                            oninput="document.getElementById('chatHeightVal').textContent=this.value+'px'; const w=document.querySelector('.chat-tab-wrapper'); if(w)w.style.setProperty('height',this.value+'px','important'); localStorage.setItem('bsq_chat_height',this.value);">
+                    </div>
+                    <div class="ip-slider-group">
+                        <div class="ip-slider-label"><span>메시지 비율</span><span id="chatRatioVal" class="ip-slider-value">${savedRatio}%</span></div>
+                        <input type="range" id="chatRatioSlider" min="30" max="90" step="5" value="${savedRatio}" class="ip-slider"
+                            oninput="document.getElementById('chatRatioVal').textContent=this.value+'%'; const c=document.getElementById('chatMessagesContainer'); if(c)c.style.setProperty('flex','0 0 '+this.value+'%','important'); localStorage.setItem('bsq_chat_ratio',this.value);">
+                    </div>
+                    <button class="ip-btn-reset" onclick="document.getElementById('chatHeightSlider').value=800;document.getElementById('chatHeightVal').textContent='800px';document.getElementById('chatRatioSlider').value=50;document.getElementById('chatRatioVal').textContent='50%';const w=document.querySelector('.chat-tab-wrapper');if(w)w.style.setProperty('height','800px','important');localStorage.setItem('bsq_chat_height','800');localStorage.removeItem('bsq_chat_ratio');">
+                        <i class="fa-solid fa-rotate-left"></i> 초기화
+                    </button>
+                </div>
+            `;
+
+            // ===== 최종 조합 =====
+            panelBody.innerHTML = `
+                <style>
+                    .ip-section { background: var(--border-color); border-radius:12px; padding:14px; margin-bottom:10px; }
+                    .ip-header-section { background: rgba(52,199,89,0.08); border:1px solid rgba(52,199,89,0.15); }
+                    .ip-sub-text { font-size:0.75rem; color:var(--text-secondary); }
+                    .ip-member-card { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border-color); }
+                    .ip-member-card:last-child { border-bottom:none; }
+                    .ip-member-avatar { width:36px; height:36px; border-radius:50%; background-size:cover; background-position:center; flex-shrink:0; position:relative; }
+                    .ip-online-dot { position:absolute; bottom:0; right:0; width:10px; height:10px; border-radius:50%; border:2px solid var(--chat-bg); }
+                    .ip-member-info { flex:1; min-width:0; }
+                    .ip-member-name { font-size:0.88rem; font-weight:700; display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+                    .ip-member-detail { font-size:0.72rem; color:var(--text-secondary); margin-top:2px; }
+                    .ip-role-badge { font-size:0.6rem; padding:2px 6px; border-radius:4px; font-weight:700; white-space:nowrap; }
+                    .ip-role-instructor { background:rgba(255,214,10,0.15); color:#FFD60A; }
+                    .ip-role-sub { background:rgba(175,82,222,0.15); color:#AF52DE; }
+                    .ip-role-student { background:rgba(142,142,147,0.1); color:var(--text-secondary); }
+                    .ip-pass-badge { font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:6px; background:rgba(76,201,240,0.1); color:#4cc9f0; white-space:nowrap; display:flex; align-items:center; gap:4px; }
+                    .ip-btn-friend { width:30px; height:30px; border-radius:8px; background:rgba(0,122,255,0.1); color:var(--accent-color); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.75rem; transition:all 0.2s; flex-shrink:0; }
+                    .ip-btn-friend:hover { background:rgba(0,122,255,0.25); transform:scale(1.1); }
+                    .ip-gathering-card { background:rgba(0,122,255,0.05); border:1px solid rgba(0,122,255,0.1); }
+                    .ip-gathering-row { font-size:0.85rem; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+                    .ip-gathering-row i { color:var(--accent-color); width:14px; text-align:center; font-size:0.8rem; }
+                    .ip-btn-map { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:9px; border-radius:8px; background:rgba(0,122,255,0.1); color:var(--accent-color); text-decoration:none; font-weight:700; font-size:0.85rem; border:1px solid rgba(0,122,255,0.15); margin-bottom:10px; transition:all 0.2s; }
+                    .ip-btn-map:hover { background:rgba(0,122,255,0.2); }
+                    .ip-pass-stats { display:flex; gap:16px; font-size:0.8rem; margin-bottom:10px; }
+                    .ip-pass-stats i { margin-right:4px; color:var(--accent-color); }
+                    .ip-recruit-badge { text-align:center; padding:10px; border-radius:8px; font-weight:800; font-size:1.1rem; margin-bottom:10px; }
+                    .ip-recruit-badge.open { background:rgba(0,122,255,0.15); color:#007AFF; border:1px solid rgba(0,122,255,0.25); }
+                    .ip-recruit-badge.closed { background:rgba(142,142,147,0.1); color:var(--text-secondary); }
+                    .ip-progress-section { margin-top:4px; }
+                    .ip-progress-label { display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px; font-weight:600; }
+                    .ip-progress-bar { width:100%; height:6px; background:var(--border-color); border-radius:3px; overflow:hidden; }
+                    .ip-progress-fill { height:100%; background:linear-gradient(90deg,#5AC8FA,#007AFF); border-radius:3px; transition:width 0.5s; }
+                    .ip-settings-section { background:rgba(142,142,147,0.06); border:1px solid var(--border-color); }
+                    .ip-settings-title { font-size:0.85rem; font-weight:700; margin:0 0 12px 0; display:flex; align-items:center; gap:6px; }
+                    .ip-slider-group { margin-bottom:12px; }
+                    .ip-slider-label { display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:4px; }
+                    .ip-slider-value { color:var(--accent-color); font-weight:700; }
+                    .ip-slider { width:100%; accent-color:#007AFF; cursor:pointer; }
+                    .ip-btn-reset { width:100%; padding:7px; border-radius:8px; background:rgba(255,59,48,0.08); color:#FF3B30; border:1px solid rgba(255,59,48,0.15); cursor:pointer; font-weight:600; font-size:0.78rem; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:4px; }
+                    .ip-btn-reset:hover { background:rgba(255,59,48,0.18); }
+                </style>
+                ${headerHtml}
+                ${memberListHtml}
+                ${gatheringHtml}
+                ${chatSettingsHtml}
+            `;
+
+            // 친구 추가 버튼 이벤트 바인딩
+            panelBody.querySelectorAll('.ip-btn-friend').forEach(btn => {
+                btn.onclick = async () => {
+                    const targetUid = btn.dataset.targetUid;
+                    const targetName = btn.dataset.targetName;
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                    try {
+                        const res = await window.BSQ.api('/api/friends', {
+                            method: 'POST',
+                            body: JSON.stringify({ action: 'request', user_id: state.userId, friend_id: targetUid })
+                        });
+                        if (res.success) {
+                            btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                            btn.style.background = 'rgba(52,199,89,0.15)';
+                            btn.style.color = '#34C759';
+                            if (typeof showToast === 'function') showToast('success', '친구 요청', `${targetName}에게 친구 요청을 보냈습니다.`);
+                        } else {
+                            btn.innerHTML = '<i class="fa-solid fa-user-plus"></i>';
+                            btn.disabled = false;
+                            if (typeof showToast === 'function') showToast('info', '알림', res.error || '요청 실패');
+                        }
+                    } catch (e) {
+                        btn.innerHTML = '<i class="fa-solid fa-user-plus"></i>';
+                        btn.disabled = false;
+                        alert('오류: ' + e.message);
+                    }
+                };
+            });
 
         } catch (err) {
-            panelBody.innerHTML = `<div style="padding:20px; color:#ff4d4d;">오류 발생: ${err.message}</div>`;
-        }
-    }
-
-    async function updatePanelMemberList() {
-        const listEl = document.getElementById('panelMemberList');
-        if (!listEl) return;
-
-        try {
-            const res = await window.BSQ.api(`/api/enrollments?class_id=${state.classId}`);
-            if (res.success && res.data) {
-                listEl.innerHTML = res.data.map(m => `
-                    <div style="display:flex; align-items:center; gap:10px; padding:8px; background:rgba(255,255,255,0.03); border-radius:8px;">
-                        <img src="${m.profile_image_url || '/api/placeholder/40/40'}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
-                        <div style="flex:1;">
-                            <div style="font-size:0.9rem; color:#fff; font-weight:600;">${m.nickname || m.name} ${m.role === 'instructor' ? '👑' : ''}</div>
-                            ${state.isInstructor && m.phone ? `<div style="font-size:0.75rem; color:#888;">${m.phone}</div>` : ''}
-                        </div>
-                    </div>
-                `).join('');
-            }
-        } catch (e) {
-            listEl.innerHTML = '<p style="color:#666; font-size:0.8rem;">멤버 정보를 가져올 수 없습니다.</p>';
+            console.error('[InfoPanel] Error:', err);
+            panelBody.innerHTML = `<div style="padding:20px; color:#ff4d4d;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:6px;"></i> 오류 발생: ${err.message}</div>`;
         }
     }
 

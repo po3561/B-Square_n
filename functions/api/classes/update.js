@@ -1,7 +1,8 @@
-// functions/api/classes/update.js — 클래스 상세 정보 수정 API
 // PUT /api/classes/update
 export async function onRequestPut(context) {
     const { request, env } = context;
+
+    // functions/api/classes/update.js — 클래스 상세 정보 수정 API
     const cors = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
 
     try {
@@ -28,8 +29,13 @@ export async function onRequestPut(context) {
 
         // 허용된 단일 스트링/숫자 필드
         const allowedFields = [
-            'title', 'category', 'class_type', 'summary', 'description', 
-            'price', 'discount_rate', 'image_url'
+            'title', 'category', 'class_type', 'operating_mode', 'summary',
+            'description', 'description_text', 'price', 'discount_rate', 'image_url',
+            'is_free', 'coupon_pack', 'coupon_detail',
+            'capacity_min', 'capacity_max',
+            'tickets_price_one_time', 'tickets_pass_count', 'tickets_price_multi', 'tickets_price_monthly',
+            'payment_card', 'payment_bank_transfer', 'payment_bank_name', 'payment_bank_account', 'payment_bank_holder',
+            'instructor_phone', 'instructor_name', 'instructor_email'
         ];
 
         for (const field of allowedFields) {

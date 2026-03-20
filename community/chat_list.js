@@ -1,5 +1,4 @@
-// chat_list.js - 모듈2: 채팅 목록 관리
-// 우클릭/롱프레스 컨텍스트 메뉴, 폴더 분류, 고정/음소거
+// chat_list.js - 모듈2: 채팅 목록 관리 (D1 API 버전)
 window.CommunityModules = window.CommunityModules || {};
 
 window.CommunityModules.ChatList = (function () {
@@ -11,9 +10,8 @@ window.CommunityModules.ChatList = (function () {
 
     // 사용자별 설정 (localStorage)
     function getSettings() {
-        try {
-            return JSON.parse(localStorage.getItem('bsq_chat_settings') || '{}');
-        } catch { return {}; }
+        try { return JSON.parse(localStorage.getItem('bsq_chat_settings') || '{}'); }
+        catch { return {}; }
     }
     function saveSettings(s) { localStorage.setItem('bsq_chat_settings', JSON.stringify(s)); }
 
@@ -23,54 +21,36 @@ window.CommunityModules.ChatList = (function () {
     function getRoomFolders() { return getSettings().roomFolders || {}; }
 
     function togglePin(roomId) {
-        const s = getSettings();
-        s.pinned = s.pinned || [];
+        const s = getSettings(); s.pinned = s.pinned || [];
         const idx = s.pinned.indexOf(roomId);
-        if (idx >= 0) s.pinned.splice(idx, 1);
-        else s.pinned.push(roomId);
-        saveSettings(s);
-        renderRooms();
+        if (idx >= 0) s.pinned.splice(idx, 1); else s.pinned.push(roomId);
+        saveSettings(s); renderRooms();
     }
     function toggleMute(roomId) {
-        const s = getSettings();
-        s.muted = s.muted || [];
+        const s = getSettings(); s.muted = s.muted || [];
         const idx = s.muted.indexOf(roomId);
-        if (idx >= 0) s.muted.splice(idx, 1);
-        else s.muted.push(roomId);
-        saveSettings(s);
-        renderRooms();
+        if (idx >= 0) s.muted.splice(idx, 1); else s.muted.push(roomId);
+        saveSettings(s); renderRooms();
     }
     function addFolder(name) {
-        const s = getSettings();
-        s.folders = s.folders || [];
-        if (!s.folders.includes(name)) {
-            s.folders.push(name);
-            saveSettings(s);
-        }
-        renderFolderTabs();
-        renderFolderManagerList();
+        const s = getSettings(); s.folders = s.folders || [];
+        if (!s.folders.includes(name)) { s.folders.push(name); saveSettings(s); }
+        renderFolderTabs(); renderFolderManagerList();
     }
     function removeFolder(name) {
         const s = getSettings();
         s.folders = (s.folders || []).filter(f => f !== name);
         const rf = s.roomFolders || {};
-        Object.keys(rf).forEach(rid => {
-            if (rf[rid] === name) delete rf[rid];
-        });
-        s.roomFolders = rf;
-        saveSettings(s);
+        Object.keys(rf).forEach(rid => { if (rf[rid] === name) delete rf[rid]; });
+        s.roomFolders = rf; saveSettings(s);
         if (currentFolder === name) currentFolder = null;
-        renderFolderTabs();
-        renderRooms();
-        renderFolderManagerList();
+        renderFolderTabs(); renderRooms(); renderFolderManagerList();
     }
     function assignFolder(roomId, folderName) {
-        const s = getSettings();
-        s.roomFolders = s.roomFolders || {};
+        const s = getSettings(); s.roomFolders = s.roomFolders || {};
         if (folderName) s.roomFolders[roomId] = folderName;
         else delete s.roomFolders[roomId];
-        saveSettings(s);
-        renderRooms();
+        saveSettings(s); renderRooms();
     }
 
     function init(selectCallback) {
@@ -81,7 +61,7 @@ window.CommunityModules.ChatList = (function () {
         renderFolderTabs();
         setupFolderModal();
         setupContextMenu();
-        console.log("📋 ChatList initialized");
+        console.log("📋 ChatList initialized (D1 API)");
     }
 
     function setupFilterTabs() {
@@ -99,63 +79,43 @@ window.CommunityModules.ChatList = (function () {
 
     function setupSearch() {
         const input = document.getElementById('chatSearchInput');
-        if (input) {
-            input.addEventListener('input', () => renderRooms(input.value.trim()));
-        }
+        if (input) input.addEventListener('input', () => renderRooms(input.value.trim()));
     }
 
-    // ==== 채팅방 로드 ====
-    function loadChatRooms() {
-        const db = bridge().getDb();
+    // ==== 채팅방 로드 (D1 API) ====
+    async function loadChatRooms() {
         const userId = bridge().getUserId();
         if (!userId) return;
 
-        db.ref(`user_chats/${userId}`).on('value', snap => {
-            const data = snap.val() || {};
+        try {
+            const res = await window.BSQ.api(`/api/user-chats?user_id=${userId}`);
+            if (!res?.success) return;
+
             roomsCache = {};
-
-            const promises = Object.entries(data).map(async ([roomId, roomInfo]) => {
-                let lastMsg = '';
-                let lastTime = roomInfo.last_seen || 0;
-
-                try {
-                    if (roomInfo.type === 'dm') {
-                        if (roomInfo.target_id) {
-                            try {
-                                const profile = await bridge().getUserProfile(roomInfo.target_id);
-                                roomInfo.target_name = profile.name || '사용자';
-                                roomInfo.target_avatar = profile.profile_image_url || '';
-                            } catch (e) { }
-                        }
-                        const metaSnap = await db.ref(`dm/${roomId}/meta`).once('value');
-                        const meta = metaSnap.val() || {};
-                        lastMsg = meta.last_message || '';
-                        lastTime = meta.last_timestamp || lastTime;
-                    } else if (roomInfo.type === 'class') {
-                        const metaSnap = await db.ref(`chats/${roomId}`).limitToLast(1).once('value');
-                        metaSnap.forEach(child => {
-                            lastMsg = child.val().content || '';
-                            lastTime = child.val().timestamp || lastTime;
-                        });
-                    } else if (roomInfo.type === 'group') {
-                        const metaSnap = await db.ref(`group_chats/${roomId}/meta`).once('value');
-                        const meta = metaSnap.val() || {};
-                        lastMsg = meta.last_message || '';
-                        lastTime = meta.last_timestamp || lastTime;
-                    }
-                } catch (e) { /* ignore */ }
-
-                roomsCache[roomId] = {
-                    ...roomInfo,
-                    roomId,
-                    last_message: lastMsg,
-                    last_timestamp: lastTime,
-                    unread_count: roomInfo.unread_count || 0
+            (res.data || []).forEach(room => {
+                roomsCache[room.room_id] = {
+                    roomId: room.room_id,
+                    type: room.type,
+                    target_name: room.class_name || room.group_name || '채팅방',
+                    target_avatar: room.class_image || '',
+                    class_name: room.class_name,
+                    class_image: room.class_image,
+                    class_category: room.class_category,
+                    group_name: room.group_name,
+                    is_instructor: room.is_instructor,
+                    unread_count: room.unread_count || 0,
+                    last_message: room.last_message || '',
+                    last_timestamp: room.last_message_at ? new Date(room.last_message_at).getTime() : 0
                 };
             });
 
-            Promise.all(promises).then(() => renderRooms());
-        });
+            renderRooms();
+        } catch (e) {
+            console.error("ChatList load error:", e);
+        }
+
+        // 5초마다 새로고침 (폴링)
+        setTimeout(() => loadChatRooms(), 5000);
     }
 
     // ==== 렌더링 ====
@@ -169,15 +129,9 @@ window.CommunityModules.ChatList = (function () {
         let rooms = Object.values(roomsCache);
 
         // 필터
-        if (currentFilter !== 'all') {
-            rooms = rooms.filter(r => r.type === currentFilter);
-        }
-
+        if (currentFilter !== 'all') rooms = rooms.filter(r => r.type === currentFilter);
         // 폴더 필터
-        if (currentFolder) {
-            rooms = rooms.filter(r => roomFolders[r.roomId] === currentFolder);
-        }
-
+        if (currentFolder) rooms = rooms.filter(r => roomFolders[r.roomId] === currentFolder);
         // 검색
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
@@ -207,7 +161,7 @@ window.CommunityModules.ChatList = (function () {
 
         list.innerHTML = rooms.map(r => {
             const name = r.target_name || r.class_name || r.group_name || '채팅방';
-            const avatar = r.target_avatar || r.class_image || r.group_image || '';
+            const avatar = r.target_avatar || r.class_image || '';
             const preview = r.last_message || '';
             const time = r.last_timestamp ? formatTime(r.last_timestamp) : '';
             const unread = r.unread_count || 0;
@@ -270,10 +224,11 @@ window.CommunityModules.ChatList = (function () {
         });
     }
 
-    // ==== 채팅방 컨텍스트 메뉴 ====
+    // ==== 컨텍스트 메뉴 ====
     function setupContextMenu() {
         document.addEventListener('click', () => {
-            document.getElementById('roomContextMenu').style.display = 'none';
+            const menu = document.getElementById('roomContextMenu');
+            if (menu) menu.style.display = 'none';
         });
     }
 
@@ -283,60 +238,30 @@ window.CommunityModules.ChatList = (function () {
 
         const isPinned = getPinned().includes(roomId);
         const isMuted = getMuted().includes(roomId);
-        const folders = getFolders();
-
-        // 폴더 추가 서브메뉴
-        let folderHtml = '';
-        if (folders.length > 0) {
-            folderHtml = folders.map(f => `<div class="ctx-item ctx-sub" data-action="assign-folder" data-folder="${f}"><span>📁</span>${f}</div>`).join('');
-            folderHtml += `<div class="ctx-item ctx-sub" data-action="assign-folder" data-folder=""><span>❌</span>폴더 해제</div>`;
-        }
 
         menu.innerHTML = `
             <div class="ctx-item" data-action="pin"><span>${isPinned ? '📌' : '📌'}</span>${isPinned ? '고정 해제' : '고정'}</div>
             <div class="ctx-item" data-action="mute"><span>${isMuted ? '🔔' : '🔕'}</span>${isMuted ? '알림 켜기' : '알림 끄기'}</div>
             <div class="ctx-item" data-action="mark-read"><span>👁️</span>읽음으로 표시</div>
-            ${folders.length > 0 ? `<div class="ctx-item" data-action="show-folders"><span>📂</span>폴더에 추가 ▸</div>` : ''}
-            <div class="ctx-item" data-action="clear-chat"><span>🧹</span>대화 내용 비우기</div>
             <div class="ctx-item danger" data-action="delete-chat"><span>🗑️</span>대화 삭제</div>
         `;
 
-        // 위치 보정
         menu.style.display = 'block';
-        const menuW = menu.offsetWidth;
-        const menuH = menu.offsetHeight;
-        menu.style.left = Math.min(x, window.innerWidth - menuW - 10) + 'px';
-        menu.style.top = Math.min(y, window.innerHeight - menuH - 10) + 'px';
+        menu.style.left = Math.min(x, window.innerWidth - menu.offsetWidth - 10) + 'px';
+        menu.style.top = Math.min(y, window.innerHeight - menu.offsetHeight - 10) + 'px';
 
-        // 이벤트
         menu.querySelectorAll('.ctx-item').forEach(item => {
             item.onclick = async () => {
                 const action = item.dataset.action;
                 if (action === 'pin') togglePin(roomId);
                 else if (action === 'mute') toggleMute(roomId);
                 else if (action === 'mark-read') bridge().markAsRead(roomId);
-                else if (action === 'show-folders') {
-                    // 서브메뉴로 교체
-                    menu.innerHTML = `
-                        <div class="ctx-item" data-action="back"><span>←</span>뒤로</div>
-                        ${folderHtml}
-                    `;
-                    attachFolderActions(roomId, menu);
-                    return; // don't close
-                }
-                else if (action === 'clear-chat') {
-                    if (confirm('대화 내용을 모두 비우시겠습니까?')) {
-                        try {
-                            if (type === 'dm') await bridge().getDb().ref(`dm/${roomId}/messages`).remove();
-                            else if (type === 'class') await bridge().getDb().ref(`chats/${roomId}`).remove();
-                            else if (type === 'group') await bridge().getDb().ref(`group_chats/${roomId}/messages`).remove();
-                        } catch (e) { console.error(e); }
-                    }
-                }
                 else if (action === 'delete-chat') {
                     if (confirm('이 대화를 삭제하시겠습니까?')) {
-                        const userId = bridge().getUserId();
-                        await bridge().getDb().ref(`user_chats/${userId}/${roomId}`).remove();
+                        const uid = bridge().getUserId();
+                        await window.BSQ.api(`/api/user-chats?user_id=${uid}&room_id=${roomId}`, { method: 'DELETE' });
+                        delete roomsCache[roomId];
+                        renderRooms();
                     }
                 }
                 menu.style.display = 'none';
@@ -344,45 +269,22 @@ window.CommunityModules.ChatList = (function () {
         });
     }
 
-    function attachFolderActions(roomId, menu) {
-        menu.querySelectorAll('.ctx-item').forEach(item => {
-            item.onclick = () => {
-                const action = item.dataset.action;
-                if (action === 'back') {
-                    showRoomContextMenu(parseInt(menu.style.left), parseInt(menu.style.top), roomId, '');
-                    return;
-                }
-                if (action === 'assign-folder') {
-                    assignFolder(roomId, item.dataset.folder || null);
-                }
-                menu.style.display = 'none';
-            };
-        });
-    }
-
-    // ==== 폴더 탭 렌더링 ====
+    // ==== 폴더 관련 ====
     function renderFolderTabs() {
         const container = document.getElementById('folderTabs');
         if (!container) return;
         const folders = getFolders();
-        if (folders.length === 0) {
-            container.style.display = 'none';
-            return;
-        }
+        if (folders.length === 0) { container.style.display = 'none'; return; }
         container.style.display = 'flex';
         container.innerHTML = folders.map(f =>
-            `<button class="folder-tab${currentFolder === f ? ' active' : ''}" data-folder="${f}" title="${f}">
-                <span class="icon">📁</span>
-            </button>`
+            `<button class="folder-tab${currentFolder === f ? ' active' : ''}" data-folder="${f}" title="${f}"><span class="icon">📁</span></button>`
         ).join('');
 
         container.querySelectorAll('.folder-tab').forEach(btn => {
             btn.addEventListener('click', () => {
                 const folder = btn.dataset.folder;
-                if (currentFolder === folder) {
-                    currentFolder = null;
-                    btn.classList.remove('active');
-                } else {
+                if (currentFolder === folder) { currentFolder = null; btn.classList.remove('active'); }
+                else {
                     currentFolder = folder;
                     container.querySelectorAll('.folder-tab').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
@@ -392,15 +294,11 @@ window.CommunityModules.ChatList = (function () {
         });
     }
 
-    // ==== 폴더 관리 모달 ====
     function setupFolderModal() {
         document.getElementById('btnCreateFolder')?.addEventListener('click', () => {
             const input = document.getElementById('newFolderInput');
             const name = input?.value.trim();
-            if (name) {
-                addFolder(name);
-                input.value = '';
-            }
+            if (name) { addFolder(name); input.value = ''; }
         });
         renderFolderManagerList();
     }
@@ -410,7 +308,7 @@ window.CommunityModules.ChatList = (function () {
         if (!list) return;
         const folders = getFolders();
         const roomFolders = getRoomFolders();
-
+    
         list.innerHTML = folders.map(f => {
             const count = Object.values(roomFolders).filter(rf => rf === f).length;
             return `<div class="folder-item">
@@ -421,7 +319,6 @@ window.CommunityModules.ChatList = (function () {
         }).join('') || '<p style="color:var(--comm-text2);text-align:center;font-size:0.85rem;">폴더가 없습니다</p>';
     }
 
-    // ==== 시간 포맷 ====
     function formatTime(ts) {
         const d = new Date(ts);
         const now = new Date();

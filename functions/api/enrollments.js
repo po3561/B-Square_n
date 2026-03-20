@@ -23,7 +23,7 @@ export async function onRequestGet(context) {
     // 클래스의 전체 수강생 목록 (강사/운영자용)
     if (class_id && !user_id) {
       const { results } = await env.DB.prepare(`
-        SELECT e.*, u.name, u.nickname, u.profile_image_url, u.phone, u.role
+        SELECT e.*, u.name, u.username, u.profile_image_url, u.phone, u.role, u.email
         FROM enrollments e
         JOIN users u ON e.user_id = u.id
         WHERE e.class_id = ?
