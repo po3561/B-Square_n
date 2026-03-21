@@ -9,9 +9,8 @@
     <link rel="stylesheet" href="style_pc.css" media="(min-width: 769px)">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Supabase SDK: 인증 전용 (2차에서 D1으로 전환 예정) -->
-    <!-- Firebase SDK: 채팅/실시간 기능 임시 유지 (2차에서 D1으로 전환 예정) -->
     <!-- 중앙 서버 모듈 (D1 API 모드) -->
-    <script src="../bsq_server.js?v=20260320-v2"></script>
+    <script src="../bsq_server.js?v=FIX_REF_ERROR_01"></script>
 </head>
 
 <body>
@@ -46,58 +45,17 @@
             <div class="section-inner">
                 <!-- 큐레이션 검정색 컨테이너 -->
                 <div class="curated-sections-dark">
-                    <article class="class-group popular-classes">
-                        <h3 class="group-title">지금 인기 있는</h3>
+                    <article class="class-group popular-classes" id="popularSection" style="display:none;">
+                        <h3 class="group-title" id="popularGroupTitle">지금 인기 있는</h3>
                         <div class="card-grid" id="popularClassGrid">
-                            <!-- JS에서 5개씩 2줄(최대 10개) 정도 렌더링 -->
                             <p class="empty-state">인기 클래스를 불러오는 중...</p>
                         </div>
                     </article>
 
-                    <article class="class-group recommended-classes">
-                        <h3 class="group-title">추천 클래스</h3>
-                        <div class="recommend-columns">
-                            <!-- 경제/제테크 컬럼 -->
-                            <div class="recommend-column">
-                                <div class="column-header">
-                                    <div class="header-text">
-                                        <h4>경제 | 제테크</h4>
-                                        <p class="desc">부의 추월차선을 위한 로드맵</p>
-                                    </div>
-                                    <a href="../class/class_list.html" class="btn-more-arrow">➜</a>
-                                </div>
-                                <div class="mini-card-list" id="recommendGrid-1">
-                                    <!-- JS에서 미니 카드 형태로 3-4개 렌더링 -->
-                                </div>
-                            </div>
-
-                            <!-- 라이프 스타일 컬럼 -->
-                            <div class="recommend-column">
-                                <div class="column-header">
-                                    <div class="header-text">
-                                        <h4>라이프 스타일</h4>
-                                        <p class="desc">일상에 활기를 불어넣는 시간</p>
-                                    </div>
-                                    <a href="../class/class_list.html" class="btn-more-arrow">➜</a>
-                                </div>
-                                <div class="mini-card-list" id="recommendGrid-2">
-                                    <!-- JS에서 미니 카드 형태로 3-4개 렌더링 -->
-                                </div>
-                            </div>
-
-                            <!-- 어도비 컬렉션 컬럼 -->
-                            <div class="recommend-column">
-                                <div class="column-header">
-                                    <div class="header-text">
-                                        <h4>어도비 컬렉션</h4>
-                                        <p class="desc">전문적인 크리에이티브의 시작</p>
-                                    </div>
-                                    <a href="../class/class_list.html" class="btn-more-arrow">➜</a>
-                                </div>
-                                <div class="mini-card-list" id="recommendGrid-3">
-                                    <!-- JS에서 미니 카드 형태로 3-4개 렌더링 -->
-                                </div>
-                            </div>
+                    <article class="class-group recommended-classes" id="recommendSection" style="display:none;">
+                        <h3 class="group-title" id="recommendGroupTitle">추천 클래스</h3>
+                        <div class="recommend-columns" id="dynamicRecommendContainer">
+                            <!-- JS에서 운영자가 설정한 폴더들에 따라 동적으로 생성됨 -->
                         </div>
                     </article>
                 </div>

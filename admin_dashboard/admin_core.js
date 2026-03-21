@@ -33,8 +33,8 @@ async function verifyAdminAccess() {
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    const isLoggedIn = window.BSQ?.isLoggedIn?.();
-    const user = window.BSQ?.getUser?.();
+    const isLoggedIn = window.BSQ?.isLoggedIn;
+    const user = window.BSQ?.userProfile;
 
     let isAuthorized = false;
     let displayName = "운영자";
@@ -42,7 +42,7 @@ async function verifyAdminAccess() {
     if (isLoggedIn && user) {
         // 관리자 권한 체크 (role 또는 하드코딩된 관리자 이메일/ID)
         const isAdminRole = user.role === 'admin' || user.user_type === 'admin';
-        const isDevUser = ['promise1', 'promise9907@naver.com', 'ej210651392@naver.com', 'po3561@naver.com'].includes(user.email || user.username);
+        const isDevUser = false; // 하드코딩된 관리자 계정 제거됨
 
         if (isAdminRole || isDevUser) {
             isAuthorized = true;
@@ -56,7 +56,7 @@ async function verifyAdminAccess() {
         console.warn("🚫 UNAUTHORIZED ACCESS ATTEMPT TO ADMIN DASHBOARD");
         alert("관리자 권한이 없습니다. 관리자 계정으로 로그인해주세요.");
         // 로그인 페이지로 리다이렉트 (현재 위치를 redirect 파라미터로 전달)
-        const loginUrl = '../auth_1/auth_1.html?redirect=' + encodeURIComponent(window.location.href);
+        const loginUrl = '../login/login.html?redirect=' + encodeURIComponent(window.location.href);
         window.location.replace(loginUrl);
         return;
     }

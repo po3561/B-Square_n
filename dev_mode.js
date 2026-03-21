@@ -99,8 +99,17 @@
         unlockPagePermissions();
 
         if (!isRestore) {
-            showDevToast('✅ 운영자 모드 활성화', '최고 관리자 권한이 시스템 전역에 부여되었습니다.');
-            console.log('%c🛡️ B-SQUARE OPERATOR MODE ACTIVATED', 'color: #ff4d4d; font-size: 16px; font-weight: bold;');
+            if (window.BSQ && window.BSQ.checkSession) {
+                window.BSQ.checkSession().then(() => {
+                    showDevToast('✅ 운영자 모드 활성화', '최고 관리자 권한이 시스템 전역에 부여되었습니다.');
+                    console.log('%c🛡️ B-SQUARE OPERATOR MODE ACTIVATED', 'color: #ff4d4d; font-size: 16px; font-weight: bold;');
+                    // 헤더 등 UI 강제 업데이트를 위해 새로고침 또는 동기화 트리거
+                    if (window.BSQ.triggerSync) window.BSQ.triggerSync('dev_mode');
+                });
+            } else {
+                showDevToast('✅ 운영자 모드 활성화', '최고 관리자 권한이 시스템 전역에 부여되었습니다.');
+                console.log('%c🛡️ B-SQUARE OPERATOR MODE ACTIVATED', 'color: #ff4d4d; font-size: 16px; font-weight: bold;');
+            }
         }
     }
 

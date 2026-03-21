@@ -36,7 +36,7 @@ export async function onRequestGet(context) {
     // 유저의 전체 수강 목록
     if (user_id) {
       const { results } = await env.DB.prepare(`
-        SELECT e.*, c.title, c.category, c.image_url, c.creator_id
+        SELECT e.*, c.title, c.category, c.image_url, c.creator_id AS instructor_id
         FROM enrollments e
         LEFT JOIN classes c ON e.class_id = c.id
         WHERE e.user_id = ?

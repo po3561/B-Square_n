@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (classData) {
             // 강사 판별 (타입 불일치 방지를 위해 == 사용)
-            isInstructor = !!(userId && classData.creator_id && userId == classData.creator_id);
+            isInstructor = !!(userId && classData.instructor_id && userId == classData.instructor_id);
 
             if (!isInstructor && userProfile && (userProfile.role === 'admin' || userProfile.role === 'operator' || userProfile.role === 'instructor')) {
                 isInstructor = true;
@@ -112,9 +112,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 isInstructor = subInstructors.some(si => si.id == userId);
             }
 
-            // creator_email 폴백
-            if (!isInstructor && session && session.user && classData.creator_email) {
-                if (session.user.email === classData.creator_email) isInstructor = true;
+            // instructor_email 폴백
+            if (!isInstructor && session && session.user && (classData.instructor_email || classData.creator_email)) {
+                if (session.user.email === (classData.instructor_email || classData.creator_email)) isInstructor = true;
             }
 
             // ★ 총괄 개발자 모드
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 isEnrolled = true;
             }
 
-            console.log("👨‍🏫 강사 판별:", { userId, creator_id: classData.creator_id, isInstructor, devMode: !!window.__BSQ_DEV_MODE__ });
+            console.log("👨‍🏫 강사 판별:", { userId, instructor_id: classData.instructor_id, isInstructor, devMode: !!window.__BSQ_DEV_MODE__ });
 
             renderCorePageInfo(classData);
 

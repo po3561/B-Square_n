@@ -18,6 +18,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 카테고리 필터링 이벤트 (전체 클래스 섹션으로 이동)
     const categoryLinks = document.querySelectorAll('.category-grid a');
     categoryLinks.forEach(link => {
+        if (link.dataset.cat === currentCategory) {
+            document.querySelectorAll('#categoryFilter li').forEach(li => li.classList.remove('active'));
+            link.parentElement.classList.add('active');
+        }
+
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const categoryName = link.textContent.replace(/[^\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]/g, '').trim();
@@ -41,28 +46,81 @@ document.addEventListener('DOMContentLoaded', async () => {
 let globalAllClasses = [];
 
 async function initMainPage() {
+    console.log('[Main] Initializing page from D1...');
     const popularGrid = document.getElementById('popularClassGrid');
     const allGrid = document.getElementById('allClassGrid');
-    if (!popularGrid || !allGrid) return;
+    const recommendContainer = document.getElementById('dynamicRecommendContainer');
+    const popularSection = document.getElementById('popularSection');
+    const recommendSection = document.getElementById('recommendSection');
 
-    const result = await window.BSQ.api('/api/classes?limit=100');
-    if (result.success && result.data) {
-        globalAllClasses = result.data;
-        
-        // 1. 지금 인기 있는 (상위 10개)
-        const popularOnes = globalAllClasses.slice(0, 10);
-        renderClassCards(popularOnes, popularGrid);
+    if (!popularGrid || !allGrid || !recommendContainer) return;
 
-        // 2. 추천 클래스 (3개 컬럼 미니 카드)
-        const rec1 = globalAllClasses.slice(10, 13);
-        const rec2 = globalAllClasses.slice(13, 16);
-        const rec3 = globalAllClasses.slice(16, 19);
-        renderMiniCards(rec1, document.getElementById('recommendGrid-1'));
-        renderMiniCards(rec2, document.getElementById('recommendGrid-2'));
-        renderMiniCards(rec3, document.getElementById('recommendGrid-3'));
+    try {
+        // 1. 전체 클래스 로드
+        const allRes = await window.BSQ.api(`/api/classes?limit=100&t=${Date.now()}`);
+        if (allRes.success && allRes.data) {
+            globalAllClasses = allRes.data;
+            renderClassCards(globalAllClasses, allGrid);
+        }
 
-        // 3. 전체 클래스 살펴보기
-        renderClassCards(globalAllClasses, allGrid);
+        // 2. 추천/인기 섹션 로드 (운영자 설정 기반)
+        const recRes = await window.BSQ.api(`/api/recommendations?t=${Date.now()}`);
+        if (recRes.success && recRes.data) {
+            const folders = recRes.data;
+            console.log('[Main] Recommendation folders received:', folders);
+
+            // 2-1. 인기 클래스 섹션 (type: popular)
+            const popularFolder = folders.find(f => f.type === 'popular');
+            if (popularFolder && popularFolder.classes && popularFolder.classes.length > 0) {
+                const popularTitle = document.getElementById('popularGroupTitle');
+                if (popularTitle) popularTitle.textContent = popularFolder.title || '인기 클래스';
+                renderClassCards(popularFolder.classes, popularGrid);
+                if (popularSection) popularSection.style.display = 'block';
+            } else {
+                if (popularSection) popularSection.style.display = 'none';
+            }
+
+            // 2-2. 추천 클래스 섹션 (type: regular)
+            const regularFolders = folders.filter(f => f.type === 'regular');
+            if (regularFolders.length > 0) {
+                recommendContainer.innerHTML = ''; // 초기화
+                
+                regularFolders.forEach((folder) => {
+                    const columnHTML = `
+                        <div class="recommend-column">
+                            <div class="column-header">
+                                <div class="header-text">
+                                    <h4>${folder.title}</h4>
+                                    <p class="desc">${folder.description || ''}</p>
+                                </div>
+                                <a href="../class/class_list.html?cat=${folder.category || 'all'}" class="btn-more-arrow">➜</a>
+                            </div>
+                            <div class="mini-card-list">
+                                ${folder.classes.map(cls => {
+                                    const thumb = cls.thumbnail || cls.image_url || '';
+                                    return `
+                                        <div class="mini-class-card" onclick="location.href='../class_view/class_view.html?id=${cls.id}'" style="cursor:pointer;">
+                                            <div class="mini-thumb" style="background-image:url('${thumb}'); background-size:cover; background-position:center;"></div>
+                                            <div class="mini-info">
+                                                <h5 class="m-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${cls.title}</h5>
+                                                <p class="m-meta">${cls.category || ''} | ${cls.instructor_name || ''}</p>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                    recommendContainer.insertAdjacentHTML('beforeend', columnHTML);
+                });
+                
+                if (recommendSection) recommendSection.style.display = 'block';
+            } else {
+                if (recommendSection) recommendSection.style.display = 'none';
+            }
+        }
+    } catch (err) {
+        console.error("[Main] Init failed", err);
     }
 }
 
@@ -86,29 +144,32 @@ function renderClassCards(classes, container) {
         const currentPrice = discountRate > 0 ? originalPrice * (1 - discountRate / 100) : originalPrice;
         const avgRating = cls.avg_rating || '5.0';
         const reviewCount = cls.review_count || 0;
+        const thumb = cls.thumbnail || cls.image_url || 'https://via.placeholder.com/400x250';
 
         return `
         <div class="class-card" onclick="location.href='../class_view/class_view.html?id=${cls.id}'" style="cursor:pointer;">
             <div class="card-thumbnail">
-                <img src="${cls.image_url || 'https://via.placeholder.com/400x250'}" alt="${cls.title}">
+                <img src="${thumb}" alt="${cls.title}" style="width:100%; height:100%; object-fit:cover;">
                 <div class="card-badges">
                     ${cls.coupon_pack ? '<span class="badge-coupon">쿠폰팩</span>' : ''}
                     ${discountRate > 0 ? `<span class="badge-discount">${discountRate}% 할인</span>` : ''}
                 </div>
                 <button type="button" class="btn-bookmark" onclick="event.stopPropagation();">🤍</button>
             </div>
-            <div class="card-info">
-                <span class="category">${cls.category || '미분류'}</span>
-                <h4 class="title">${cls.title}</h4>
-                <span class="creator">${cls.creator_name || '크리에이터'}</span>
-                <div class="meta">
-                    <span class="rating">⭐ ${avgRating}(${reviewCount})</span>
+                <div class="card-info">
+                    <span class="category">${cls.category || '기타'}</span>
+                    <h4 class="title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${cls.title}</h4>
+                    <span class="creator">${cls.instructor_name || '강사'}</span>
+                    <div class="rating-info">
+                        <span class="star">⭐</span>
+                        <span class="score">${cls.avg_rating || '0.0'}</span>
+                        <span class="count">(${cls.review_count || '0'})</span>
+                    </div>
+                    <div class="price-info">
+                        ${cls.discount_rate > 0 ? `<span class="discount">${cls.discount_rate}%</span>` : ''}
+                        <span class="price">${Math.round(currentPrice).toLocaleString()}원</span>
+                    </div>
                 </div>
-                <div class="price-area">
-                    ${discountRate > 0 ? `<span class="original-price">${originalPrice.toLocaleString()}원</span>` : ''}
-                    <span class="current-price">${Math.round(currentPrice).toLocaleString()}원</span>
-                </div>
-            </div>
         </div>
     `}).join('');
 }
@@ -116,19 +177,21 @@ function renderClassCards(classes, container) {
 function renderMiniCards(classes, container) {
     if (!container) return;
     if (!classes || classes.length === 0) {
-        container.innerHTML = '<p style="font-size:0.8rem; color:#999;">준비된 추천 클래스가 없습니다.</p>';
+        container.innerHTML = '<p style="font-size:0.8rem; color:#999; padding: 1rem;">준비된 추천 클래스가 없습니다.</p>';
         return;
     }
 
-    container.innerHTML = classes.map(cls => `
+    container.innerHTML = classes.map(cls => {
+        const thumb = cls.thumbnail || cls.image_url || '';
+        return `
         <div class="mini-class-card" onclick="location.href='../class_view/class_view.html?id=${cls.id}'" style="cursor:pointer;">
-            <div class="mini-thumb" style="background-image:url('${cls.image_url}'); background-size:cover; background-position:center;"></div>
+            <div class="mini-thumb" style="background-image:url('${thumb}'); background-size:cover; background-position:center;"></div>
             <div class="mini-info">
-                <h5 class="m-title">${cls.title}</h5>
-                <p class="m-meta">${cls.category} | ${cls.creator_name}</p>
+                <h5 class="m-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${cls.title}</h5>
+                <p class="m-meta">${cls.category || ''} | ${cls.instructor_name || cls.creator_name || ''}</p>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 async function initBanners() {

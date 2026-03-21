@@ -1,4 +1,4 @@
-// functions/api/recommendations.js — 추천 클래스 폴더 조회 API
+// functions/api/recommendations.js — 추천 클래스 폴더 조회 API (V2)
 // GET /api/recommendations
 
 export async function onRequest(context) {
@@ -7,7 +7,7 @@ export async function onRequest(context) {
     try {
         // 1. 추천 폴더 목록 가져오기 (정렬순)
         const { results: folders } = await db
-            .prepare('SELECT * FROM recommendations ORDER BY sort_order ASC')
+            .prepare('SELECT folder_id, title, description, type, category, class_ids, sort_order FROM recommendations ORDER BY sort_order ASC')
             .all();
 
         if (!folders || folders.length === 0) {
@@ -28,26 +28,37 @@ export async function onRequest(context) {
                 classIds = [];
             }
 
-            // 미리보기용 최대 3개
-            const previewIds = classIds.slice(0, 3);
-            let previewClasses = [];
-
-            if (previewIds.length > 0) {
-                const placeholders = previewIds.map(() => '?').join(',');
+            let folderClasses = [];
+            if (classIds.length > 0) {
+                // 한 번에 조회 (IN 절 사용)
+                const placeholders = classIds.map(() => '?').join(',');
                 const { results } = await db
-                    .prepare(`SELECT id, title, thumbnail, image_url, category, price FROM classes WHERE id IN (${placeholders})`)
-                    .bind(...previewIds)
+                    .prepare(`
+                        SELECT 
+                            c.id, c.title, c.thumbnail, c.image_url, c.category, c.price, 
+                            c.instructor_name, c.creator_id AS instructor_id, c.discount_rate,
+                            COALESCE(s.avg_rating, 0) AS avg_rating, 
+                            COALESCE(s.review_count, 0) AS review_count
+                        FROM classes c
+                        LEFT JOIN class_stats s ON c.id = s.class_id
+                        WHERE c.id IN (${placeholders})
+                    `)
+                    .bind(...classIds)
                     .all();
-                previewClasses = results || [];
+                
+                // 순서 보장 (classIds 순서대로)
+                folderClasses = classIds.map(id => results.find(c => String(c.id) === String(id))).filter(Boolean);
             }
 
             enrichedFolders.push({
                 id: folder.folder_id,
                 title: folder.title,
+                description: folder.description || '',
+                type: folder.type || 'regular',
+                category: folder.category || 'all',
                 sort_order: folder.sort_order,
                 total_classes: classIds.length,
-                class_ids: classIds,
-                preview_classes: previewClasses
+                classes: folderClasses
             });
         }
 

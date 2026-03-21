@@ -8,31 +8,31 @@ export async function onRequest(context) {
     const method = request.method;
 
     // GET: 클래스 목록 조회
-    if (method === 'GET') {
-        const category = url.searchParams.get('category') || '';
-        const query = url.searchParams.get('q') || '';
-        const creatorId = url.searchParams.get('creator_id') || '';
-        const limit = Math.min(parseInt(url.searchParams.get('limit')) || 50, 100);
-        const offset = parseInt(url.searchParams.get('offset')) || 0;
-
-        try {
-            let sql = 'SELECT c.*, u.name AS creator_name FROM classes c LEFT JOIN users u ON c.creator_id = u.id WHERE 1=1';
-            const params = [];
-
-            if (category) {
-                sql += ' AND c.category LIKE ?';
-                params.push(`%${category}%`);
-            }
-            if (creatorId) {
-                sql += ' AND c.creator_id = ?';
-                params.push(creatorId);
-            }
+        if (method === 'GET') {
+            const category = url.searchParams.get('category') || '';
+            const query = url.searchParams.get('q') || '';
+            const instructorId = url.searchParams.get('instructor_id') || url.searchParams.get('creator_id') || '';
+            const limit = Math.min(parseInt(url.searchParams.get('limit')) || 50, 100);
+            const offset = parseInt(url.searchParams.get('offset')) || 0;
+    
+            try {
+                let sql = 'SELECT *, creator_id AS instructor_id FROM classes WHERE 1=1';
+                const params = [];
+    
+                if (category) {
+                    sql += ' AND category LIKE ?';
+                    params.push(`%${category}%`);
+                }
+                if (instructorId) {
+                    sql += ' AND creator_id = ?';
+                    params.push(instructorId);
+                }
             if (query) {
-                sql += ' AND (c.title LIKE ? OR c.category LIKE ? OR c.keywords LIKE ?)';
+                sql += ' AND (title LIKE ? OR category LIKE ? OR keywords LIKE ?)';
                 params.push(`%${query}%`, `%${query}%`, `%${query}%`);
             }
 
-            sql += ' ORDER BY c.created_at DESC LIMIT ? OFFSET ?';
+            sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
             params.push(limit, offset);
 
             const { results } = await db.prepare(sql).bind(...params).all();

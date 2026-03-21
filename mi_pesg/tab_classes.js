@@ -9,7 +9,7 @@ window.initClassesTab = function (db, userId) {
         classList.innerHTML = '<div class="empty-state">클래스를 불러오는 중...</div>';
 
         try {
-            const res = await window.BSQ.api(`/api/classes?creator_id=${userId}`);
+            const res = await window.BSQ.api(`/api/classes?instructor_id=${userId}`);
             if (!res || !res.success) throw new Error(res?.error || "Load failed");
 
             const data = res.data || [];

@@ -53,7 +53,7 @@ async function loadAdminClasses() {
                             </div>
                         </div>
                     </td>
-                    <td style="font-weight:600;">${item.creator_name || '강사'}</td>
+                    <td style="font-weight:600;">${item.instructor_name || item.creator_name || '강사'}</td>
                     <td><span class="admin-badge muted">${cat}</span></td>
                     <td>${item.current_participants || 0} / ${item.max_capacity || '∞'}명</td>
                     <td>${statusBadge}</td>

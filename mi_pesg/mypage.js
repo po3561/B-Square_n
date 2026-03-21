@@ -165,7 +165,7 @@ async function loadDashboard(userId, isOperator) {
         const [enrollRes, passRes, classRes] = await Promise.all([
             window.BSQ.api(`/api/enrollments?user_id=${userId}`),
             window.BSQ.api(`/api/user-passes?user_id=${userId}`),
-            window.BSQ.api(`/api/classes?creator_id=${userId}`)
+            window.BSQ.api(`/api/classes?instructor_id=${userId}`)
         ]);
 
         // 수강 데이터

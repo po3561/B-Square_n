@@ -400,8 +400,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }));
 
             const classData = {
-                creator_id: userId,
-                creator_email: userEmail,
+                instructor_id: userId,
+                instructor_email: userEmail,
                 sub_instructors: subInstructors,
                 title: document.getElementById('classTitle').value,
                 category: document.getElementById('classCategory').value,

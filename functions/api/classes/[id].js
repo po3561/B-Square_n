@@ -16,7 +16,7 @@ export async function onRequest(context) {
         // 1. 클래스 기본 정보 + 작성자 이름
         const classData = await db
             .prepare(`
-                SELECT c.*, u.name AS creator_name, u.profile_image_url AS creator_profile_image
+                SELECT c.*, c.creator_id AS instructor_id, u.profile_image_url AS instructor_profile_image
                 FROM classes c
                 LEFT JOIN users u ON c.creator_id = u.id
                 WHERE c.id = ?

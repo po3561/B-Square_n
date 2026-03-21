@@ -226,8 +226,10 @@
 
 .chat-header-info {
     display: flex !important;
+    flex-direction: row !important;
     align-items: center !important;
-    gap: 14px !important;
+    justify-content: flex-start !important;
+    gap: 0 !important;
 }
 
 .chat-logo-mini {

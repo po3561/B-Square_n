@@ -5,9 +5,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 상태 변수
     let allClasses = [];
-    let currentCategory = 'all';
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentCategory = urlParams.get('cat') || 'all';
     let currentSort = 'newest';
     let searchQuery = '';
+
+    // 초기 타이틀 설정
+    const initialTitleEl = document.querySelector('.group-title');
+    if (initialTitleEl && currentCategory !== 'all') {
+        initialTitleEl.textContent = `${currentCategory} 클래스`;
+    }
 
     // ★ D1 API에서 클래스 목록 로드
     try {
@@ -24,6 +31,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 카테고리 필터 이벤트
     const categoryLinks = document.querySelectorAll('#categoryFilter a');
     categoryLinks.forEach(link => {
+        // 초기 로딩 시 active 클래스 설정
+        if (link.dataset.cat === currentCategory) {
+            document.querySelectorAll('#categoryFilter li').forEach(li => li.classList.remove('active'));
+            link.parentElement.classList.add('active');
+        }
+
         link.addEventListener('click', (e) => {
             e.preventDefault();
             
@@ -102,9 +115,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (searchQuery) {
             filteredClasses = filteredClasses.filter(c => {
                 const title = (c.title || '').toLowerCase();
-                const creator = (c.creator_name || '').toLowerCase();
+                const instructor = (c.instructor_name || c.creator_name || '').toLowerCase();
                 const category = (c.category || '').toLowerCase();
-                return title.includes(searchQuery) || creator.includes(searchQuery) || category.includes(searchQuery);
+                return title.includes(searchQuery) || instructor.includes(searchQuery) || category.includes(searchQuery);
             });
         }
 
@@ -149,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="card-info">
                         <span class="category">${cls.category || '미분류'}</span>
                         <h4 class="title">${cls.title || '제목 없음'}</h4>
-                        <span class="creator">${cls.creator_name || '크리에이터'}</span>
+                        <span class="creator">${cls.instructor_name || cls.creator_name || '크리에이터'}</span>
                         <div class="meta"><span class="rating">${ratingText}</span></div>
                         <div class="price-area">
                             ${discountRate > 0 ? `<span class="original-price">${originalPrice.toLocaleString()}원</span>` : ''}

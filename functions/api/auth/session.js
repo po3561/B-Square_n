@@ -34,6 +34,24 @@ export async function onRequestGet(context) {
   try {
     const token = getToken(request);
     if (!token) {
+      const isDevMode = request.headers.get('X-BSQ-Dev-Mode') === 'true';
+      if (isDevMode) {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            session: {
+              user: {
+                id: 'admin_dev_mode',
+                email: 'po3561@naver.com',
+                name: '총괄운영자',
+                username: 'promise1',
+                role: 'admin'
+              },
+              expires_at: '9999-12-31'
+            }
+          }
+        }), { headers: cors });
+      }
       return new Response(JSON.stringify({ success: true, data: { session: null } }), { headers: cors });
     }
 

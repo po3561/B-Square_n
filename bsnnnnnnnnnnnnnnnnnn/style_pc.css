@@ -461,11 +461,11 @@ option {
 
 .card-thumbnail {
     width: 100%;
-    aspect-ratio: 4 / 3;
+    height: 160px;
     background-color: #222;
     position: relative;
     overflow: hidden;
-    border-radius: 8px;
+    border-radius: 12px;
 }
 
 .card-thumbnail img {
@@ -587,8 +587,9 @@ option {
 /* 추천 컬럼 카드 (이미지 스타일 반영) */
 .recommend-columns {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2.5rem;
+    justify-content: center;
 }
 
 .recommend-column {

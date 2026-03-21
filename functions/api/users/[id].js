@@ -72,11 +72,28 @@ export async function onRequestPut(context) {
   }
 }
 
+export async function onRequestDelete(context) {
+  const { env, params } = context;
+  const cors = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
+  const userId = params.id;
+
+  try {
+    // Delete user
+    await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
+    // Also delete associated sessions
+    await env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(userId).run();
+
+    return new Response(JSON.stringify({ success: true, message: '사용자가 삭제되었습니다.' }), { headers: cors });
+  } catch (err) {
+    return new Response(JSON.stringify({ success: false, error: '사용자 삭제 중 오류', detail: err.message }), { status: 500, headers: cors });
+  }
+}
+
 export async function onRequestOptions() {
   return new Response(null, {
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     }
   });

@@ -7,7 +7,7 @@ export async function onRequestPost(context) {
     const body = await request.json();
     console.log('[API] Class Create Request keys:', Object.keys(body));
 
-    if (!body.title || !body.creator_id) {
+    if (!body.title || (!body.instructor_id && !body.creator_id)) {
       return new Response(JSON.stringify({ success: false, error: '필수 항목(제목, 작성자)을 확인해주세요.' }), { status: 400, headers: cors });
     }
 
@@ -49,8 +49,8 @@ export async function onRequestPost(context) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       classId,
-      body.creator_id,
-      body.creator_email || '',
+      body.instructor_id || body.creator_id,
+      body.instructor_email || body.creator_email || '',
       body.title,
       body.category || null,
       keywords,

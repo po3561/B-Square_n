@@ -332,7 +332,7 @@ async function saveSiteSettings(type) {
 
         const res = await window.BSQ.api('/api/site-settings', {
             method: 'POST',
-            body: payload
+            body: JSON.stringify(payload)
         });
 
         if (res && res.success) {

@@ -1,182 +1,146 @@
-// admin_dashboard.js - Handles statistics fetching and Chart.js rendering
+// admin_dashboard.js — D1 API 기반 대시보드 통계 (V2)
+(function () {
+  let mainChart = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Only load data if we are explicitly on the Dashboard tab
-    const tabDashboard = document.getElementById('tabDashboard');
-    if (tabDashboard && tabDashboard.classList.contains('active')) {
-        initDashboard();
+  function fmt(n) {
+    return Number(n || 0).toLocaleString('ko-KR');
+  }
+
+  async function initDashboard(range = 7) {
+    try {
+      const json = await BSQ.api(`/api/admin/stats?range=${range}`);
+      let d = json.data;
+      if (!d) {
+        // 백엔드 형식이 다를 경우 방어코드
+        d = json;
+      }
+
+      // 통계 카드
+      const el = (id) => document.getElementById(id);
+      if (el('statRevenue')) el('statRevenue').textContent = '₩' + fmt(d.total_revenue);
+      if (el('statUsers')) el('statUsers').textContent = fmt(d.total_users);
+      if (el('statClasses')) el('statClasses').textContent = fmt(d.total_classes);
+      if (el('statEnrollments')) el('statEnrollments').textContent = fmt(d.total_enrollments);
+      if (el('statInstructors')) el('statInstructors').textContent = fmt(d.instructor_count);
+
+      // 차트
+      renderChart(d.chart, range);
+
+      // 최근 주문
+      renderRecentOrders(d.recent_orders || []);
+    } catch (err) {
+      console.error('[Dashboard] Stats error:', err);
     }
+  }
 
-    // Listen for tab changes
-    window.addEventListener('adminTabChanged', (e) => {
-        if (e.detail.tabId === 'tabDashboard') {
-            initDashboard();
-        }
-    });
-});
-
-let mainChartInstance = null;
-
-async function initDashboard() {
-    console.log("📊 Loading Dashboard Statistics...");
-    // ★ BSQ.ready 대기 → 인증 보장 후 DB 접근
-    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
-    const db = window.BSQ?.db || firebase.database();
-
-    // 1. Fetch Total Users
-    const statUsers = document.getElementById('statUsers');
-    if (statUsers && window.supabaseClient) {
-        try {
-            const { count, error } = await window.supabaseClient
-                .from('users')
-                .select('*', { count: 'exact', head: true });
-
-            if (!error) statUsers.textContent = count.toLocaleString();
-        } catch (err) {
-            console.error("Failed to fetch user count", err);
-        }
-    }
-
-    // 2. Fetch Total Classes
-    const statClasses = document.getElementById('statClasses');
-    if (statClasses) {
-        db.ref('classes').once('value').then(snap => {
-            statClasses.textContent = snap.numChildren().toLocaleString();
-        }).catch(err => console.error("Failed to fetch class count", err));
-    }
-
-    // 3. Fetch Total Revenue (Real data from user_passes)
-    const statRevenue = document.getElementById('statRevenue');
-    if (statRevenue) {
-        statRevenue.textContent = "가져오는 중...";
-        db.ref('user_passes').once('value').then(snap => {
-            let totalRev = 0;
-            const passesData = snap.val();
-            if (passesData) {
-                Object.values(passesData).forEach(classObj => {
-                    Object.values(classObj).forEach(passes => {
-                        const passArr = Array.isArray(passes) ? passes : Object.values(passes);
-                        passArr.forEach(p => {
-                            if (p.status !== 'refunded' && p.price) {
-                                totalRev += parseInt(p.price);
-                            }
-                        });
-                    });
-                });
-            }
-            statRevenue.textContent = totalRev.toLocaleString();
-        }).catch(err => {
-            console.error("Failed to fetch revenue", err);
-            statRevenue.textContent = "오류";
-        });
-    }
-
-    // 4. Fetch Today's Visitors
-    const statVisitors = document.getElementById('statVisitors');
-    if (statVisitors) {
-        const today = new Date().toISOString().split('T')[0];
-        db.ref(`site_settings/visitors/${today}`).on('value', snap => {
-            statVisitors.textContent = (snap.val() || 0).toLocaleString();
-        });
-    }
-
-    // 5. Fetch Active Users
-    const statActive = document.getElementById('statActive');
-    if (statActive) {
-        db.ref('site_settings/presence').on('value', snap => {
-            statActive.textContent = (snap.numChildren() || 0).toLocaleString();
-        });
-    }
-
-    // 6. Render Chart.js
-    renderMainChart();
-}
-
-async function renderMainChart() {
+  function renderChart(chart, range) {
     const ctx = document.getElementById('mainDashboardChart');
     if (!ctx) return;
 
-    if (mainChartInstance) {
-        mainChartInstance.destroy();
-    }
+    if (mainChart) mainChart.destroy();
 
-    const labels = [];
-    const dateMap = {};
-
-    // Prepare exact Date strings for the past 7 days (YYYY-MM-DD)
-    for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const isoDate = d.toISOString().split('T')[0];
-        labels.push(d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }));
-        dateMap[isoDate] = 0; // Initialize count
-    }
-
-    let dataNewUsers = [0, 0, 0, 0, 0, 0, 0];
-
-    // Fetch real user data from Supabase
-    if (window.supabaseClient) {
-        try {
-            // Get users created in the last 7 days
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-            const { data: usersData, error } = await window.supabaseClient
-                .from('users')
-                .select('created_at')
-                .gte('created_at', sevenDaysAgo.toISOString());
-
-            if (!error && usersData) {
-                usersData.forEach(u => {
-                    const isoDate = u.created_at.split('T')[0];
-                    if (dateMap[isoDate] !== undefined) {
-                        dateMap[isoDate]++;
-                    }
-                });
-                dataNewUsers = Object.values(dateMap);
-            }
-        } catch (err) {
-            console.error("Failed to fetch chart data", err);
-        }
-    }
-
-    const dataPageViews = [0, 0, 0, 0, 0, 0, 0]; // Future feature
-
-    mainChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: '신규 가입자 👶',
-                    data: dataNewUsers,
-                    borderColor: '#009ef7',
-                    backgroundColor: 'rgba(0, 158, 247, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                },
-                {
-                    label: '페이지 뷰 👀 (x10) - (준비중)',
-                    data: dataPageViews,
-                    borderColor: '#50cd89',
-                    backgroundColor: 'rgba(80, 205, 137, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'top' },
-                tooltip: { mode: 'index', intersect: false }
-            },
-            interaction: { mode: 'nearest', axis: 'x', intersect: false },
-            scales: {
-                y: { beginAtZero: true, grid: { borderDash: [5, 5] }, ticks: { stepSize: 1 } },
-                x: { grid: { display: false } }
-            }
-        }
+    const labels = (chart?.labels || []).map(d => {
+      const parts = d.split('-');
+      return `${parts[1]}/${parts[2]}`;
     });
-}
+
+    mainChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: '신규 가입',
+            data: chart?.newUsers || [],
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99,102,241,0.1)',
+            fill: true, tension: 0.4
+          },
+          {
+            label: '매출 (만원)',
+            data: (chart?.revenue || []).map(v => Math.round(v / 10000)),
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16,185,129,0.1)',
+            fill: true, tension: 0.4
+          },
+          {
+            label: '방문자',
+            data: chart?.visitors || [],
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245,158,11,0.1)',
+            fill: true, tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top' }
+        },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  function renderRecentOrders(orders) {
+    const body = document.getElementById('dashRecentOrdersBody');
+    if (!body) return;
+
+    if (!orders.length) {
+      body.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#aaa;">주문 내역이 없습니다.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = orders.map(o => {
+      const statusBadge = {
+        paid: '<span class="badge success">결제완료</span>',
+        refunded: '<span class="badge danger">환불</span>',
+        pending: '<span class="badge warning">대기</span>',
+        cancelled: '<span class="badge">취소</span>'
+      };
+      return `<tr>
+        <td style="font-family:monospace; font-size:0.8rem;">${o.order_id || '-'}</td>
+        <td>${o.user_name || '-'}</td>
+        <td>${o.class_title || o.order_type || '-'}</td>
+        <td>₩${fmt(o.final_amount)}</td>
+        <td>${statusBadge[o.status] || o.status}</td>
+        <td>${o.created_at ? new Date(o.created_at).toLocaleDateString('ko-KR') : '-'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // 차트 범위 버튼
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.chart-range-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.chart-range-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        initDashboard(parseInt(btn.dataset.range));
+      });
+    });
+  });
+
+  // 탭 변경 이벤트
+  window.addEventListener('adminTabChanged', (e) => {
+    if (e.detail?.tabId === 'tabDashboard') {
+      initDashboard();
+    }
+  });
+
+  // 새로고침 버튼
+  document.addEventListener('DOMContentLoaded', () => {
+    const refreshBtn = document.getElementById('btnAdminRefresh');
+    if (refreshBtn) refreshBtn.addEventListener('click', () => initDashboard());
+  });
+
+  // 초기 로드
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => initDashboard());
+  } else {
+    initDashboard();
+  }
+})();

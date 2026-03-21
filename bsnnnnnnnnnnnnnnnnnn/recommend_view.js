@@ -21,31 +21,42 @@ async function loadFolderData(folderId) {
     const titleEl = document.getElementById('folderTitle');
     const gridEl = document.getElementById('folderClassGrid');
 
-    const db = firebase.database();
-    const snap = await db.ref(`site_design/recommendations/${folderId}`).once('value');
-    const folder = snap.val();
-
-    if (!folder) {
-        titleEl.textContent = "폴더를 찾을 수 없습니다.";
+    if (!window.BSQ || !window.BSQ.api) {
+        console.error("BSQ API not ready");
         return;
     }
 
-    titleEl.textContent = folder.title;
-    gridEl.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 5rem;">클래스를 불러오는 중입니다...</div>';
-
-    if (folder.classIds && Array.isArray(folder.classIds)) {
-        const classes = [];
-        for (const cid of folder.classIds) {
-            const cSnap = await db.ref(`classes/${cid}`).once('value');
-            const cData = cSnap.val();
-            if (cData) {
-                classes.push({ ...cData, id: cid });
-            }
+    try {
+        const res = await window.BSQ.api('/api/recommendations');
+        if (!res.success || !res.data) {
+            titleEl.textContent = "데이터를 불러오는 데 실패했습니다.";
+            return;
         }
-        currentFolderClasses = classes;
-        renderClasses(classes);
-    } else {
-        gridEl.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 5rem; color:#888;">이 폴더에 담긴 클래스가 없습니다.</div>';
+
+        const folders = res.data;
+        const folder = folders.find(f => String(f.id) === String(folderId));
+
+        if (!folder) {
+            titleEl.textContent = "폴더를 찾을 수 없습니다.";
+            gridEl.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 5rem; color:#888;">준비된 클래스가 없습니다.</div>';
+            return;
+        }
+
+        titleEl.textContent = folder.title;
+        // 설명이 있으면 추가로 보여줄 수 있음 (HTML에 엘리먼트가 있다면)
+        const descEl = document.getElementById('folderDesc');
+        if (descEl) descEl.textContent = folder.description || '';
+
+        gridEl.innerHTML = '';
+        if (folder.classes && Array.isArray(folder.classes) && folder.classes.length > 0) {
+            currentFolderClasses = folder.classes;
+            renderClasses(folder.classes);
+        } else {
+            gridEl.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 5rem; color:#888;">이 폴더에 담긴 클래스가 없습니다.</div>';
+        }
+    } catch (err) {
+        console.error("Load folder data failed", err);
+        titleEl.textContent = "오류가 발생했습니다.";
     }
 }
 

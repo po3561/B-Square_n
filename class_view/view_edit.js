@@ -13,9 +13,9 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     // ========================
     // 1. D1 강사 프로필 및 통계 로드 (classData 기반)
     // ========================
-    const instructorName = classData.creator_name || '강사';
-    const instructorEmail = classData.creator_email || '';
-    const instructorAvatar = classData.creator_profile_image || '';
+    const instructorName = classData.instructor_name || classData.creator_name || '강사';
+    const instructorEmail = classData.instructor_email || classData.creator_email || '';
+    const instructorAvatar = classData.instructor_profile_image || classData.creator_profile_image || '';
 
     // D1 API 조회에서 넘겨받은 통계
     const enrollCount = classData.enrollment_count || 0;

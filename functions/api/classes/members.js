@@ -157,7 +157,7 @@ export async function onRequestGet(context) {
                     title: classInfo.title,
                     category: classInfo.category,
                     image_url: classInfo.image_url,
-                    creator_id: classInfo.creator_id
+                    instructor_id: classInfo.creator_id
                 },
                 members,
                 total_members: members.length,

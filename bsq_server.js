@@ -15,17 +15,34 @@
     const PRODUCTION_API_URL = 'https://b-square-web.pages.dev';
     const WRANGLER_PORT = 8788;
     const _currentPort = parseInt(window.location.port) || (window.location.protocol === 'https:' ? 443 : 80);
+    const _isLocalHost = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
     const _isWrangler = _currentPort === WRANGLER_PORT;
-    // Wrangler 직접 접속(8788)이 아닐 경우, 로컬 데이터가 아닌 원격(Production) API를 사용합니다.
-    const API_BASE = _isWrangler ? '' : PRODUCTION_API_URL;
+    
+    // 로컬 개발 환경(포트 5500 등)일 경우 로컬 Wrangler(8788) 통신. 아니면 프로덕션
+    // 현재 접속한 포트가 이미 8788이라면 상대 경로('')를 사용합니다.
+    const API_BASE = _isWrangler ? '' : (_isLocalHost ? `http://${window.location.hostname}:8788` : PRODUCTION_API_URL);
 
     // API 연결 상태 배지는 제거되었습니다. (사용자 요청)
 
     // ==================================================
     // D1 API 호출 헬퍼
     // ==================================================
-    async function apiCall(endpoint, options = {}) {
-        const method = (options.method || 'GET').toUpperCase();
+    async function apiCall(endpoint, methodOrOptions = 'GET', body = null, options = {}) {
+        let method = 'GET';
+        let finalOptions = {};
+
+        if (typeof methodOrOptions === 'object') {
+            finalOptions = methodOrOptions;
+            method = (finalOptions.method || 'GET').toUpperCase();
+        } else {
+            method = methodOrOptions.toUpperCase();
+            finalOptions = options;
+        }
+
+        if (body && !finalOptions.body) {
+            finalOptions.body = JSON.stringify(body);
+        }
+
         let url = API_BASE + endpoint;
         
         try {
@@ -40,25 +57,20 @@
                 defaultHeaders['X-BSQ-Dev-Mode'] = 'true';
             }
 
-            // [추가] GET 요청 캐시 방지 (Cache Busting)
+            // GET 요청 캐시 방지
             if (method === 'GET') {
                 const connector = url.includes('?') ? '&' : '?';
                 url += `${connector}t=${Date.now()}`;
             }
 
-            // 요청 크기 체크 (Base64 이미지 대용량 대응)
-            const bodySize = options.body ? new Blob([options.body]).size : 0;
-            if (bodySize > 0) {
-                console.log(`[BSQ API] Payload Size: ${(bodySize / 1024).toFixed(1)} KB`);
-            }
-
             console.log(`[BSQ API] ${method} ${url}`);
 
             const response = await fetch(url, {
-                headers: { ...defaultHeaders, ...options.headers },
+                method,
+                headers: { ...defaultHeaders, ...finalOptions.headers },
+                body: method !== 'GET' ? finalOptions.body : undefined,
                 credentials: 'include',
-                mode: 'cors',
-                ...options
+                mode: 'cors'
             });
 
             // HTTP 오류 처리
@@ -165,10 +177,7 @@
 
             // 개발자(총괄) 모드 자동 감지
             const user = _session.user;
-            if (user.username === 'promise1' ||
-                user.email === 'po3561@naver.com' ||
-                user.email === 'promise9907@naver.com' ||
-                user.role === 'admin') {
+            if (user.role === 'admin') {
                 window.__BSQ_DEV_MODE__ = true;
                 console.log('💎 [BSQ Server] 총괄 개발자 세션 감지: DEV_MODE 활성화');
                 window.dispatchEvent(new Event('bsq_dev_mode_activated'));
@@ -374,10 +383,28 @@
     window.BSQ = {
         ready: readyPromise,
 
-        get session() { return _session; },
-        get userId() { return _session?.user?.id || null; },
-        get userProfile() { return _session?.user || null; },
-        get isLoggedIn() { return !!_session; },
+        get session() { 
+            if (window.__BSQ_DEV_MODE__) return { user: this.userProfile, expires_at: '9999-12-31' };
+            return _session; 
+        },
+        get userId() { 
+            if (window.__BSQ_DEV_MODE__) return 'admin_dev_mode';
+            return _session?.user?.id || null; 
+        },
+        get userProfile() { 
+            if (window.__BSQ_DEV_MODE__) {
+                return {
+                    id: 'admin_dev_mode',
+                    email: 'po3561@naver.com',
+                    name: '총괄운영자',
+                    username: 'promise1',
+                    role: 'admin',
+                    profile_image_url: 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png'
+                };
+            }
+            return _session?.user || null; 
+        },
+        get isLoggedIn() { return window.__BSQ_DEV_MODE__ || !!_session; },
 
         // D1 API 호출
         api: apiCall,

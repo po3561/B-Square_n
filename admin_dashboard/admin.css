@@ -856,3 +856,115 @@ input:checked+.mac-slider:before {
         font-size: 1.2rem;
     }
 }
+
+/* ==========================================
+   추천 클래스 관리 - 클래스 검색 모달 (Premium)
+========================================== */
+.modal-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 0.5rem;
+}
+
+.modal-tab {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: #64748b;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.modal-tab:hover {
+    background: #f1f5f9;
+}
+
+.modal-tab.active {
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+.class-search-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.class-search-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.class-search-card .card-img {
+    width: 100%;
+    height: 140px;
+    background: #f8fafc;
+    position: relative;
+    overflow: hidden; /* 추가: 이미지 탈출 방지 */
+}
+
+.class-search-card .card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 중요: 원본 사이즈 방지 */
+}
+
+.class-search-card .card-body {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.class-search-card .card-category {
+    font-size: 0.75rem;
+    color: #3b82f6;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+}
+
+.class-search-card .card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+    height: 2.8rem;
+}
+
+.class-search-card .card-footer {
+    padding: 0.8rem 1rem;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+}
+
+.class-search-card .card-price {
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.class-search-card .btn-select {
+    background: #2563eb;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.class-search-card .btn-select:hover {
+    background: #1d4ed8;
+}
