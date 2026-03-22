@@ -148,6 +148,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (enrollResult.success) {
                             isEnrolled = enrollResult.data?.enrolled || false;
                         }
+
+                        const passResult = await window.BSQ.api(`/api/user-passes?user_id=${userId}`);
+                        if (passResult.success && Array.isArray(passResult.data)) {
+                            const currentPass = passResult.data.find((item) => item.class_id === classId);
+                            userPassCount = currentPass?.remaining_count ?? currentPass?.remaining_passes ?? currentPass?.remaining ?? 0;
+                            isMonthlySubscribed = (currentPass?.pass_type || '') === 'monthly';
+                        }
                     } catch (enrollErr) {
                         console.warn("수강 상태 확인 실패:", enrollErr);
                     }
@@ -289,8 +296,16 @@ async function usePass() {
     btn.textContent = '처리 중...';
 
     try {
-        // TODO: D1 API로 수강권 차감 (Phase 2 후반부)
-        userPassCount--;
+        const result = await window.BSQ.api('/api/user-passes/use', {
+            method: 'POST',
+            body: JSON.stringify({ class_id: classId })
+        });
+
+        if (!result.success) {
+            throw new Error(result.error || '수강권 차감 실패');
+        }
+
+        userPassCount = result.data?.remaining_count ?? Math.max(0, userPassCount - 1);
         showToast('success', '수강권 사용 완료 ✅', '수강권 1회가 차감되었습니다.');
         updateEnrollmentUI();
     } catch (err) {

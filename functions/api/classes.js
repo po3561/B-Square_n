@@ -1,5 +1,5 @@
-// functions/api/classes.js — 클래스 목록 조회 API
-// GET /api/classes?category=&q=&limit=&offset=
+import { requireClassManager, requireSession } from './_lib/auth.js';
+import { json } from './_lib/http.js';
 
 export async function onRequest(context) {
     const { request, env } = context;
@@ -61,26 +61,28 @@ export async function onRequest(context) {
                 review_count: reviewStats[cls.id]?.review_count || 0
             }));
 
-            return Response.json({ success: true, data: enriched, meta: { limit, offset, count: enriched.length } });
-
+            return json(request, env, { success: true, data: enriched, meta: { limit, offset, count: enriched.length } });
         } catch (error) {
-            console.error('[API /classes GET] Error:', error);
-            return Response.json({ success: false, error: error.message }, { status: 500 });
+            return json(request, env, { success: false, error: '클래스 목록 조회 중 오류가 발생했습니다.', detail: error.message }, { status: 500 });
         }
     }
 
-    // PATCH: 클래스 정보 부분 수정 (승인 상태 등)
     if (method === 'PATCH') {
+        const auth = await requireSession(context);
+        if (!auth.ok) return auth.response;
+
         try {
             const body = await request.json();
             const id = body.id;
-            if (!id) return Response.json({ success: false, error: 'ID is required' }, { status: 400 });
+            if (!id) return json(request, env, { success: false, error: 'ID is required' }, { status: 400 });
+
+            const classAuth = await requireClassManager(context, id);
+            if (!classAuth.ok) return classAuth.response;
 
             const updates = [];
             const values = [];
 
-            // 허용된 필드들
-            const allowed = ['title', 'category', 'is_approved', 'price', 'max_capacity', 'is_hidden'];
+            const allowed = ['title', 'category', 'is_approved', 'price'];
             allowed.forEach(key => {
                 if (body[key] !== undefined) {
                     updates.push(`${key} = ?`);
@@ -88,37 +90,33 @@ export async function onRequest(context) {
                 }
             });
 
-            if (updates.length === 0) return Response.json({ success: false, error: 'No fields to update' }, { status: 400 });
+            if (updates.length === 0) return json(request, env, { success: false, error: 'No fields to update' }, { status: 400 });
 
             updates.push("updated_at = datetime('now')");
             values.push(id);
 
             await db.prepare(`UPDATE classes SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
-            return Response.json({ success: true, message: 'Class updated successfully' });
+            return json(request, env, { success: true, message: 'Class updated successfully' });
 
         } catch (error) {
-            console.error('[API /classes PATCH] Error:', error);
-            return Response.json({ success: false, error: error.message }, { status: 500 });
+            return json(request, env, { success: false, error: '클래스 수정 중 오류가 발생했습니다.', detail: error.message }, { status: 500 });
         }
     }
 
-    // DELETE: 클래스 영구 삭제 (모든 연관 데이터 정리)
     if (method === 'DELETE') {
         const id = url.searchParams.get('id');
-        if (!id) return Response.json({ success: false, error: 'ID가 필요합니다.' }, { status: 400 });
+        if (!id) return json(request, env, { success: false, error: 'ID가 필요합니다.' }, { status: 400 });
+
+        const auth = await requireClassManager(context, id);
+        if (!auth.ok) return auth.response;
 
         try {
-            console.log(`[API /classes DELETE] Starting Hard Delete for class: ${id}`);
-
-            // 1. 자식 테이블 레코드 삭제 (외래 키 제약 조건 해결)
-            // 모임 관련 (참여자 -> 모임 순)
             await db.prepare('DELETE FROM gathering_participants WHERE gathering_id IN (SELECT id FROM class_gatherings WHERE class_id = ?)').bind(id).run();
             await db.prepare('DELETE FROM class_gatherings WHERE class_id = ?').bind(id).run();
             
-            // 일반 수강 관련 테이블들
             const tables = [
-                'enrollments', 'reviews', 'chats', 'class_notices', 'coupons', 
-                'class_participants', 'class_boards', 'user_passes', 'user_passes_fb'
+                'enrollments', 'reviews', 'chat_messages', 'class_notices', 'coupons',
+                'class_participants', 'class_boards', 'user_passes'
             ];
 
             for (const table of tables) {
@@ -129,28 +127,24 @@ export async function onRequest(context) {
                 }
             }
             
-            // 연락처 참조 제거 (source_class_id)
             await db.prepare('UPDATE contacts SET source_class_id = NULL WHERE source_class_id = ?').bind(id).run();
 
-            // 2. 메인 클래스 테이블에서 영구 삭제
             const result = await db.prepare('DELETE FROM classes WHERE id = ?').bind(id).run();
 
             if (result.meta.changes === 0) {
-                return Response.json({ success: false, error: '삭제할 클래스를 찾을 수 없습니다.' }, { status: 404 });
+                return json(request, env, { success: false, error: '삭제할 클래스를 찾을 수 없습니다.' }, { status: 404 });
             }
 
-            console.log(`[API /classes DELETE] Successfully purged class: ${id}`);
-            return Response.json({ 
+            return json(request, env, {
                 success: true, 
                 message: '클래스와 모든 연관 데이터가 영구적으로 삭제되었습니다.',
                 id: id
             });
 
         } catch (error) {
-            console.error('[API /classes DELETE] Fatal Error:', error);
-            return Response.json({ success: false, error: '영구 삭제 중 오류가 발생했습니다.', detail: error.message }, { status: 500 });
+            return json(request, env, { success: false, error: '영구 삭제 중 오류가 발생했습니다.', detail: error.message }, { status: 500 });
         }
     }
 
-    return Response.json({ success: false, error: 'Method not allowed' }, { status: 405 });
+    return json(request, env, { success: false, error: 'Method not allowed' }, { status: 405 });
 }

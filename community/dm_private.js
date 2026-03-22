@@ -38,9 +38,8 @@ window.CommunityModules.DM = (function () {
 
         try {
             const msgPayload = {
-                room_id: roomId,
-                sender_id: userId,
-                text: content,
+                content,
+                room_type: 'dm',
                 image_url: null
             };
 
@@ -49,14 +48,14 @@ window.CommunityModules.DM = (function () {
                 msgPayload.image_url = fileData.data;
             }
 
-            const res = await window.BSQ.api('/api/dm', {
+            const res = await window.BSQ.api(`/api/dm/${roomId}/messages`, {
                 method: 'POST',
                 body: JSON.stringify(msgPayload)
             });
 
             if (res?.success) {
-                bridge().emit('message_sent', { roomId, msgId: res.data.push_key });
-                return res.data.push_key;
+                bridge().emit('message_sent', { roomId, msgId: res.data.id });
+                return res.data.id;
             }
             return null;
         } catch (e) {

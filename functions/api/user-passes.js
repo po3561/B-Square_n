@@ -1,32 +1,28 @@
-// GET /api/user-passes — 사용자의 수강권 목록 조회
+import { requireSession } from './_lib/auth.js';
+import { json, options } from './_lib/http.js';
+
 export async function onRequestGet(context) {
   const { request, env } = context;
-  const cors = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
   const url = new URL(request.url);
-  const user_id = url.searchParams.get('user_id');
+  const auth = await requireSession(context);
+  if (!auth.ok) return auth.response;
+  const user_id = url.searchParams.get('user_id') || auth.user.id;
 
-  if (!user_id) {
-    return new Response(JSON.stringify({ success: false, error: 'user_id가 필요합니다.' }), { status: 400, headers: cors });
+  if (user_id !== auth.user.id && auth.user.role !== 'admin') {
+    return json(request, env, { success: false, error: '조회 권한이 없습니다.' }, { status: 403 });
   }
 
   try {
-    // D1에서 해당 유저의 모든 수강권 조회
     const { results } = await env.DB.prepare(`
       SELECT * FROM user_passes WHERE user_id = ? AND status = 'active'
     `).bind(user_id).all();
 
-    return new Response(JSON.stringify({ success: true, data: results }), { headers: cors });
+    return json(request, env, { success: true, data: results });
   } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: '수강권 조회 오류', detail: err.message }), { status: 500, headers: cors });
+    return json(request, env, { success: false, error: '수강권 조회 오류', detail: err.message }, { status: 500 });
   }
 }
 
-export async function onRequestOptions() {
-  return new Response(null, {
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
-  });
+export async function onRequestOptions(context) {
+  return options(context.request, context.env);
 }

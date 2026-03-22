@@ -1,45 +1,56 @@
-// functions/api/group-chats.js — 그룹 채팅 CRUD API
-const cors = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
+import { requireSession } from './_lib/auth.js';
+import { json, options } from './_lib/http.js';
 
 // GET /api/group-chats?group_id=xxx — 특정 그룹 정보 조회
 // GET /api/group-chats?user_id=xxx — 사용자가 속한 그룹 목록
 export async function onRequestGet(context) {
     const { request, env } = context;
+    const auth = await requireSession(context);
+    if (!auth.ok) return auth.response;
     const url = new URL(request.url);
     const group_id = url.searchParams.get('group_id');
-    const user_id = url.searchParams.get('user_id');
+    const user_id = url.searchParams.get('user_id') || auth.user.id;
 
     try {
         if (group_id) {
             const data = await env.DB.prepare('SELECT * FROM group_chats WHERE group_id = ?').bind(group_id).first();
-            if (!data) return new Response(JSON.stringify({ success: false, error: '그룹을 찾을 수 없습니다.' }), { status: 404, headers: cors });
+            if (!data) return json(request, env, { success: false, error: '그룹을 찾을 수 없습니다.' }, { status: 404 });
             data.members = safeParseJSON(data.members, []);
-            return new Response(JSON.stringify({ success: true, data }), { headers: cors });
+            if (!data.members.includes(auth.user.id) && auth.user.role !== 'admin') {
+                return json(request, env, { success: false, error: '조회 권한이 없습니다.' }, { status: 403 });
+            }
+            return json(request, env, { success: true, data });
         }
 
         if (user_id) {
+            if (user_id !== auth.user.id && auth.user.role !== 'admin') {
+                return json(request, env, { success: false, error: '조회 권한이 없습니다.' }, { status: 403 });
+            }
             const { results } = await env.DB.prepare(
                 "SELECT * FROM group_chats WHERE members LIKE ? ORDER BY created_at DESC"
             ).bind(`%${user_id}%`).all();
             results.forEach(r => r.members = safeParseJSON(r.members, []));
-            return new Response(JSON.stringify({ success: true, data: results }), { headers: cors });
+            return json(request, env, { success: true, data: results });
         }
 
-        return new Response(JSON.stringify({ success: false, error: 'group_id 또는 user_id 필요' }), { status: 400, headers: cors });
+        return json(request, env, { success: false, error: 'group_id 또는 user_id 필요' }, { status: 400 });
     } catch (err) {
-        return new Response(JSON.stringify({ success: false, error: '그룹 조회 오류', detail: err.message }), { status: 500, headers: cors });
+        return json(request, env, { success: false, error: '그룹 조회 오류', detail: err.message }, { status: 500 });
     }
 }
 
 // POST /api/group-chats — 새 그룹 생성
 export async function onRequestPost(context) {
     const { request, env } = context;
+    const auth = await requireSession(context);
+    if (!auth.ok) return auth.response;
     try {
         const body = await request.json();
-        const { name, members, created_by } = body;
+        const { name, members } = body;
+        const created_by = auth.user.id;
 
-        if (!name || !created_by) {
-            return new Response(JSON.stringify({ success: false, error: '그룹 이름과 생성자 필수' }), { status: 400, headers: cors });
+        if (!name) {
+            return json(request, env, { success: false, error: '그룹 이름과 생성자 필수' }, { status: 400 });
         }
 
         const group_id = 'grp_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16);
@@ -57,24 +68,29 @@ export async function onRequestPost(context) {
             ).bind(memberId, group_id, 'group', name).run();
         }
 
-        return new Response(JSON.stringify({ success: true, data: { group_id } }), { status: 201, headers: cors });
+        return json(request, env, { success: true, data: { group_id } }, { status: 201 });
     } catch (err) {
-        return new Response(JSON.stringify({ success: false, error: '그룹 생성 오류', detail: err.message }), { status: 500, headers: cors });
+        return json(request, env, { success: false, error: '그룹 생성 오류', detail: err.message }, { status: 500 });
     }
 }
 
 // PATCH /api/group-chats — 그룹 정보 수정 (멤버 추가/제거, 이름 변경 등)
 export async function onRequestPatch(context) {
     const { request, env } = context;
+    const auth = await requireSession(context);
+    if (!auth.ok) return auth.response;
     try {
         const body = await request.json();
         const { group_id, name, add_member, remove_member } = body;
-        if (!group_id) return new Response(JSON.stringify({ success: false, error: 'group_id 필요' }), { status: 400, headers: cors });
+        if (!group_id) return json(request, env, { success: false, error: 'group_id 필요' }, { status: 400 });
 
         const group = await env.DB.prepare('SELECT * FROM group_chats WHERE group_id = ?').bind(group_id).first();
-        if (!group) return new Response(JSON.stringify({ success: false, error: '그룹 없음' }), { status: 404, headers: cors });
+        if (!group) return json(request, env, { success: false, error: '그룹 없음' }, { status: 404 });
 
         let members = safeParseJSON(group.members, []);
+        if (!members.includes(auth.user.id) && auth.user.role !== 'admin') {
+            return json(request, env, { success: false, error: '수정 권한이 없습니다.' }, { status: 403 });
+        }
 
         if (add_member && !members.includes(add_member)) {
             members.push(add_member);
@@ -93,18 +109,14 @@ export async function onRequestPatch(context) {
 
         await env.DB.prepare(`UPDATE group_chats SET ${updates.join(', ')} WHERE group_id = ?`).bind(...binds).run();
 
-        return new Response(JSON.stringify({ success: true }), { headers: cors });
+        return json(request, env, { success: true });
     } catch (err) {
-        return new Response(JSON.stringify({ success: false, error: '그룹 수정 오류', detail: err.message }), { status: 500, headers: cors });
+        return json(request, env, { success: false, error: '그룹 수정 오류', detail: err.message }, { status: 500 });
     }
 }
 
-export async function onRequestOptions() {
-    return new Response(null, { headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
-    } });
+export async function onRequestOptions(context) {
+    return options(context.request, context.env);
 }
 
 function safeParseJSON(str, fallback) {

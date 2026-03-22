@@ -20,9 +20,9 @@ export async function onRequestGet(context) {
       // 받은 친구 요청 — users 테이블 없을 수도 있으므로 안전하게 처리
       try {
         const { results } = await env.DB.prepare(`
-          SELECT f.*, u.nickname, u.name
+          SELECT f.*, u.username, u.name
           FROM friends f
-          LEFT JOIN users u ON u.user_id = f.requester_id
+          LEFT JOIN users u ON u.id = f.requester_id
           WHERE f.receiver_id = ? AND f.status = 'pending'
           ORDER BY f.created_at DESC
         `).bind(userId).all();
@@ -42,9 +42,9 @@ export async function onRequestGet(context) {
         SELECT 
           CASE WHEN f.requester_id = ? THEN f.receiver_id ELSE f.requester_id END as friend_id,
           f.status, f.created_at,
-          u.nickname, u.name, u.email
+          u.username, u.name, u.email
         FROM friends f
-        LEFT JOIN users u ON u.user_id = CASE WHEN f.requester_id = ? THEN f.receiver_id ELSE f.requester_id END
+        LEFT JOIN users u ON u.id = CASE WHEN f.requester_id = ? THEN f.receiver_id ELSE f.requester_id END
         WHERE (f.requester_id = ? OR f.receiver_id = ?) AND f.status = 'accepted'
         ORDER BY f.created_at DESC
       `).bind(userId, userId, userId, userId).all();

@@ -1,17 +1,15 @@
-// POST /api/auth/login — 로그인
+import { createSessionCookie, hashPassword } from '../_lib/auth.js';
+import { json, options } from '../_lib/http.js';
+
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const cors = {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json'
-  };
 
   try {
     const body = await request.json();
     const { username, password } = body;
 
     if (!username || !password) {
-      return new Response(JSON.stringify({ success: false, error: '아이디/이메일과 비밀번호를 입력해주세요.' }), { status: 400, headers: cors });
+      return json(request, env, { success: false, error: '아이디/이메일과 비밀번호를 입력해주세요.' }, { status: 400 });
     }
 
     // username 또는 email로 유저 조회
@@ -23,18 +21,13 @@ export async function onRequestPost(context) {
     }
 
     if (!user) {
-      return new Response(JSON.stringify({ success: false, error: '존재하지 않는 사용자 정보입니다.' }), { status: 401, headers: cors });
+      return json(request, env, { success: false, error: '존재하지 않는 사용자 정보입니다.' }, { status: 401 });
     }
 
-    // 비밀번호 검증
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password + '_bsq_salt_2024');
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const inputHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const inputHash = await hashPassword(password);
 
     if (inputHash !== user.password_hash) {
-      return new Response(JSON.stringify({ success: false, error: '아이디 또는 비밀번호를 다시 확인해주세요.' }), { status: 401, headers: cors });
+      return json(request, env, { success: false, error: '아이디 또는 비밀번호를 다시 확인해주세요.' }, { status: 401 });
     }
 
     // 기존 만료된 세션 정리 후 새 세션 생성
@@ -52,29 +45,20 @@ export async function onRequestPost(context) {
     // 비밀번호 해시 제외한 유저 데이터 반환
     const { password_hash, ...safeUser } = user;
 
-    return new Response(JSON.stringify({
+    return json(request, env, {
       success: true,
       data: { user: safeUser },
       token
-    }), {
-      headers: {
-        ...cors,
-        'Set-Cookie': `bsq_session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}`
-      }
+    }, {
+      headers: { 'Set-Cookie': createSessionCookie(token, request) }
     });
 
   } catch (err) {
     console.error('Login error:', err);
-    return new Response(JSON.stringify({ success: false, error: '로그인 처리 중 오류가 발생했습니다.' }), { status: 500, headers: cors });
+    return json(request, env, { success: false, error: '로그인 처리 중 오류가 발생했습니다.' }, { status: 500 });
   }
 }
 
-export async function onRequestOptions() {
-  return new Response(null, {
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
-  });
+export async function onRequestOptions(context) {
+  return options(context.request, context.env);
 }

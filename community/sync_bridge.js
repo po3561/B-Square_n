@@ -6,6 +6,7 @@ window.CommunityModules.SyncBridge = (function () {
     let userId = null;
     let eventHandlers = {};
     let pollIntervals = {};
+    let streamSources = {};
 
     function init(_db, _supabase, _userId) {
         // _db, _supabase 파라미터는 이전 호환성 유지용 (사용하지 않음)
@@ -13,37 +14,46 @@ window.CommunityModules.SyncBridge = (function () {
         console.log("🔄 SyncBridge initialized (D1 API) | userId:", userId);
     }
 
-    // ---- D1 API 기반 메시지 리스닝 (폴링) ----
     function listenMessages(roomId, type, onAdd) {
-        // 폴링 간격: 3초
         if (pollIntervals[roomId]) clearInterval(pollIntervals[roomId]);
-        
-        let lastTimestamp = null;
+        if (streamSources[roomId]) {
+            streamSources[roomId].close();
+            delete streamSources[roomId];
+        }
+
+        let lastTimestamp = 0;
+
+        const streamBase = window.BSQ?.apiBaseUrl || window.location.origin;
+        const streamUrl = `${streamBase}/api/dm/${roomId}/messages/stream?room_type=${encodeURIComponent(type)}&since=${lastTimestamp}`;
+
+        try {
+            const source = new EventSource(streamUrl, { withCredentials: true });
+            streamSources[roomId] = source;
+            source.addEventListener('message', (event) => {
+                const msg = JSON.parse(event.data);
+                lastTimestamp = new Date(msg.created_at || msg.timestamp || Date.now()).getTime();
+                onAdd(msg.push_key || msg.id, msg);
+            });
+            source.addEventListener('error', () => {
+                source.close();
+                delete streamSources[roomId];
+            });
+        } catch (error) {
+            console.warn('SSE init error:', error);
+        }
 
         async function poll() {
             try {
-                let endpoint;
-                if (type === 'dm') {
-                    endpoint = `/api/dm?room_id=${roomId}&limit=100`;
-                } else if (type === 'class') {
-                    endpoint = `/api/chat?class_id=${roomId}&limit=100`;
-                } else if (type === 'group') {
-                    endpoint = `/api/dm?room_id=${roomId}&limit=100`; // 그룹 채팅도 dm 테이블 사용
-                }
-                
+                const endpoint = `/api/dm/${roomId}/messages?room_type=${encodeURIComponent(type)}&since=${lastTimestamp}&limit=100`;
                 const res = await window.BSQ.api(endpoint);
                 if (res?.success && res.data) {
                     res.data.forEach(msg => {
-                        const msgTime = msg.timestamp || msg.created_at || '';
+                        const msgTime = new Date(msg.timestamp || msg.created_at || Date.now()).getTime();
                         if (!lastTimestamp || msgTime > lastTimestamp) {
                             onAdd(msg.push_key || msg.id, msg);
+                            lastTimestamp = Math.max(lastTimestamp, msgTime);
                         }
                     });
-                    
-                    if (res.data.length > 0) {
-                        const lastMsg = res.data[res.data.length - 1];
-                        lastTimestamp = lastMsg.timestamp || lastMsg.created_at;
-                    }
                 }
             } catch (e) {
                 console.warn("Poll error:", e);
@@ -55,6 +65,10 @@ window.CommunityModules.SyncBridge = (function () {
     }
 
     function stopListeningMessages(roomId) {
+        if (streamSources[roomId]) {
+            streamSources[roomId].close();
+            delete streamSources[roomId];
+        }
         if (pollIntervals[roomId]) {
             clearInterval(pollIntervals[roomId]);
             delete pollIntervals[roomId];
@@ -114,6 +128,8 @@ window.CommunityModules.SyncBridge = (function () {
 
     // ---- 정리 ----
     function cleanup() {
+        Object.keys(streamSources).forEach(key => streamSources[key].close());
+        streamSources = {};
         Object.keys(pollIntervals).forEach(key => clearInterval(pollIntervals[key]));
         pollIntervals = {};
     }

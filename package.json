@@ -1,4 +1,10 @@
 {
+  "scripts": {
+    "dev": "wrangler pages dev .",
+    "deploy": "wrangler pages deploy .",
+    "d1:migrate:local": "wrangler d1 migrations apply b-square-db --local",
+    "d1:migrate:remote": "wrangler d1 migrations apply b-square-db --remote"
+  },
   "dependencies": {
     "googleapis": "^171.4.0"
   },

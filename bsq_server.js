@@ -382,6 +382,7 @@
     // ---- 전역 API ----
     window.BSQ = {
         ready: readyPromise,
+        apiBaseUrl: API_BASE || window.location.origin,
 
         get session() { 
             if (window.__BSQ_DEV_MODE__) return { user: this.userProfile, expires_at: '9999-12-31' };

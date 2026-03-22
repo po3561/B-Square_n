@@ -15,6 +15,7 @@ window.CommunityModules.ChatUI = (function () {
     let currentPins = {};
     let pollTimer = null;
     let lastMsgTimestamp = 0;
+    let messageStream = null;
 
     const EMOJIS = ['😀', '😂', '🥰', '😍', '🤔', '😅', '😎', '🥳', '😢', '😡', '👍', '👎', '❤️', '🔥', '⭐', '🎉', '💯', '🙌', '👏', '🤝', '💪', '🙏', '✨', '💬', '📌', '📎', '🎵', '🎮', '☕', '🍕', '🎊', '💐', '🌈', '🍀', '🐶', '🐱', '🦊', '🐻'];
 
@@ -256,6 +257,7 @@ window.CommunityModules.ChatUI = (function () {
     // ==== 채팅방 열기 (D1 API 기반) ====
     function openRoom(roomId, roomType, roomInfo) {
         if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        if (messageStream) { messageStream.close(); messageStream = null; }
         currentRoomId = roomId;
         currentRoomType = roomType;
         currentRoomInfo = roomInfo || {};
@@ -301,28 +303,41 @@ window.CommunityModules.ChatUI = (function () {
             if (btnGathering) btnGathering.style.display = 'none';
         }
 
-        // D1 API 폴링으로 메시지 로드
         loadMessages();
+        startMessageStream();
         pollTimer = setInterval(loadMessages, 3000);
+    }
+
+    function startMessageStream() {
+        if (!currentRoomId) return;
+
+        try {
+            const baseUrl = window.BSQ?.apiBaseUrl || window.location.origin;
+            const streamUrl = `${baseUrl}/api/dm/${currentRoomId}/messages/stream?room_type=${encodeURIComponent(currentRoomType)}&since=${lastMsgTimestamp}`;
+            messageStream = new EventSource(streamUrl, { withCredentials: true });
+            messageStream.addEventListener('message', (event) => {
+                const msg = JSON.parse(event.data);
+                const ts = new Date(msg.created_at || msg.timestamp || Date.now()).getTime();
+                if (ts > lastMsgTimestamp) lastMsgTimestamp = ts;
+                renderMessage(msg.id || msg.key, msg, true);
+            });
+            messageStream.addEventListener('error', () => {
+                if (messageStream) {
+                    messageStream.close();
+                    messageStream = null;
+                }
+            });
+        } catch (error) {
+            console.warn('SSE init failed:', error);
+        }
     }
 
     // ==== D1 API 메시지 로드 ====
     async function loadMessages() {
         if (!currentRoomId) return;
         try {
-            const endpoint = currentRoomType === 'dm'
-                ? `/api/dm/${currentRoomId}/messages`
-                : currentRoomType === 'group'
-                    ? `/api/group-chats/${currentRoomId}/messages`
-                    : `/api/dm/${currentRoomId}/messages`; // class도 같은 메시지 API 사용
-
-            // 클래스 채팅은 별도 엔드포인트 시도
-            let res;
-            if (currentRoomType === 'class') {
-                res = await window.BSQ.api(`/api/dm/${currentRoomId}/messages?room_type=class&since=${lastMsgTimestamp}`);
-            } else {
-                res = await window.BSQ.api(`${endpoint}?since=${lastMsgTimestamp}`);
-            }
+            const endpoint = `/api/dm/${currentRoomId}/messages?room_type=${encodeURIComponent(currentRoomType)}&since=${lastMsgTimestamp}`;
+            const res = await window.BSQ.api(endpoint);
 
             if (res?.success && res.data) {
                 const messages = Array.isArray(res.data) ? res.data : (res.data.messages || []);
@@ -333,7 +348,6 @@ window.CommunityModules.ChatUI = (function () {
                 });
             }
         } catch (e) {
-            // 메시지 로드 실패 시 조용히 무시 (폴링이므로)
             console.warn('Message poll error:', e.message);
         }
     }

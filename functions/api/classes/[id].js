@@ -48,7 +48,7 @@ export async function onRequest(context) {
         let dailyChatAvg = 0;
         try {
             const chatResult = await db
-                .prepare('SELECT COUNT(*) as count FROM chats WHERE class_id = ?')
+                .prepare('SELECT COUNT(*) as count FROM chat_messages WHERE class_id = ?')
                 .bind(classId)
                 .first();
             chatCount = chatResult?.count || 0;
@@ -62,7 +62,7 @@ export async function onRequest(context) {
                 dailyChatAvg = (chatCount / diffDays).toFixed(1);
             }
         } catch (e) {
-            console.warn('Chat stats query failed (table might not exist):', e.message);
+            console.warn('Chat stats query failed:', e.message);
         }
 
         // 5. JSON 문자열 필드 파싱 및 합산

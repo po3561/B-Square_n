@@ -16,7 +16,7 @@ B-Square 플랫폼의 클래스 상세 페이지 프로젝트입니다. 수강�
 - **수강 후기**: 실시간 별점 후기 및 포토 리뷰 그리드를 통한 신뢰도 확보.
 
 ### 3. 클래스 전용 채널 (Real-time Chat)
-- **실시간 소통**: Firebase 기반의 수강생 전용 채팅 서비스.
+- **실시간 소통**: Cloudflare Pages Functions + D1 기반 채팅 서비스.
 - **고급 채팅 기능**: 메시지 고정(Pin), 답장(Reply), 메시지 검색, 파일/이미지 전송.
 - **참여자 관리**: 채널 참여자 목록 확인 및 정보 패널 제공.
 
@@ -53,7 +53,7 @@ class_view/
 ## 🛠 기술 스택
 
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Database/Auth**: [Supabase](https://supabase.com/), [Firebase](https://firebase.google.com/)
+- **Backend/Database/Auth**: Cloudflare Pages Functions, Cloudflare D1, Cookie Session Auth
 - **Payments**: [PortOne](https://portone.io/)
 - **Editor**: [Quill.js](https://quilljs.com/)
 - **Icons**: FontAwesome 6.0

@@ -1,14 +1,17 @@
-// POST /api/classes/create — 클래스 생성 (D1 API)
+import { requireSession } from '../_lib/auth.js';
+import { json, options } from '../_lib/http.js';
+
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const cors = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
+  const auth = await requireSession(context);
+  if (!auth.ok) return auth.response;
 
   try {
     const body = await request.json();
     console.log('[API] Class Create Request keys:', Object.keys(body));
 
-    if (!body.title || (!body.instructor_id && !body.creator_id)) {
-      return new Response(JSON.stringify({ success: false, error: '필수 항목(제목, 작성자)을 확인해주세요.' }), { status: 400, headers: cors });
+    if (!body.title) {
+      return json(request, env, { success: false, error: '필수 항목(제목)을 확인해주세요.' }, { status: 400 });
     }
 
     const classId = 'cls_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16);
@@ -49,8 +52,8 @@ export async function onRequestPost(context) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       classId,
-      body.instructor_id || body.creator_id,
-      body.instructor_email || body.creator_email || '',
+      auth.user.id,
+      auth.user.email || '',
       body.title,
       body.category || null,
       keywords,
@@ -87,19 +90,13 @@ export async function onRequestPost(context) {
     ).run();
 
     console.log(`[API] Class Created: ${classId}`);
-    return new Response(JSON.stringify({ success: true, data: { id: classId } }), { status: 201, headers: cors });
+    return json(request, env, { success: true, data: { id: classId } }, { status: 201 });
   } catch (err) {
     console.error('[API] Create class error:', err);
-    return new Response(JSON.stringify({ success: false, error: '클래스 생성 중 오류', detail: err.message }), { status: 500, headers: cors });
+    return json(request, env, { success: false, error: '클래스 생성 중 오류', detail: err.message }, { status: 500 });
   }
 }
 
-export async function onRequestOptions() {
-  return new Response(null, {
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-    }
-  });
+export async function onRequestOptions(context) {
+  return options(context.request, context.env);
 }

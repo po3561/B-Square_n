@@ -1,29 +1,20 @@
-// PUT /api/classes/update
+import { requireClassManager } from '../_lib/auth.js';
+import { json, options } from '../_lib/http.js';
+
 export async function onRequestPut(context) {
     const { request, env } = context;
-
-    // functions/api/classes/update.js — 클래스 상세 정보 수정 API
-    const cors = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
 
     try {
         const body = await request.json();
         const { class_id, updates } = body;
 
         if (!class_id || !updates) {
-            return new Response(JSON.stringify({ success: false, error: 'class_id 및 업데이트 항목이 필요합니다.' }), { status: 400, headers: cors });
+            return json(request, env, { success: false, error: 'class_id 및 업데이트 항목이 필요합니다.' }, { status: 400 });
         }
 
-        // 인증 헤더 및 운영자 모드 플래그 확인 (Dev-Mode 우회)
-        const isDevMode = request.headers.get('x-bsq-dev-mode') === 'true';
-        let userId = null;
+        const auth = await requireClassManager(context, class_id);
+        if (!auth.ok) return auth.response;
 
-        if (!isDevMode) {
-            // 실제라면 쿠키 세션을 파싱해야 하나, 여기서는 B-Square 인증 통과로 가정
-            // 강사 본인인지 체크하는 로직이 향후 필요함.
-            // (dev mode가 항상 true로 들어오도록 설정했으므로 우선 통과)
-        }
-
-        // 업데이트 쿼리 동적 생성
         const updateKeys = [];
         const updateValues = [];
 
@@ -56,28 +47,23 @@ export async function onRequestPut(context) {
         }
 
         if (updateKeys.length === 0) {
-            return new Response(JSON.stringify({ success: false, error: '업데이트할 항목이 제공되지 않았습니다.' }), { status: 400, headers: cors });
+            return json(request, env, { success: false, error: '업데이트할 항목이 제공되지 않았습니다.' }, { status: 400 });
         }
 
+        updateKeys.push('updated_at = datetime(\'now\')');
         const query = `UPDATE classes SET ${updateKeys.join(', ')} WHERE id = ?`;
         updateValues.push(class_id);
 
         await env.DB.prepare(query).bind(...updateValues).run();
 
-        return new Response(JSON.stringify({ success: true, message: '클래스가 성공적으로 수정되었습니다.' }), { status: 200, headers: cors });
+        return json(request, env, { success: true, message: '클래스가 성공적으로 수정되었습니다.' });
 
     } catch (err) {
         console.error('Update class error:', err);
-        return new Response(JSON.stringify({ success: false, error: '클래스 업데이트 중 오류', detail: err.message }), { status: 500, headers: cors });
+        return json(request, env, { success: false, error: '클래스 업데이트 중 오류', detail: err.message }, { status: 500 });
     }
 }
 
-export async function onRequestOptions() {
-    return new Response(null, {
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'PUT, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, X-BSQ-Dev-Mode'
-        }
-    });
+export async function onRequestOptions(context) {
+    return options(context.request, context.env);
 }

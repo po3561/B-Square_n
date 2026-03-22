@@ -1,5 +1,5 @@
 // view_edit.js - 강사 전용 클래스 관리 모듈
-// Firebase RTDB + Supabase 통합 연동
+// D1 API 기반 클래스 관리
 window.BSquareModules = window.BSquareModules || {};
 window.BSquareModules.initEdit = async function (db, classId, classData, supabase, userId) {
     console.log("✏️ Edit Module Initializing... | ClassId:", classId);
@@ -7,9 +7,6 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     const container = document.getElementById('editTabContainer');
     if (!container) return;
 
-    // ========================
-    // 1. Supabase 강사 프로필 로드
-    // ========================
     // ========================
     // 1. D1 강사 프로필 및 통계 로드 (classData 기반)
     // ========================
@@ -591,14 +588,11 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
 
         searchTimeout = setTimeout(async () => {
             try {
-                const { data, error } = await supabase.from('users')
-                    .select('id, name, email, profile_image_url')
-                    .ilike('name', `%${query}%`)
-                    .limit(10);
-
-                if (error) {
-                    console.error("Sub-instructor search error:", error);
+                const result = await window.BSQ.api(`/api/users/search?q=${encodeURIComponent(query)}`);
+                if (!result.success) {
+                    throw new Error(result.error || '검색 실패');
                 }
+                const data = result.data || [];
 
                 if (!data || data.length === 0) {
                     subResults.innerHTML = '<div style="padding:12px; color:var(--text-secondary,#888); text-align:center;">검색 결과가 없습니다</div>';
@@ -615,7 +609,7 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                                     <div style="font-size:0.75rem; color:#888;">${u.email || ''}</div>
                                 </div>
                                 <button type="button" class="btn-add-sub-trigger" 
-                                    data-id="${u.id}" data-name="${u.name}" data-email="${u.email || ''}" data-avatar="${u.profile_image_url || ''}"
+                                    data-id="${u.id}" data-name="${u.name || u.username || '사용자'}" data-email="${u.email || ''}" data-avatar="${u.profile_image_url || ''}"
                                     style="background:var(--comm-accent,#6c5ce7); color:#fff; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-size:0.8rem; font-weight:700;">등록</button>
                             </div>
                         `).join('');
