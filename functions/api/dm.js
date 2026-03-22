@@ -1,5 +1,6 @@
 import { requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
+import { ensureDmMessagesSchema } from './_lib/schema.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -14,6 +15,8 @@ export async function onRequestGet(context) {
   }
 
   try {
+    await ensureDmMessagesSchema(env.DB);
+
     const { results } = await env.DB.prepare(
       "SELECT * FROM dm_messages WHERE room_id = ? AND room_type = 'dm' ORDER BY id ASC LIMIT ?"
     ).bind(room_id, limit).all();
@@ -29,6 +32,8 @@ export async function onRequestPost(context) {
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
   try {
+    await ensureDmMessagesSchema(env.DB);
+
     const body = await request.json();
     const { room_id, text, image_url } = body;
 

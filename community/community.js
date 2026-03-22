@@ -86,10 +86,12 @@ async function registerClassChats(userId) {
             await window.BSQ.api('/api/user-chats', {
                 method: 'POST',
                 body: JSON.stringify({
-                    user_id: userId,
-                    target_user_id: enroll.class_id, // class_id를 room_id로 사용
-                    target_name: enroll.title || '클래스',
-                    target_avatar: enroll.image_url || ''
+                    type: 'class',
+                    room_id: enroll.class_id,
+                    class_name: enroll.title || '클래스',
+                    class_image: enroll.image_url || '',
+                    class_category: enroll.category || '',
+                    is_instructor: String(enroll.instructor_id || '') === String(userId)
                 })
             }).catch(() => {});
         }
@@ -125,7 +127,7 @@ function setupHamburgerMenu(userId, SyncBridge, ChatUI, ChatList) {
     });
     document.addEventListener('click', () => { menu.style.display = 'none'; });
 
-    document.getElementById('hmClassList')?.addEventListener('click', () => { location.href = '../class_list/class_list.html'; });
+    document.getElementById('hmClassList')?.addEventListener('click', () => { location.href = '../class/class_list.html'; });
     document.getElementById('hmBillingInfo')?.addEventListener('click', () => { location.href = '../mi_pesg/mypage.html'; });
     document.getElementById('hmSettings')?.addEventListener('click', () => { location.href = '../mi_pesg/mypage.html'; });
     document.getElementById('hmContacts')?.addEventListener('click', () => {

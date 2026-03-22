@@ -1,6 +1,8 @@
 // functions/api/recommendations.js — 추천 클래스 폴더 조회 API (V2)
 // GET /api/recommendations
 
+import { ensureRecommendationsSchema } from './_lib/schema.js';
+
 const RESPONSE_HEADERS = {
     'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
 };
@@ -9,6 +11,8 @@ export async function onRequest(context) {
     const db = context.env.DB;
 
     try {
+        await ensureRecommendationsSchema(db);
+
         const { results: folders } = await db
             .prepare('SELECT folder_id, title, description, type, category, class_ids, sort_order FROM recommendations ORDER BY type ASC, sort_order ASC')
             .all();

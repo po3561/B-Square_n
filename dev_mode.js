@@ -179,7 +179,7 @@
                 </div>
                 <div class="dev-body">
                     <button class="dev-btn" onclick="window.__BSQ_DEV_API__.forceUnlock()">전체 권한 락해제 재시도</button>
-                    <button class="dev-btn" onclick="location.href='/class_create/create_class.html'">클래스 강제 신규 생성</button>
+                    <button class="dev-btn" onclick="location.href='/create_class/create_class.html'">클래스 강제 신규 생성</button>
                     <button class="dev-btn" onclick="location.reload()">페이지 캐시 새로고침</button>
                 </div>
             </div>

@@ -1,5 +1,6 @@
 import { requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
+import { ensureContactsSchema } from './_lib/schema.js';
 
 // GET /api/contacts?user_id=xxx — 사용자의 연락처 목록
 export async function onRequestGet(context) {
@@ -14,6 +15,8 @@ export async function onRequestGet(context) {
     }
 
     try {
+        await ensureContactsSchema(env.DB);
+
         const { results } = await env.DB.prepare(
             'SELECT c.*, u.name as real_name, u.profile_image_url FROM contacts c LEFT JOIN users u ON c.target_user_id = u.id WHERE c.user_id = ? AND c.status = ? ORDER BY c.added_at DESC'
         ).bind(user_id, 'active').all();
@@ -30,6 +33,8 @@ export async function onRequestPost(context) {
     const auth = await requireSession(context);
     if (!auth.ok) return auth.response;
     try {
+        await ensureContactsSchema(env.DB);
+
         const body = await request.json();
         const { target_user_id, name, avatar, source_class_id, memo } = body;
         const user_id = auth.user.id;
@@ -67,6 +72,8 @@ export async function onRequestPatch(context) {
     const auth = await requireSession(context);
     if (!auth.ok) return auth.response;
     try {
+        await ensureContactsSchema(env.DB);
+
         const body = await request.json();
         const { target_user_id, status, memo, name } = body;
         const user_id = auth.user.id;
@@ -112,6 +119,8 @@ export async function onRequestDelete(context) {
     }
 
     try {
+        await ensureContactsSchema(env.DB);
+
         await env.DB.prepare('DELETE FROM contacts WHERE user_id = ? AND target_user_id = ?').bind(user_id, target_user_id).run();
         return json(request, env, { success: true });
     } catch (err) {

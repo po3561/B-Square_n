@@ -1,5 +1,6 @@
 import { requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
+import { ensureChatMessagesSchema } from './_lib/schema.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -14,6 +15,8 @@ export async function onRequestGet(context) {
   if (!class_id) return json(request, env, { success: false, error: 'class_id 필요' }, { status: 400 });
 
   try {
+    await ensureChatMessagesSchema(env.DB);
+
     let results;
     if (pinned_only) {
       // 고정된 메시지들만 전송
@@ -44,6 +47,8 @@ export async function onRequestPost(context) {
   if (!auth.ok) return auth.response;
 
   try {
+    await ensureChatMessagesSchema(env.DB);
+
     const body = await request.json();
     const { class_id, user_name, user_avatar, message, type } = body;
 
@@ -69,6 +74,8 @@ export async function onRequestPatch(context) {
   if (!auth.ok) return auth.response;
 
   try {
+    await ensureChatMessagesSchema(env.DB);
+
     const body = await request.json();
     const { id, is_pinned } = body;
 

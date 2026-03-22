@@ -1,6 +1,9 @@
+import { ensureGatheringsSchema } from './_lib/schema.js';
+
 export async function onRequestGet(context) {
   const { request, env } = context;
   await ensureTables(env.DB);
+  await ensureGatheringsSchema(env.DB);
   const cors = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
   const url = new URL(request.url);
   const class_id = url.searchParams.get('class_id');
@@ -15,7 +18,7 @@ export async function onRequestGet(context) {
         const { results } = await env.DB.prepare(`
           SELECT p.*, u.name, u.profile_image_url
           FROM gathering_participants p
-          LEFT JOIN users u ON p.user_id = u.user_id
+          LEFT JOIN users u ON p.user_id = u.id
           WHERE p.gathering_id = ?
         `).bind(gathering_id).all();
         return new Response(JSON.stringify({ success: true, data: results }), { headers: cors });
@@ -59,14 +62,32 @@ export async function onRequestGet(context) {
 export async function onRequestPost(context) {
   const { request, env } = context;
   await ensureTables(env.DB);
+  await ensureGatheringsSchema(env.DB);
   const cors = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
 
   try {
     const body = await request.json();
-    const { action, class_id, instructor_id, title, description, location, gathering_at, deadline_at, capacity_max, gathering_id, user_id } = body;
+    const {
+      action,
+      class_id,
+      instructor_id,
+      title,
+      description,
+      location,
+      gathering_at,
+      deadline_at,
+      capacity_max,
+      max_capacity,
+      gathering_id,
+      user_id
+    } = body;
 
     if (action === 'create') {
-      if (!class_id || !instructor_id || !title || !gathering_at || !deadline_at || !capacity_max) {
+      const effectiveInstructorId = instructor_id || body.created_by || body.user_id;
+      const effectiveCapacityMax = capacity_max || max_capacity;
+      const effectiveDeadlineAt = deadline_at || gathering_at;
+
+      if (!class_id || !effectiveInstructorId || !title || !gathering_at || !effectiveDeadlineAt || !effectiveCapacityMax) {
         return new Response(JSON.stringify({ success: false, error: '필수 항목 누락' }), { status: 400, headers: cors });
       }
 
@@ -80,7 +101,7 @@ export async function onRequestPost(context) {
       await env.DB.prepare(`
         INSERT INTO class_gatherings (id, class_id, instructor_id, title, description, location, gathering_at, deadline_at, capacity_max, status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open')
-      `).bind(id, class_id, instructor_id, title, description || '', location || '', gathering_at, deadline_at, capacity_max).run();
+      `).bind(id, class_id, effectiveInstructorId, title, description || '', location || '', gathering_at, effectiveDeadlineAt, effectiveCapacityMax).run();
 
       return new Response(JSON.stringify({ success: true, data: { id } }), { status: 201, headers: cors });
       

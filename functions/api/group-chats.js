@@ -1,5 +1,6 @@
 import { requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
+import { ensureGroupChatsSchema, ensureUserChatsSchema } from './_lib/schema.js';
 
 // GET /api/group-chats?group_id=xxx — 특정 그룹 정보 조회
 // GET /api/group-chats?user_id=xxx — 사용자가 속한 그룹 목록
@@ -12,6 +13,8 @@ export async function onRequestGet(context) {
     const user_id = url.searchParams.get('user_id') || auth.user.id;
 
     try {
+        await ensureGroupChatsSchema(env.DB);
+
         if (group_id) {
             const data = await env.DB.prepare('SELECT * FROM group_chats WHERE group_id = ?').bind(group_id).first();
             if (!data) return json(request, env, { success: false, error: '그룹을 찾을 수 없습니다.' }, { status: 404 });
@@ -45,6 +48,9 @@ export async function onRequestPost(context) {
     const auth = await requireSession(context);
     if (!auth.ok) return auth.response;
     try {
+        await ensureGroupChatsSchema(env.DB);
+        await ensureUserChatsSchema(env.DB);
+
         const body = await request.json();
         const { name, members } = body;
         const created_by = auth.user.id;
@@ -80,6 +86,9 @@ export async function onRequestPatch(context) {
     const auth = await requireSession(context);
     if (!auth.ok) return auth.response;
     try {
+        await ensureGroupChatsSchema(env.DB);
+        await ensureUserChatsSchema(env.DB);
+
         const body = await request.json();
         const { group_id, name, add_member, remove_member } = body;
         if (!group_id) return json(request, env, { success: false, error: 'group_id 필요' }, { status: 400 });

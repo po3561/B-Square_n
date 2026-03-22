@@ -282,6 +282,9 @@ CREATE TABLE IF NOT EXISTS site_settings (
 CREATE TABLE IF NOT EXISTS recommendations (
   folder_id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
+  description TEXT,
+  type TEXT DEFAULT 'regular',
+  category TEXT DEFAULT 'all',
   class_ids TEXT,
   sort_order INTEGER DEFAULT 0
 );

@@ -18,9 +18,15 @@
     const _isLocalHost = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
     const _isWrangler = _currentPort === WRANGLER_PORT;
     
-    // 로컬 개발 환경(포트 5500 등)일 경우 로컬 Wrangler(8788) 통신. 아니면 프로덕션
-    // 현재 접속한 포트가 이미 8788이라면 상대 경로('')를 사용합니다.
-    const API_BASE = _isWrangler ? '' : (_isLocalHost ? `http://${window.location.hostname}:8788` : PRODUCTION_API_URL);
+    const _hasHttpOrigin = /^https?:$/i.test(window.location.protocol);
+    const _runtimeOrigin = _hasHttpOrigin ? window.location.origin : '';
+
+    // 로컬 개발 환경(포트 5500 등)일 경우 로컬 Wrangler(8788) 통신.
+    // 배포 환경에서는 현재 접속 중인 origin을 우선 사용해 세션/쿠키/CORS 문제를 피합니다.
+    // file:// 같은 비HTTP 환경에서만 프로덕션 도메인으로 fallback 합니다.
+    const API_BASE = _isWrangler
+        ? ''
+        : (_isLocalHost ? `http://${window.location.hostname}:8788` : (_runtimeOrigin || PRODUCTION_API_URL));
 
     // API 연결 상태 배지는 제거되었습니다. (사용자 요청)
 

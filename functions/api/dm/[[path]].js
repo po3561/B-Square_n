@@ -1,5 +1,6 @@
 import { requireSession } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
+import { ensureDmMessagesSchema } from '../_lib/schema.js';
 
 function getPathParts(params) {
   if (Array.isArray(params.path)) return params.path;
@@ -120,6 +121,8 @@ export async function onRequest(context) {
   const roomType = url.searchParams.get('room_type') || 'dm';
 
   try {
+    await ensureDmMessagesSchema(env.DB);
+
     if (request.method === 'GET' && subResource === 'stream') {
       const since = url.searchParams.get('since') || '0';
       return streamMessages(context, roomId, roomType, since);

@@ -1,5 +1,6 @@
 import { requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
+import { ensureUserChatsSchema } from './_lib/schema.js';
 
 export async function onRequestGet(context) {
     const { request, env } = context;
@@ -14,6 +15,8 @@ export async function onRequestGet(context) {
     }
 
     try {
+        await ensureUserChatsSchema(env.DB);
+
         let query = 'SELECT * FROM user_chats WHERE user_id = ?';
         const binds = [user_id];
         
@@ -37,9 +40,58 @@ export async function onRequestPost(context) {
     const auth = await requireSession(context);
     if (!auth.ok) return auth.response;
     try {
+        await ensureUserChatsSchema(env.DB);
+
         const body = await request.json();
-        const { target_user_id, target_name, target_avatar } = body;
+        const {
+            type,
+            room_id,
+            target_user_id,
+            target_name,
+            target_avatar,
+            class_name,
+            class_image,
+            class_category,
+            group_name,
+            is_instructor
+        } = body;
         const user_id = auth.user.id;
+
+        if (type === 'class') {
+            const classRoomId = room_id || target_user_id;
+            if (!classRoomId) {
+                return json(request, env, { success: false, error: 'room_id 필요' }, { status: 400 });
+            }
+
+            await env.DB.prepare(`
+                INSERT OR IGNORE INTO user_chats (
+                    user_id, room_id, type, class_name, class_image, class_category, is_instructor
+                ) VALUES (?, ?, 'class', ?, ?, ?, ?)
+            `).bind(
+                user_id,
+                classRoomId,
+                class_name || target_name || '클래스',
+                class_image || target_avatar || '',
+                class_category || '',
+                is_instructor ? 1 : 0
+            ).run();
+
+            return json(request, env, { success: true, data: { room_id: classRoomId } }, { status: 201 });
+        }
+
+        if (type === 'group') {
+            if (!room_id) {
+                return json(request, env, { success: false, error: 'room_id 필요' }, { status: 400 });
+            }
+
+            await env.DB.prepare(`
+                INSERT OR IGNORE INTO user_chats (
+                    user_id, room_id, type, group_name
+                ) VALUES (?, ?, 'group', ?)
+            `).bind(user_id, room_id, group_name || target_name || '그룹').run();
+
+            return json(request, env, { success: true, data: { room_id } }, { status: 201 });
+        }
 
         if (!target_user_id) {
             return json(request, env, { success: false, error: 'target_user_id 필요' }, { status: 400 });
@@ -47,15 +99,15 @@ export async function onRequestPost(context) {
 
         // room_id 생성 (두 사용자 ID를 정렬하여 고유 ID)
         const ids = [user_id, target_user_id].sort();
-        const room_id = 'dm_' + ids.join('_');
+        const dmRoomId = 'dm_' + ids.join('_');
 
         // 이미 존재하는지 확인
         const existing = await env.DB.prepare(
             'SELECT * FROM user_chats WHERE user_id = ? AND room_id = ?'
-        ).bind(user_id, room_id).first();
+        ).bind(user_id, dmRoomId).first();
 
         if (existing) {
-            return json(request, env, { success: true, data: { room_id }, message: '이미 존재하는 채팅방' });
+            return json(request, env, { success: true, data: { room_id: dmRoomId }, message: '이미 존재하는 채팅방' });
         }
 
         // 양쪽 사용자에게 채팅방 추가
@@ -65,13 +117,13 @@ export async function onRequestPost(context) {
 
         await env.DB.prepare(
             'INSERT OR IGNORE INTO user_chats (user_id, room_id, type, class_name, class_image) VALUES (?, ?, ?, ?, ?)'
-        ).bind(user_id, room_id, 'dm', target_name || targetUser?.name || '사용자', target_avatar || targetUser?.profile_image_url || '').run();
+        ).bind(user_id, dmRoomId, 'dm', target_name || targetUser?.name || '사용자', target_avatar || targetUser?.profile_image_url || '').run();
 
         await env.DB.prepare(
             'INSERT OR IGNORE INTO user_chats (user_id, room_id, type, class_name, class_image) VALUES (?, ?, ?, ?, ?)'
-        ).bind(target_user_id, room_id, 'dm', myUser?.name || '사용자', myUser?.profile_image_url || '').run();
+        ).bind(target_user_id, dmRoomId, 'dm', myUser?.name || '사용자', myUser?.profile_image_url || '').run();
 
-        return json(request, env, { success: true, data: { room_id } }, { status: 201 });
+        return json(request, env, { success: true, data: { room_id: dmRoomId } }, { status: 201 });
     } catch (err) {
         return json(request, env, { success: false, error: 'DM 방 생성 오류', detail: err.message }, { status: 500 });
     }
@@ -94,6 +146,8 @@ export async function onRequestDelete(context) {
     }
 
     try {
+        await ensureUserChatsSchema(env.DB);
+
         await env.DB.prepare('DELETE FROM user_chats WHERE user_id = ? AND room_id = ?').bind(user_id, room_id).run();
         return json(request, env, { success: true });
     } catch (err) {

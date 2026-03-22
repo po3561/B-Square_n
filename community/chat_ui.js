@@ -81,9 +81,12 @@ window.CommunityModules.ChatUI = (function () {
                     const res = await window.BSQ.api('/api/gatherings', {
                         method: 'POST',
                         body: JSON.stringify({
+                            action: 'create',
                             class_id: currentRoomId,
+                            instructor_id: bridge()?.getUserId?.() || null,
                             title, gathering_at: at, location, description: desc,
-                            min_capacity: min, max_capacity: max
+                            min_capacity: min, max_capacity: max,
+                            deadline_at: at
                         })
                     });
 
@@ -772,7 +775,14 @@ window.CommunityModules.ChatUI = (function () {
 
     async function joinGathering(roomId, gatherId) {
         try {
-            const res = await window.BSQ.api(`/api/gatherings/${gatherId}/join`, { method: 'POST' });
+            const res = await window.BSQ.api('/api/gatherings', {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'join',
+                    gathering_id: gatherId,
+                    user_id: bridge()?.getUserId?.() || null
+                })
+            });
             if (res?.success) {
                 alert("모임 참여가 완료되었습니다!");
                 await loadMessages();
@@ -788,7 +798,13 @@ window.CommunityModules.ChatUI = (function () {
     async function closeGathering(roomId, gatherId) {
         if (!confirm("모집을 마감하시겠습니까?")) return;
         try {
-            const res = await window.BSQ.api(`/api/gatherings/${gatherId}/close`, { method: 'POST' });
+            const res = await window.BSQ.api('/api/gatherings', {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'close',
+                    gathering_id: gatherId
+                })
+            });
             if (res?.success) {
                 alert("모집이 마감되었습니다.");
                 await loadMessages();

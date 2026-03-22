@@ -2,6 +2,8 @@
 // GET /api/admin/recommendations
 // POST /api/admin/recommendations (대량 저장)
 
+import { ensureRecommendationsSchema } from '../_lib/schema.js';
+
 const JSON_HEADERS = {
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json',
@@ -136,6 +138,8 @@ export async function onRequest(context) {
     const method = request.method;
 
     try {
+        await ensureRecommendationsSchema(db);
+
         if (method === 'GET') {
             const { results: folders } = await db
                 .prepare('SELECT folder_id, title, description, type, category, class_ids, sort_order FROM recommendations ORDER BY type ASC, sort_order ASC')
