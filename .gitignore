@@ -2,3 +2,4 @@ node_modules/
 .wrangler/
 .firebase
 *.sql
+credentials.json
