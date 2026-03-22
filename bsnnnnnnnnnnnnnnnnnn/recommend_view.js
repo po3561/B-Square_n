@@ -27,7 +27,7 @@ async function loadFolderData(folderId) {
     }
 
     try {
-        const res = await window.BSQ.api('/api/recommendations');
+        const res = await window.BSQ.api(`/api/recommendations?t=${Date.now()}`);
         if (!res.success || !res.data) {
             titleEl.textContent = "데이터를 불러오는 데 실패했습니다.";
             return;
