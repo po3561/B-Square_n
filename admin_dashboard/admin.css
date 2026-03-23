@@ -550,6 +550,140 @@ body.admin-body {
     box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2);
 }
 
+.homepage-upload-guide {
+    margin-top: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--mac-border-light);
+    border-radius: 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
+}
+
+.homepage-upload-guide-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.homepage-upload-guide-head h4 {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+    color: var(--mac-text-main);
+}
+
+.homepage-upload-guide-head p {
+    margin: 0;
+    color: var(--mac-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.homepage-upload-guide-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    background: #eef4ff;
+    color: var(--mac-primary);
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.homepage-upload-guide-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.homepage-upload-guide-card {
+    padding: 0.95rem 1rem;
+    border-radius: 14px;
+    border: 1px solid var(--mac-border-light);
+    background: #fff;
+}
+
+.homepage-upload-guide-card span {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--mac-primary);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.35rem;
+}
+
+.homepage-upload-guide-card strong {
+    display: block;
+    font-size: 1.02rem;
+    color: var(--mac-text-main);
+    margin-bottom: 0.35rem;
+}
+
+.homepage-upload-guide-card p {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: var(--mac-text-muted);
+}
+
+.footer-standard-note {
+    margin-bottom: 1rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(79, 70, 229, 0.14);
+    border-radius: 14px;
+    background: linear-gradient(180deg, #fafaff 0%, #ffffff 100%);
+}
+
+.footer-standard-note strong {
+    display: block;
+    margin-bottom: 0.65rem;
+    color: var(--mac-text-main);
+    font-size: 0.95rem;
+}
+
+.footer-standard-note ul {
+    margin: 0;
+    padding-left: 1.15rem;
+    color: var(--mac-text-muted);
+    font-size: 0.88rem;
+    line-height: 1.7;
+}
+
+@media (max-width: 1024px) {
+    .homepage-upload-guide-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .homepage-upload-guide {
+        padding: 1rem;
+    }
+
+    .homepage-upload-guide-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .homepage-upload-guide-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-standard-note {
+        padding: 0.9rem;
+    }
+
+    .footer-standard-note ul {
+        padding-left: 1rem;
+        font-size: 0.84rem;
+    }
+}
+
 /* Global Error Banner */
 #globalErrorBanner {
     margin: 2rem 2rem 0;

@@ -539,6 +539,11 @@
 
   window.addBannerItem = window.addMainBannerItem;
 
+  MEDIA_CONFIG.logo.recommended = '권장 480 × 120px · PNG/WebP · 원본 유지';
+  MEDIA_CONFIG.favicon.recommended = '권장 512 × 512px · PNG/ICO/WebP · 정사각형';
+  BANNER_CONFIG.main.recommended = '권장 1600 × 500px · 16:5 비율 · 중앙 안전영역 확보';
+  BANNER_CONFIG.bottom.recommended = '권장 3200 × 600px · 16:3 비율 · 가로형 슬라이드';
+
   window.getHomepageBannerState = function () {
     return {
       main: serializeBannerSection('main'),
