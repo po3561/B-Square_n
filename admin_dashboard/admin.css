@@ -653,9 +653,162 @@ body.admin-body {
     line-height: 1.7;
 }
 
+#tabHomepage .admin-grid-layout,
+#tabFooter .admin-grid-layout {
+    grid-template-columns: minmax(250px, 320px) minmax(0, 1fr) !important;
+    gap: 1.5rem !important;
+    align-items: start;
+    padding-top: 1.25rem !important;
+}
+
+#tabHomepage .settings-desc,
+#tabFooter .settings-desc {
+    padding: 1.25rem;
+    border-radius: 18px;
+    border: 1px solid var(--mac-border-light);
+    background: linear-gradient(180deg, #fafbff 0%, #ffffff 100%);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+}
+
+#tabHomepage .settings-desc h4,
+#tabFooter .settings-desc h4 {
+    margin: 0 0 0.75rem;
+    font-size: 1.05rem;
+    color: var(--mac-text-main);
+}
+
+#tabHomepage .settings-desc p,
+#tabFooter .settings-desc p {
+    margin: 0;
+    color: var(--mac-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+#tabHomepage .settings-fields,
+#tabFooter .settings-fields {
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%) !important;
+    padding: 1.25rem !important;
+    border-radius: 20px !important;
+    border: 1px solid var(--mac-border-light) !important;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+}
+
+#tabFooter .settings-fields {
+    grid-column: auto !important;
+}
+
+#tabHomepage .settings-fields .field-group label,
+#tabFooter .settings-fields .field-group label {
+    color: #475569;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+}
+
+#tabHomepage .settings-fields .admin-form-input,
+#tabFooter .settings-fields .admin-form-input {
+    border-radius: 12px;
+}
+
+#tabHomepage .homepage-upload-guide {
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
+}
+
+#tabHomepage .homepage-upload-guide-card {
+    min-height: 118px;
+}
+
+#tabHomepage .homepage-upload-guide-card strong {
+    font-size: 1rem;
+}
+
+#tabHomepage .homepage-upload-guide-card p {
+    line-height: 1.45;
+}
+
+#tabHomepage #btnAddBanner,
+#tabHomepage #btnAddBottomBanner {
+    width: auto !important;
+    min-width: 180px;
+    padding: 0.85rem 1.1rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 22px rgba(79, 70, 229, 0.22);
+}
+
+#tabHomepage .banner-item {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    padding: 1rem !important;
+    border-radius: 18px !important;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%) !important;
+}
+
+#tabHomepage .banner-item > div:last-child {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.75rem !important;
+}
+
+#tabHomepage .banner-preview {
+    border-radius: 16px !important;
+    border-color: #e5e7eb !important;
+}
+
+#tabHomepage .banner-editor {
+    gap: 0.9rem !important;
+}
+
+#tabHomepage .banner-item .btn-remove-banner {
+    align-self: flex-start;
+}
+
+#tabHomepage .banner-empty-state {
+    min-height: 92px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#tabFooter .footer-standard-note {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+}
+
+#tabFooter .footer-standard-note strong {
+    margin: 0;
+}
+
+#tabFooter .footer-standard-note ul {
+    padding-left: 1rem;
+}
+
 @media (max-width: 1024px) {
     .homepage-upload-guide-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #tabHomepage .admin-grid-layout,
+    #tabFooter .admin-grid-layout {
+        grid-template-columns: 1fr !important;
+    }
+
+    #tabHomepage .settings-desc,
+    #tabFooter .settings-desc {
+        position: static;
+    }
+
+    #tabFooter .footer-standard-note {
+        grid-template-columns: 1fr;
+        align-items: start;
     }
 }
 
@@ -666,6 +819,12 @@ body.admin-body {
 
     .homepage-upload-guide-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #tabHomepage #btnAddBanner,
+    #tabHomepage #btnAddBottomBanner {
+        min-width: 0;
+        width: 100% !important;
     }
 }
 
@@ -681,6 +840,11 @@ body.admin-body {
     .footer-standard-note ul {
         padding-left: 1rem;
         font-size: 0.84rem;
+    }
+
+    #tabHomepage .banner-item > div:last-child {
+        flex-direction: column !important;
+        align-items: stretch !important;
     }
 }
 
