@@ -34,6 +34,23 @@
     syncSelectionUI();
   }
 
+  function currentRoleRank() {
+    const role = window.BSQ?.userProfile?.role || window.BSQ?.session?.user?.role || 'user';
+    const value = String(role || '').toLowerCase();
+    if (['admin', 'super_admin'].includes(value)) return 3;
+    if (value === 'operator') return 2;
+    if (value === 'instructor') return 1;
+    return 0;
+  }
+
+  function roleLabel(role) {
+    const value = String(role || '').toLowerCase();
+    if (value === 'admin') return '총괄운영관리자';
+    if (value === 'operator') return '운영관리자';
+    if (value === 'instructor') return '강사';
+    return '일반수강생';
+  }
+
   function syncSelectionUI() {
     const body = getTableBody();
     if (!body) return;
@@ -61,31 +78,14 @@
     });
   }
 
-  function roleLabel(role) {
-    const value = String(role || '').toLowerCase();
-    if (value === 'admin') return '총괄 운영자';
-    if (value === 'operator') return '운영자';
-    if (value === 'instructor') return '강사';
-    return '일반수강생';
-  }
-
-  function currentRoleRank() {
-    const role = window.BSQ?.userProfile?.role || window.BSQ?.session?.user?.role || 'user';
-    const value = String(role).toLowerCase();
-    if (['admin', 'super_admin'].includes(value)) return 3;
-    if (value === 'operator') return 2;
-    if (value === 'instructor') return 1;
-    return 0;
-  }
-
   async function assignSelected(role) {
     const ids = getSelectedIds();
     if (!ids.length) {
-      alert('먼저 목록에서 계정을 선택해 주세요.');
+      alert('먼저 목록에서 회원을 선택해 주세요.');
       return;
     }
 
-    if (!confirm(`선택한 ${ids.length}명의 계정을 "${roleLabel(role)}"로 변경할까요?`)) return;
+    if (!confirm(`선택한 ${ids.length}명의 권한을 "${roleLabel(role)}"로 변경할까요?`)) return;
 
     const res = await window.BSQ.api('/api/admin/operators', {
       method: 'PUT',

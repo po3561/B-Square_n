@@ -740,4 +740,172 @@
   window.loadOperators = loadOperators;
   window.loadMenuSettings = loadMenuSettings;
   window.loadFinancial = loadFinancial;
+
+  // Clean overrides for the current admin UX
+  function loadAllUsers() {
+    return window.loadAdminUsers ? window.loadAdminUsers() : Promise.resolve();
+  }
+
+  function normalizeOperatorRole(role) {
+    const value = String(role || '').trim().toLowerCase();
+    if (['super-admin', 'superadmin', 'root', 'owner'].includes(value)) return 'super_admin';
+    if (['manager', 'operator_admin', 'ops'].includes(value)) return 'operator';
+    if (['teacher', 'lecturer'].includes(value)) return 'instructor';
+    if (value === 'admin' || value === 'super_admin') return 'admin';
+    return 'user';
+  }
+
+  function operatorRoleMeta(role) {
+    const value = normalizeOperatorRole(role);
+    if (value === 'admin') return { label: '총괄운영관리자', badge: 'danger' };
+    if (value === 'operator') return { label: '운영관리자', badge: 'warning' };
+    if (value === 'instructor') return { label: '강사', badge: 'info' };
+    return { label: '일반수강생', badge: 'muted' };
+  }
+
+  function operatorClassSummary(mainClasses = [], subClasses = []) {
+    const parts = [];
+    if (mainClasses.length) {
+      parts.push(`주강사 ${mainClasses.slice(0, 2).map((item) => escapeHtml(item.title || item.class_title || '-')).join(', ')}`);
+    }
+    if (subClasses.length) {
+      parts.push(`서브강사 ${subClasses.slice(0, 2).map((item) => escapeHtml(item.title || item.class_title || '-')).join(', ')}`);
+    }
+    const remaining = Math.max(0, mainClasses.length + subClasses.length - 4);
+    if (remaining > 0) parts.push(`외 ${remaining}개`);
+    return parts.length ? parts.join('<br>') : '-';
+  }
+
+  function ensureOperatorsToolbarClean() {
+    const section = document.getElementById('tabOperators');
+    if (!section) return;
+
+    const searchInput = section.querySelector('input[type="text"]');
+    if (searchInput && !searchInput.dataset.cleanPlaceholder) {
+      searchInput.placeholder = '닉네임, 이름, 이메일, 연락처 검색';
+      searchInput.dataset.cleanPlaceholder = '1';
+    }
+  }
+
+  function renderOperatorsTableClean(items) {
+    const body = document.getElementById('operatorsTableBody');
+    if (!body) return;
+
+    if (!items.length) {
+      body.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#aaa;">등록된 운영자 / 강사 / 회원이 없습니다.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = items.map((user) => {
+      const roleMeta = operatorRoleMeta(user.role);
+      const mainClasses = Array.isArray(user.main_classes) ? user.main_classes : [];
+      const subClasses = Array.isArray(user.sub_classes) ? user.sub_classes : [];
+      const avatar = user.profile_image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.username || 'U')}&background=random`;
+      const normalizedRole = normalizeOperatorRole(user.role);
+      const classSummary = operatorClassSummary(mainClasses, subClasses);
+
+      return `
+        <tr data-user-id="${escapeHtml(user.id)}">
+          <td><input type="checkbox" data-operator-row-check="${escapeHtml(user.id)}"></td>
+          <td>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <img src="${escapeHtml(avatar)}" alt="" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+              <div>
+                <div style="font-weight:700;">${escapeHtml(user.username || '-')}</div>
+                <div style="font-size:0.85rem; color:#6b7280;">${escapeHtml(user.name || '-')}</div>
+              </div>
+            </div>
+          </td>
+          <td>${escapeHtml(user.phone || '-')}</td>
+          <td>${escapeHtml(user.email || '-')}</td>
+          <td>${escapeHtml(formatBirthdate(user))}</td>
+          <td>${escapeHtml(formatDate(user.signup_date || user.created_at))}</td>
+          <td style="font-size:0.82rem; line-height:1.5;">${classSummary}</td>
+          <td><span class="badge ${roleMeta.badge}">${escapeHtml(roleMeta.label)}</span></td>
+          <td>
+            <div style="display:flex; flex-direction:column; gap:0.4rem; min-width:180px;">
+              <select class="admin-form-input" data-role-select="${escapeHtml(user.id)}" style="margin:0; padding:0.35rem 0.5rem;">
+                <option value="user" ${normalizedRole === 'user' ? 'selected' : ''}>일반수강생</option>
+                <option value="instructor" ${normalizedRole === 'instructor' ? 'selected' : ''}>강사</option>
+                <option value="operator" ${normalizedRole === 'operator' ? 'selected' : ''}>운영관리자</option>
+                <option value="admin" ${normalizedRole === 'admin' ? 'selected' : ''}>총괄운영관리자</option>
+              </select>
+              <div style="display:flex; flex-wrap:wrap; gap:0.35rem;">
+                <button class="btn-small outline" onclick="updateOperatorRoleBySelect('${escapeJsString(user.id)}')">적용</button>
+                <button class="btn-small outline" onclick="updateOperatorRole('${escapeJsString(user.id)}', 'instructor')">강사</button>
+                <button class="btn-small outline" onclick="updateOperatorRole('${escapeJsString(user.id)}', 'operator')">운영자</button>
+                <button class="btn-small danger" onclick="removeOperator('${escapeJsString(user.id)}')">삭제</button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  loadOperators = async function loadOperatorsClean(options = {}) {
+    try {
+      ensureOperatorsToolbarClean();
+
+      const searchInput = document.querySelector('#tabOperators input[type="text"]');
+      const search = String(options.search ?? searchInput?.value ?? '').trim();
+      const role = String(options.role || '').trim();
+
+      const params = new URLSearchParams();
+      if (search) params.set('q', search);
+      if (role && role !== 'all') params.set('role', role);
+
+      const res = await BSQ.api(`/api/admin/operators${params.toString() ? `?${params.toString()}` : ''}`);
+      const items = Array.isArray(res.data) ? res.data : [];
+      operatorRows = items;
+      operatorSummary = res.summary || operatorSummary;
+
+      renderOperatorsTableClean(items);
+
+      const countAllOps = document.getElementById('countAllOps');
+      const countAdmins = document.getElementById('countAdmins');
+      const countInsts = document.getElementById('countInsts');
+      if (countAllOps) countAllOps.textContent = `전체 ${operatorSummary.total ?? items.length}명`;
+      if (countAdmins) countAdmins.textContent = `총괄운영자 ${operatorSummary.superAdmin ?? 0}명`;
+      if (countInsts) countInsts.textContent = `강사 ${operatorSummary.instructor ?? 0}명`;
+    } catch (err) {
+      console.error('[Operators] Error:', err);
+      const body = document.getElementById('operatorsTableBody');
+      if (body) {
+        body.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#ef4444;">운영자 목록을 불러오지 못했습니다. ${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+  };
+
+  updateOperatorRole = async function updateOperatorRoleClean(userId, newRole) {
+    if (!userId) return;
+    const label = operatorRoleMeta(newRole).label;
+    if (!confirm(`해당 사용자의 권한을 "${label}"로 변경할까요?`)) return;
+
+    try {
+      const res = await BSQ.api('/api/admin/operators', {
+        method: 'PUT',
+        body: { user_id: userId, role: newRole },
+      });
+
+      if (!res?.success) throw new Error(res?.error || '권한 변경 실패');
+      await loadOperators();
+      alert('권한이 변경되었습니다.');
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    }
+  };
+
+  window.loadAllUsers = loadAllUsers;
+  window.loadOperators = loadOperators;
+  window.updateOperatorRole = updateOperatorRole;
+  window.updateOperatorRoleBySelect = async function (userId) {
+    const select = document.querySelector(`[data-role-select="${CSS.escape(userId)}"]`);
+    if (!select) return;
+    await updateOperatorRole(userId, select.value);
+  };
+  window.removeOperator = async function (userId) {
+    await updateOperatorRole(userId, 'user');
+  };
 })();
