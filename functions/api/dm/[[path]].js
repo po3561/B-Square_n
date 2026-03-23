@@ -1,6 +1,6 @@
 import { requireSession } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
-import { ensureDmMessagesSchema } from '../_lib/schema.js';
+import { ensureDmMessagesSchema, ensureUserChatsSchema } from '../_lib/schema.js';
 
 function getPathParts(params) {
   if (Array.isArray(params.path)) return params.path;
@@ -122,6 +122,7 @@ export async function onRequest(context) {
 
   try {
     await ensureDmMessagesSchema(env.DB);
+    await ensureUserChatsSchema(env.DB);
 
     if (request.method === 'GET' && subResource === 'stream') {
       const since = url.searchParams.get('since') || '0';
@@ -191,6 +192,8 @@ export async function onRequest(context) {
     if (request.method === 'POST') {
       const body = await request.json();
       const content = body.content || body.message || body.text || '';
+      const resolvedRoomType = body.room_type || roomType;
+      const resolvedClassId = resolvedRoomType === 'class' ? roomId : (body.class_id || null);
 
       if (!content && !body.file_data && !body.image_url && body.type !== 'gathering_card') {
         return json(request, env, { success: false, error: 'message가 필요합니다.' }, { status: 400 });
@@ -206,8 +209,8 @@ export async function onRequest(context) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       `).bind(
         roomId,
-        body.room_type || roomType,
-        body.room_type === 'class' ? roomId : null,
+        resolvedRoomType,
+        resolvedClassId,
         auth.user.id,
         body.user_name || auth.user.name || auth.user.username || '사용자',
         body.user_avatar || auth.user.profile_image_url || '',

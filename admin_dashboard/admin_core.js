@@ -1,168 +1,187 @@
-// admin_core.js - Core logic for Admin Dashboard (Auth, Navigation, Utilities)
+// admin_core.js - core logic for the admin dashboard
+
+const DASHBOARD_ROLE_ORDER = {
+  user: 0,
+  instructor: 1,
+  operator: 2,
+  admin: 3,
+  super_admin: 3,
+};
+
+function normalizeDashboardRole(role) {
+  const value = String(role || '').trim().toLowerCase();
+  if (!value) return 'user';
+  if (['super-admin', 'superadmin', 'root', 'owner'].includes(value)) return 'super_admin';
+  if (value in DASHBOARD_ROLE_ORDER) return value;
+  return 'user';
+}
+
+function getDashboardRoleRank(role) {
+  return DASHBOARD_ROLE_ORDER[normalizeDashboardRole(role)] ?? 0;
+}
+
+function canEnterDashboard(role) {
+  return getDashboardRoleRank(role) >= getDashboardRoleRank('operator');
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("🛠️ Admin Dashboard Core Initializing...");
+  console.log('[Admin Dashboard] Core initializing...');
 
-    // 1. Authentication & Role Guard
-    await verifyAdminAccess();
-
-    // 2. Sidebar Navigation Setup
-    setupSidebarNavigation();
-
-    // 3. Mobile Sidebar Toggle (I3)
-    setupMobileSidebar();
-
-    // 4. Global Refresh Button
-    document.getElementById('btnAdminRefresh')?.addEventListener('click', () => {
-        location.reload();
-    });
+  await verifyAdminAccess();
+  setupSidebarNavigation();
+  setupMobileSidebar();
 });
 
-/**
- * Ensures only `promise1` or explicit admins can access this page.
- * Boots unauthorized users back to the index page immediately.
- */
 async function verifyAdminAccess() {
-    const adminUserNameLabel = document.getElementById('adminUserName');
+  const adminUserNameLabel = document.getElementById('adminUserName');
 
-    // ★ bsq_server.js 의 전역 초기화 완전 대기
-    if (window.BSQ && window.BSQ.ready) {
-        await window.BSQ.ready;
-    } else {
-        // Fallback wait
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    }
+  if (window.BSQ?.ready) {
+    await window.BSQ.ready;
+  } else {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
 
-    const isLoggedIn = window.BSQ?.isLoggedIn;
-    const user = window.BSQ?.userProfile;
+  const user = window.BSQ?.userProfile;
+  const isLoggedIn = window.BSQ?.isLoggedIn && !!user;
+  const role = normalizeDashboardRole(user?.role);
 
-    let isAuthorized = false;
-    let displayName = "운영자";
+  if (!isLoggedIn || !canEnterDashboard(role)) {
+    alert('운영자 권한이 필요합니다. 운영자 계정으로 로그인해주세요.');
+    const loginUrl = '../login/login.html?redirect=' + encodeURIComponent(window.location.href);
+    window.location.replace(loginUrl);
+    return;
+  }
 
-    if (isLoggedIn && user) {
-        // 관리자 권한 체크 (role 또는 하드코딩된 관리자 이메일/ID)
-        const isAdminRole = user.role === 'admin' || user.user_type === 'admin';
-        const isDevUser = false; // 하드코딩된 관리자 계정 제거됨
+  if (adminUserNameLabel) {
+    adminUserNameLabel.textContent = user.name || user.username || 'Admin';
+  }
 
-        if (isAdminRole || isDevUser) {
-            isAuthorized = true;
-            displayName = user.name || user.username || "운영자";
-            window.__BSQ_DEV_MODE__ = true; // 관리자 모드 플래그 활성화
-            console.log("[Admin Core] Admin access granted for:", displayName);
-        }
-    }
-
-    if (!isAuthorized) {
-        console.warn("🚫 UNAUTHORIZED ACCESS ATTEMPT TO ADMIN DASHBOARD");
-        alert("관리자 권한이 없습니다. 관리자 계정으로 로그인해주세요.");
-        // 로그인 페이지로 리다이렉트 (현재 위치를 redirect 파라미터로 전달)
-        const loginUrl = '../login/login.html?redirect=' + encodeURIComponent(window.location.href);
-        window.location.replace(loginUrl);
-        return;
-    }
-
-    if (adminUserNameLabel) {
-        adminUserNameLabel.textContent = displayName;
-    }
+  document.body.dataset.adminRole = role;
+  applyRoleVisibility(role);
 }
 
-/**
- * Handles Tab Switching and Collapsible Sidebar Groups
- */
+function applyRoleVisibility(role) {
+  const rank = getDashboardRoleRank(role);
+  if (rank >= getDashboardRoleRank('admin')) return;
+
+  const restrictedTabs = [
+    'tabOperators',
+    'tabBoards',
+    'tabClassBoards',
+    'tabMenuSettings',
+    'tabHomepage',
+    'tabRecommend',
+    'tabFooter',
+    'tabPages',
+    'tabSEO',
+    'tabForms',
+    'tabMarketingTools',
+    'tabMsgTemplates',
+    'tabCampaigns',
+    'tabFinancial',
+    'tabSettlementInfo',
+    'tabSettlementHistory',
+    'tabTax',
+  ];
+
+  restrictedTabs.forEach((tabId) => {
+    const navItem = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+    if (navItem) navItem.style.display = 'none';
+    const section = document.getElementById(tabId);
+    if (section) section.style.display = 'none';
+  });
+}
+
 function setupSidebarNavigation() {
-    const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
-    const tabContents = document.querySelectorAll('.admin-tab-content');
-    const currentTabTitle = document.getElementById('currentTabTitle');
-    const groupBtns = document.querySelectorAll('.nav-group-btn');
+  const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
+  const getTabContents = () => document.querySelectorAll('.admin-tab-content');
+  const currentTabTitle = document.getElementById('currentTabTitle');
+  const groupBtns = document.querySelectorAll('.nav-group-btn');
 
-    // Collapsible Groups
-    groupBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const expanded = btn.getAttribute('aria-expanded') === 'true';
-            btn.setAttribute('aria-expanded', !expanded);
-            const subNav = btn.nextElementSibling;
-            if (subNav) {
-                subNav.style.display = expanded ? 'none' : 'block';
-            }
-        });
+  groupBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      const subNav = btn.nextElementSibling;
+      if (subNav) subNav.style.display = expanded ? 'none' : 'block';
     });
+  });
 
-    // Tab Navigation SPA Logic
-    navItems.forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetTabId = item.getAttribute('data-tab');
-            if (!targetTabId) return;
+  navItems.forEach((item) => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetTabId = item.getAttribute('data-tab');
+      if (!targetTabId || item.style.display === 'none') return;
 
-            // Update Active State on Sidebar
-            navItems.forEach(nav => nav.classList.remove('active'));
-            item.classList.add('active');
+      navItems.forEach((nav) => nav.classList.remove('active'));
+      item.classList.add('active');
 
-            // Update Header Title
-            if (currentTabTitle) {
-                // If it's a sub-item, grab parent group name + item name
-                const groupParent = item.closest('.nav-group');
-                let titleText = item.textContent.trim();
-                if (groupParent && item.textContent.trim() !== '대시보드') {
-                    const groupTitle = groupParent.querySelector('.nav-group-btn span').textContent.replace('▼', '').trim();
-                    titleText = `${groupTitle} > ${item.textContent.trim()}`;
-                }
-                currentTabTitle.textContent = titleText;
-            }
+      if (currentTabTitle) {
+        const groupParent = item.closest('.nav-group');
+        let titleText = item.textContent.trim();
+        if (groupParent) {
+          const groupBtn = groupParent.querySelector('.nav-group-btn span');
+          const groupTitle = groupBtn ? groupBtn.textContent.replace(/\s+/g, ' ').trim() : '';
+          if (groupTitle && titleText !== groupTitle) {
+            titleText = `${groupTitle} > ${titleText}`;
+          }
+        }
+        currentTabTitle.textContent = titleText;
+      }
 
-            // Switch Content Section
-            tabContents.forEach(tab => tab.classList.remove('active'));
-            const targetTab = document.getElementById(targetTabId);
-            if (targetTab) {
-                targetTab.classList.add('active');
-            }
+      getTabContents().forEach((tab) => tab.classList.remove('active'));
+      let targetTab = document.getElementById(targetTabId);
+      if (!targetTab) {
+        const wrapper = document.querySelector('.admin-content-wrapper');
+        if (wrapper) {
+          targetTab = document.createElement('section');
+          targetTab.id = targetTabId;
+          targetTab.className = 'admin-tab-content';
+          targetTab.innerHTML = `
+            <div class="admin-card" style="text-align:center; padding:5rem 2rem;">
+              <h2 style="color:var(--admin-text-muted); margin-bottom:1rem;">준비 중인 탭입니다.</h2>
+              <p style="color:#777;">해당 기능은 현재 개발 중입니다.</p>
+            </div>
+          `;
+          wrapper.appendChild(targetTab);
+        }
+      }
+      if (targetTab) targetTab.classList.add('active');
 
-            // Trigger Custom Event for Modules to Catch (e.g. refresh data when tab opened)
-            window.dispatchEvent(new CustomEvent('adminTabChanged', { detail: { tabId: targetTabId } }));
+      window.dispatchEvent(new CustomEvent('adminTabChanged', { detail: { tabId: targetTabId } }));
 
-            // 모바일에서 탭 전환 시 사이드바 자동으로 닫기
-            if (window.innerWidth <= 768) {
-                const sidebar = document.getElementById('adminSidebar');
-                const overlay = document.getElementById('adminSidebarOverlay');
-                if (sidebar) sidebar.classList.remove('open');
-                if (overlay) overlay.classList.remove('active');
-            }
-        });
+      if (window.innerWidth <= 768) {
+        const sidebar = document.getElementById('adminSidebar');
+        const overlay = document.getElementById('adminSidebarOverlay');
+        sidebar?.classList.remove('open');
+        overlay?.classList.remove('active');
+      }
     });
+  });
 }
 
-/**
- * Mobile Sidebar Toggle (I3)
- * 768px 이하에서 햄버거 버튼으로 사이드바 열고 닫기
- */
 function setupMobileSidebar() {
-    const hamburgerBtn = document.getElementById('adminHamburgerBtn');
-    const sidebar = document.getElementById('adminSidebar');
-    const overlay = document.getElementById('adminSidebarOverlay');
+  const hamburgerBtn = document.getElementById('adminHamburgerBtn');
+  const sidebar = document.getElementById('adminSidebar');
+  const overlay = document.getElementById('adminSidebarOverlay');
 
-    if (!hamburgerBtn || !sidebar) return;
+  if (!hamburgerBtn || !sidebar) return;
 
-    function openSidebar() {
-        sidebar.classList.add('open');
-        if (overlay) overlay.classList.add('active');
-    }
+  function openSidebar() {
+    sidebar.classList.add('open');
+    overlay?.classList.add('active');
+  }
 
-    function closeSidebar() {
-        sidebar.classList.remove('open');
-        if (overlay) overlay.classList.remove('active');
-    }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay?.classList.remove('active');
+  }
 
-    hamburgerBtn.addEventListener('click', () => {
-        if (sidebar.classList.contains('open')) {
-            closeSidebar();
-        } else {
-            openSidebar();
-        }
-    });
+  hamburgerBtn.addEventListener('click', () => {
+    if (sidebar.classList.contains('open')) closeSidebar();
+    else openSidebar();
+  });
 
-    if (overlay) {
-        overlay.addEventListener('click', closeSidebar);
-    }
-
-    console.log("✅ Mobile sidebar toggle initialized");
+  overlay?.addEventListener('click', closeSidebar);
+  console.log('[Admin Dashboard] Mobile sidebar toggle initialized');
 }

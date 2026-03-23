@@ -1,0 +1,22 @@
+[GET] https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20 => [FAILED] net::ERR_ABORTED
+[GET] https://via.placeholder.com/1200x800 => [FAILED] net::ERR_NAME_NOT_RESOLVED
+[GET] https://via.placeholder.com/1200x800 => [FAILED] net::ERR_NAME_NOT_RESOLVED
+[GET] https://b-square-web.pages.dev/api/auth/session?t=1774225337371 => [200] 
+[GET] https://b-square-web.pages.dev/api/classes/cls_89494c0bf9254d1e?t=1774225337658 => [200] 
+[GET] https://b-square-web.pages.dev/api/enrollments?user_id=user_b7a935e26112&class_id=cls_89494c0bf9254d1e&t=1774225338189 => [200] 
+[GET] https://b-square-web.pages.dev/api/user-passes?user_id=user_b7a935e26112&t=1774225338566 => [200] 
+[GET] https://b-square-web.pages.dev/api/reviews?class_id=cls_89494c0bf9254d1e&t=1774225338604 => [200] 
+[GET] https://b-square-web.pages.dev/api/class-notices?class_id=cls_89494c0bf9254d1e&t=1774225338605 => [200] 
+[GET] https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&pinned_only=true&t=1774225338605 => [200] 
+[GET] https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=50&t=1774225338606 => [200] 
+[GET] https://b-square-web.pages.dev/api/gatherings?action=detail&gathering_id=gather_f0e1f8528bb64f91&t=1774225339360 => [200] 
+[GET] https://b-square-web.pages.dev/api/gatherings?action=detail&gathering_id=gather_c1a53ef4fdc84342&t=1774225339361 => [200] 
+[GET] https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&after=msg_b321ef508e5d4a4b&t=1774225341365 => [200] 
+[GET] https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&after=msg_b321ef508e5d4a4b&t=1774225343369 => [200] 
+[GET] https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&after=msg_b321ef508e5d4a4b&t=1774225345364 => [200] 
+[GET] https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&after=msg_b321ef508e5d4a4b&t=1774225347372 => [200] 
+[GET] https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&after=msg_b321ef508e5d4a4b&t=1774225349368 => [200] 
+[GET] https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&after=msg_b321ef508e5d4a4b&t=1774225351363 => [200] 
+[GET] https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&after=msg_b321ef508e5d4a4b&t=1774225353376 => [200] 
+[GET] https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&after=msg_b321ef508e5d4a4b&t=1774225355362 => [200] 
+[GET] https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&after=msg_b321ef508e5d4a4b&t=1774225357363

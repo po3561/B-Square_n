@@ -15,9 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Add Banner Button
-    document.getElementById('btnAddBanner')?.addEventListener('click', () => {
+    document.getElementById('btnAddBanner')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
         window.addBannerItem();
-    });
+    }, true);
 
     // Listen for tab changes
     window.addEventListener('adminTabChanged', (e) => {
@@ -281,7 +283,12 @@ async function loadSiteSettings(type) {
 }
 
 async function saveSiteSettings(type) {
-    const btn = document.querySelector(`.btn-primary[onclick="saveSiteSettings('${type}')"]`) || document.getElementById('btnSaveSettings');
+    const buttonMap = {
+        homepage: document.getElementById('btnSaveHomepage'),
+        footer: document.getElementById('btnSaveFooter'),
+        seo: document.getElementById('btnSaveSEO'),
+    };
+    const btn = buttonMap[type] || document.getElementById('btnSaveSettings');
     if (btn) {
         btn.disabled = true;
         const originalText = btn.textContent;

@@ -2,6 +2,22 @@ import { requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
 import { ensureChatMessagesSchema } from './_lib/schema.js';
 
+function normalizeChatMessage(row) {
+  if (!row) return row;
+  let replyData = row.reply_data;
+  if (typeof replyData === 'string') {
+    try {
+      replyData = JSON.parse(replyData);
+    } catch {
+      replyData = null;
+    }
+  }
+  return {
+    ...row,
+    reply_data: replyData || null,
+  };
+}
+
 export async function onRequestGet(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
@@ -35,7 +51,7 @@ export async function onRequestGet(context) {
       results = results.reverse(); // 최신순 → 시간순
     }
 
-    return json(request, env, { success: true, data: results });
+    return json(request, env, { success: true, data: (results || []).map(normalizeChatMessage) });
   } catch (err) {
     return json(request, env, { success: false, error: '채팅 조회 오류', detail: err.message }, { status: 500 });
   }
@@ -50,7 +66,7 @@ export async function onRequestPost(context) {
     await ensureChatMessagesSchema(env.DB);
 
     const body = await request.json();
-    const { class_id, user_name, user_avatar, message, type } = body;
+    const { class_id, user_name, user_avatar, message, type, reply_to, reply_data } = body;
 
     if (!class_id || !message) {
       return json(request, env, { success: false, error: '필수 항목 누락' }, { status: 400 });
@@ -59,8 +75,18 @@ export async function onRequestPost(context) {
     const id = 'msg_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16);
 
     await env.DB.prepare(
-      'INSERT INTO chat_messages (id, class_id, user_id, user_name, user_avatar, message, type) VALUES (?, ?, ?, ?, ?, ?, ?)'
-    ).bind(id, class_id, auth.user.id, user_name || auth.user.name || auth.user.username || '사용자', user_avatar || auth.user.profile_image_url || '', message, type || 'text').run();
+      'INSERT INTO chat_messages (id, class_id, user_id, user_name, user_avatar, message, reply_to, reply_data, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(
+      id,
+      class_id,
+      auth.user.id,
+      user_name || auth.user.name || auth.user.username || '사용자',
+      user_avatar || auth.user.profile_image_url || '',
+      message,
+      reply_to || null,
+      reply_data ? JSON.stringify(reply_data) : null,
+      type || 'text'
+    ).run();
 
     return json(request, env, { success: true, data: { id } }, { status: 201 });
   } catch (err) {

@@ -1,12 +1,14 @@
 import { requireSession } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
+import { ensureClassesSchema } from '../_lib/schema.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
-
   try {
+    await ensureClassesSchema(env.DB);
+
     const body = await request.json();
     console.log('[API] Class Create Request keys:', Object.keys(body));
 

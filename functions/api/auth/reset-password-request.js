@@ -1,5 +1,6 @@
 import { hashPassword } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
+import { ensureAuthSchema } from '../_lib/schema.js';
 
 async function sendResetEmail(env, email, resetUrl) {
   if (!env.MAIL_FROM) return false;
@@ -11,14 +12,14 @@ async function sendResetEmail(env, email, resetUrl) {
       personalizations: [{ to: [{ email }] }],
       from: { email: env.MAIL_FROM, name: 'B-Square' },
       reply_to: env.MAIL_REPLY_TO ? { email: env.MAIL_REPLY_TO } : undefined,
-      subject: 'B-Square 비밀번호 재설정',
+      subject: 'B-Square password reset',
       content: [{
         type: 'text/html',
         value: `
-          <p>B-Square 비밀번호 재설정 요청이 접수되었습니다.</p>
-          <p>아래 링크를 눌러 새 비밀번호를 설정해 주세요.</p>
+          <p>Your B-Square password reset request was received.</p>
+          <p>Click the link below to set a new password:</p>
           <p><a href="${resetUrl}">${resetUrl}</a></p>
-          <p>이 링크는 30분 동안만 유효합니다.</p>
+          <p>This link is valid for 30 minutes.</p>
         `,
       }],
     }),
@@ -31,11 +32,13 @@ export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
+    await ensureAuthSchema(env.DB);
+
     const body = await request.json();
-    const email = (body.email || '').trim().toLowerCase();
+    const email = (body?.email || '').trim().toLowerCase();
 
     if (!email) {
-      return json(request, env, { success: false, error: '이메일을 입력해 주세요.' }, { status: 400 });
+      return json(request, env, { success: false, error: 'Email is required.' }, { status: 400 });
     }
 
     const user = await env.DB.prepare('SELECT id, email FROM users WHERE lower(email) = ?').bind(email).first();
@@ -57,11 +60,11 @@ export async function onRequestPost(context) {
 
       const payload = {
         success: true,
-        message: '재설정 안내가 발송되었습니다. 이메일을 확인해 주세요.',
+        message: 'If the email exists, a reset link has been sent.',
       };
 
       if (!emailSent) {
-        payload.message = '메일 설정이 없어 재설정 링크를 응답에 포함합니다.';
+        payload.message = 'Email is not configured. Use the reset link below.';
         payload.debug_reset_url = resetUrl;
       }
 
@@ -70,12 +73,13 @@ export async function onRequestPost(context) {
 
     return json(request, env, {
       success: true,
-      message: '가입된 이메일이면 재설정 안내가 발송됩니다.',
+      message: 'If the email exists, a reset link has been sent.',
     });
   } catch (error) {
+    console.error('Reset request error:', error);
     return json(request, env, {
       success: false,
-      error: '비밀번호 재설정 요청 처리 중 오류가 발생했습니다.',
+      error: 'Password reset request failed.',
       detail: error.message,
     }, { status: 500 });
   }

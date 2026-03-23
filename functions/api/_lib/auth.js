@@ -1,6 +1,63 @@
 import { json } from './http.js';
+import { ensureAuthSchema, ensureClassesSchema } from './schema.js';
 
 const PASSWORD_SALT = '_bsq_salt_2024';
+export const MASTER_ADMIN_USER_ID = 'user_b7a935e26112';
+
+const ROLE_RANK = {
+  user: 0,
+  student: 0,
+  member: 0,
+  instructor: 1,
+  operator: 2,
+  admin: 3,
+  super_admin: 3,
+};
+
+const ROLE_LABEL = {
+  user: '일반수강생',
+  student: '일반수강생',
+  member: '일반수강생',
+  instructor: '강사',
+  operator: '운영관리자',
+  admin: '총괄운영관리자',
+  super_admin: '총괄운영관리자',
+};
+
+export function normalizeRole(role) {
+  const value = String(role || '').trim().toLowerCase();
+  if (!value) return 'user';
+  if (['super-admin', 'superadmin', 'root', 'owner'].includes(value)) return 'super_admin';
+  if (['manager', 'operator_admin', 'ops'].includes(value)) return 'operator';
+  if (['teacher', 'lecturer'].includes(value)) return 'instructor';
+  return value in ROLE_RANK ? value : 'user';
+}
+
+export function getRoleRank(role) {
+  return ROLE_RANK[normalizeRole(role)] ?? 0;
+}
+
+export function getRoleLabel(role) {
+  return ROLE_LABEL[normalizeRole(role)] || ROLE_LABEL.user;
+}
+
+export function isAtLeastRole(role, minimumRole) {
+  return getRoleRank(role) >= getRoleRank(minimumRole);
+}
+
+export function isMasterAdminUserId(userId) {
+  return String(userId || '') === MASTER_ADMIN_USER_ID;
+}
+
+export function applyMasterAdminOverride(user) {
+  if (!user || !isMasterAdminUserId(user.id)) return user;
+  return {
+    ...user,
+    role: 'super_admin',
+    membership_level: user.membership_level || 'Admin',
+    operator_seq: user.operator_seq || 1,
+  };
+}
 
 export function parseCookies(cookieHeader) {
   const cookies = {};
@@ -17,7 +74,16 @@ export function parseCookies(cookieHeader) {
 
 export function getSessionToken(request) {
   const cookies = parseCookies(request.headers.get('Cookie'));
-  return cookies.bsq_session || null;
+  if (cookies.bsq_session) return cookies.bsq_session;
+
+  const authHeader = request.headers.get('Authorization') || '';
+  const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
+  if (bearerMatch) return bearerMatch[1].trim();
+
+  const headerToken = request.headers.get('X-Session-Token');
+  if (headerToken) return headerToken.trim();
+
+  return null;
 }
 
 export async function hashPassword(password) {
@@ -31,7 +97,6 @@ export async function hashPassword(password) {
 
 export function createSessionCookie(token, request) {
   const url = new URL(request.url);
-  const isSecure = url.protocol === 'https:';
   const parts = [
     `bsq_session=${token}`,
     'Path=/',
@@ -40,8 +105,7 @@ export function createSessionCookie(token, request) {
     `Max-Age=${30 * 24 * 60 * 60}`,
   ];
 
-  if (isSecure) parts.push('Secure');
-
+  if (url.protocol === 'https:') parts.push('Secure');
   return parts.join('; ');
 }
 
@@ -56,12 +120,13 @@ export function clearSessionCookie(request) {
   ];
 
   if (url.protocol === 'https:') parts.push('Secure');
-
   return parts.join('; ');
 }
 
 export async function getCurrentUser(context) {
   const { request, env } = context;
+
+  await ensureAuthSchema(env.DB);
   const token = getSessionToken(request);
   if (!token) return null;
 
@@ -77,6 +142,7 @@ export async function getCurrentUser(context) {
       u.phone,
       u.profile_image_url,
       u.role,
+      u.operator_seq,
       u.membership_level,
       u.birth_year,
       u.birth_month,
@@ -91,27 +157,30 @@ export async function getCurrentUser(context) {
 
   if (!session) return null;
 
+  const user = applyMasterAdminOverride({
+    id: session.id,
+    email: session.email,
+    name: session.name,
+    username: session.username,
+    phone: session.phone,
+    profile_image_url: session.profile_image_url,
+    role: session.role,
+    operator_seq: session.operator_seq,
+    membership_level: session.membership_level,
+    birth_year: session.birth_year,
+    birth_month: session.birth_month,
+    birth_day: session.birth_day,
+    gender: session.gender,
+    nationality: session.nationality,
+  });
+
   return {
     session: {
       id: session.session_id,
       token: session.token,
       expires_at: session.expires_at,
     },
-    user: {
-      id: session.id,
-      email: session.email,
-      name: session.name,
-      username: session.username,
-      phone: session.phone,
-      profile_image_url: session.profile_image_url,
-      role: session.role,
-      membership_level: session.membership_level,
-      birth_year: session.birth_year,
-      birth_month: session.birth_month,
-      birth_day: session.birth_day,
-      gender: session.gender,
-      nationality: session.nationality,
-    },
+    user,
   };
 }
 
@@ -134,7 +203,7 @@ export async function requireAdmin(context) {
   const current = await requireSession(context);
   if (!current.ok) return current;
 
-  if (current.user.role !== 'admin') {
+  if (!isAtLeastRole(current.user.role, 'admin')) {
     return {
       ok: false,
       response: json(context.request, context.env, {
@@ -151,6 +220,9 @@ export async function requireClassManager(context, classId) {
   const current = await requireSession(context);
   if (!current.ok) return current;
 
+  await ensureAuthSchema(context.env.DB);
+  await ensureClassesSchema(context.env.DB);
+
   const cls = await context.env.DB.prepare(`
     SELECT id, creator_id, sub_instructors
     FROM classes
@@ -162,29 +234,25 @@ export async function requireClassManager(context, classId) {
       ok: false,
       response: json(context.request, context.env, {
         success: false,
-        error: '클래스를 찾을 수 없습니다.',
+        error: '대상을 찾을 수 없습니다.',
       }, { status: 404 }),
     };
   }
 
-  let subInstructors = [];
-  try {
-    subInstructors = JSON.parse(cls.sub_instructors || '[]');
-  } catch {}
-
-  const isManager = current.user.role === 'admin'
-    || cls.creator_id === current.user.id
-    || subInstructors.some((item) => item?.id === current.user.id);
-
-  if (!isManager) {
-    return {
-      ok: false,
-      response: json(context.request, context.env, {
-        success: false,
-        error: '클래스 관리 권한이 없습니다.',
-      }, { status: 403 }),
-    };
+  const userId = current.user.id;
+  if (
+    isAtLeastRole(current.user.role, 'operator') ||
+    cls.creator_id === userId ||
+    String(cls.sub_instructors || '').includes(userId)
+  ) {
+    return current;
   }
 
-  return { ...current, classRecord: cls };
+  return {
+    ok: false,
+    response: json(context.request, context.env, {
+      success: false,
+      error: '클래스 관리 권한이 필요합니다.',
+    }, { status: 403 }),
+  };
 }

@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>총괄 관리자 대시보드 | B-Square</title>
+    <title>珥앷큵 愿由ъ옄 ??쒕낫??| B-Square</title>
     <style>
         .recommend-folder-item.active-target {
             border: 2px solid var(--mac-primary) !important;
@@ -14,27 +14,23 @@
         }
     </style>
 
-    <!-- 전역 스타일 & 관리자 전용 스타일 -->
+    <!-- ?꾩뿭 ?ㅽ???& 愿由ъ옄 ?꾩슜 ?ㅽ???-->
     <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css">
     <link rel="stylesheet" href="admin.css">
 
-    <!-- 외부 라이브러리 -->
+    <!-- ?몃? ?쇱씠釉뚮윭由?-->
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- 1. Dev Mode (보안 & 세션 복원) -->
-    <script src="../dev_mode.js?v=20260321"></script>
-    <!-- 2. BSQ Server Core -->
-    <script src="../bsq_server.js?v=20260321"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>    <!-- 1. BSQ Server Core -->
+    <script src="../bsq_server.js?v=20260323_01"></script>
 </head>
 
 <body class="admin-body">
 
-    <!-- 모바일 사이드바 오버레이 + 햄버거 버튼 -->
+    <!-- 紐⑤컮???ъ씠?쒕컮 ?ㅻ쾭?덉씠 + ?꾨쾭嫄?踰꾪듉 -->
     <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
-    <button class="admin-hamburger-btn" id="adminHamburgerBtn" aria-label="메뉴 열기">☰</button>
+    <button class="admin-hamburger-btn" id="adminHamburgerBtn" aria-label="硫붾돱 ?닿린">??/button>
 
-    <!-- 좌측 사이드바 (LNB) -->
+    <!-- 醫뚯륫 ?ъ씠?쒕컮 (LNB) -->
     <aside class="admin-sidebar" id="adminSidebar">
         <div class="sidebar-header">
             <h1 class="admin-logo">B-Square<span
@@ -45,163 +41,163 @@
         <nav class="sidebar-nav">
             <a href="#" class="nav-item-link" onclick="location.href='../index.html'"
                 style="color: var(--primary-accent); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1.5rem; margin-bottom: 1rem;">
-                <span class="icon">↗</span> 사이트 바로가기
+                <span class="icon">??/span> ?ъ씠??諛붾줈媛湲?
             </a>
 
-            <!-- 대시보드 홈 -->
+            <!-- ??쒕낫????-->
             <a href="#dashboard" class="nav-item active" data-tab="tabDashboard">
-                <span class="icon">📊</span> 대시보드
+                <span class="icon">?뱤</span> ??쒕낫??
             </a>
 
-            <!-- 사이트 디자인 -->
+            <!-- ?ъ씠???붿옄??-->
             <div class="nav-group">
                 <button class="nav-group-btn" aria-expanded="true">
-                    <span><span class="icon">🎨</span> 사이트 디자인</span>
-                    <span class="arrow">▼</span>
+                    <span><span class="icon">?렓</span> ?ъ씠???붿옄??/span>
+                    <span class="arrow">??/span>
                 </button>
                 <div class="nav-sub">
-                    <a href="#menu_settings" class="nav-item" data-tab="tabMenuSettings">메뉴 설정</a>
-                    <a href="#homepage_settings" class="nav-item" data-tab="tabHomepage">홈페이지 설정</a>
-                    <a href="#recommend_settings" class="nav-item" data-tab="tabRecommend">인기/추천 항목 관리</a>
-                    <a href="#page_settings" class="nav-item" data-tab="tabPages">페이지 관리</a>
-                    <a href="#footer_settings" class="nav-item" data-tab="tabFooter">푸터 설정</a>
+                    <a href="#menu_settings" class="nav-item" data-tab="tabMenuSettings">硫붾돱 ?ㅼ젙</a>
+                    <a href="#homepage_settings" class="nav-item" data-tab="tabHomepage">?덊럹?댁? ?ㅼ젙</a>
+                    <a href="#recommend_settings" class="nav-item" data-tab="tabRecommend">?멸린/異붿쿇 ??ぉ 愿由?/a>
+                    <a href="#page_settings" class="nav-item" data-tab="tabPages">?섏씠吏 愿由?/a>
+                    <a href="#footer_settings" class="nav-item" data-tab="tabFooter">?명꽣 ?ㅼ젙</a>
                 </div>
             </div>
 
-            <!-- 회원 관리 -->
+            <!-- ?뚯썝 愿由?-->
             <div class="nav-group">
                 <button class="nav-group-btn" aria-expanded="true">
-                    <span><span class="icon">👥</span> 회원 관리</span>
-                    <span class="arrow">▼</span>
+                    <span><span class="icon">?뫁</span> ?뚯썝 愿由?/span>
+                    <span class="arrow">??/span>
                 </button>
                 <div class="nav-sub">
-                    <a href="#users" class="nav-item" data-tab="tabUsers">가입 회원</a>
-                    <a href="#roles" class="nav-item" data-tab="tabRoles">회원 그룹 관리</a>
+                    <a href="#users" class="nav-item" data-tab="tabUsers">媛???뚯썝</a>
+                    <a href="#roles" class="nav-item" data-tab="tabRoles">?뚯썝 洹몃９ 愿由?/a>
                 </div>
             </div>
 
-            <!-- 클래스 관리 -->
+            <!-- ?대옒??愿由?-->
             <div class="nav-group">
                 <button class="nav-group-btn" aria-expanded="true">
-                    <span><span class="icon">📚</span> 클래스 관리</span>
-                    <span class="arrow">▼</span>
+                    <span><span class="icon">?뱴</span> ?대옒??愿由?/span>
+                    <span class="arrow">??/span>
                 </button>
                 <div class="nav-sub">
-                    <a href="#classes" class="nav-item" data-tab="tabAllClasses">전체 클래스</a>
-                    <a href="#class_analytics" class="nav-item" data-tab="tabClassAnalytics">클래스 통계/분석</a>
+                    <a href="#classes" class="nav-item" data-tab="tabAllClasses">?꾩껜 ?대옒??/a>
+                    <a href="#class_analytics" class="nav-item" data-tab="tabClassAnalytics">?대옒???듦퀎/遺꾩꽍</a>
                 </div>
             </div>
 
-            <!-- 서비스 관리 (구 게시판 관리 + 쿠폰) -->
+            <!-- ?쒕퉬??愿由?(援?寃뚯떆??愿由?+ 荑좏룿) -->
             <div class="nav-group">
                 <button class="nav-group-btn" aria-expanded="false">
-                    <span><span class="icon">🛎️</span> 서비스 관리</span>
-                    <span class="arrow">▼</span>
+                    <span><span class="icon">?썛截?/span> ?쒕퉬??愿由?/span>
+                    <span class="arrow">??/span>
                 </button>
                 <div class="nav-sub" style="display:none;">
-                    <a href="#boards" class="nav-item" data-tab="tabBoards">사이트 게시판</a>
-                    <a href="#class_boards" class="nav-item" data-tab="tabClassBoards">클래스 게시판</a>
-                    <a href="#coupons" class="nav-item" data-tab="tabCoupons">🎫 이벤트 쿠폰</a>
+                    <a href="#boards" class="nav-item" data-tab="tabBoards">?ъ씠??寃뚯떆??/a>
+                    <a href="#class_boards" class="nav-item" data-tab="tabClassBoards">?대옒??寃뚯떆??/a>
+                    <a href="#coupons" class="nav-item" data-tab="tabCoupons">?렖 ?대깽??荑좏룿</a>
                 </div>
             </div>
 
-            <!-- 운영자 설정 -->
+            <!-- ?댁쁺???ㅼ젙 -->
             <a href="#operators" class="nav-item" data-tab="tabOperators">
-                <span class="icon">🧑‍💻</span> 운영자 설정
+                <span class="icon">?쭛?랅윊?/span> ?댁쁺???ㅼ젙
             </a>
 
             <a href="#search_code" class="nav-item" data-tab="tabSearchCode">
-                <span class="icon">🔍</span> 검색 및 코드 설정
+                <span class="icon">?뵇</span> 寃??諛?肄붾뱶 ?ㅼ젙
             </a>
             <a href="#seo" class="nav-item" data-tab="tabSEO">
-                <span class="icon">🌍</span> SEO 관리
+                <span class="icon">?뙇</span> SEO 愿由?
             </a>
 
-            <!-- 마케팅 관리 -->
+            <!-- 留덉???愿由?-->
             <div class="nav-group">
                 <button class="nav-group-btn" aria-expanded="false">
-                    <span><span class="icon">💡</span> 마케팅 관리</span>
-                    <span class="arrow">▼</span>
+                    <span><span class="icon">?뮕</span> 留덉???愿由?/span>
+                    <span class="arrow">??/span>
                 </button>
                 <div class="nav-sub" style="display:none;">
-                    <a href="#forms" class="nav-item" data-tab="tabForms">폼 관리</a>
-                    <a href="#marketing_tools" class="nav-item" data-tab="tabMarketingTools">마케팅 툴 연동</a>
-                    <a href="#msg_templates" class="nav-item" data-tab="tabMsgTemplates">메시지 템플릿</a>
-                    <a href="#campaigns" class="nav-item" data-tab="tabCampaigns">캠페인 관리</a>
+                    <a href="#forms" class="nav-item" data-tab="tabForms">??愿由?/a>
+                    <a href="#marketing_tools" class="nav-item" data-tab="tabMarketingTools">留덉??????곕룞</a>
+                    <a href="#msg_templates" class="nav-item" data-tab="tabMsgTemplates">硫붿떆吏 ?쒗뵆由?/a>
+                    <a href="#campaigns" class="nav-item" data-tab="tabCampaigns">罹좏럹??愿由?/a>
                 </div>
             </div>
 
-            <!-- 매출 및 정산 관리 -->
+            <!-- 留ㅼ텧 諛??뺤궛 愿由?-->
             <div class="nav-group">
                 <button class="nav-group-btn" aria-expanded="true">
-                    <span><span class="icon">💰</span> 매출 및 정산</span>
-                    <span class="arrow">▼</span>
+                    <span><span class="icon">?뮥</span> 留ㅼ텧 諛??뺤궛</span>
+                    <span class="arrow">??/span>
                 </button>
                 <div class="nav-sub">
-                    <a href="#payments" class="nav-item" data-tab="tabPaymentsView">결제 조회</a>
-                    <a href="#financial" class="nav-item" data-tab="tabFinancial">입출금 기록</a>
-                    <a href="#settlement_info" class="nav-item" data-tab="tabSettlementInfo">정산 정보 관리</a>
-                    <a href="#settlement_history" class="nav-item" data-tab="tabSettlementHistory">정산 내역</a>
-                    <a href="#tax" class="nav-item" data-tab="tabTax">부가세 신고 자료</a>
+                    <a href="#payments" class="nav-item" data-tab="tabPaymentsView">寃곗젣 議고쉶</a>
+                    <a href="#financial" class="nav-item" data-tab="tabFinancial">?낆텧湲?湲곕줉</a>
+                    <a href="#settlement_info" class="nav-item" data-tab="tabSettlementInfo">?뺤궛 ?뺣낫 愿由?/a>
+                    <a href="#settlement_history" class="nav-item" data-tab="tabSettlementHistory">?뺤궛 ?댁뿭</a>
+                    <a href="#tax" class="nav-item" data-tab="tabTax">遺媛???좉퀬 ?먮즺</a>
                 </div>
             </div>
         </nav>
 
         <div class="sidebar-footer">
             <div class="admin-profile">
-                <div class="avatar">👨‍💻</div>
+                <div class="avatar">?뫅?랅윊?/div>
                 <div class="info">
-                    <div class="role" style="font-size:0.7rem; color:#aaa;">총괄 관리자</div>
-                    <div class="name" id="adminUserName">로딩 중...</div>
+                    <div class="role" style="font-size:0.7rem; color:#aaa;">珥앷큵 愿由ъ옄</div>
+                    <div class="name" id="adminUserName">濡쒕뵫 以?..</div>
                 </div>
             </div>
         </div>
     </aside>
 
-    <!-- 우측 메인 콘텐츠 영역 -->
+    <!-- ?곗륫 硫붿씤 肄섑뀗痢??곸뿭 -->
     <main class="admin-main">
 
 
         <header class="admin-topbar">
-            <h2 id="currentTabTitle">대시보드</h2>
+            <h2 id="currentTabTitle">??쒕낫??/h2>
             <div class="topbar-actions">
-                <button class="btn-refresh" id="btnAdminRefresh">🔄 데이터 새로고침</button>
+                <button class="btn-refresh" id="btnAdminRefresh">?봽 ?곗씠???덈줈怨좎묠</button>
             </div>
         </header>
 
         <div class="admin-content-wrapper">
 
-            <!-- 탭 1: 대시보드 홈 -->
+            <!-- ??1: ??쒕낫????-->
             <section id="tabDashboard" class="admin-tab-content active">
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-title">총 거래액 (KRW)</div>
+                        <div class="stat-title">珥?嫄곕옒??(KRW)</div>
                         <div class="stat-value" id="statRevenue">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">총 가입자 수</div>
+                        <div class="stat-title">珥?媛?낆옄 ??/div>
                         <div class="stat-value" id="statUsers">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">운영중인 클래스</div>
+                        <div class="stat-title">?댁쁺以묒씤 ?대옒??/div>
                         <div class="stat-value" id="statClasses">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">총 수강 등록</div>
+                        <div class="stat-title">珥??섍컯 ?깅줉</div>
                         <div class="stat-value" id="statEnrollments">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">강사 수</div>
+                        <div class="stat-title">媛뺤궗 ??/div>
                         <div class="stat-value" id="statInstructors" style="color:#6366f1;">0</div>
                     </div>
                 </div>
 
                 <div class="chart-container">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                        <h3 class="section-title" style="margin:0;">지표 분석</h3>
+                        <h3 class="section-title" style="margin:0;">吏??遺꾩꽍</h3>
                         <div style="display:flex; gap:0.5rem;">
-                            <button class="btn-small outline chart-range-btn active" data-range="7">7일</button>
-                            <button class="btn-small outline chart-range-btn" data-range="30">30일</button>
+                            <button class="btn-small outline chart-range-btn active" data-range="7">7??/button>
+                            <button class="btn-small outline chart-range-btn" data-range="30">30??/button>
                         </div>
                     </div>
                     <div class="chart-wrapper">
@@ -209,26 +205,26 @@
                     </div>
                 </div>
 
-                <!-- 최근 주문 미니테이블 -->
+                <!-- 理쒓렐 二쇰Ц 誘몃땲?뚯씠釉?-->
                 <div class="admin-card" style="margin-top:1.5rem;">
                     <div class="card-header">
-                        <h3 class="section-title">최근 주문</h3>
+                        <h3 class="section-title">理쒓렐 二쇰Ц</h3>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>주문번호</th>
-                                    <th>회원</th>
-                                    <th>클래스</th>
-                                    <th>금액</th>
-                                    <th>상태</th>
-                                    <th>일시</th>
+                                    <th>二쇰Ц踰덊샇</th>
+                                    <th>?뚯썝</th>
+                                    <th>?대옒??/th>
+                                    <th>湲덉븸</th>
+                                    <th>?곹깭</th>
+                                    <th>?쇱떆</th>
                                 </tr>
                             </thead>
                             <tbody id="dashRecentOrdersBody">
                                 <tr>
-                                    <td colspan="6" style="text-align:center;">데이터를 불러오는 중...</td>
+                                    <td colspan="6" style="text-align:center;">?곗씠?곕? 遺덈윭?ㅻ뒗 以?..</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -236,32 +232,32 @@
                 </div>
             </section>
 
-            <!-- 탭 5: 홈페이지 설정 -->
+            <!-- ??5: ?덊럹?댁? ?ㅼ젙 -->
             <section id="tabHomepage" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
-                        <h3 class="section-title">홈페이지 설정</h3>
-                        <button class="btn-primary" id="btnSaveHomepage">저장</button>
+                        <h3 class="section-title">?덊럹?댁? ?ㅼ젙</h3>
+                        <button class="btn-primary" id="btnSaveHomepage">???/button>
                     </div>
                     <div class="admin-grid-layout"
                         style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem; padding-top:1.5rem;">
                         <div class="settings-desc">
-                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">사이트 이름 및 주소 설정</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">사이트 이름을 설정할 수 있습니다.</p>
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">?ъ씠???대쫫 諛?二쇱냼 ?ㅼ젙</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">?ъ씠???대쫫???ㅼ젙?????덉뒿?덈떎.</p>
                         </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
                             <div class="field-group" style="margin-bottom:1rem;">
                                 <label
-                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사이트
-                                    이름</label>
-                                <input type="text" id="settingSiteName" placeholder="예: 비스퀘어" class="admin-form-input">
+                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?ъ씠??
+                                    ?대쫫</label>
+                                <input type="text" id="settingSiteName" placeholder="?? 鍮꾩뒪?섏뼱" class="admin-form-input">
                             </div>
                             <div style="display:flex; gap:1rem;">
                                 <div class="field-group" style="flex:1;">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사이트
-                                        대표 URL</label>
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?ъ씠??
+                                        ???URL</label>
                                     <input type="text" id="settingSiteURL" placeholder="https://"
                                         class="admin-form-input">
                                 </div>
@@ -273,54 +269,54 @@
 
                     <div class="admin-grid-layout" style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
                         <div class="settings-desc">
-                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">로고 설정</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">사이트 헤더 로고 및 파비콘에 사용되는 이미지를 설정할 수
-                                있습니다.</p>
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">濡쒓퀬 ?ㅼ젙</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">?ъ씠???ㅻ뜑 濡쒓퀬 諛??뚮퉬肄섏뿉 ?ъ슜?섎뒗 ?대?吏瑜??ㅼ젙????
+                                ?덉뒿?덈떎.</p>
                         </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
                             <div style="display:flex; gap:2rem;">
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">로고
-                                        이미지 업로드</label>
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">濡쒓퀬
+                                        ?대?吏 ?낅줈??/label>
                                     <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
                                         <input type="file" id="settingLogoFile" accept="image/*" style="display:none;">
                                         <button class="btn-small outline"
-                                            onclick="document.getElementById('settingLogoFile').click()">이미지 선택</button>
+                                            onclick="document.getElementById('settingLogoFile').click()">?대?吏 ?좏깮</button>
                                         <button class="btn-small outline" id="btnRemoveLogo"
-                                            style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">삭제</button>
+                                            style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">??젣</button>
                                     </div>
                                     <input type="hidden" id="settingLogoURL">
                                     <div
                                         style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:8px; padding:10px; display:flex; justify-content:center; align-items:center; min-height:80px;">
-                                        <img id="previewLogo" src="" alt="로고가 없습니다."
+                                        <img id="previewLogo" src="" alt="濡쒓퀬媛 ?놁뒿?덈떎."
                                             style="max-width:200px; max-height:60px; display:none;">
                                         <span id="logoPlaceholderTxt"
-                                            style="color:var(--mac-text-muted); font-size:0.85rem;">로고 이미지를
-                                            업로드해주세요.</span>
+                                            style="color:var(--mac-text-muted); font-size:0.85rem;">濡쒓퀬 ?대?吏瑜?
+                                            ?낅줈?쒗빐二쇱꽭??</span>
                                     </div>
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">파비콘
-                                        업로드</label>
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?뚮퉬肄?
+                                        ?낅줈??/label>
                                     <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
                                         <input type="file" id="settingFaviconFile" accept="image/*"
                                             style="display:none;">
                                         <button class="btn-small outline"
-                                            onclick="document.getElementById('settingFaviconFile').click()">이미지
-                                            선택</button>
+                                            onclick="document.getElementById('settingFaviconFile').click()">?대?吏
+                                            ?좏깮</button>
                                         <button class="btn-small outline" id="btnRemoveFavicon"
-                                            style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">삭제</button>
+                                            style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">??젣</button>
                                     </div>
                                     <input type="hidden" id="settingFaviconURL">
                                     <div
                                         style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:8px; padding:10px; display:flex; justify-content:center; align-items:center; min-height:80px;">
-                                        <img id="previewFavicon" src="" alt="파비콘이 없습니다."
+                                        <img id="previewFavicon" src="" alt="?뚮퉬肄섏씠 ?놁뒿?덈떎."
                                             style="max-width:60px; max-height:60px; display:none; border-radius:8px;">
                                         <span id="faviconPlaceholderTxt"
-                                            style="color:var(--mac-text-muted); font-size:0.85rem;">파비콘을 업로드해주세요.</span>
+                                            style="color:var(--mac-text-muted); font-size:0.85rem;">?뚮퉬肄섏쓣 ?낅줈?쒗빐二쇱꽭??</span>
                                     </div>
                                 </div>
                             </div>
@@ -331,34 +327,34 @@
 
                     <div class="admin-grid-layout" style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
                         <div class="settings-desc">
-                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">광고 배너 설정</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">메인 홈페이지 상단에 롤링되는 광고 배너 이미지를
-                                관리합니다.</p>
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">愿묎퀬 諛곕꼫 ?ㅼ젙</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">硫붿씤 ?덊럹?댁? ?곷떒??濡ㅻ쭅?섎뒗 愿묎퀬 諛곕꼫 ?대?吏瑜?
+                                愿由ы빀?덈떎.</p>
                             <button id="btnAddBanner" class="btn-primary"
-                                style="background:#4f46e5; margin-top:1rem; width:100%;">+ 배너 추가하기</button>
+                                style="background:#4f46e5; margin-top:1rem; width:100%;">+ 諛곕꼫 異붽??섍린</button>
                         </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
                             <div id="bannerListContainer" style="display:flex; flex-direction:column; gap:1rem;">
-                                <!-- 동적 로딩 배너 아이템 -->
+                                <!-- ?숈쟻 濡쒕뵫 諛곕꼫 ?꾩씠??-->
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 탭 5-2: 인기/추천 항목 관리 -->
+            <!-- ??5-2: ?멸린/異붿쿇 ??ぉ 愿由?-->
             <section id="tabRecommend" class="admin-tab-content">
                 <div class="admin-card" style="margin-bottom: 2rem;">
                     <div class="card-header" style="justify-content: space-between;">
-                        <h3 class="section-title">🔥 실시간 인기 클래스 설정</h3>
-                        <button class="btn-primary" id="btnSavePopular" style="background:#ff3b30;">인기 설정 저장</button>
+                        <h3 class="section-title">?뵦 ?ㅼ떆媛??멸린 ?대옒???ㅼ젙</h3>
+                        <button class="btn-primary" id="btnSavePopular" style="background:#ff3b30;">?멸린 ?ㅼ젙 ???/button>
                     </div>
                     <div style="padding:1.5rem; border-bottom:1px solid var(--admin-border);">
-                        <p style="color:var(--admin-text-muted); font-size:0.9rem; margin-bottom:1rem;">메인 화면 최상단 "지금 인기
-                            있는 클래스" 섹션에 노출될 항목들을 관리합니다. (최대 10개 권장)</p>
+                        <p style="color:var(--admin-text-muted); font-size:0.9rem; margin-bottom:1rem;">硫붿씤 ?붾㈃ 理쒖긽??"吏湲??멸린
+                            ?덈뒗 ?대옒?? ?뱀뀡???몄텧????ぉ?ㅼ쓣 愿由ы빀?덈떎. (理쒕? 10媛?沅뚯옣)</p>
                         <button class="btn-primary" onclick="window.openClassSearch('popular_folder', this)"
-                            style="background:#1e293b;">+ 인기 클래스 추가</button>
+                            style="background:#1e293b;">+ ?멸린 ?대옒??異붽?</button>
                     </div>
                     <div id="popularClassList"
                         style="padding:1.5rem; display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:1.5rem; background:#fcfcfe; min-height:100px;">
@@ -368,14 +364,14 @@
 
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
-                        <h3 class="section-title">📁 추천 클래스 폴더 관리</h3>
-                        <button class="btn-primary" id="btnSaveRecommendations">추천 폴더 저장</button>
+                        <h3 class="section-title">?뱚 異붿쿇 ?대옒???대뜑 愿由?/h3>
+                        <button class="btn-primary" id="btnSaveRecommendations">異붿쿇 ?대뜑 ???/button>
                     </div>
                     <div style="padding:1.5rem; border-bottom:1px solid var(--admin-border);">
-                        <p style="color:var(--admin-text-muted); font-size:0.9rem; margin-bottom:1rem;">메인 화면 하단에 노출될 추천
-                            클래스 그룹(폴더)들을 관리합니다. 각 폴더는 슬라이더 형태로 표시됩니다.</p>
-                        <button class="btn-primary" id="btnAddRecommendFolder" style="background:#4f46e5;">+ 새 추천 폴더
-                            추가</button>
+                        <p style="color:var(--admin-text-muted); font-size:0.9rem; margin-bottom:1rem;">硫붿씤 ?붾㈃ ?섎떒???몄텧??異붿쿇
+                            ?대옒??洹몃９(?대뜑)?ㅼ쓣 愿由ы빀?덈떎. 媛??대뜑???щ씪?대뜑 ?뺥깭濡??쒖떆?⑸땲??</p>
+                        <button class="btn-primary" id="btnAddRecommendFolder" style="background:#4f46e5;">+ ??異붿쿇 ?대뜑
+                            異붽?</button>
                     </div>
                     <div id="recommendFolderList"
                         style="padding:1.5rem; display:flex; flex-direction:column; gap:2rem;">
@@ -383,7 +379,7 @@
                     </div>
                 </div>
 
-                <!-- 클래스 선택 모달 (Premium Redesign) -->
+                <!-- ?대옒???좏깮 紐⑤떖 (Premium Redesign) -->
                 <div id="classSearchModal"
                     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
                     <div
@@ -391,8 +387,8 @@
                         <div
                             style="padding:1.5rem 2rem; background:#fff; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
                             <div>
-                                <h4 style="margin:0; font-size:1.25rem; font-weight:800; color:#1e293b;">추가할 클래스 선택</h4>
-                                <p style="margin:0.2rem 0 0; font-size:0.85rem; color:#64748b;">추천 섹션에 노출할 클래스를 선택해 주세요.
+                                <h4 style="margin:0; font-size:1.25rem; font-weight:800; color:#1e293b;">異붽????대옒???좏깮</h4>
+                                <p style="margin:0.2rem 0 0; font-size:0.85rem; color:#64748b;">異붿쿇 ?뱀뀡???몄텧???대옒?ㅻ? ?좏깮??二쇱꽭??
                                 </p>
                             </div>
                             <button id="btnCloseClassModal"
@@ -400,31 +396,31 @@
                                 class="modal-close" onclick="window.closeClassSearchModal()">&times;</button>
                         </div>
 
-                        <!-- 모달 내부 필터바 -->
+                        <!-- 紐⑤떖 ?대? ?꾪꽣諛?-->
                         <div
                             style="padding:1rem 2rem; background:#f8fafc; border-bottom:1px solid #f1f5f9; display:flex; gap:1.5rem; align-items:center;">
                             <div style="position:relative; flex:1;">
                                 <input type="text" id="classSearchInput" class="admin-form-input"
-                                    placeholder="클래스 제목 또는 강사명 검색..."
+                                    placeholder="?대옒???쒕ぉ ?먮뒗 媛뺤궗紐?寃??.."
                                     style="margin:0; padding-left:2.5rem; background:#fff; border-radius:10px; border:1px solid #e2e8f0;">
                                 <span
-                                    style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8;">🔍</span>
+                                    style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8;">?뵇</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:10px;">
-                                <span style="font-size:0.85rem; color:#64748b; white-space:nowrap;">카테고리:</span>
+                                <span style="font-size:0.85rem; color:#64748b; white-space:nowrap;">移댄뀒怨좊━:</span>
                                 <select id="modalCategorySelect" class="admin-form-input"
                                     style="margin:0; width:150px; background:#fff; font-size:0.85rem;">
-                                    <option value="all">전체</option>
-                                    <option value="디자인">디자인</option>
-                                    <option value="생산성">생산성</option>
-                                    <option value="스포츠">스포츠</option>
-                                    <option value="디지털 드로잉">디지털 드로잉</option>
-                                    <option value="성공 마인드">성공 마인드</option>
-                                    <option value="음악">음악</option>
-                                    <option value="베이킹">베이킹</option>
-                                    <option value="사진">사진</option>
-                                    <option value="영상">영상</option>
-                                    <option value="공예">공예</option>
+                                    <option value="all">?꾩껜</option>
+                                    <option value="?붿옄??>?붿옄??/option>
+                                    <option value="?앹궛??>?앹궛??/option>
+                                    <option value="?ㅽ룷痢?>?ㅽ룷痢?/option>
+                                    <option value="?붿????쒕줈??>?붿????쒕줈??/option>
+                                    <option value="?깃났 留덉씤??>?깃났 留덉씤??/option>
+                                    <option value="?뚯븙">?뚯븙</option>
+                                    <option value="踰좎씠??>踰좎씠??/option>
+                                    <option value="?ъ쭊">?ъ쭊</option>
+                                    <option value="?곸긽">?곸긽</option>
+                                    <option value="怨듭삁">怨듭삁</option>
                                 </select>
                             </div>
                         </div>
@@ -434,78 +430,78 @@
                                 style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:1.5rem;">
                                 <!-- Search results (Cards) -->
                                 <div style="grid-column:1/-1; padding:4rem; text-align:center; color:#94a3b8;">
-                                    <div style="font-size:3rem; margin-bottom:1rem;">📚</div>
-                                    <p>클래스를 불러오는 중...</p>
+                                    <div style="font-size:3rem; margin-bottom:1rem;">?뱴</div>
+                                    <p>?대옒?ㅻ? 遺덈윭?ㅻ뒗 以?..</p>
                                 </div>
                             </div>
                         </div>
 
                         <div
                             style="padding:1rem 2rem; background:#f8fafc; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:0.85rem; color:#64748b;" id="modalResultCount">총 0개의 클래스</span>
+                            <span style="font-size:0.85rem; color:#64748b;" id="modalResultCount">珥?0媛쒖쓽 ?대옒??/span>
                             <button class="btn-primary" style="background:#1e293b; border:none;"
-                                onclick="window.closeClassSearchModal()">닫기</button>
+                                onclick="window.closeClassSearchModal()">?リ린</button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 탭 6: 푸터 설정 -->
+            <!-- ??6: ?명꽣 ?ㅼ젙 -->
             <section id="tabFooter" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
-                        <h3 class="section-title">푸터 설정</h3>
-                        <button class="btn-primary" id="btnSaveFooter">저장</button>
+                        <h3 class="section-title">?명꽣 ?ㅼ젙</h3>
+                        <button class="btn-primary" id="btnSaveFooter">???/button>
                     </div>
                     <div class="admin-grid-layout"
                         style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding-top:1.5rem;">
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border); grid-column: span 2;">
-                            <p style="margin-bottom:1.5rem; color:var(--admin-text-muted);">사이트 하단에 표시되는 사업자 정보를 설정합니다.
+                            <p style="margin-bottom:1.5rem; color:var(--admin-text-muted);">?ъ씠???섎떒???쒖떆?섎뒗 ?ъ뾽???뺣낫瑜??ㅼ젙?⑸땲??
                             </p>
 
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">회사명(상호)</label>
-                                    <input type="text" id="setFooterCompany" placeholder="예: (주)비스퀘어"
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?뚯궗紐??곹샇)</label>
+                                    <input type="text" id="setFooterCompany" placeholder="?? (二?鍮꾩뒪?섏뼱"
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">대표자
-                                        성명</label>
-                                    <input type="text" id="setFooterCEO" placeholder="대표자명" class="admin-form-input">
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">??쒖옄
+                                        ?깅챸</label>
+                                    <input type="text" id="setFooterCEO" placeholder="??쒖옄紐? class="admin-form-input">
                                 </div>
                                 <div class="field-group" style="grid-column: span 2;">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">주소</label>
-                                    <input type="text" id="setFooterAddress" placeholder="사업장 소재지 주소"
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">二쇱냼</label>
+                                    <input type="text" id="setFooterAddress" placeholder="?ъ뾽???뚯옱吏 二쇱냼"
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사업자등록번호</label>
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?ъ뾽?먮벑濡앸쾲??/label>
                                     <input type="text" id="setFooterBizNum" placeholder="000-00-00000"
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">통신판매업
-                                        신고번호</label>
-                                    <input type="text" id="setFooterMailNum" placeholder="제 0000-지역-0000 호"
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?듭떊?먮ℓ??
+                                        ?좉퀬踰덊샇</label>
+                                    <input type="text" id="setFooterMailNum" placeholder="??0000-吏??0000 ??
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">고객센터
-                                        전화번호</label>
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">怨좉컼?쇳꽣
+                                        ?꾪솕踰덊샇</label>
                                     <input type="text" id="setFooterCS" placeholder="0000-0000"
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">이메일</label>
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?대찓??/label>
                                     <input type="text" id="setFooterEmail" placeholder="cs@domain.com"
                                         class="admin-form-input">
                                 </div>
@@ -517,47 +513,47 @@
 
             </section>
 
-            <!-- 탭: 00_Placeholder (미구현 메뉴 공통) -->
+            <!-- ?? 00_Placeholder (誘멸뎄??硫붾돱 怨듯넻) -->
             <section id="tabPlaceholder" class="admin-tab-content">
                 <div class="admin-card" style="text-align:center; padding:5rem 2rem;">
-                    <h2 style="color:var(--admin-text-muted); margin-bottom:1rem;">🚧 페이지를 준비 중입니다.</h2>
-                    <p style="color:#777;">해당 기능은 추후 업데이트를 통해 제공될 예정입니다.</p>
+                    <h2 style="color:var(--admin-text-muted); margin-bottom:1rem;">?슙 ?섏씠吏瑜?以鍮?以묒엯?덈떎.</h2>
+                    <p style="color:#777;">?대떦 湲곕뒫? 異뷀썑 ?낅뜲?댄듃瑜??듯빐 ?쒓났???덉젙?낅땲??</p>
                 </div>
             </section>
 
-            <!-- 탭: 운영자 설정 (tabOperators) -->
+            <!-- ?? ?댁쁺???ㅼ젙 (tabOperators) -->
             <section id="tabOperators" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
                         <div>
-                            <h3 class="section-title">운영자 설정</h3>
-                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">사이트를 관리하는 운영자와 강의를 진행하는 강사를 관리할
-                                수 있습니다.</p>
+                            <h3 class="section-title">?댁쁺???ㅼ젙</h3>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">?ъ씠?몃? 愿由ы븯???댁쁺?먯? 媛뺤쓽瑜?吏꾪뻾?섎뒗 媛뺤궗瑜?愿由ы븷
+                                ???덉뒿?덈떎.</p>
                         </div>
                         <div style="display:flex; gap:0.5rem;">
-                            <button class="btn-primary" style="background:#4f46e5;">운영자 등록</button>
-                            <button class="btn-primary" style="background:#4f46e5;">강사 등록</button>
+                            <button class="btn-primary" style="background:#4f46e5;">?댁쁺???깅줉</button>
+                            <button class="btn-primary" style="background:#4f46e5;">媛뺤궗 ?깅줉</button>
                         </div>
                     </div>
                     <div
                         style="padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--admin-border);">
                         <div style="display:flex; gap:0.5rem;">
                             <div style="padding:0.4rem 0.8rem; background:#111; color:#fff; border-radius:6px; font-size:0.8rem; font-weight:600;"
-                                id="countAllOps">전체 0명</div>
+                                id="countAllOps">?꾩껜 0紐?/div>
                             <div style="padding:0.4rem 0.8rem; background:#f4f4f5; color:#333; border-radius:6px; font-size:0.8rem;"
-                                id="countAdmins">운영자 0명</div>
+                                id="countAdmins">?댁쁺??0紐?/div>
                             <div style="padding:0.4rem 0.8rem; background:#f4f4f5; color:#333; border-radius:6px; font-size:0.8rem;"
-                                id="countInsts">강사 0명</div>
+                                id="countInsts">媛뺤궗 0紐?/div>
                         </div>
                         <div style="display:flex; gap:0.5rem;">
                             <select class="admin-form-input" style="padding:0.4rem; padding-right:2rem; margin:0;">
-                                <option>10개씩</option>
+                                <option>10媛쒖뵫</option>
                             </select>
                             <div style="position:relative;">
-                                <input type="text" class="admin-form-input" placeholder="이름 또는 이메일 검색"
+                                <input type="text" class="admin-form-input" placeholder="?대쫫 ?먮뒗 ?대찓??寃??
                                     style="margin:0; width:200px;">
                                 <span
-                                    style="position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#888;">🔍</span>
+                                    style="position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#888;">?뵇</span>
                             </div>
                         </div>
                     </div>
@@ -566,16 +562,16 @@
                             <thead>
                                 <tr>
                                     <th style="width:50px;"><input type="checkbox"></th>
-                                    <th>이름</th>
-                                    <th>연락처</th>
-                                    <th>이메일</th>
-                                    <th>역할</th>
+                                    <th>?대쫫</th>
+                                    <th>?곕씫泥?/th>
+                                    <th>?대찓??/th>
+                                    <th>??븷</th>
                                 </tr>
                             </thead>
                             <tbody id="operatorsTableBody">
                                 <!-- JS Injected -->
                                 <tr>
-                                    <td colspan="5" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+                                    <td colspan="5" style="text-align:center;">?곗씠?곕? 遺덈윭?ㅻ뒗 以묒엯?덈떎...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -583,35 +579,35 @@
                 </div>
             </section>
 
-            <!-- 탭: 쿠폰 관리 (tabCoupons) -->
+            <!-- ?? 荑좏룿 愿由?(tabCoupons) -->
             <section id="tabCoupons" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
                         <div>
-                            <h3 class="section-title">B-Square 이벤트 쿠폰 발급/관리</h3>
-                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">모든 클래스 결제 시 사용 가능한 글로벌 할인 쿠폰을
-                                발급하고 관리합니다.</p>
+                            <h3 class="section-title">B-Square ?대깽??荑좏룿 諛쒓툒/愿由?/h3>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">紐⑤뱺 ?대옒??寃곗젣 ???ъ슜 媛?ν븳 湲濡쒕쾶 ?좎씤 荑좏룿??
+                                諛쒓툒?섍퀬 愿由ы빀?덈떎.</p>
                         </div>
-                        <button class="btn-primary" style="background:#4f46e5;" onclick="createCoupon()">+ 새 쿠폰
-                            발급</button>
+                        <button class="btn-primary" style="background:#4f46e5;" onclick="createCoupon()">+ ??荑좏룿
+                            諛쒓툒</button>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>쿠폰 코드</th>
-                                    <th>쿠폰명</th>
-                                    <th>할인 혜택</th>
-                                    <th>최소주문금액</th>
-                                    <th>사용/발급</th>
-                                    <th>유효 기한</th>
-                                    <th>상태</th>
-                                    <th>관리</th>
+                                    <th>荑좏룿 肄붾뱶</th>
+                                    <th>荑좏룿紐?/th>
+                                    <th>?좎씤 ?쒗깮</th>
+                                    <th>理쒖냼二쇰Ц湲덉븸</th>
+                                    <th>?ъ슜/諛쒓툒</th>
+                                    <th>?좏슚 湲고븳</th>
+                                    <th>?곹깭</th>
+                                    <th>愿由?/th>
                                 </tr>
                             </thead>
                             <tbody id="couponsTableBody">
                                 <tr>
-                                    <td colspan="8" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+                                    <td colspan="8" style="text-align:center;">?곗씠?곕? 遺덈윭?ㅻ뒗 以묒엯?덈떎...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -619,102 +615,102 @@
                 </div>
             </section>
 
-            <!-- 탭: SEO 관리 (tabSEO) -->
+            <!-- ?? SEO 愿由?(tabSEO) -->
             <section id="tabSEO" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
                         <div>
-                            <h3 class="section-title">SEO 메타 태그 최적화</h3>
-                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">검색 엔진(Google, Naver 등) 및 소셜 미디어
-                                공유 시 노출될 정보를 설정합니다.</p>
+                            <h3 class="section-title">SEO 硫뷀? ?쒓렇 理쒖쟻??/h3>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">寃???붿쭊(Google, Naver ?? 諛??뚯뀥 誘몃뵒??
+                                怨듭쑀 ???몄텧???뺣낫瑜??ㅼ젙?⑸땲??</p>
                         </div>
-                        <button class="btn-primary" id="btnSaveSEO" style="background:#4f46e5;">저장하기</button>
+                        <button class="btn-primary" id="btnSaveSEO" style="background:#4f46e5;">??ν븯湲?/button>
                     </div>
                     <div style="padding:1.5rem;">
                         <div style="display:grid; grid-template-columns:1fr; gap:1.5rem;">
                             <div class="field-group">
                                 <label
-                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사이트
-                                    검색 제목 (Title Tag)</label>
+                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?ъ씠??
+                                    寃???쒕ぉ (Title Tag)</label>
                                 <input type="text" id="seoTitle" class="admin-form-input"
-                                    placeholder="B-Square | 최고의 클래스를 만나보세요">
-                                <small style="display:block; margin-top:4px; color:#888;">브라우저 탭과 검색 결과의 제목으로 나타납니다.
-                                    (권장: 60자 이내)</small>
+                                    placeholder="B-Square | 理쒓퀬???대옒?ㅻ? 留뚮굹蹂댁꽭??>
+                                <small style="display:block; margin-top:4px; color:#888;">釉뚮씪?곗? ??낵 寃??寃곌낵???쒕ぉ?쇰줈 ?섑??⑸땲??
+                                    (沅뚯옣: 60???대궡)</small>
                             </div>
                             <div class="field-group">
                                 <label
-                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사이트
-                                    설명 (Description)</label>
+                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?ъ씠??
+                                    ?ㅻ챸 (Description)</label>
                                 <textarea id="seoDescription" class="admin-form-input" style="height:80px; resize:none;"
-                                    placeholder="B-Square는 다양한 분야의 전문 강사들이 모여 지식을 나누는 프리미엄 클래스 플랫폼입니다."></textarea>
-                                <small style="display:block; margin-top:4px; color:#888;">검색 결과 제목 아래에 표시되는 사이트 설명입니다.
-                                    (권장: 155자 이내)</small>
+                                    placeholder="B-Square???ㅼ뼇??遺꾩빞???꾨Ц 媛뺤궗?ㅼ씠 紐⑥뿬 吏?앹쓣 ?섎늻???꾨━誘몄뾼 ?대옒???뚮옯?쇱엯?덈떎."></textarea>
+                                <small style="display:block; margin-top:4px; color:#888;">寃??寃곌낵 ?쒕ぉ ?꾨옒???쒖떆?섎뒗 ?ъ씠???ㅻ챸?낅땲??
+                                    (沅뚯옣: 155???대궡)</small>
                             </div>
                             <div class="field-group">
                                 <label
-                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">검색
-                                    키워드 (Keywords)</label>
+                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">寃??
+                                    ?ㅼ썙??(Keywords)</label>
                                 <input type="text" id="seoKeywords" class="admin-form-input"
-                                    placeholder="클래스, 온라인강의, 원데이클래스, 취미">
-                                <small style="display:block; margin-top:4px; color:#888;">쉼표(,)로 구분하여 입력해주세요.</small>
+                                    placeholder="?대옒?? ?⑤씪?멸컯?? ?먮뜲?댄겢?섏뒪, 痍⑤?">
+                                <small style="display:block; margin-top:4px; color:#888;">?쇳몴(,)濡?援щ텇?섏뿬 ?낅젰?댁＜?몄슂.</small>
                             </div>
                             <div class="field-group">
                                 <label
-                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">대표
-                                    썸네일 (og:image URL)</label>
+                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">???
+                                    ?몃꽕??(og:image URL)</label>
                                 <input type="text" id="seoImage" class="admin-form-input"
                                     placeholder="https://domain.com/assets/og_image.jpg">
-                                <small style="display:block; margin-top:4px; color:#888;">카카오톡, 페이스북 등에 링크를 공유할 때 나타날 대표
-                                    이미지 주소입니다.</small>
+                                <small style="display:block; margin-top:4px; color:#888;">移댁뭅?ㅽ넚, ?섏씠?ㅻ턿 ?깆뿉 留곹겕瑜?怨듭쑀?????섑??????
+                                    ?대?吏 二쇱냼?낅땲??</small>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 탭: 클래스 목록 (tabAllClasses) -->
+            <!-- ?? ?대옒??紐⑸줉 (tabAllClasses) -->
             <section id="tabAllClasses" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
-                        <h3 class="section-title">클래스</h3>
-                        <button class="btn-primary" style="background:#4f46e5;">+ 클래스 생성</button>
+                        <h3 class="section-title">?대옒??/h3>
+                        <button class="btn-primary" style="background:#4f46e5;">+ ?대옒???앹꽦</button>
                     </div>
-                    <!-- 카테고리 필터바 -->
+                    <!-- 移댄뀒怨좊━ ?꾪꽣諛?-->
                     <div
                         style="display:flex; gap:1rem; padding:1rem 1.5rem; border-bottom:1px solid var(--admin-border); overflow-x:auto;">
                         <button
-                            style="padding:0.4rem 1rem; border:1px solid #ddd; background:#fff; border-radius:20px; font-size:0.85rem; white-space:nowrap; font-weight:600;">전체</button>
+                            style="padding:0.4rem 1rem; border:1px solid #ddd; background:#fff; border-radius:20px; font-size:0.85rem; white-space:nowrap; font-weight:600;">?꾩껜</button>
                         <button
-                            style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">👥
-                            소모임/동아리</button>
+                            style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">?뫁
+                            ?뚮え???숈븘由?/button>
                         <button
-                            style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">✨
-                            맛있는 클래스</button>
+                            style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">??
+                            留쏆엳???대옒??/button>
                         <button
-                            style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">🔥
-                            운동 클래스</button>
+                            style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">?뵦
+                            ?대룞 ?대옒??/button>
                         <button
                             style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">+
-                            카테고리 추가</button>
+                            移댄뀒怨좊━ 異붽?</button>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
                                     <th style="width:50px;"><input type="checkbox"></th>
-                                    <th>클래스</th>
-                                    <th>카테고리</th>
-                                    <th>가격</th>
-                                    <th>수강생 수 / 정원</th>
-                                    <th>상태 (승인)</th>
-                                    <th>공개여부</th>
-                                    <th>관리</th>
+                                    <th>?대옒??/th>
+                                    <th>移댄뀒怨좊━</th>
+                                    <th>媛寃?/th>
+                                    <th>?섍컯????/ ?뺤썝</th>
+                                    <th>?곹깭 (?뱀씤)</th>
+                                    <th>怨듦컻?щ?</th>
+                                    <th>愿由?/th>
                                 </tr>
                             </thead>
                             <tbody id="allClassesTableBody">
                                 <!-- JS Injected -->
                                 <tr>
-                                    <td colspan="7" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+                                    <td colspan="7" style="text-align:center;">?곗씠?곕? 遺덈윭?ㅻ뒗 以묒엯?덈떎...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -722,31 +718,31 @@
                 </div>
             </section>
 
-            <!-- 탭: 리뷰 관리 (tabReviews) -->
+            <!-- ?? 由щ럭 愿由?(tabReviews) -->
             <section id="tabReviews" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">리뷰 관리</h3>
-                        <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">모든 클래스의 리뷰를 최신
-                            작성된 순서로 검색할 수 있습니다.</p>
+                        <h3 class="section-title">由щ럭 愿由?/h3>
+                        <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">紐⑤뱺 ?대옒?ㅼ쓽 由щ럭瑜?理쒖떊
+                            ?묒꽦???쒖꽌濡?寃?됲븷 ???덉뒿?덈떎.</p>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>클래스</th>
-                                    <th>회원 이름</th>
-                                    <th>이메일</th>
-                                    <th>등록일</th>
-                                    <th>평점</th>
-                                    <th>리뷰</th>
-                                    <th>관리</th>
+                                    <th>?대옒??/th>
+                                    <th>?뚯썝 ?대쫫</th>
+                                    <th>?대찓??/th>
+                                    <th>?깅줉??/th>
+                                    <th>?됱젏</th>
+                                    <th>由щ럭</th>
+                                    <th>愿由?/th>
                                 </tr>
                             </thead>
                             <tbody id="reviewsTableBody">
                                 <!-- JS Injected -->
                                 <tr>
-                                    <td colspan="7" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+                                    <td colspan="7" style="text-align:center;">?곗씠?곕? 遺덈윭?ㅻ뒗 以묒엯?덈떎...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -754,105 +750,105 @@
                 </div>
             </section>
 
-            <!-- 탭: 정산 정보 등록 (tabSettlementInfo) -->
+            <!-- ?? ?뺤궛 ?뺣낫 ?깅줉 (tabSettlementInfo) -->
             <section id="tabSettlementInfo" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="flex-direction:column; align-items:flex-start;">
-                        <h3 class="section-title">정산 정보 관리</h3>
-                        <p style="font-size:0.85rem; color:#888; margin-top:0.5rem; line-height:1.4;">라이브클래스에서 발생한 수익을
-                            정산 받으시려면 정산 정보 등록이 필요합니다.<br>입력한 정보가 유효하지 않거나 확인이 필요한 경우 정산이 보류될 수 있습니다.</p>
+                        <h3 class="section-title">?뺤궛 ?뺣낫 愿由?/h3>
+                        <p style="font-size:0.85rem; color:#888; margin-top:0.5rem; line-height:1.4;">?쇱씠釉뚰겢?섏뒪?먯꽌 諛쒖깮???섏씡??
+                            ?뺤궛 諛쏆쑝?쒕젮硫??뺤궛 ?뺣낫 ?깅줉???꾩슂?⑸땲??<br>?낅젰???뺣낫媛 ?좏슚?섏? ?딄굅???뺤씤???꾩슂??寃쎌슦 ?뺤궛??蹂대쪟?????덉뒿?덈떎.</p>
                     </div>
                     <div style="padding:1.5rem; max-width:800px;">
                         <div
                             style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                            <h4 style="font-size:1.1rem; font-weight:600;">정산 서류 정보 및 자료 제출</h4>
+                            <h4 style="font-size:1.1rem; font-weight:600;">?뺤궛 ?쒕쪟 ?뺣낫 諛??먮즺 ?쒖텧</h4>
                             <button class="btn-primary" style="background:#fff; color:#333; border:1px solid #ddd;"
-                                onclick="saveSettlementInfo()">저장</button>
+                                onclick="saveSettlementInfo()">???/button>
                         </div>
 
                         <div class="field-group" style="margin-bottom:1.5rem;">
                             <label
-                                style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">회사명/상호
-                                <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
-                            <input type="text" id="si_company_name" placeholder="예시: 주식회사 비스퀘어"
+                                style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?뚯궗紐??곹샇
+                                <span style="color:#3b82f6; font-size:0.75rem;">?꾩닔</span></label>
+                            <input type="text" id="si_company_name" placeholder="?덉떆: 二쇱떇?뚯궗 鍮꾩뒪?섏뼱"
                                 class="admin-form-input">
                         </div>
                         <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">대표자명
-                                <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
-                            <input type="text" id="si_ceo_name" placeholder="사업자등록증 상의 대표명을 입력해 주세요"
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">??쒖옄紐?
+                                <span style="color:#3b82f6; font-size:0.75rem;">?꾩닔</span></label>
+                            <input type="text" id="si_ceo_name" placeholder="?ъ뾽?먮벑濡앹쬆 ?곸쓽 ??쒕챸???낅젰??二쇱꽭??
                                 class="admin-form-input">
                         </div>
                         <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사업자
-                                등록번호 <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
-                            <input type="text" id="si_biz_num" placeholder="'-' 없이 숫자만 입력해주세요" class="admin-form-input">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?ъ뾽??
+                                ?깅줉踰덊샇 <span style="color:#3b82f6; font-size:0.75rem;">?꾩닔</span></label>
+                            <input type="text" id="si_biz_num" placeholder="'-' ?놁씠 ?レ옄留??낅젰?댁＜?몄슂" class="admin-form-input">
                         </div>
                         <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">업태
-                                <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
-                            <input type="text" id="si_biz_type" placeholder="교육서비스업" class="admin-form-input">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?낇깭
+                                <span style="color:#3b82f6; font-size:0.75rem;">?꾩닔</span></label>
+                            <input type="text" id="si_biz_type" placeholder="援먯쑁?쒕퉬?ㅼ뾽" class="admin-form-input">
                         </div>
                         <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사업장
-                                주소
-                                <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
-                            <input type="text" id="si_address" placeholder="사업자등록증 상의 주소" class="admin-form-input">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?ъ뾽??
+                                二쇱냼
+                                <span style="color:#3b82f6; font-size:0.75rem;">?꾩닔</span></label>
+                            <input type="text" id="si_address" placeholder="?ъ뾽?먮벑濡앹쬆 ?곸쓽 二쇱냼" class="admin-form-input">
                         </div>
                         <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">정산
-                                담당자 이메일 <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
-                            <input type="text" id="si_manager_email" placeholder="본 메일로 계산서 및 알림이 전송됩니다"
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?뺤궛
+                                ?대떦???대찓??<span style="color:#3b82f6; font-size:0.75rem;">?꾩닔</span></label>
+                            <input type="text" id="si_manager_email" placeholder="蹂?硫붿씪濡?怨꾩궛??諛??뚮┝???꾩넚?⑸땲??
                                 class="admin-form-input">
                         </div>
                         <hr style="margin:2rem 0; border:none; border-top:1px solid #ddd;">
                         <div class="field-group" style="margin-bottom:1.5rem;">
                             <label
-                                style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">은행명</label>
-                            <input type="text" id="si_bank_name" placeholder="예: 신한은행" class="admin-form-input">
+                                style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">??됰챸</label>
+                            <input type="text" id="si_bank_name" placeholder="?? ?좏븳??? class="admin-form-input">
                         </div>
                         <div class="field-group" style="margin-bottom:1.5rem;">
                             <label
-                                style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">계좌번호</label>
-                            <input type="text" id="si_bank_account" placeholder="- 없이 입력" class="admin-form-input">
+                                style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">怨꾩쥖踰덊샇</label>
+                            <input type="text" id="si_bank_account" placeholder="- ?놁씠 ?낅젰" class="admin-form-input">
                         </div>
                         <div class="field-group" style="margin-bottom:1.5rem;">
                             <label
-                                style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">예금주</label>
-                            <input type="text" id="si_bank_holder" placeholder="예금주명" class="admin-form-input">
+                                style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">?덇툑二?/label>
+                            <input type="text" id="si_bank_holder" placeholder="?덇툑二쇰챸" class="admin-form-input">
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 탭: 메뉴 설정 (tabMenuSettings) -->
+            <!-- ?? 硫붾돱 ?ㅼ젙 (tabMenuSettings) -->
             <section id="tabMenuSettings" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="justify-content:space-between;">
                         <div>
-                            <h3 class="section-title">메뉴 설정</h3>
-                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">사이트 메뉴의 이름 변경, 사용 여부를 관리하고 외부
-                                URL을 연결할 수 있습니다.</p>
+                            <h3 class="section-title">硫붾돱 ?ㅼ젙</h3>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">?ъ씠??硫붾돱???대쫫 蹂寃? ?ъ슜 ?щ?瑜?愿由ы븯怨??몃?
+                                URL???곌껐?????덉뒿?덈떎.</p>
                         </div>
                         <div style="display:flex; gap:0.5rem;">
-                            <button class="btn-primary" onclick="addMenuRow()">+ 메뉴 추가</button>
-                            <button class="btn-primary" onclick="saveMenuSettings()">💾 저장</button>
+                            <button class="btn-primary" onclick="addMenuRow()">+ 硫붾돱 異붽?</button>
+                            <button class="btn-primary" onclick="saveMenuSettings()">?뮶 ???/button>
                         </div>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>메뉴명</th>
-                                    <th>링크</th>
-                                    <th>열기 방식</th>
-                                    <th>표시</th>
-                                    <th>관리</th>
+                                    <th>硫붾돱紐?/th>
+                                    <th>留곹겕</th>
+                                    <th>?닿린 諛⑹떇</th>
+                                    <th>?쒖떆</th>
+                                    <th>愿由?/th>
                                 </tr>
                             </thead>
                             <tbody id="menuSettingsBody">
                                 <tr>
-                                    <td colspan="5" style="text-align:center;">데이터를 불러오는 중...</td>
+                                    <td colspan="5" style="text-align:center;">?곗씠?곕? 遺덈윭?ㅻ뒗 以?..</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -860,23 +856,23 @@
                 </div>
             </section>
 
-            <!-- 탭: 결제 조회 (tabPaymentsView) -->
+            <!-- ?? 寃곗젣 議고쉶 (tabPaymentsView) -->
             <section id="tabPaymentsView" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">결제 조회</h3>
-                        <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">모든 결제 및 신청 내역, 구독
-                            건들을 조회하고 환불 처리합니다.</p>
+                        <h3 class="section-title">寃곗젣 議고쉶</h3>
+                        <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">紐⑤뱺 寃곗젣 諛??좎껌 ?댁뿭, 援щ룆
+                            嫄대뱾??議고쉶?섍퀬 ?섎텋 泥섎━?⑸땲??</p>
                     </div>
                     <div style="padding:1.5rem; border-bottom:1px solid var(--admin-border); background:#fcfcfc;">
                         <div style="display:flex; flex-wrap:wrap; gap:1rem; align-items:center;">
                             <input type="text" id="paymentSearchInput" class="admin-form-input"
-                                placeholder="주문번호, 이름, 클래스명 검색" style="width:250px; margin:0;">
+                                placeholder="二쇰Ц踰덊샇, ?대쫫, ?대옒?ㅻ챸 寃?? style="width:250px; margin:0;">
                             <select id="paymentStatusFilter" class="admin-form-input" style="width:120px; margin:0;">
-                                <option value="">전체 상태</option>
-                                <option value="paid">결제완료</option>
-                                <option value="refunded">환불됨</option>
-                                <option value="pending">대기/취소</option>
+                                <option value="">?꾩껜 ?곹깭</option>
+                                <option value="paid">寃곗젣?꾨즺</option>
+                                <option value="refunded">?섎텋??/option>
+                                <option value="pending">?湲?痍⑥냼</option>
                             </select>
                             <input type="date" id="paymentFromDate" class="admin-form-input"
                                 style="width:130px; margin:0;">
@@ -884,27 +880,27 @@
                             <input type="date" id="paymentToDate" class="admin-form-input"
                                 style="width:130px; margin:0;">
                             <button class="btn-primary" style="background:#3b82f6;"
-                                onclick="searchPayments()">검색</button>
+                                onclick="searchPayments()">寃??/button>
                         </div>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>주문번호</th>
-                                    <th>클래스/항목</th>
-                                    <th>주문자명</th>
-                                    <th>결제수단</th>
-                                    <th>주문금액</th>
-                                    <th>쿠폰/할인</th>
-                                    <th>최종결제액</th>
-                                    <th>상태</th>
-                                    <th>관리</th>
+                                    <th>二쇰Ц踰덊샇</th>
+                                    <th>?대옒????ぉ</th>
+                                    <th>二쇰Ц?먮챸</th>
+                                    <th>寃곗젣?섎떒</th>
+                                    <th>二쇰Ц湲덉븸</th>
+                                    <th>荑좏룿/?좎씤</th>
+                                    <th>理쒖쥌寃곗젣??/th>
+                                    <th>?곹깭</th>
+                                    <th>愿由?/th>
                                 </tr>
                             </thead>
                             <tbody id="paymentsViewBody">
                                 <tr>
-                                    <td colspan="9" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+                                    <td colspan="9" style="text-align:center;">?곗씠?곕? 遺덈윭?ㅻ뒗 以묒엯?덈떎...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -912,59 +908,59 @@
                 </div>
             </section>
 
-            <!-- 탭: 정산 내역 (tabSettlementHistory) -->
+            <!-- ?? ?뺤궛 ?댁뿭 (tabSettlementHistory) -->
             <section id="tabSettlementHistory" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">정산 내역 조회</h3>
-                        <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">정산 시점별 세부 정산 내역 및
-                            금액을 확인하실 수 있습니다.</p>
+                        <h3 class="section-title">?뺤궛 ?댁뿭 議고쉶</h3>
+                        <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">?뺤궛 ?쒖젏蹂??몃? ?뺤궛 ?댁뿭 諛?
+                            湲덉븸???뺤씤?섏떎 ???덉뒿?덈떎.</p>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>정산번호</th>
-                                    <th>강사명</th>
-                                    <th>정산 대상 기간</th>
-                                    <th>총 매출액</th>
-                                    <th>차감 수수료(플랫폼+PG)</th>
-                                    <th>최종 실지급액</th>
-                                    <th>정산 상태</th>
+                                    <th>?뺤궛踰덊샇</th>
+                                    <th>媛뺤궗紐?/th>
+                                    <th>?뺤궛 ???湲곌컙</th>
+                                    <th>珥?留ㅼ텧??/th>
+                                    <th>李④컧 ?섏닔猷??뚮옯??PG)</th>
+                                    <th>理쒖쥌 ?ㅼ?湲됱븸</th>
+                                    <th>?뺤궛 ?곹깭</th>
                                 </tr>
                             </thead>
                             <tbody id="settlementHistoryBody">
                                 <tr>
-                                    <td colspan="7" style="text-align:center;">정산 데이터를 불러오는 중...</td>
+                                    <td colspan="7" style="text-align:center;">?뺤궛 ?곗씠?곕? 遺덈윭?ㅻ뒗 以?..</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </section>
-            <!-- 탭: 가입 회원 (tabUsers) -->
+            <!-- ?? 媛???뚯썝 (tabUsers) -->
             <section id="tabUsers" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">가입 회원</h3>
+                        <h3 class="section-title">媛???뚯썝</h3>
                         <p style="font-size:0.85rem; color:var(--mac-text-muted); margin-left:1rem; margin-top:0.3rem;">
-                            전체 가입 회원 목록을 확인하고 관리합니다.</p>
+                            ?꾩껜 媛???뚯썝 紐⑸줉???뺤씤?섍퀬 愿由ы빀?덈떎.</p>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>가입일</th>
-                                    <th>이름</th>
-                                    <th>이메일</th>
-                                    <th>연락처</th>
-                                    <th>상태</th>
-                                    <th>관리</th>
+                                    <th>媛?낆씪</th>
+                                    <th>?대쫫</th>
+                                    <th>?대찓??/th>
+                                    <th>?곕씫泥?/th>
+                                    <th>?곹깭</th>
+                                    <th>愿由?/th>
                                 </tr>
                             </thead>
                             <tbody id="allUsersTableBody">
                                 <tr>
-                                    <td colspan="6" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+                                    <td colspan="6" style="text-align:center;">?곗씠?곕? 遺덈윭?ㅻ뒗 以묒엯?덈떎...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -972,43 +968,43 @@
                 </div>
             </section>
 
-            <!-- 탭: 회원 그룹 관리 (tabRoles) -->
+            <!-- ?? ?뚯썝 洹몃９ 愿由?(tabRoles) -->
             <section id="tabRoles" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">회원 그룹 관리 <span class="admin-badge primary">Beta</span></h3>
+                        <h3 class="section-title">?뚯썝 洹몃９ 愿由?<span class="admin-badge primary">Beta</span></h3>
                     </div>
                     <div style="padding: 2rem; text-align:center; color: var(--mac-text-muted);">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>
-                        <h4>회원 그룹(등급) 기능은 준비 중입니다.</h4>
-                        <p>향후 업데이트를 통해 VIP, 일반 등급 등 다단계 회원 분류 기능이 제공될 예정입니다.</p>
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">?뫁</div>
+                        <h4>?뚯썝 洹몃９(?깃툒) 湲곕뒫? 以鍮?以묒엯?덈떎.</h4>
+                        <p>?ν썑 ?낅뜲?댄듃瑜??듯빐 VIP, ?쇰컲 ?깃툒 ???ㅻ떒怨??뚯썝 遺꾨쪟 湲곕뒫???쒓났???덉젙?낅땲??</p>
                     </div>
                 </div>
             </section>
 
-            <!-- 탭: 사이트 게시판 (tabBoards) -->
+            <!-- ?? ?ъ씠??寃뚯떆??(tabBoards) -->
             <section id="tabBoards" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
-                        <h3 class="section-title">사이트 게시판 (공지사항/FAQ)</h3>
-                        <button class="btn-primary" id="btnWriteGlobalNotice">+ 새 글 작성</button>
+                        <h3 class="section-title">?ъ씠??寃뚯떆??(怨듭??ы빆/FAQ)</h3>
+                        <button class="btn-primary" id="btnWriteGlobalNotice">+ ??湲 ?묒꽦</button>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>분류</th>
-                                    <th>제목</th>
-                                    <th>작성자</th>
-                                    <th>작성일</th>
-                                    <th>조회수</th>
-                                    <th>관리</th>
+                                    <th>遺꾨쪟</th>
+                                    <th>?쒕ぉ</th>
+                                    <th>?묒꽦??/th>
+                                    <th>?묒꽦??/th>
+                                    <th>議고쉶??/th>
+                                    <th>愿由?/th>
                                 </tr>
                             </thead>
                             <tbody id="globalBoardsTableBody">
                                 <!-- JS Injected -->
                                 <tr>
-                                    <td colspan="6" style="text-align:center;">게시물을 불러오는 중입니다...</td>
+                                    <td colspan="6" style="text-align:center;">寃뚯떆臾쇱쓣 遺덈윭?ㅻ뒗 以묒엯?덈떎...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1016,27 +1012,27 @@
                 </div>
             </section>
 
-            <!-- 탭: 클래스 게시판 (tabClassBoards) -->
+            <!-- ?? ?대옒??寃뚯떆??(tabClassBoards) -->
             <section id="tabClassBoards" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">클래스 게시판 모아보기</h3>
+                        <h3 class="section-title">?대옒??寃뚯떆??紐⑥븘蹂닿린</h3>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>클래스명</th>
-                                    <th>내용 요약</th>
-                                    <th>등록일</th>
-                                    <th>작성자 (강사)</th>
-                                    <th>이동</th>
+                                    <th>?대옒?ㅻ챸</th>
+                                    <th>?댁슜 ?붿빟</th>
+                                    <th>?깅줉??/th>
+                                    <th>?묒꽦??(媛뺤궗)</th>
+                                    <th>?대룞</th>
                                 </tr>
                             </thead>
                             <tbody id="classBoardsTableBody">
                                 <!-- JS Injected -->
                                 <tr>
-                                    <td colspan="5" style="text-align:center;">클래스 공지사항을 불러오는 중입니다...</td>
+                                    <td colspan="5" style="text-align:center;">?대옒??怨듭??ы빆??遺덈윭?ㅻ뒗 以묒엯?덈떎...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1044,26 +1040,26 @@
                 </div>
             </section>
 
-            <!-- 탭: 찜한 목록 (tabBookmarks) -->
+            <!-- ?? 李쒗븳 紐⑸줉 (tabBookmarks) -->
             <section id="tabBookmarks" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">찜한 목록 (인기 랭킹)</h3>
+                        <h3 class="section-title">李쒗븳 紐⑸줉 (?멸린 ??궧)</h3>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>순위</th>
-                                    <th>클래스명</th>
-                                    <th>강사명</th>
-                                    <th>찜(❤️) 개수</th>
-                                    <th>상태</th>
+                                    <th>?쒖쐞</th>
+                                    <th>?대옒?ㅻ챸</th>
+                                    <th>媛뺤궗紐?/th>
+                                    <th>李??ㅿ툘) 媛쒖닔</th>
+                                    <th>?곹깭</th>
                                 </tr>
                             </thead>
                             <tbody id="bookmarksTableBody">
                                 <tr>
-                                    <td colspan="5" style="text-align:center;">통계 데이터를 산출하는 중입니다...</td>
+                                    <td colspan="5" style="text-align:center;">?듦퀎 ?곗씠?곕? ?곗텧?섎뒗 以묒엯?덈떎...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1071,19 +1067,19 @@
                 </div>
             </section>
 
-            <!-- 탭: 검색 및 코드 설정 (tabSearchCode) -->
+            <!-- ?? 寃??諛?肄붾뱶 ?ㅼ젙 (tabSearchCode) -->
             <section id="tabSearchCode" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">검색 및 외부 스크립트 코드 설정</h3>
+                        <h3 class="section-title">寃??諛??몃? ?ㅽ겕由쏀듃 肄붾뱶 ?ㅼ젙</h3>
                     </div>
                     <div style="padding:1.5rem;">
                         <div class="field-group" style="margin-bottom:1.5rem;">
                             <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Google Analytics (GA4)
-                                측정 ID</label>
+                                痢≪젙 ID</label>
                             <input type="text" id="scriptGa4" placeholder="G-XXXXXXXXXX" class="admin-form-input">
-                            <small style="color:var(--mac-text-muted); display:block; margin-top:4px;">구글 애널리틱스 트래킹 코드가
-                                자동으로 삽입됩니다.</small>
+                            <small style="color:var(--mac-text-muted); display:block; margin-top:4px;">援ш? ?좊꼸由ы떛???몃옒??肄붾뱶媛
+                                ?먮룞?쇰줈 ?쎌엯?⑸땲??</small>
                         </div>
                         <div class="field-group" style="margin-bottom:1.5rem;">
                             <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Meta (Facebook) Pixel
@@ -1091,98 +1087,98 @@
                             <input type="text" id="scriptPixel" placeholder="123456789012345" class="admin-form-input">
                         </div>
                         <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">&lt;head&gt; 사용자 정의
-                                스크립트</label>
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">&lt;head&gt; ?ъ슜???뺤쓽
+                                ?ㅽ겕由쏀듃</label>
                             <textarea id="scriptCustomHead" class="admin-form-input"
                                 style="height:120px; font-family:monospace;"
-                                placeholder="<!-- 네이버 웹마스터 소유확인 등 -->"></textarea>
+                                placeholder="<!-- ?ㅼ씠踰??밸쭏?ㅽ꽣 ?뚯쑀?뺤씤 ??-->"></textarea>
                         </div>
                         <div style="text-align:right;">
-                            <button class="btn-primary" id="btnSaveScripts">스크립트 저장</button>
+                            <button class="btn-primary" id="btnSaveScripts">?ㅽ겕由쏀듃 ???/button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 탭: 폼 관리 (tabForms) -->
+            <!-- ?? ??愿由?(tabForms) -->
             <section id="tabForms" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">커스텀 폼 관리 <span class="admin-badge primary">Beta</span></h3>
+                        <h3 class="section-title">而ㅼ뒪? ??愿由?<span class="admin-badge primary">Beta</span></h3>
                     </div>
                     <div style="padding: 2rem; text-align:center; color: var(--mac-text-muted);">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
-                        <h4>설문조사 및 신청서 폼 빌더는 준비 중입니다.</h4>
-                        <p>현재는 Google Forms나 Tally 등 외부 폼 링크를 메뉴에 연결하여 사용해주세요.</p>
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">?뱷</div>
+                        <h4>?ㅻЦ議곗궗 諛??좎껌????鍮뚮뜑??以鍮?以묒엯?덈떎.</h4>
+                        <p>?꾩옱??Google Forms??Tally ???몃? ??留곹겕瑜?硫붾돱???곌껐?섏뿬 ?ъ슜?댁＜?몄슂.</p>
                     </div>
                 </div>
             </section>
 
-            <!-- 탭: 마케팅 툴 연동 (tabMarketingTools) -->
+            <!-- ?? 留덉??????곕룞 (tabMarketingTools) -->
             <section id="tabMarketingTools" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">마케팅 툴 연동</h3>
+                        <h3 class="section-title">留덉??????곕룞</h3>
                     </div>
                     <div style="padding:1.5rem;">
                         <div
                             style="display:flex; align-items:center; justify-content:space-between; padding:1rem; border:1px solid var(--mac-border-light); border-radius:8px; margin-bottom:1rem;">
                             <div style="display:flex; align-items:center; gap:1rem;">
-                                <div style="font-size:2rem;">💬</div>
+                                <div style="font-size:2rem;">?뮠</div>
                                 <div>
-                                    <h4 style="margin:0 0 0.2rem 0;">카카오톡 알림톡 API</h4>
-                                    <p style="margin:0; font-size:0.85rem; color:var(--mac-text-muted);">클래스 신청 및 취소 시
-                                        자동 발송</p>
+                                    <h4 style="margin:0 0 0.2rem 0;">移댁뭅?ㅽ넚 ?뚮┝??API</h4>
+                                    <p style="margin:0; font-size:0.85rem; color:var(--mac-text-muted);">?대옒???좎껌 諛?痍⑥냼 ??
+                                        ?먮룞 諛쒖넚</p>
                                 </div>
                             </div>
-                            <span class="admin-badge muted">미연동</span>
+                            <span class="admin-badge muted">誘몄뿰??/span>
                         </div>
                         <div
                             style="display:flex; align-items:center; justify-content:space-between; padding:1rem; border:1px solid var(--mac-border-light); border-radius:8px;">
                             <div style="display:flex; align-items:center; gap:1rem;">
-                                <div style="font-size:2rem;">📧</div>
+                                <div style="font-size:2rem;">?벁</div>
                                 <div>
-                                    <h4 style="margin:0 0 0.2rem 0;">스티비 (Stibee) 연동</h4>
-                                    <p style="margin:0; font-size:0.85rem; color:var(--mac-text-muted);">뉴스레터 이메일 마케팅
-                                        자동화</p>
+                                    <h4 style="margin:0 0 0.2rem 0;">?ㅽ떚鍮?(Stibee) ?곕룞</h4>
+                                    <p style="margin:0; font-size:0.85rem; color:var(--mac-text-muted);">?댁뒪?덊꽣 ?대찓??留덉???
+                                        ?먮룞??/p>
                                 </div>
                             </div>
-                            <span class="admin-badge muted">미연동</span>
+                            <span class="admin-badge muted">誘몄뿰??/span>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 탭: 메시지 템플릿 관리 (tabMsgTemplates) -->
+            <!-- ?? 硫붿떆吏 ?쒗뵆由?愿由?(tabMsgTemplates) -->
             <section id="tabMsgTemplates" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">메시지 템플릿 관리</h3>
+                        <h3 class="section-title">硫붿떆吏 ?쒗뵆由?愿由?/h3>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>치환 태그</th>
-                                    <th>발송 상황</th>
-                                    <th>템플릿 내용 (미리보기)</th>
-                                    <th>수정</th>
+                                    <th>移섑솚 ?쒓렇</th>
+                                    <th>諛쒖넚 ?곹솴</th>
+                                    <th>?쒗뵆由??댁슜 (誘몃━蹂닿린)</th>
+                                    <th>?섏젙</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td><code>#{userName}</code>, <code>#{className}</code></td>
-                                    <td>결제 완료 시</td>
-                                    <td style="color:var(--mac-text-muted); font-size:0.85rem;">"#{userName}님,
-                                        #{className} 결제가 완료되었습니다..."</td>
-                                    <td><button class="btn-small outline">수정</button></td>
+                                    <td>寃곗젣 ?꾨즺 ??/td>
+                                    <td style="color:var(--mac-text-muted); font-size:0.85rem;">"#{userName}??
+                                        #{className} 寃곗젣媛 ?꾨즺?섏뿀?듬땲??.."</td>
+                                    <td><button class="btn-small outline">?섏젙</button></td>
                                 </tr>
                                 <tr>
                                     <td><code>#{userName}</code>, <code>#{refundAmount}</code></td>
-                                    <td>환불 승인 시</td>
-                                    <td style="color:var(--mac-text-muted); font-size:0.85rem;">"#{userName}님, 요청하신
-                                        환불(#{refundAmount}원)이..."</td>
-                                    <td><button class="btn-small outline">수정</button></td>
+                                    <td>?섎텋 ?뱀씤 ??/td>
+                                    <td style="color:var(--mac-text-muted); font-size:0.85rem;">"#{userName}?? ?붿껌?섏떊
+                                        ?섎텋(#{refundAmount}????.."</td>
+                                    <td><button class="btn-small outline">?섏젙</button></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1190,32 +1186,32 @@
                 </div>
             </section>
 
-            <!-- 탭: 캠페인 관리 (tabCampaigns) -->
+            <!-- ?? 罹좏럹??愿由?(tabCampaigns) -->
             <section id="tabCampaigns" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">캠페인 및 프로모션 관리</h3>
+                        <h3 class="section-title">罹좏럹??諛??꾨줈紐⑥뀡 愿由?/h3>
                     </div>
                     <div style="padding: 2rem; text-align:center; color: var(--mac-text-muted);">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
-                        <h4>캠페인 성과 추적 도구는 준비 중입니다.</h4>
-                        <p>Utm 파라미터를 기반으로 한 유입 경로 분석 기능이 제공될 예정입니다.</p>
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">?렞</div>
+                        <h4>罹좏럹???깃낵 異붿쟻 ?꾧뎄??以鍮?以묒엯?덈떎.</h4>
+                        <p>Utm ?뚮씪誘명꽣瑜?湲곕컲?쇰줈 ???좎엯 寃쎈줈 遺꾩꽍 湲곕뒫???쒓났???덉젙?낅땲??</p>
                     </div>
                 </div>
             </section>
 
-            <!-- 탭: 부가세 신고 자료 (tabTax) -->
+            <!-- ?? 遺媛???좉퀬 ?먮즺 (tabTax) -->
             <section id="tabTax" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="justify-content:space-between;">
-                        <h3 class="section-title">부가세 신고 자료 생성</h3>
-                        <button class="btn-primary" id="btnDownloadTax" style="background:#34c759;">Excel 다운로드</button>
+                        <h3 class="section-title">遺媛???좉퀬 ?먮즺 ?앹꽦</h3>
+                        <button class="btn-primary" id="btnDownloadTax" style="background:#34c759;">Excel ?ㅼ슫濡쒕뱶</button>
                     </div>
                     <div style="padding:1.5rem;">
-                        <p style="color:var(--mac-text-muted); font-size:0.9rem; margin-bottom:1.5rem;">지정한 기간 동안 완료된
-                            수강권 결제(과세 매출) 기록을 취합하여 세무 대리인 제출용 엑셀 파일을 생성합니다.</p>
+                        <p style="color:var(--mac-text-muted); font-size:0.9rem; margin-bottom:1.5rem;">吏?뺥븳 湲곌컙 ?숈븞 ?꾨즺??
+                            ?섍컯沅?寃곗젣(怨쇱꽭 留ㅼ텧) 湲곕줉??痍⑦빀?섏뿬 ?몃Т ?由ъ씤 ?쒖텧???묒? ?뚯씪???앹꽦?⑸땲??</p>
                         <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
-                            <span style="font-weight:600;">신고 기준 기간</span>
+                            <span style="font-weight:600;">?좉퀬 湲곗? 湲곌컙</span>
                             <div style="display:flex; align-items:center; gap:0.5rem;">
                                 <input type="month" class="admin-form-input" style="width:150px;"> ~ <input type="month"
                                     class="admin-form-input" style="width:150px;">
@@ -1223,39 +1219,39 @@
                         </div>
                         <div
                             style="padding:1.5rem; background:#f5f5f7; border-radius:8px; border:1px dashed var(--mac-border);">
-                            <h4 style="margin:0 0 0.5rem 0;">📑 예상 조회 요약</h4>
-                            <p style="margin:0; font-size:0.9rem;">총 과세 매출: <strong style="color:var(--mac-primary);"
-                                    id="totalTaxRevenue">계산 중...</strong>원</p>
+                            <h4 style="margin:0 0 0.5rem 0;">?뱫 ?덉긽 議고쉶 ?붿빟</h4>
+                            <p style="margin:0; font-size:0.9rem;">珥?怨쇱꽭 留ㅼ텧: <strong style="color:var(--mac-primary);"
+                                    id="totalTaxRevenue">怨꾩궛 以?..</strong>??/p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 탭: 클래스 통계/분석 (tabClassAnalytics) -->
+            <!-- ?? ?대옒???듦퀎/遺꾩꽍 (tabClassAnalytics) -->
             <section id="tabClassAnalytics" class="admin-tab-content">
                 <div class="stats-grid" style="margin-bottom:1.5rem;">
                     <div class="stat-card">
-                        <div class="stat-title">전체 클래스</div>
+                        <div class="stat-title">?꾩껜 ?대옒??/div>
                         <div class="stat-value" id="caStatTotal">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">운영 중</div>
+                        <div class="stat-title">?댁쁺 以?/div>
                         <div class="stat-value" id="caStatActive" style="color:#10b981;">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">총 수강생</div>
+                        <div class="stat-title">珥??섍컯??/div>
                         <div class="stat-value" id="caStatStudents">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">무료 클래스</div>
+                        <div class="stat-title">臾대즺 ?대옒??/div>
                         <div class="stat-value" id="caStatFree" style="color:#6366f1;">0</div>
                     </div>
                 </div>
 
-                <!-- 인기 클래스 랭킹 -->
+                <!-- ?멸린 ?대옒????궧 -->
                 <div class="admin-card" style="margin-bottom:1.5rem;">
                     <div class="card-header" style="justify-content:space-between;">
-                        <h3 class="section-title">🏆 인기 클래스 랭킹</h3>
+                        <h3 class="section-title">?룇 ?멸린 ?대옒????궧</h3>
                         <div style="display:flex; gap:0.5rem;">
                             <button class="btn-small outline ranking-btn active" data-top="5">Top 5</button>
                             <button class="btn-small outline ranking-btn" data-top="10">Top 10</button>
@@ -1267,71 +1263,71 @@
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>순위</th>
-                                    <th>클래스명</th>
-                                    <th>카테고리</th>
-                                    <th>강사</th>
-                                    <th>수강생</th>
-                                    <th>방문수</th>
-                                    <th>수강권(발행/소모)</th>
-                                    <th>모임</th>
-                                    <th>평점</th>
-                                    <th>매출</th>
+                                    <th>?쒖쐞</th>
+                                    <th>?대옒?ㅻ챸</th>
+                                    <th>移댄뀒怨좊━</th>
+                                    <th>媛뺤궗</th>
+                                    <th>?섍컯??/th>
+                                    <th>諛⑸Ц??/th>
+                                    <th>?섍컯沅?諛쒗뻾/?뚮え)</th>
+                                    <th>紐⑥엫</th>
+                                    <th>?됱젏</th>
+                                    <th>留ㅼ텧</th>
                                 </tr>
                             </thead>
                             <tbody id="classRankingBody">
                                 <tr>
-                                    <td colspan="10" style="text-align:center;">데이터를 불러오는 중...</td>
+                                    <td colspan="10" style="text-align:center;">?곗씠?곕? 遺덈윭?ㅻ뒗 以?..</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- 카테고리별 분석 -->
+                <!-- 移댄뀒怨좊━蹂?遺꾩꽍 -->
                 <div class="admin-card" style="margin-bottom:1.5rem;">
                     <div class="card-header">
-                        <h3 class="section-title">📊 카테고리별 분석</h3>
+                        <h3 class="section-title">?뱤 移댄뀒怨좊━蹂?遺꾩꽍</h3>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>카테고리</th>
-                                    <th>클래스 수</th>
-                                    <th>총 방문</th>
-                                    <th>총 수강</th>
-                                    <th>총 매출</th>
+                                    <th>移댄뀒怨좊━</th>
+                                    <th>?대옒????/th>
+                                    <th>珥?諛⑸Ц</th>
+                                    <th>珥??섍컯</th>
+                                    <th>珥?留ㅼ텧</th>
                                 </tr>
                             </thead>
                             <tbody id="categoryAnalysisBody">
                                 <tr>
-                                    <td colspan="5" style="text-align:center;">데이터를 불러오는 중...</td>
+                                    <td colspan="5" style="text-align:center;">?곗씠?곕? 遺덈윭?ㅻ뒗 以?..</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- 강사진 정보 -->
+                <!-- 媛뺤궗吏??뺣낫 -->
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">👨‍🏫 강사진 정보</h3>
+                        <h3 class="section-title">?뫅?랅윆?媛뺤궗吏??뺣낫</h3>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>프로필</th>
-                                    <th>이름</th>
-                                    <th>이메일</th>
-                                    <th>연락처</th>
-                                    <th>운영 클래스수</th>
+                                    <th>?꾨줈??/th>
+                                    <th>?대쫫</th>
+                                    <th>?대찓??/th>
+                                    <th>?곕씫泥?/th>
+                                    <th>?댁쁺 ?대옒?ㅼ닔</th>
                                 </tr>
                             </thead>
                             <tbody id="instructorListBody">
                                 <tr>
-                                    <td colspan="5" style="text-align:center;">데이터를 불러오는 중...</td>
+                                    <td colspan="5" style="text-align:center;">?곗씠?곕? 遺덈윭?ㅻ뒗 以?..</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1339,36 +1335,36 @@
                 </div>
             </section>
 
-            <!-- 탭: 입출금 기록 (tabFinancial) -->
+            <!-- ?? ?낆텧湲?湲곕줉 (tabFinancial) -->
             <section id="tabFinancial" class="admin-tab-content">
                 <div class="stats-grid" style="margin-bottom:1.5rem;">
                     <div class="stat-card">
-                        <div class="stat-title">총 입금</div>
+                        <div class="stat-title">珥??낃툑</div>
                         <div class="stat-value" id="finIncome" style="color:#10b981;">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">총 환불</div>
+                        <div class="stat-title">珥??섎텋</div>
                         <div class="stat-value" id="finRefund" style="color:#ef4444;">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">총 정산 출금</div>
+                        <div class="stat-title">珥??뺤궛 異쒓툑</div>
                         <div class="stat-value" id="finSettlement" style="color:#f59e0b;">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">순이익</div>
+                        <div class="stat-title">?쒖씠??/div>
                         <div class="stat-value" id="finNet" style="color:#3b82f6;">0</div>
                     </div>
                 </div>
                 <div class="admin-card">
                     <div class="card-header" style="justify-content:space-between;">
-                        <h3 class="section-title">입출금 내역</h3>
+                        <h3 class="section-title">?낆텧湲??댁뿭</h3>
                         <div style="display:flex; gap:0.5rem; align-items:center;">
                             <select id="finTypeFilter" class="admin-form-input"
                                 style="width:auto; margin:0; padding:0.3rem 0.6rem;">
-                                <option value="">전체</option>
-                                <option value="income">입금</option>
-                                <option value="refund">환불</option>
-                                <option value="settlement">정산출금</option>
+                                <option value="">?꾩껜</option>
+                                <option value="income">?낃툑</option>
+                                <option value="refund">?섎텋</option>
+                                <option value="settlement">?뺤궛異쒓툑</option>
                             </select>
                         </div>
                     </div>
@@ -1376,16 +1372,16 @@
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>유형</th>
-                                    <th>금액</th>
-                                    <th>설명</th>
-                                    <th>관련 주문/정산</th>
-                                    <th>일시</th>
+                                    <th>?좏삎</th>
+                                    <th>湲덉븸</th>
+                                    <th>?ㅻ챸</th>
+                                    <th>愿??二쇰Ц/?뺤궛</th>
+                                    <th>?쇱떆</th>
                                 </tr>
                             </thead>
                             <tbody id="financialRecordsBody">
                                 <tr>
-                                    <td colspan="5" style="text-align:center;">데이터를 불러오는 중...</td>
+                                    <td colspan="5" style="text-align:center;">?곗씠?곕? 遺덈윭?ㅻ뒗 以?..</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1399,43 +1395,43 @@
     <!-- Admin Core & UI Scripts -->
     <script src="admin_core.js?v=FIX_REF_ERROR_01"></script>
     <script src="admin_extensions.js?v=FIX_REF_ERROR_01"></script>
+    <script src="admin_operator_selection.js?v=20260323_01"></script>
     <script src="admin_dashboard.js?v=FIX_REF_ERROR_01"></script>
     <script src="admin_classes.js?v=FIX_REF_ERROR_01"></script>
-    <script src="admin_users.js?v=FIX_REF_ERROR_01"></script>
+    <script src="admin_users.js?v=20260323_01"></script>
     <script src="admin_payments.js?v=FIX_REF_ERROR_01"></script>
     <script src="admin_recommend.js?v=20260322_01"></script>
     <script src="admin_settings.js?v=FIX_REF_ERROR_01"></script>
-    <script src="admin_orders.js?v=FIX_REF_ERROR_01"></script>
     <script src="admin_class_analytics.js?v=FIX_REF_ERROR_01"></script>
 
     <script>
-        // 배너 아이템 동적 템플릿 처리 (간단한 인라인 헬퍼)
+        // 諛곕꼫 ?꾩씠???숈쟻 ?쒗뵆由?泥섎━ (媛꾨떒???몃씪???ы띁)
         document.getElementById('btnAddBanner').addEventListener('click', () => {
             const container = document.getElementById('bannerListContainer');
             const newId = Date.now();
             const html = `
                 <div class="banner-item" data-id="${newId}" style="display:flex; gap:1rem; padding:1rem; background:#fff; border:1px solid #ddd; border-radius:8px; position:relative;">
                     <div style="flex:1;">
-                        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:0.3rem;">배너 이미지 URL</label>
+                        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:0.3rem;">諛곕꼫 ?대?吏 URL</label>
                         <input type="text" class="admin-form-input banner-img-input" placeholder="https://..." style="margin-bottom:0.5rem;">
-                        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:0.3rem;">클릭 시 이동할 링크 URL (선택)</label>
+                        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:0.3rem;">?대┃ ???대룞??留곹겕 URL (?좏깮)</label>
                         <input type="text" class="admin-form-input banner-link-input" placeholder="https://...">
                     </div>
                     <div style="width:100px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:0.5rem;">
                         <img class="banner-preview" src="" style="width:100%; height:50px; object-fit:cover; background:#f4f4f5; border-radius:4px; border:1px solid #eee;">
-                        <button class="btn-remove-banner" style="padding:0.3rem; background:#fee2e2; color:#ef4444; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:100%;">삭제</button>
+                        <button class="btn-remove-banner" style="padding:0.3rem; background:#fee2e2; color:#ef4444; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:100%;">??젣</button>
                     </div>
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', html);
 
-            // 프리뷰 업데이트 바인딩
+            // ?꾨━酉??낅뜲?댄듃 諛붿씤??
             const newItem = container.lastElementChild;
             const input = newItem.querySelector('.banner-img-input');
             const preview = newItem.querySelector('.banner-preview');
             input.addEventListener('input', (e) => { preview.src = e.target.value; });
 
-            // 삭제 바인딩
+            // ??젣 諛붿씤??
             newItem.querySelector('.btn-remove-banner').addEventListener('click', () => {
                 newItem.remove();
             });

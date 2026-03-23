@@ -76,6 +76,7 @@ export async function onRequestPost(context) {
       location,
       gathering_at,
       deadline_at,
+      capacity_min,
       capacity_max,
       max_capacity,
       gathering_id,
@@ -84,6 +85,7 @@ export async function onRequestPost(context) {
 
     if (action === 'create') {
       const effectiveInstructorId = instructor_id || body.created_by || body.user_id;
+      const effectiveCapacityMin = capacity_min ?? body.min_capacity ?? 0;
       const effectiveCapacityMax = capacity_max || max_capacity;
       const effectiveDeadlineAt = deadline_at || gathering_at;
 
@@ -99,9 +101,9 @@ export async function onRequestPost(context) {
       const id = 'gather_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16);
 
       await env.DB.prepare(`
-        INSERT INTO class_gatherings (id, class_id, instructor_id, title, description, location, gathering_at, deadline_at, capacity_max, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open')
-      `).bind(id, class_id, effectiveInstructorId, title, description || '', location || '', gathering_at, effectiveDeadlineAt, effectiveCapacityMax).run();
+        INSERT INTO class_gatherings (id, class_id, instructor_id, title, description, location, gathering_at, deadline_at, capacity_min, capacity_max, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open')
+      `).bind(id, class_id, effectiveInstructorId, title, description || '', location || '', gathering_at, effectiveDeadlineAt, effectiveCapacityMin, effectiveCapacityMax).run();
 
       return new Response(JSON.stringify({ success: true, data: { id } }), { status: 201, headers: cors });
       
@@ -179,13 +181,14 @@ async function ensureTables(db) {
     await db.prepare(`
       CREATE TABLE IF NOT EXISTS class_gatherings (
         id TEXT PRIMARY KEY,
-        class_id TEXT NOT NULL,
-        instructor_id TEXT NOT NULL,
+        class_id TEXT NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+        instructor_id TEXT NOT NULL REFERENCES users(id),
         title TEXT NOT NULL,
         description TEXT,
         location TEXT,
         gathering_at DATETIME NOT NULL,
         deadline_at DATETIME NOT NULL,
+        capacity_min INTEGER DEFAULT 0,
         capacity_max INTEGER NOT NULL,
         status TEXT DEFAULT 'open',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -200,10 +203,13 @@ async function ensureTables(db) {
     try {
       await db.prepare('ALTER TABLE class_gatherings ADD COLUMN description TEXT').run();
     } catch (e) {}
+    try {
+      await db.prepare('ALTER TABLE class_gatherings ADD COLUMN capacity_min INTEGER DEFAULT 0').run();
+    } catch (e) {}
     await db.prepare(`
       CREATE TABLE IF NOT EXISTS gathering_participants (
-        gathering_id TEXT NOT NULL,
-        user_id TEXT NOT NULL,
+        gathering_id TEXT NOT NULL REFERENCES class_gatherings(id) ON DELETE CASCADE,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (gathering_id, user_id)
       )

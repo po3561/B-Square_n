@@ -1,25 +1,20 @@
 // functions/api/admin/transactions.js — 관리자용 결제/수강 내역 조회 API
 // GET /api/admin/transactions?limit=100&offset=0
 
+import { json, options } from '../_lib/http.js';
+
 export async function onRequest(context) {
     const { request, env } = context;
     const db = env.DB;
     const url = new URL(request.url);
     const method = request.method;
 
-    const cors = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Content-Type': 'application/json'
-    };
-
     if (method === 'OPTIONS') {
-        return new Response(null, { headers: cors });
+        return options(request, env);
     }
 
     if (method !== 'GET') {
-        return new Response(JSON.stringify({ success: false, error: 'Method not allowed' }), { status: 405, headers: cors });
+        return json(request, env, { success: false, error: 'Method not allowed' }, { status: 405 });
     }
 
     // 관리자 권한 체크 (실제 배포시에는 세션/쿠키 등을 통한 검증 필요)
@@ -43,17 +38,17 @@ export async function onRequest(context) {
             LIMIT ? OFFSET ?
         `).bind(limit, offset).all();
 
-        return new Response(JSON.stringify({
+        return json(request, env, {
             success: true,
             data: results
-        }), { headers: cors });
+        });
 
     } catch (err) {
         console.error("[D1 API] Transactions Error:", err);
-        return new Response(JSON.stringify({
+        return json(request, env, {
             success: false,
             error: '결제 내역 조회 실패',
             detail: err.message
-        }), { status: 500, headers: cors });
+        }, { status: 500 });
     }
 }

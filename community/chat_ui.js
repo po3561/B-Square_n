@@ -85,7 +85,10 @@ window.CommunityModules.ChatUI = (function () {
                             class_id: currentRoomId,
                             instructor_id: bridge()?.getUserId?.() || null,
                             title, gathering_at: at, location, description: desc,
-                            min_capacity: min, max_capacity: max,
+                            capacity_min: min,
+                            min_capacity: min,
+                            capacity_max: max,
+                            max_capacity: max,
                             deadline_at: at
                         })
                     });
@@ -457,7 +460,8 @@ window.CommunityModules.ChatUI = (function () {
         const title = msgData.gather_title || '클래스 모임';
         const timeInfo = msgData.gather_time || '-';
         const placeInfo = msgData.gather_place || '-';
-        const maxCap = msgData.max_capacity || 0;
+        const minCap = msgData.capacity_min || msgData.min_capacity || 0;
+        const maxCap = msgData.capacity_max || msgData.max_capacity || 0;
         const currentCount = msgData.current_count || 0;
         const status = msgData.status || 'open';
         const isFull = maxCap > 0 && currentCount >= maxCap;
@@ -468,6 +472,7 @@ window.CommunityModules.ChatUI = (function () {
             <div class="gathering-content">
                 <div class="gathering-detail-item"><i class="fas fa-clock"></i><span>${timeInfo}</span></div>
                 <div class="gathering-detail-item"><i class="fas fa-map-marker-alt"></i><span>${placeInfo}</span></div>
+                <div class="gathering-detail-item"><i class="fas fa-users"></i><span>${minCap} - ${maxCap}명</span></div>
                 <div class="gathering-progress-container">
                     <div style="display:flex;justify-content:space-between;font-size:0.75rem;font-weight:700;color:var(--comm-text2);margin-bottom:4px;">
                         <span>참여현황</span><span>${currentCount} / ${maxCap}명</span>
@@ -756,7 +761,9 @@ window.CommunityModules.ChatUI = (function () {
                     gather_title: title,
                     gather_time: time,
                     gather_place: place,
+                    capacity_min: parseInt(minCap, 10),
                     min_capacity: parseInt(minCap, 10),
+                    capacity_max: parseInt(maxCap, 10),
                     max_capacity: parseInt(maxCap, 10),
                     current_count: 0,
                     status: 'open',

@@ -1,5 +1,6 @@
 import { requireClassManager, requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
+import { ensureClassesSchema } from './_lib/schema.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -9,6 +10,8 @@ export async function onRequestGet(context) {
   if (!class_id) return json(request, env, { success: false, error: 'class_id 필요' }, { status: 400 });
 
   try {
+    await ensureClassesSchema(env.DB);
+
     const { results } = await env.DB.prepare(
       'SELECT * FROM reviews WHERE class_id = ? ORDER BY created_at DESC'
     ).bind(class_id).all();
@@ -27,6 +30,8 @@ export async function onRequestPost(context) {
   if (!auth.ok) return auth.response;
 
   try {
+    await ensureClassesSchema(env.DB);
+
     const body = await request.json();
 
     if (body.action === 'reply' && body.review_id && body.reply) {

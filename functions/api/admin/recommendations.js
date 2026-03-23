@@ -2,22 +2,15 @@
 // GET /api/admin/recommendations
 // POST /api/admin/recommendations (대량 저장)
 
-import { ensureRecommendationsSchema } from '../_lib/schema.js';
+import { ensureRecommendationsSchema, ensureClassesSchema } from '../_lib/schema.js';
+import { json as jsonResponse, options } from '../_lib/http.js';
 
-const JSON_HEADERS = {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
-};
-
-function json(data, init = {}) {
-    return new Response(JSON.stringify(data), {
-        ...init,
-        headers: {
-            ...JSON_HEADERS,
-            ...(init.headers || {})
-        }
-    });
+function json(request, env, data, init = {}) {
+    const headers = {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        ...(init.headers || {})
+    };
+    return jsonResponse(request, env, data, { ...init, headers });
 }
 
 function normalizeFolder(rawFolder, fallbackType) {
@@ -139,6 +132,7 @@ export async function onRequest(context) {
 
     try {
         await ensureRecommendationsSchema(db);
+        await ensureClassesSchema(db);
 
         if (method === 'GET') {
             const { results: folders } = await db
@@ -146,7 +140,7 @@ export async function onRequest(context) {
                 .all();
 
             const enrichedFolders = await enrichFolders(db, folders || []);
-            return json({ success: true, data: enrichedFolders });
+            return json(request, env, { success: true, data: enrichedFolders });
         }
 
         if (method === 'POST') {
@@ -154,7 +148,7 @@ export async function onRequest(context) {
             const incomingFolders = Array.isArray(body?.folders) ? body.folders : null;
 
             if (!incomingFolders) {
-                return json({ success: false, error: 'Folders array is required' }, { status: 400 });
+                return json(request, env, { success: false, error: 'Folders array is required' }, { status: 400 });
             }
 
             const targetType = parseRequestTargetType(body);
@@ -164,16 +158,16 @@ export async function onRequest(context) {
                 const normalized = normalizeFolder(rawFolder, targetType);
                 if (!normalized) continue;
                 if (normalized.error) {
-                    return json({ success: false, error: normalized.error }, { status: 400 });
+                    return json(request, env, { success: false, error: normalized.error }, { status: 400 });
                 }
                 if (normalized.type !== targetType) {
-                    return json({ success: false, error: 'Mixed recommendation types are not allowed in one request' }, { status: 400 });
+                    return json(request, env, { success: false, error: 'Mixed recommendation types are not allowed in one request' }, { status: 400 });
                 }
                 normalizedFolders.push(normalized);
             }
 
             if (targetType === 'popular' && normalizedFolders.length !== 1) {
-                return json({ success: false, error: 'Popular recommendations require exactly one folder payload' }, { status: 400 });
+                return json(request, env, { success: false, error: 'Popular recommendations require exactly one folder payload' }, { status: 400 });
             }
 
             await db.prepare('DELETE FROM recommendations WHERE type = ?').bind(targetType).run();
@@ -194,23 +188,18 @@ export async function onRequest(context) {
                 await db.batch(stmts);
             }
 
-            return json({ success: true, message: 'Saved successfully' });
+            return json(request, env, { success: true, message: 'Saved successfully' });
         }
 
-        return json({ success: false, error: 'Method not allowed' }, { status: 405 });
+        return json(request, env, { success: false, error: 'Method not allowed' }, { status: 405 });
     } catch (err) {
         console.error('[API /admin/recommendations] Error:', err);
-        return json({ success: false, error: err.message }, { status: 500 });
+        return json(request, env, { success: false, error: err.message }, { status: 500 });
     }
 }
 
-export async function onRequestOptions() {
-    return new Response(null, {
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
-        }
+export async function onRequestOptions({ request, env }) {
+    return options(request, env, {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
     });
 }

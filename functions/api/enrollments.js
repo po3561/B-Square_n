@@ -1,5 +1,6 @@
 import { requireClassManager, requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
+import { ensureClassesSchema } from './_lib/schema.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -8,6 +9,8 @@ export async function onRequestGet(context) {
   const class_id = url.searchParams.get('class_id');
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
+
+  await ensureClassesSchema(env.DB);
 
   try {
     if (user_id && class_id) {
@@ -82,9 +85,9 @@ export async function onRequestPost(context) {
     const user = await env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(finalUserId).first();
     if (!user) {
       return json(request, env, {
-        success: false, 
-        error: '존재하지 않는 사용자입니다.', 
-        detail: `ID: ${finalUserId} 사용자를 찾을 수 없습니다. 다시 로그인해 주세요.` 
+        success: false,
+        error: '존재하지 않는 사용자입니다.',
+        detail: `ID: ${finalUserId} 사용자를 찾을 수 없습니다. 다시 로그인해 주세요.`
       }, { status: 404 });
     }
 
@@ -117,9 +120,9 @@ export async function onRequestPost(context) {
   } catch (err) {
     console.error('[API] Enrollment Error:', err);
     return json(request, env, {
-      success: false, 
-      error: '수강 등록 처리 중 서버 오류가 발생했습니다.', 
-      detail: err.message 
+      success: false,
+      error: '수강 등록 처리 중 서버 오류가 발생했습니다.',
+      detail: err.message
     }, { status: 500 });
   }
 }

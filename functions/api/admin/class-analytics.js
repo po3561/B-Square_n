@@ -1,20 +1,16 @@
-// functions/api/admin/class-analytics.js — 클래스 분석 API
+// functions/api/admin/class-analytics.js ???대옒??遺꾩꽍 API
 // GET /api/admin/class-analytics?type=ranking|category|detail&classId=&top=10
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, X-BSQ-Dev-Mode',
-  'Content-Type': 'application/json'
-};
+import { json, options } from '../_lib/http.js';
+import { ensureClassesSchema, ensureGatheringsSchema, ensureOperationsSchema } from '../_lib/schema.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
   const db = env.DB;
   const method = request.method;
 
-  if (method === 'OPTIONS') return new Response(null, { headers: CORS });
-  if (method !== 'GET') return new Response(JSON.stringify({ success: false, error: 'Method not allowed' }), { status: 405, headers: CORS });
+  if (method === 'OPTIONS') return options(request, env);
+  if (method !== 'GET') return json(request, env, { success: false, error: 'Method not allowed' }, { status: 405 });
 
   const url = new URL(request.url);
   const type = url.searchParams.get('type') || 'ranking';
@@ -22,10 +18,13 @@ export async function onRequest(context) {
   const classId = url.searchParams.get('classId') || '';
 
   try {
-    // 인기 클래스 랭킹
+    await ensureClassesSchema(db);
+    await ensureGatheringsSchema(db);
+    await ensureOperationsSchema(db);
+    // ?멸린 ?대옒????궧
     if (type === 'ranking') {
       const { results } = await db.prepare(`
-        SELECT 
+        SELECT
           c.id, c.title, c.category, c.thumbnail, c.price, c.instructor_name, c.created_at,
           c.current_participants,
           COALESCE(cs.total_visits, 0) as visits,
@@ -43,32 +42,32 @@ export async function onRequest(context) {
         LIMIT ?
       `).bind(top).all();
 
-      return new Response(JSON.stringify({
+      return json(request, env, {
         success: true,
         data: results || [],
         top
-      }), { headers: CORS });
+      });
     }
 
-    // 카테고리별 분석
+    // 移댄뀒怨좊━蹂?遺꾩꽍
     if (type === 'category') {
       const { results } = await db.prepare(`
-        SELECT 
-          COALESCE(c.category, '미분류') as category,
+        SELECT
+          COALESCE(c.category, '誘몃텇瑜?) as category,
           COUNT(*) as class_count,
           COALESCE(SUM(cs.total_visits), 0) as total_visits,
           COALESCE(SUM(cs.total_enrollments), SUM(c.current_participants), 0) as total_enrollments,
           COALESCE(SUM(cs.total_revenue), 0) as total_revenue
         FROM classes c
         LEFT JOIN class_stats cs ON c.id = cs.class_id
-        GROUP BY COALESCE(c.category, '미분류')
+        GROUP BY COALESCE(c.category, '誘몃텇瑜?)
         ORDER BY total_enrollments DESC
       `).all();
 
-      return new Response(JSON.stringify({ success: true, data: results || [] }), { headers: CORS });
+      return json(request, env, { success: true, data: results || [] });
     }
 
-    // 개별 클래스 상세
+    // 媛쒕퀎 ?대옒???곸꽭
     if (type === 'detail' && classId) {
       const cls = await db.prepare(`
         SELECT c.*, cs.*
@@ -77,16 +76,16 @@ export async function onRequest(context) {
         WHERE c.id = ?
       `).bind(classId).first();
 
-      // 강사 정보 
+      // 媛뺤궗 ?뺣낫
       let instructor = null;
       if (cls?.creator_id) {
         instructor = await db.prepare('SELECT id, name, email, phone, profile_image_url, role FROM users WHERE id = ?').bind(cls.creator_id).first();
       }
 
-      // 최근 주문
+      // 理쒓렐 二쇰Ц
       const { results: orders } = await db.prepare('SELECT * FROM orders WHERE class_id = ? ORDER BY created_at DESC LIMIT 10').bind(classId).all().catch(() => ({ results: [] }));
 
-      // 수강생 목록
+      // ?섍컯??紐⑸줉
       const { results: participants } = await db.prepare(`
         SELECT cp.*, u.name, u.email, u.phone, u.profile_image_url
         FROM class_participants cp
@@ -94,10 +93,10 @@ export async function onRequest(context) {
         WHERE cp.class_id = ?
       `).bind(classId).all().catch(() => ({ results: [] }));
 
-      // 모임 목록
+      // 紐⑥엫 紐⑸줉
       const { results: gatherings } = await db.prepare('SELECT * FROM class_gatherings WHERE class_id = ? ORDER BY gathering_at DESC').bind(classId).all().catch(() => ({ results: [] }));
 
-      return new Response(JSON.stringify({
+      return json(request, env, {
         success: true,
         data: {
           class: cls,
@@ -106,12 +105,12 @@ export async function onRequest(context) {
           participants: participants || [],
           gatherings: gatherings || []
         }
-      }), { headers: CORS });
+      });
     }
 
-    // 전체 요약
+    // ?꾩껜 ?붿빟
     const summary = await db.prepare(`
-      SELECT 
+      SELECT
         COUNT(*) as total_classes,
         COALESCE(SUM(current_participants), 0) as total_students,
         COUNT(CASE WHEN is_approved = 1 THEN 1 END) as active_classes,
@@ -128,15 +127,15 @@ export async function onRequest(context) {
       ORDER BY class_count DESC
     `).all().catch(() => ({ results: [] }));
 
-    return new Response(JSON.stringify({
+    return json(request, env, {
       success: true,
       data: {
         summary: summary || {},
         instructors: instructors?.results || []
       }
-    }), { headers: CORS });
+    });
 
   } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500, headers: CORS });
+    return json(request, env, { success: false, error: err.message }, { status: 500 });
   }
 }

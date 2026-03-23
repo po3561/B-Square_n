@@ -138,6 +138,8 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   user_name TEXT,
   user_avatar TEXT,
   message TEXT,
+  reply_to TEXT,
+  reply_data TEXT,
   type TEXT DEFAULT 'text',
   image_url TEXT,
   file_name TEXT,
@@ -328,6 +330,7 @@ CREATE TABLE IF NOT EXISTS class_gatherings (
   location TEXT,
   gathering_at DATETIME NOT NULL,
   deadline_at DATETIME NOT NULL,
+  capacity_min INTEGER DEFAULT 0,
   capacity_max INTEGER NOT NULL,
   status TEXT DEFAULT 'open',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP

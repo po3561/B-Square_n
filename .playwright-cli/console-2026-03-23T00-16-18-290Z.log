@@ -1,0 +1,704 @@
+[     631ms] [ERROR] Failed to load resource: net::ERR_NAME_NOT_RESOLVED @ https://via.placeholder.com/1200x800:0
+[     858ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&pinned_only=true&t=1774224979001:0
+[     858ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&pinned_only=true 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchPinnedMessages (https://b-square-web.pages.dev/class_view/simple_class_chat.js:875:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[     870ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=50&t=1774224979002:0
+[     870ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=50 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[    3016ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774224981162:0
+[    3016ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[    5046ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774224983166:0
+[    5047ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[    7054ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774224985163:0
+[    7055ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[    9031ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774224987161:0
+[    9031ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   11043ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774224989163:0
+[   11043ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   13041ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774224991161:0
+[   13042ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   15021ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774224993165:0
+[   15021ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   15067ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20:0
+[   17025ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774224995163:0
+[   17025ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   19026ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774224997164:0
+[   19027ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   21048ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774224999161:0
+[   21049ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   23030ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225001175:0
+[   23031ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   25019ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225003164:0
+[   25019ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   27026ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225005173:0
+[   27026ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   29015ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225007163:0
+[   29015ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   31071ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225009166:0
+[   31071ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   33031ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225011172:0
+[   33031ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   35009ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225013163:0
+[   35009ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   37025ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225015170:0
+[   37026ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   39025ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225017168:0
+[   39026ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   40144ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20:0
+[   40634ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&pinned_only=true&t=1774225018806:0
+[   40634ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&pinned_only=true 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchPinnedMessages (https://b-square-web.pages.dev/class_view/simple_class_chat.js:875:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   40635ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=50&t=1774225018806:0
+[   40635ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=50 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   40767ms] [ERROR] Failed to load resource: net::ERR_NAME_NOT_RESOLVED @ https://via.placeholder.com/1200x800:0
+[   42742ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225020929:0
+[   42743ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   44745ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225022933:0
+[   44745ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   46744ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225024927:0
+[   46744ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   48757ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225026935:0
+[   48757ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   50749ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225028939:0
+[   50749ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   52746ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225030934:0
+[   52746ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   54742ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225032925:0
+[   54742ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   56749ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225034935:0
+[   56749ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   58736ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225036929:0
+[   58736ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   60741ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225038931:0
+[   60741ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   62756ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225040930:0
+[   62756ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   64747ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225042940:0
+[   64747ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   66743ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225044930:0
+[   66743ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   68748ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225046933:0
+[   68749ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   70735ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225048926:0
+[   70735ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   72736ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225050925:0
+[   72736ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   74754ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225052940:0
+[   74754ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   76737ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225054929:0
+[   76738ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   78740ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225056931:0
+[   78741ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   80738ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225058926:0
+[   80739ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   82751ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225060939:0
+[   82751ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   84746ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225062935:0
+[   84746ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   86748ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225064938:0
+[   86748ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   88742ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225066932:0
+[   88742ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   90755ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225068928:0
+[   90755ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   92753ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225070937:0
+[   92754ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   94747ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225072936:0
+[   94747ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   96758ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225074937:0
+[   96758ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[   98757ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225076936:0
+[   98757ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  100747ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225078936:0
+[  100747ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  102745ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225080930:0
+[  102745ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  104744ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225082933:0
+[  104744ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  106755ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225084940:0
+[  106755ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  108743ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225086933:0
+[  108744ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  110757ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225088932:0
+[  110757ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  112740ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225090927:0
+[  112741ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  114742ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225092927:0
+[  114743ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  116759ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225094939:0
+[  116760ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  118742ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225096937:0
+[  118742ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  120754ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225098933:0
+[  120754ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  122753ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225100937:0
+[  122753ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  124741ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225102933:0
+[  124741ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  126748ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225104937:0
+[  126749ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  128756ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225106929:0
+[  128756ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  130740ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225108930:0
+[  130740ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  132750ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225110933:0
+[  132750ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  134749ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225112937:0
+[  134749ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  136746ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225114938:0
+[  136746ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  138759ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225116938:0
+[  138760ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  140743ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225118936:0
+[  140743ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  142761ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225120940:0
+[  142761ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  144742ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225122932:0
+[  144743ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  146742ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225124931:0
+[  146743ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  148741ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225126928:0
+[  148741ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  150765ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225128938:0
+[  150766ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  152755ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225130940:0
+[  152755ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  154742ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225132926:0
+[  154743ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  156753ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225134935:0
+[  156753ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  158758ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225136936:0
+[  158758ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  160744ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225138933:0
+[  160744ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  162737ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225140926:0
+[  162738ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  164750ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225142939:0
+[  164751ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  166753ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225144938:0
+[  166754ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  168745ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225146934:0
+[  168745ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  170758ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225148939:0
+[  170758ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  172744ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225150929:0
+[  172745ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  174756ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225152939:0
+[  174757ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  176741ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225154933:0
+[  176741ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  178749ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225156938:0
+[  178749ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  180749ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225158926:0
+[  180749ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  182746ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225160927:0
+[  182746ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  184746ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225162929:0
+[  184747ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  186755ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225164936:0
+[  186755ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  188744ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225166932:0
+[  188744ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  190762ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225168933:0
+[  190763ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  192786ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225170936:0
+[  192787ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  194742ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225172926:0
+[  194742ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  196750ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225174933:0
+[  196750ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  198752ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225176932:0
+[  198752ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  200741ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225178932:0
+[  200742ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  202758ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225180937:0
+[  202758ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  204735ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225182926:0
+[  204735ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  206757ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225184938:0
+[  206757ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  208742ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225186936:0
+[  208742ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  210747ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225188935:0
+[  210747ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  212739ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225190930:0
+[  212739ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  214755ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225192927:0
+[  214755ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  216738ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225194929:0
+[  216738ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  218786ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225196941:0
+[  218786ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  220768ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225198940:0
+[  220768ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  222763ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225200933:0
+[  222763ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  224749ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225202937:0
+[  224750ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  226748ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225204928:0
+[  226749ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  228744ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225206930:0
+[  228744ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  230768ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225208937:0
+[  230768ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  232751ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225210935:0
+[  232752ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  234746ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225212936:0
+[  234746ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  236766ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225214934:0
+[  236767ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  238747ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225216929:0
+[  238747ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  240740ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225218928:0
+[  240741ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  242753ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225220937:0
+[  242753ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  244746ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225222934:0
+[  244746ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  246763ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225224937:0
+[  246763ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  248753ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225226930:0
+[  248753ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  250751ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225228933:0
+[  250752ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  252776ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225230934:0
+[  252777ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  254752ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225232936:0
+[  254752ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  256747ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225234935:0
+[  256748ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  258746ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225236930:0
+[  258747ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  260747ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225238931:0
+[  260747ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  262744ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225240932:0
+[  262744ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  264743ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225242932:0
+[  264744ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  266747ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225244939:0
+[  266747ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  268752ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225246937:0
+[  268753ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  270748ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225248933:0
+[  270749ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  272756ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225250937:0
+[  272757ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  274752ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225252938:0
+[  274752ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  276743ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225254932:0
+[  276744ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  278737ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225256928:0
+[  278737ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  280750ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225258939:0
+[  280750ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  282754ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225260940:0
+[  282755ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  284750ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225262940:0
+[  284751ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  286757ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225264939:0
+[  286757ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  288758ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225266937:0
+[  288759ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  290755ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225268936:0
+[  290755ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  292756ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225270935:0
+[  292757ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  294760ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225272933:0
+[  294760ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  296736ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225274926:0
+[  296736ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  298751ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225276940:0
+[  298751ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  300756ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225278935:0
+[  300757ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  302747ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225280932:0
+[  302747ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  304775ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225282937:0
+[  304775ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  306742ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225284930:0
+[  306743ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  308747ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225286927:0
+[  308747ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  310757ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225288940:0
+[  310757ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  312747ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225290936:0
+[  312748ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  314749ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225292931:0
+[  314750ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  316742ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225294936:0
+[  316743ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  318758ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225296937:0
+[  318758ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  320755ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225298938:0
+[  320755ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  322745ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225300939:0
+[  322746ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  324746ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225302940:0
+[  324746ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  326750ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225304937:0
+[  326750ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  328743ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225306931:0
+[  328743ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  330747ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225308935:0
+[  330747ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  332756ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225310940:0
+[  332757ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  334744ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225312935:0
+[  334744ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  336743ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225314935:0
+[  336743ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  338750ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225316928:0
+[  338751ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  340746ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225318934:0
+[  340746ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  342749ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225320934:0
+[  342749ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112
+[  344740ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://b-square-web.pages.dev/api/chat?class_id=cls_89494c0bf9254d1e&limit=20&t=1774225322926:0
+[  344741ms] [ERROR] [BSQ API] /api/chat?class_id=cls_89494c0bf9254d1e&limit=20 요청 오류: Error: 채팅 조회 오류
+    at Object.apiCall [as api] (https://b-square-web.pages.dev/bsq_server.js:97:23)
+    at async fetchChats (https://b-square-web.pages.dev/class_view/simple_class_chat.js:406:25) @ https://b-square-web.pages.dev/bsq_server.js:112

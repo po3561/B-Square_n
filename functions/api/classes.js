@@ -1,11 +1,15 @@
 import { requireClassManager, requireSession } from './_lib/auth.js';
 import { json } from './_lib/http.js';
+import { ensureClassesSchema, ensureReviewsSchema } from './_lib/schema.js';
 
 export async function onRequest(context) {
     const { request, env } = context;
     const db = env.DB;
     const url = new URL(request.url);
     const method = request.method;
+
+    await ensureClassesSchema(db);
+    await ensureReviewsSchema(db);
 
     // GET: 클래스 목록 조회
         if (method === 'GET') {

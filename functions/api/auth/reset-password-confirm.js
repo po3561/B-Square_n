@@ -1,18 +1,21 @@
 import { hashPassword } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
+import { ensureAuthSchema } from '../_lib/schema.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
+    await ensureAuthSchema(env.DB);
+
     const body = await request.json();
-    const token = (body.token || '').trim();
-    const password = body.password || '';
+    const token = (body?.token || '').trim();
+    const password = body?.password || '';
 
     if (!token || password.length < 8) {
       return json(request, env, {
         success: false,
-        error: '유효한 토큰과 8자 이상의 새 비밀번호가 필요합니다.',
+        error: 'A valid token and a password of at least 8 characters are required.',
       }, { status: 400 });
     }
 
@@ -28,7 +31,7 @@ export async function onRequestPost(context) {
     `).bind(tokenHash).first();
 
     if (!resetRecord) {
-      return json(request, env, { success: false, error: '만료되었거나 유효하지 않은 재설정 링크입니다.' }, { status: 400 });
+      return json(request, env, { success: false, error: 'Reset link is invalid or expired.' }, { status: 400 });
     }
 
     const passwordHash = await hashPassword(password);
@@ -40,12 +43,13 @@ export async function onRequestPost(context) {
 
     return json(request, env, {
       success: true,
-      message: '비밀번호가 변경되었습니다. 다시 로그인해 주세요.',
+      message: 'Password updated. Please log in again.',
     });
   } catch (error) {
+    console.error('Reset confirm error:', error);
     return json(request, env, {
       success: false,
-      error: '비밀번호 재설정 처리 중 오류가 발생했습니다.',
+      error: 'Password reset failed.',
       detail: error.message,
     }, { status: 500 });
   }
