@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문의하기 | B-Square</title>
+    <meta name="description" content="B-Square에 문의하세요. 카카오 채널 상담, 이메일 문의, FAQ를 통해 도움을 받으세요.">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_mobile.css" media="(max-width: 768px)">
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css" media="(min-width: 769px)">
+    <link rel="stylesheet" href="contact.css">
+
+    <!-- SDKs -->
+    <script src="../bsq_server.js"></script>
+
+    <!-- Kakao SDK -->
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/v1/kakao.js"></script>
+</head>
+
+<body>
+    <!-- header.js가 헤더/푸터/Drawer/BottomNav를 동적 삽입 -->
+
+    <main class="contact-main">
+        <!-- Hero -->
+        <section class="contact-hero">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <h1>문의하기</h1>
+                <p>궁금한 점이 있으시면 편하게 문의해주세요.<br>빠르고 친절하게 답변드리겠습니다.</p>
+            </div>
+        </section>
+
+        <section class="contact-container">
+            <!-- 문의 방법 카드 -->
+            <div class="contact-methods">
+                <div class="method-card kakao" id="btnKakaoChannel">
+                    <div class="method-icon">💬</div>
+                    <h3>카카오톡 상담</h3>
+                    <p>카카오 채널을 통해 실시간으로 상담받으세요.</p>
+                    <span class="method-badge">가장 빠른 응답</span>
+                </div>
+                <div class="method-card email"
+                    onclick="document.getElementById('contactForm').scrollIntoView({behavior:'smooth'})">
+                    <div class="method-icon">✉️</div>
+                    <h3>이메일 문의</h3>
+                    <p>아래 양식으로 문의를 남겨주시면<br>영업일 기준 1~2일 내 답변드립니다.</p>
+                    <span class="method-badge">상세 문의</span>
+                </div>
+                <div class="method-card phone">
+                    <div class="method-icon">📞</div>
+                    <h3>전화 상담</h3>
+                    <p>평일 10:00 ~ 18:00<br>(주말 · 공휴일 제외)</p>
+                    <span class="method-badge">긴급 문의</span>
+                </div>
+            </div>
+
+            <!-- 문의 양식 -->
+            <div class="contact-form-section" id="contactForm">
+                <h2>📝 이메일 문의</h2>
+                <form id="inquiryForm" class="inquiry-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>이름 <span class="required">*</span></label>
+                            <input type="text" id="inqName" placeholder="이름을 입력하세요" required>
+                        </div>
+                        <div class="form-group">
+                            <label>이메일 <span class="required">*</span></label>
+                            <input type="email" id="inqEmail" placeholder="답변 받을 이메일" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>문의 유형</label>
+                        <select id="inqCategory">
+                            <option value="일반 문의">일반 문의</option>
+                            <option value="결제/환불">결제/환불</option>
+                            <option value="클래스 관련">클래스 관련</option>
+                            <option value="기술 지원">기술 지원</option>
+                            <option value="제휴/협업">제휴/협업</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>제목 <span class="required">*</span></label>
+                        <input type="text" id="inqTitle" placeholder="문의 제목을 입력하세요" required>
+                    </div>
+                    <div class="form-group">
+                        <label>내용 <span class="required">*</span></label>
+                        <textarea id="inqContent" rows="6" placeholder="문의 내용을 자세히 작성해주세요" required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit-inquiry" id="btnSubmitInquiry">문의 접수하기</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 관리자: 문의 목록 (개발자 모드에서만 보임) -->
+            <div class="admin-inquiries" id="adminInquiries" style="display:none;">
+                <h2>🛡️ 문의 관리</h2>
+                <div id="inquiryList" class="inquiry-list">
+                    <div class="empty-state">접수된 문의가 없습니다.</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../bsnnnnnnnnnnnnnnnnnn/header.js?v=20260323_01"></script>
+    <script src="../dev_mode.js"></script>
+    <script src="../kakao_quick.js"></script>
+    <script src="contact.js"></script>
+</body>
+
+</html>

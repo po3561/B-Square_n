@@ -1,6 +1,6 @@
 import { applyMasterAdminOverride, hashPassword, isAtLeastRole, isMasterAdminUserId, requireSession } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
-import { ensureAuthSchema, ensureClassesSchema } from '../_lib/schema.js';
+import { ensureAuthSchema, ensureClassesSchema, ensureOperationsSchema } from '../_lib/schema.js';
 
 function buildBirthDate(user) {
   const parts = [user.birth_year, user.birth_month, user.birth_day].filter(Boolean);
@@ -30,6 +30,49 @@ function sumMoney(rows, fields) {
 
 function classKey(row) {
   return row?.class_id || row?.id || row?.title || '';
+}
+
+function normalizeText(value) {
+  return String(value ?? '').trim();
+}
+
+function dedupeBySignature(items, getSignature) {
+  const seen = new Set();
+  const result = [];
+
+  for (const item of items) {
+    const signature = getSignature(item);
+    if (seen.has(signature)) continue;
+    seen.add(signature);
+    result.push(item);
+  }
+
+  return result;
+}
+
+function blacklistSignature(row) {
+  return [
+    normalizeText(row?.user_id),
+    normalizeText(row?.previous_state),
+    normalizeText(row?.new_state),
+    normalizeText(row?.changed_by),
+    normalizeText(row?.reason),
+  ].join('|');
+}
+
+function refundSignature(row) {
+  return [
+    normalizeText(row?.user_id),
+    normalizeText(row?.order_id),
+    normalizeText(row?.class_id),
+    normalizeText(row?.refund_type),
+    normalizeText(row?.original_amount),
+    normalizeText(row?.refund_amount),
+    normalizeText(row?.reason_tags),
+    normalizeText(row?.reason_note),
+    normalizeText(row?.status),
+    normalizeText(row?.processed_by),
+  ].join('|');
 }
 
 async function safeQueryAll(db, sql, binds = []) {
@@ -133,20 +176,77 @@ async function loadMemberDetail(db, userId) {
     ORDER BY datetime(COALESCE(up.updated_at, up.created_at)) DESC
   `, [userId]);
 
+  const refundRows = await safeQueryAll(db, `
+    SELECT
+      id,
+      user_id,
+      order_id,
+      class_id,
+      class_title,
+      refund_type,
+      original_amount,
+      refund_amount,
+      reason_tags,
+      reason_note,
+      status,
+      processed_by,
+      processed_at,
+      metadata,
+      created_at
+    FROM user_refund_logs
+    WHERE user_id = ?
+    ORDER BY datetime(COALESCE(processed_at, created_at)) DESC
+  `, [userId]);
+
+  const blacklistRows = await safeQueryAll(db, `
+    SELECT
+      id,
+      user_id,
+      previous_state,
+      new_state,
+      changed_by,
+      reason,
+      created_at
+    FROM user_blacklist_logs
+    WHERE user_id = ?
+    ORDER BY datetime(created_at) DESC
+  `, [userId]);
+
+  const instructorClasses = await safeQueryAll(db, `
+    SELECT
+      id,
+      creator_id,
+      creator_email,
+      title,
+      category,
+      image_url,
+      operating_mode,
+      class_type,
+      price,
+      is_approved,
+      current_participants,
+      created_at,
+      updated_at
+    FROM classes
+    WHERE creator_id = ?
+    ORDER BY datetime(COALESCE(updated_at, created_at)) DESC
+  `, [userId]);
+
   const participantRows = await safeQueryAll(db, `
     SELECT
       cp.class_id,
       cp.role,
       cp.remaining_passes,
       cp.pass_type,
-      cp.joined_at,
+      COALESCE(e.enrolled_at, e.created_at) AS joined_at,
       c.title AS class_title,
       c.category AS class_category,
       c.image_url AS class_image_url
     FROM class_participants cp
     LEFT JOIN classes c ON c.id = cp.class_id
+    LEFT JOIN enrollments e ON e.class_id = cp.class_id AND e.user_id = cp.user_id
     WHERE cp.user_id = ?
-    ORDER BY datetime(COALESCE(cp.joined_at, 'now')) DESC
+    ORDER BY datetime(COALESCE(e.enrolled_at, e.created_at)) DESC
   `, [userId]);
 
   const passTotals = passRows.reduce((acc, row) => {
@@ -200,6 +300,34 @@ async function loadMemberDetail(db, userId) {
     }
   }
 
+  const refundLogs = dedupeBySignature(refundRows.map((row) => ({
+    id: row.id,
+    user_id: row.user_id,
+    order_id: row.order_id,
+    class_id: row.class_id,
+    class_title: row.class_title || '',
+    refund_type: row.refund_type || 'full',
+    original_amount: Number(row.original_amount || 0),
+    refund_amount: Number(row.refund_amount || 0),
+    reason_tags: row.reason_tags || '',
+    reason_note: row.reason_note || '',
+    status: row.status || '',
+    processed_by: row.processed_by || '',
+    processed_at: row.processed_at || '',
+    metadata: row.metadata || '',
+    created_at: row.created_at || '',
+  })), refundSignature);
+
+  const blacklistLogs = dedupeBySignature(blacklistRows.map((row) => ({
+    id: row.id,
+    user_id: row.user_id,
+    previous_state: normalizeBoolean(row.previous_state),
+    new_state: normalizeBoolean(row.new_state),
+    changed_by: row.changed_by || '',
+    reason: row.reason || '',
+    created_at: row.created_at || '',
+  })), blacklistSignature);
+
   return {
     user: {
       ...user,
@@ -216,6 +344,9 @@ async function loadMemberDetail(db, userId) {
       total_paid_amount: sumMoney(paidOrders, ['final_amount', 'amount']),
       pass_total_count: passTotals.total,
       pass_remaining_count: passTotals.remaining,
+      refund_count: refundLogs.length,
+      refund_total_amount: sumMoney(refundLogs, ['refund_amount']),
+      instructor_class_count: instructorClasses.length,
     },
     subscribed_classes: enrollments.map((row) => ({
       class_id: row.class_id,
@@ -259,6 +390,23 @@ async function loadMemberDetail(db, userId) {
       created_at: row.created_at || '',
       updated_at: row.updated_at || '',
     })),
+    refund_logs: refundLogs,
+    blacklist_logs: blacklistLogs,
+    instructor_classes: instructorClasses.map((row) => ({
+      id: row.id,
+      creator_id: row.creator_id,
+      creator_email: row.creator_email || '',
+      title: row.title || '',
+      category: row.category || '',
+      image_url: row.image_url || '',
+      operating_mode: row.operating_mode || '',
+      class_type: row.class_type || '',
+      price: Number(row.price || 0),
+      is_approved: normalizeBoolean(row.is_approved),
+      current_participants: Number(row.current_participants || 0),
+      created_at: row.created_at || '',
+      updated_at: row.updated_at || '',
+    })),
     class_participants: participantRows,
   };
 }
@@ -271,6 +419,7 @@ export async function onRequestGet(context) {
 
   await ensureAuthSchema(env.DB);
   await ensureClassesSchema(env.DB);
+  await ensureOperationsSchema(env.DB);
 
   try {
     const detailedAccess = isAtLeastRole(auth.user.role, 'operator') || auth.user.id === userId;
@@ -297,6 +446,7 @@ export async function onRequestPut(context) {
 
   await ensureAuthSchema(env.DB);
   await ensureClassesSchema(env.DB);
+  await ensureOperationsSchema(env.DB);
 
   try {
     const body = await request.json();
@@ -343,33 +493,43 @@ export async function onRequestPut(context) {
       }
     }
 
+    let blacklistNoop = false;
+    let skipUpdatedAt = false;
     if (body.blacklisted !== undefined) {
       if (!canManageMembers) {
         return json(request, env, { success: false, error: '블랙리스트 관리 권한이 없습니다.' }, { status: 403 });
       }
 
       const nextBlacklisted = normalizeBoolean(body.blacklisted);
-      const reason = String(body.blacklist_reason || body.reason || '').trim() || null;
-      updates.push('is_blacklisted = ?');
-      values.push(nextBlacklisted ? 1 : 0);
-      updates.push('blacklisted_at = ?');
-      values.push(nextBlacklisted ? new Date().toISOString() : null);
-      updates.push('blacklisted_by = ?');
-      values.push(nextBlacklisted ? auth.user.id : null);
-      updates.push('blacklist_reason = ?');
-      values.push(nextBlacklisted ? reason : null);
+      const currentBlacklisted = normalizeBoolean(currentUser.is_blacklisted);
+      if (nextBlacklisted === currentBlacklisted) {
+        blacklistNoop = true;
+        skipUpdatedAt = true;
+        updates.push('updated_at = datetime("now")');
+        values.push(userId);
+      } else {
+        const reason = String(body.blacklist_reason || body.reason || '').trim() || null;
+        updates.push('is_blacklisted = ?');
+        values.push(nextBlacklisted ? 1 : 0);
+        updates.push('blacklisted_at = ?');
+        values.push(nextBlacklisted ? new Date().toISOString() : null);
+        updates.push('blacklisted_by = ?');
+        values.push(nextBlacklisted ? auth.user.id : null);
+        updates.push('blacklist_reason = ?');
+        values.push(nextBlacklisted ? reason : null);
 
-      await env.DB.prepare(`
-        INSERT INTO user_blacklist_logs (id, user_id, previous_state, new_state, changed_by, reason, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-      `).bind(
-        `blk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-        userId,
-        normalizeBoolean(currentUser.is_blacklisted) ? 1 : 0,
-        nextBlacklisted ? 1 : 0,
-        auth.user.id,
-        reason,
-      ).run();
+        await env.DB.prepare(`
+          INSERT INTO user_blacklist_logs (id, user_id, previous_state, new_state, changed_by, reason, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+        `).bind(
+          `blk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          userId,
+          currentBlacklisted ? 1 : 0,
+          nextBlacklisted ? 1 : 0,
+          auth.user.id,
+          reason,
+        ).run();
+      }
     }
 
     if (body.role !== undefined) {
@@ -415,8 +575,10 @@ export async function onRequestPut(context) {
       return json(request, env, { success: false, error: '수정할 항목이 없습니다.' }, { status: 400 });
     }
 
-    updates.push('updated_at = datetime("now")');
-    values.push(userId);
+    if (!skipUpdatedAt) {
+      updates.push('updated_at = datetime("now")');
+      values.push(userId);
+    }
 
     await env.DB.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
 

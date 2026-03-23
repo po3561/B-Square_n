@@ -1,0 +1,28 @@
+name: Deploy Supabase Schema
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'supabase_schema_rules.sql'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+        
+      - name: Deploy Schema to Supabase
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "Error: SUPABASE_DB_URL secret is not set in GitHub Settings!"
+            exit 1
+          fi
+          echo "Executing SQL file to Supabase..."
+          psql "$SUPABASE_DB_URL" -f supabase_schema_rules.sql

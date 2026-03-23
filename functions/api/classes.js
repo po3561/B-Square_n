@@ -1,6 +1,7 @@
 import { requireClassManager, requireSession } from './_lib/auth.js';
 import { json } from './_lib/http.js';
-import { ensureClassesSchema, ensureReviewsSchema } from './_lib/schema.js';
+import { ensureClassesSchema, ensureReviewsSchema, ensureClassStatsSchema } from './_lib/schema.js';
+import { ensureClassBookmarksSchema } from './_lib/class_support.js';
 
 export async function onRequest(context) {
     const { request, env } = context;
@@ -10,59 +11,80 @@ export async function onRequest(context) {
 
     await ensureClassesSchema(db);
     await ensureReviewsSchema(db);
+    await ensureClassStatsSchema(db);
+    await ensureClassBookmarksSchema(db);
 
     // GET: 클래스 목록 조회
         if (method === 'GET') {
             const category = url.searchParams.get('category') || '';
             const query = url.searchParams.get('q') || '';
             const instructorId = url.searchParams.get('instructor_id') || url.searchParams.get('creator_id') || '';
-            const limit = Math.min(parseInt(url.searchParams.get('limit')) || 50, 100);
+            const limit = Math.min(parseInt(url.searchParams.get('limit')) || 50, 500);
             const offset = parseInt(url.searchParams.get('offset')) || 0;
     
             try {
-                let sql = 'SELECT *, creator_id AS instructor_id FROM classes WHERE 1=1';
+                let sql = `
+                    SELECT
+                        c.id,
+                        c.creator_id,
+                        c.title,
+                        c.category,
+                        c.keywords,
+                        c.summary,
+                        c.price,
+                        c.discount_rate,
+                        c.coupon_pack,
+                        c.class_type,
+                        c.operating_mode,
+                        c.is_free,
+                        c.instructor_phone,
+                        c.instructor_name,
+                        c.instructor_email,
+                        c.current_participants,
+                        c.thumbnail,
+                        c.image_url,
+                        c.created_at,
+                        c.updated_at,
+                        c.creator_id AS instructor_id,
+                        u.name AS creator_name,
+                        COALESCE(u.email, c.creator_email) AS creator_email,
+                        u.phone AS creator_phone,
+                        COALESCE(s.avg_rating, 0) AS avg_rating,
+                        COALESCE(s.review_count, 0) AS review_count,
+                        COALESCE(s.bookmark_count, 0) AS bookmark_count,
+                        COALESCE(s.bookmark_count, 0) AS like_count,
+                        COALESCE(c.is_public, 1) AS is_public
+                    FROM classes c
+                    LEFT JOIN users u ON u.id = c.creator_id
+                    LEFT JOIN class_stats s ON s.class_id = c.id
+                    WHERE COALESCE(c.is_public, 1) = 1
+                `;
                 const params = [];
-    
+
                 if (category) {
-                    sql += ' AND category LIKE ?';
+                    sql += ' AND c.category LIKE ?';
                     params.push(`%${category}%`);
                 }
                 if (instructorId) {
-                    sql += ' AND creator_id = ?';
+                    sql += ' AND c.creator_id = ?';
                     params.push(instructorId);
                 }
             if (query) {
-                sql += ' AND (title LIKE ? OR category LIKE ? OR keywords LIKE ?)';
-                params.push(`%${query}%`, `%${query}%`, `%${query}%`);
+                sql += ' AND (c.title LIKE ? OR c.category LIKE ? OR c.keywords LIKE ? OR c.creator_email LIKE ? OR c.instructor_name LIKE ? OR c.instructor_email LIKE ? OR u.name LIKE ? OR u.email LIKE ?)';
+                params.push(`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`);
             }
 
-            sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+            sql += ' ORDER BY c.created_at DESC LIMIT ? OFFSET ?';
             params.push(limit, offset);
 
             const { results } = await db.prepare(sql).bind(...params).all();
-
-            const classIds = results.map(c => c.id);
-            let reviewStats = {};
-
-            if (classIds.length > 0) {
-                const placeholders = classIds.map(() => '?').join(',');
-                const { results: stats } = await db
-                    .prepare(`SELECT class_id, AVG(rating) as avg_rating, COUNT(*) as review_count FROM reviews WHERE class_id IN (${placeholders}) GROUP BY class_id`)
-                    .bind(...classIds)
-                    .all();
-
-                stats.forEach(s => {
-                    reviewStats[s.class_id] = {
-                        avg_rating: s.avg_rating ? parseFloat(s.avg_rating).toFixed(1) : '0.0',
-                        review_count: s.review_count || 0
-                    };
-                });
-            }
-
-            const enriched = results.map(cls => ({
+            const enriched = (results || []).map((cls) => ({
                 ...cls,
-                avg_rating: reviewStats[cls.id]?.avg_rating || '0.0',
-                review_count: reviewStats[cls.id]?.review_count || 0
+                avg_rating: cls.avg_rating ? Number(cls.avg_rating).toFixed(1) : '0.0',
+                review_count: Number(cls.review_count || 0),
+                bookmark_count: Number(cls.bookmark_count || 0),
+                like_count: Number(cls.like_count || cls.bookmark_count || 0),
+                is_public: Number(cls.is_public ?? 1) === 1,
             }));
 
             return json(request, env, { success: true, data: enriched, meta: { limit, offset, count: enriched.length } });
@@ -120,7 +142,7 @@ export async function onRequest(context) {
             
             const tables = [
                 'enrollments', 'reviews', 'chat_messages', 'class_notices', 'coupons',
-                'class_participants', 'class_boards', 'user_passes'
+                'class_participants', 'class_boards', 'user_passes', 'class_bookmarks'
             ];
 
             for (const table of tables) {

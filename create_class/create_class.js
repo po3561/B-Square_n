@@ -22,6 +22,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     let userId = isOperator ? 'OPERATOR_GHOST' : session.user.id;
     let userEmail = isOperator ? 'operator@b-square.kr' : session.user.email;
 
+    const DEFAULT_CATEGORY_SEEDS = [
+        { name: '소모임/동아리', emoji: '👥' },
+        { name: '맛있는 클래스', emoji: '🍽️' },
+        { name: '운동 클래스', emoji: '🏋️' },
+        { name: '디자인', emoji: '🎨' },
+        { name: '생산성', emoji: '⚡' },
+        { name: '스포츠', emoji: '🏅' },
+        { name: '디지털 드로잉', emoji: '✏️' },
+        { name: '성공 마인드', emoji: '🧠' },
+        { name: '음악', emoji: '🎵' },
+        { name: '요리', emoji: '🍳' },
+        { name: '베이킹', emoji: '🧁' },
+        { name: '사진', emoji: '📷' },
+        { name: '영상', emoji: '🎬' },
+        { name: '공예', emoji: '🧵' },
+        { name: '여행', emoji: '🧭' },
+    ];
+
+    function escapeHtml(value = '') {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    async function populateCategoryDropdown() {
+        const dropdown = document.getElementById('categoryDropdown');
+        const list = dropdown?.querySelector('.dropdown-list');
+        if (!list) return;
+
+        let categories = DEFAULT_CATEGORY_SEEDS;
+        try {
+            const res = await window.BSQ.api(`/api/class-categories?t=${Date.now()}`);
+            if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+                categories = res.data.map((item) => ({
+                    name: String(item.name || '').trim(),
+                    emoji: String(item.emoji || '✨').trim() || '✨',
+                })).filter((item) => item.name);
+            }
+        } catch (error) {
+            console.warn('[create_class] category load failed, using fallback:', error);
+        }
+
+        list.innerHTML = categories.map((item) => `
+            <div class="dropdown-item" data-value="${escapeHtml(item.name)}">${escapeHtml(item.emoji || '✨')} ${escapeHtml(item.name)}</div>
+        `).join('');
+    }
+
     // --- Quill.js 에디터 ---
     let quillEditor = null;
     const quillContainer = document.getElementById('quillEditor');
@@ -104,10 +154,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     function setupPremiumDropdown(dropdownId, onSelect = null) {
         const dropdown = document.getElementById(dropdownId);
         if (!dropdown) return;
+        if (dropdown.dataset.bound === '1') return;
+        dropdown.dataset.bound = '1';
 
         const selected = dropdown.querySelector('.dropdown-selected');
         const list = dropdown.querySelector('.dropdown-list');
-        const items = dropdown.querySelectorAll('.dropdown-item');
         const hiddenInput = dropdown.querySelector('input[type="hidden"]');
 
         selected.addEventListener('click', (e) => {
@@ -119,22 +170,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             dropdown.classList.toggle('active');
         });
 
-        items.forEach(item => {
-            item.addEventListener('click', () => {
-                const value = item.dataset.value;
-                const html = item.innerHTML;
-                
-                selected.innerHTML = `${html} <i data-lucide="chevron-down"></i>`;
-                hiddenInput.value = value;
-                dropdown.classList.remove('active');
-                
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-                if (onSelect) onSelect(value);
-            });
+        list?.addEventListener('click', (e) => {
+            const item = e.target.closest('.dropdown-item');
+            if (!item) return;
+            const value = item.dataset.value;
+            const html = item.innerHTML;
+
+            selected.innerHTML = `${html} <i data-lucide="chevron-down"></i>`;
+            hiddenInput.value = value;
+            dropdown.classList.remove('active');
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            if (onSelect) onSelect(value);
         });
     }
 
     // 카테고리 드롭다운 설정
+    await populateCategoryDropdown();
     setupPremiumDropdown('categoryDropdown');
 
     // --- 원데이 클래스 제약 ---
@@ -161,6 +213,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 문서 클릭 시 드롭다운 닫기
     document.addEventListener('click', () => {
         document.querySelectorAll('.premium-dropdown').forEach(d => d.classList.remove('active'));
+    });
+
+    window.addEventListener('bsq_sync', (event) => {
+        if (event.detail?.type === 'class-categories') {
+            populateCategoryDropdown();
+        }
     });
 
     // --- 제목 글자수 카운터 ---

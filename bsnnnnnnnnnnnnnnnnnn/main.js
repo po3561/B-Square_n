@@ -3,42 +3,81 @@ document.addEventListener('DOMContentLoaded', async () => {
   await window.BSQ.ready;
   const currentCategory = new URLSearchParams(window.location.search).get('cat') || 'all';
 
+  await renderHomepageCategories(currentCategory);
   initMainPage();
 
   window.addEventListener('bsq_sync', (e) => {
     console.log('[BSQ Sync] Data refresh requested:', e.detail);
     initMainPage();
     initBanners();
+    renderHomepageCategories(new URLSearchParams(window.location.search).get('cat') || 'all');
   });
 
   initBanners();
 
-  const categoryLinks = document.querySelectorAll('.category-grid a');
-  categoryLinks.forEach((link) => {
-    if (link.dataset.cat === currentCategory) {
-      document.querySelectorAll('#categoryFilter li').forEach((li) => li.classList.remove('active'));
-      link.parentElement.classList.add('active');
-    }
-
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const categoryName = link.textContent.replace(/[^\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]/g, '').trim();
-      filterAllClassesByCategory(categoryName);
-
-      categoryLinks.forEach((l) => {
-        l.classList.remove('active');
-        l.parentElement.classList.remove('active');
-      });
-      link.classList.add('active');
-
+  document.querySelector('.category-grid')?.addEventListener('click', (event) => {
+    const link = event.target.closest('a[data-cat]');
+    if (!link) return;
+    event.preventDefault();
+    const categoryName = String(link.dataset.cat || 'all');
+    const allGrid = document.getElementById('allClassGrid');
+    document.querySelectorAll('.category-grid li').forEach((li) => li.classList.remove('active'));
+    link.parentElement.classList.add('active');
+    if (categoryName === 'all') {
+      if (allGrid) renderClassCards(globalAllClasses, allGrid);
       document.querySelector('.all-classes')?.scrollIntoView({ behavior: 'smooth' });
-    });
+      return;
+    }
+    filterAllClassesByCategory(categoryName);
+    document.querySelector('.all-classes')?.scrollIntoView({ behavior: 'smooth' });
   });
 
   initDrawer();
 });
 
 let globalAllClasses = [];
+const FALLBACK_HOME_CATEGORIES = [
+  { name: '소모임/동아리', emoji: '👥' },
+  { name: '맛있는 클래스', emoji: '🍽️' },
+  { name: '운동 클래스', emoji: '🏋️' },
+  { name: '디자인', emoji: '🎨' },
+  { name: '생산성', emoji: '⚡' },
+  { name: '스포츠', emoji: '🏅' },
+  { name: '디지털 드로잉', emoji: '✏️' },
+  { name: '성공 마인드', emoji: '🧠' },
+  { name: '음악', emoji: '🎵' },
+  { name: '요리', emoji: '🍳' },
+  { name: '베이킹', emoji: '🧁' },
+  { name: '사진', emoji: '📷' },
+  { name: '영상', emoji: '🎬' },
+  { name: '공예', emoji: '🧵' },
+  { name: '여행', emoji: '🧭' },
+];
+
+async function renderHomepageCategories(currentCategory = 'all') {
+  const nav = document.querySelector('.category-grid');
+  if (!nav) return;
+
+  let categories = FALLBACK_HOME_CATEGORIES;
+  try {
+    const res = await window.BSQ.api(`/api/class-categories?t=${Date.now()}`);
+    if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+      categories = res.data.map((item) => ({
+        name: String(item.name || '').trim(),
+        emoji: String(item.emoji || '✨').trim() || '✨',
+      })).filter((item) => item.name);
+    }
+  } catch (error) {
+    console.warn('[Main] category load failed, fallback used:', error);
+  }
+
+  nav.innerHTML = `
+    <ul>
+      <li class="${currentCategory === 'all' ? 'active' : ''}"><a href="#" data-cat="all"><span class="icon">🌐</span>전체</a></li>
+      ${categories.map((item) => `<li class="${currentCategory === item.name ? 'active' : ''}"><a href="#" data-cat="${escapeHtml(item.name)}"><span class="icon">${escapeHtml(item.emoji || '✨')}</span>${escapeHtml(item.name)}</a></li>`).join('')}
+    </ul>
+  `;
+}
 
 function safeArray(value) {
   return Array.isArray(value) ? value : [];
@@ -319,7 +358,7 @@ async function initMainPage() {
 
 function filterAllClassesByCategory(categoryName) {
   const allGrid = document.getElementById('allClassGrid');
-  const filtered = globalAllClasses.filter((cls) => cls.category && cls.category.includes(categoryName));
+  const filtered = globalAllClasses.filter((cls) => String(cls.category || '').trim() === String(categoryName || '').trim());
   if (allGrid) renderClassCards(filtered, allGrid);
 }
 
@@ -335,6 +374,7 @@ function renderClassCards(classes, container) {
     const originalPrice = parseInt(cls.price, 10) || 0;
     const currentPrice = discountRate > 0 ? originalPrice * (1 - discountRate / 100) : originalPrice;
     const thumb = cls.thumbnail || cls.image_url || 'https://via.placeholder.com/400x250';
+    const likeCount = Number(cls.like_count || cls.bookmark_count || 0);
 
     return `
       <div class="class-card" onclick="location.href='../class_view/class_view.html?id=${cls.id}'" style="cursor:pointer;">
@@ -344,7 +384,7 @@ function renderClassCards(classes, container) {
             ${cls.coupon_pack ? '<span class="badge-coupon">Coupon</span>' : ''}
             ${discountRate > 0 ? `<span class="badge-discount">${discountRate}% OFF</span>` : ''}
           </div>
-          <button type="button" class="btn-bookmark" onclick="event.stopPropagation();">★</button>
+          <button type="button" class="btn-bookmark" data-action="bookmark-class" data-class-id="${cls.id}" onclick="event.stopPropagation();">♡</button>
         </div>
         <div class="card-info">
           <span class="category">${cls.category || 'Class'}</span>
@@ -354,6 +394,7 @@ function renderClassCards(classes, container) {
             <span class="star">★</span>
             <span class="score">${cls.avg_rating || '0.0'}</span>
             <span class="count">(${cls.review_count || '0'})</span>
+            <span class="count">♥ ${likeCount}</span>
           </div>
           <div class="price-info">
             ${cls.discount_rate > 0 ? `<span class="discount">${cls.discount_rate}%</span>` : ''}
@@ -363,6 +404,32 @@ function renderClassCards(classes, container) {
       </div>
     `;
   }).join('');
+
+  container.querySelectorAll('[data-action="bookmark-class"]').forEach((button) => {
+    button.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      const classId = button.dataset.classId;
+      if (!window.BSQ?.isLoggedIn) {
+        if (confirm('찜하기를 사용하려면 로그인이 필요합니다. 로그인 화면으로 이동할까요?')) {
+          window.location.href = `../login/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+        }
+        return;
+      }
+
+      const original = button.textContent;
+      button.disabled = true;
+      try {
+        const res = await window.BSQ.api('/api/class-bookmarks', 'POST', { class_id: classId });
+        if (!res.success) throw new Error(res.error || '찜하기 실패');
+        button.textContent = res.data?.bookmarked ? '♥' : '♡';
+      } catch (error) {
+        alert(`찜하기 처리에 실패했습니다: ${error.message}`);
+        button.textContent = original;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
 }
 
 function renderMiniCards(classes, container) {

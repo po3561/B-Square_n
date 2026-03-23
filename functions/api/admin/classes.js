@@ -1,9 +1,10 @@
 import { requireAdmin } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
-import { ensureClassesSchema, ensureClassStatsSchema } from '../_lib/schema.js';
+import { ensureClassesSchema, ensureClassStatsSchema, ensureOperationsSchema } from '../_lib/schema.js';
+import { ensureClassBookmarksSchema, getEffectiveClassPrice, getClassHotScore } from '../_lib/class_support.js';
 
-function buildLike(value) {
-  return `%${String(value || '').trim()}%`;
+function normalizeText(value) {
+  return String(value ?? '').trim();
 }
 
 function parseIntSafe(value, fallback = 0) {
@@ -11,13 +12,51 @@ function parseIntSafe(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function normalizeVisibility(value) {
+  const text = String(value || 'all').trim().toLowerCase();
+  if (['public', 'visible', 'on', '1'].includes(text)) return 'public';
+  if (['private', 'hidden', 'off', '0'].includes(text)) return 'private';
+  return 'all';
+}
+
+function buildLike(value) {
+  return `%${String(value || '').trim()}%`;
+}
+
 async function loadClasses(db, params) {
+  const sortKey = normalizeText(params.sort || 'newest').toLowerCase();
+  const limit = Math.min(Math.max(parseIntSafe(params.limit, 500), 1), 1000);
+  const recentCutoff = "datetime('now', '-30 days')";
+
   let sql = `
     SELECT
-      c.*,
-      u.name AS creator_name,
-      u.email AS creator_email,
-      u.phone AS creator_phone,
+      c.id,
+      c.creator_id,
+      c.title,
+      c.category,
+      c.keywords,
+      c.price,
+      c.discount_rate,
+      c.coupon_pack,
+      c.class_type,
+      c.operating_mode,
+      c.capacity_min,
+      c.capacity_max,
+      c.is_approved,
+      c.is_free,
+      c.instructor_phone,
+      c.instructor_name,
+      c.instructor_email,
+      c.current_participants,
+      c.is_public,
+      c.thumbnail,
+      c.image_url,
+      c.created_at,
+      c.updated_at,
+      c.creator_id AS instructor_id,
+      COALESCE(u.name, c.instructor_name) AS creator_name,
+      COALESCE(u.email, c.creator_email, c.instructor_email) AS creator_email,
+      COALESCE(u.phone, c.instructor_phone) AS creator_phone,
       COALESCE(s.avg_rating, 0) AS avg_rating,
       COALESCE(s.review_count, 0) AS review_count,
       COALESCE(s.total_visits, 0) AS total_visits,
@@ -25,10 +64,34 @@ async function loadClasses(db, params) {
       COALESCE(s.total_passes_issued, 0) AS total_passes_issued,
       COALESCE(s.total_passes_used, 0) AS total_passes_used,
       COALESCE(s.total_revenue, 0) AS total_revenue,
-      COALESCE(s.bookmark_count, 0) AS bookmark_count
+      COALESCE(s.total_gatherings, 0) AS total_gatherings,
+      COALESCE(s.bookmark_count, 0) AS bookmark_count,
+      COALESCE(active.recent_active_students, 0) AS recent_active_students,
+      CASE
+        WHEN COALESCE(c.is_free, 0) = 1 THEN 0
+        WHEN COALESCE(c.discount_rate, 0) > 0 THEN ROUND(COALESCE(c.price, 0) * (1 - COALESCE(c.discount_rate, 0) / 100.0))
+        ELSE COALESCE(c.price, 0)
+      END AS effective_price,
+      (
+        (COALESCE(s.bookmark_count, 0) * 24) +
+        (COALESCE(s.review_count, 0) * 18) +
+        (COALESCE(s.avg_rating, 0) * 32) +
+        (COALESCE(s.total_visits, 0) * 0.5) +
+        (COALESCE(s.total_enrollments, 0) * 10) +
+        (COALESCE(s.total_gatherings, 0) * 4)
+      ) AS hot_score
     FROM classes c
     LEFT JOIN users u ON u.id = c.creator_id
     LEFT JOIN class_stats s ON s.class_id = c.id
+    LEFT JOIN (
+      SELECT
+        class_id,
+        COUNT(DISTINCT user_id) AS recent_active_students
+      FROM enrollments
+      WHERE enrolled_at >= ${recentCutoff}
+         OR (enrolled_at IS NULL AND created_at >= ${recentCutoff})
+      GROUP BY class_id
+    ) active ON active.class_id = c.id
     WHERE 1=1
   `;
 
@@ -53,10 +116,16 @@ async function loadClasses(db, params) {
     bindings.push(like, like, like, like, like, like, like, like, like, like);
   }
 
-  if (params.category) {
-    sql += ' AND (c.category LIKE ? OR c.keywords LIKE ?)';
+  if (params.category && params.category !== 'all') {
+    sql += ' AND (c.category = ? OR c.category LIKE ? OR c.keywords LIKE ?)';
     const like = buildLike(params.category);
-    bindings.push(like, like);
+    bindings.push(params.category, like, like);
+  }
+
+  if (params.visibility === 'public') {
+    sql += ' AND COALESCE(c.is_public, 1) = 1';
+  } else if (params.visibility === 'private') {
+    sql += ' AND COALESCE(c.is_public, 1) = 0';
   }
 
   if (params.instructorId) {
@@ -64,20 +133,40 @@ async function loadClasses(db, params) {
     bindings.push(params.instructorId);
   }
 
-  if (params.approved !== null) {
-    sql += ' AND c.is_approved = ?';
-    bindings.push(params.approved ? 1 : 0);
+  let orderClause = ' ORDER BY c.created_at DESC, c.title ASC';
+  if (sortKey === 'popular') {
+    orderClause = ' ORDER BY hot_score DESC, c.created_at DESC, c.title ASC';
+  } else if (sortKey === 'price-high') {
+    orderClause = ' ORDER BY effective_price DESC, c.created_at DESC, c.title ASC';
+  } else if (sortKey === 'price-low') {
+    orderClause = ' ORDER BY effective_price ASC, c.created_at DESC, c.title ASC';
   }
 
-  sql += ' ORDER BY c.created_at DESC, c.title ASC';
-
-  if (params.limit !== null) {
-    sql += ' LIMIT ? OFFSET ?';
-    bindings.push(params.limit, params.offset);
-  }
+  sql += `${orderClause} LIMIT ?`;
+  bindings.push(limit);
 
   const { results } = await db.prepare(sql).bind(...bindings).all();
   return Array.isArray(results) ? results : [];
+}
+
+function sortClasses(rows, sort) {
+  const items = [...rows];
+  switch (sort) {
+    case 'popular':
+      items.sort((a, b) => getClassHotScore(b) - getClassHotScore(a));
+      break;
+    case 'price-high':
+      items.sort((a, b) => getEffectiveClassPrice(b) - getEffectiveClassPrice(a));
+      break;
+    case 'price-low':
+      items.sort((a, b) => getEffectiveClassPrice(a) - getEffectiveClassPrice(b));
+      break;
+    case 'newest':
+    default:
+      items.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      break;
+  }
+  return items;
 }
 
 export async function onRequest(context) {
@@ -99,45 +188,51 @@ export async function onRequest(context) {
   try {
     await ensureClassesSchema(db);
     await ensureClassStatsSchema(db);
+    await ensureClassBookmarksSchema(db);
+    await ensureOperationsSchema(db);
 
-    const limitParam = url.searchParams.get('limit');
-    const hasLimit = limitParam !== null && limitParam !== '';
-    const limit = hasLimit ? Math.min(Math.max(parseIntSafe(limitParam, 0), 1), 5000) : null;
-    const offset = Math.max(parseIntSafe(url.searchParams.get('offset'), 0), 0);
-    const q = String(url.searchParams.get('q') || '').trim();
-    const category = String(url.searchParams.get('category') || '').trim();
-    const instructorId = String(url.searchParams.get('instructor_id') || url.searchParams.get('creator_id') || '').trim();
+    const q = normalizeText(url.searchParams.get('q'));
+    const category = normalizeText(url.searchParams.get('category'));
+    const instructorId = normalizeText(url.searchParams.get('instructor_id') || url.searchParams.get('creator_id'));
+    const sort = normalizeText(url.searchParams.get('sort') || 'newest');
+    const visibility = normalizeVisibility(url.searchParams.get('visibility'));
+    const limit = Math.min(Math.max(parseIntSafe(url.searchParams.get('limit'), 500), 1), 1000);
 
-    const approvedParam = url.searchParams.get('is_approved');
-    const approved = approvedParam === '1' ? true : approvedParam === '0' ? false : null;
-
-    const data = await loadClasses(db, {
+    const data = (await loadClasses(db, {
       q,
       category,
       instructorId,
-      approved,
+      visibility,
+      sort,
       limit,
-      offset,
-    });
+    })).map((row) => ({
+      ...row,
+      bookmark_count: Number(row.bookmark_count || 0),
+      recent_active_students: Number(row.recent_active_students || 0),
+      effective_price: getEffectiveClassPrice(row),
+      hot_score: getClassHotScore(row),
+      is_public: Number(row.is_public ?? 1) === 1,
+      is_approved: Number(row.is_approved ?? 0) === 1,
+      current_participants: Number(row.current_participants || row.total_enrollments || 0),
+    }));
 
     return json(request, env, {
       success: true,
       data,
       meta: {
         count: data.length,
-        limit,
-        offset,
+        sort,
         q,
         category,
-        instructorId,
-        is_approved: approvedParam,
+        visibility,
+        limit,
       },
     });
   } catch (error) {
     console.error('[API /admin/classes] Error:', error);
     return json(request, env, {
       success: false,
-      error: '관리자 클래스 카탈로그를 불러오지 못했습니다.',
+      error: '클래스 목록을 불러오지 못했습니다.',
       detail: error.message,
     }, { status: 500 });
   }

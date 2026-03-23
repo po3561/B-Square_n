@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>클래스 상세 정보 | B-Square</title>
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_mobile.css" media="(max-width: 768px)">
+    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css" media="(min-width: 769px)">
+    <link rel="stylesheet" href="class_view.css">
+    <link rel="stylesheet" href="../community/community.css">
+    <link rel="stylesheet" href="view_chat.css">
+    <link rel="stylesheet" href="payment_toast.css">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Quill.js 리치 텍스트 에디터 -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
+    <!-- 결제 SDK 추가 (PortOne) -->
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+
+    <!-- SDKs -->
+    <script src="../bsq_server.js"></script>
+</head>
+
+<body>
+    <!-- header.js가 헤더/푸터/Drawer/BottomNav를 동적 삽입 -->
+
+    <main class="view-container">
+        <!-- Premium Hero Section -->
+        <section class="premium-hero">
+            <div class="hero-bg-wrapper">
+                <div class="hero-overlay"></div>
+            </div>
+            <div class="hero-content-wrapper hero-full-slider">
+                <div class="hero-slider-area">
+                    <div class="slider-section">
+                        <div class="slider-wrapper" id="imageSlider">
+                            <div class="slider-item">
+                                <img src="https://via.placeholder.com/1200x800" id="mainImg" alt="클래스 대표 이미지">
+                            </div>
+                        </div>
+                        <button class="slider-btn prev">❮</button>
+                        <button class="slider-btn next">❯</button>
+                        <div class="slider-counter">1 / 1</div>
+                    </div>
+                </div>
+            </div>
+            <!-- 히어로 숨김 요소 (JS 호환용) -->
+            <span id="viewCategory" style="display:none;">카테고리</span>
+            <h1 id="viewTitle" style="display:none;">클래스 제목</h1>
+            <span id="heroAvgStars" style="display:none;">⭐</span>
+            <span id="heroAvgRating" style="display:none;">0.0</span>
+            <span id="heroReviewCount" style="display:none;">0</span>
+        </section>
+
+        <div class="view-grid">
+            <div class="view-main-content">
+                <!-- 탭 메뉴 -->
+                <div class="view-tabs" id="viewTabs">
+                    <button class="tab-btn active" data-target="tabIntro">소개</button>
+                    <button class="tab-btn" data-target="tabNotice">공지사항</button>
+                    <button class="tab-btn" data-target="tabCurriculum">커리큘럼</button>
+                    <button class="tab-btn" data-target="tabReview">수강 후기</button>
+                    <button class="tab-btn" data-target="tabChat">클래스 채널</button>
+                    <button class="tab-btn" id="tabEditBtn" data-target="tabEdit"
+                        style="display:none; color: var(--comm-accent);">⚙️ 페이지 수정</button>
+                </div>
+
+                <!-- TAB: Intro -->
+                <div id="tabIntro" class="tab-content active">
+                    <section class="content-card">
+                        <!-- 요약 -->
+                        <div class="intro-section">
+                            <p id="viewSummary"
+                                style="font-size: 1.15rem; color: var(--text-secondary, #aaa); line-height: 1.7; margin-bottom: 0;">
+                            </p>
+                        </div>
+
+                        <!-- 상세 설명 (Rich HTML) -->
+                        <div class="intro-divider"></div>
+                        <div class="intro-section">
+                            <h3 class="section-title">📝 클래스 소개</h3>
+                            <div class="html-viewer" id="descriptionViewer"></div>
+                        </div>
+
+                        <!-- 대상 수강생 -->
+                        <div class="intro-divider"></div>
+                        <div class="intro-section">
+                            <h3 class="section-title">🎯 이런 분들을 위한 클래스입니다</h3>
+                            <ul class="target-list" id="targetList"></ul>
+                        </div>
+
+                        <!-- 학습 목표 -->
+                        <div class="intro-divider"></div>
+                        <div class="intro-section">
+                            <h3 class="section-title">🎓 이 클래스에서 배우는 것</h3>
+                            <div class="objective-grid" id="objectiveGrid"></div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- TAB: Notice -->
+                <div id="tabNotice" class="tab-content">
+                    <section class="content-card">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                            <h3 class="section-title" style="margin-bottom:0;">공지사항</h3>
+                            <button id="btnCreateClassNotice" class="btn-submit"
+                                style="display:none; padding: 6px 12px; font-size: 0.9rem;">새 공지 등록</button>
+                        </div>
+                        <div id="classNoticeList" class="notice-list">
+                            <!-- 공지사항 렌더링 영역 -->
+                            <div class="empty-state"
+                                style="padding: 3rem; text-align: center; color: var(--comm-text2);">등록된 공지가 없습니다.</div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- TAB: Curriculum -->
+                <div id="tabCurriculum" class="tab-content">
+                    <section class="content-card">
+                        <div class="curriculum-header-row">
+                            <h3 style="font-size: 1.5rem;">학습 커리큘럼 <span id="chapCount"
+                                    style="color:#666; font-size:1rem; margin-left:10px;">챕터 0개</span></h3>
+                            <button id="btnToggleAll"
+                                style="background:none; border:1px solid #444; color:#aaa; padding:6px 12px; border-radius:6px; cursor:pointer;">전체
+                                열기</button>
+                        </div>
+                        <div id="viewCurriculum" class="curriculum-container"></div>
+                    </section>
+                </div>
+
+                <!-- TAB: Review -->
+                <div id="tabReview" class="tab-content">
+                    <section class="content-card">
+                        <div class="review-header-minimal">
+                            <h4>수강생 리얼 후기 <span class="review-count-badge" id="reviewTotalCount">0</span></h4>
+                        </div>
+                        <h4 style="margin-bottom: 1.5rem;">수강생 리얼 포토 후기</h4>
+                        <div class="photo-review-grid" id="photoReviewGrid"></div>
+                        <div id="reviewsList" class="reviews-container"></div>
+                        <div class="review-form-card" id="reviewFormCard">
+                            <div class="review-form-locked" id="reviewFormLocked">
+                                <p>🔒 수강 신청 후 후기를 작성할 수 있습니다.</p>
+                            </div>
+                            <div class="review-form-unlocked" id="reviewFormUnlocked" style="display:none;">
+                                <h4>후기 작성하기</h4>
+                                <div class="star-rating">
+                                    <input type="radio" name="rating" value="1" id="r1"><label for="r1">★</label>
+                                    <input type="radio" name="rating" value="2" id="r2"><label for="r2">★</label>
+                                    <input type="radio" name="rating" value="3" id="r3"><label for="r3">★</label>
+                                    <input type="radio" name="rating" value="4" id="r4"><label for="r4">★</label>
+                                    <input type="radio" name="rating" value="5" id="r5"><label for="r5">★</label>
+                                </div>
+                                <textarea id="reviewText" placeholder="수강하며 느낀 점을 자유롭게 남겨주세요."></textarea>
+                                <button id="btnSubmitReview" class="btn-submit-review">후기 등록</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- TAB: Chat (Class Channel) -->
+                <div id="tabChat" class="tab-content chat-tab-wrapper">
+                    <div class="chat-tab-inner">
+                        <div class="chat-container">
+                            <!-- 채팅 잠금 UI (미수강자) -->
+                            <div class="chat-locked-overlay" id="chatLockedOverlay">
+                                <div class="chat-locked-card">
+                                    <span class="lock-emoji"><i class="fa-solid fa-lock" style="font-size:2.5rem;color:var(--accent-color);"></i></span>
+                                    <h3>클래스 전용 채널</h3>
+                                    <p>수강 신청 후 클래스 채널에 참여할 수 있습니다.</p>
+                                </div>
+                            </div>
+                            <!-- 채팅 해제 UI (수강자/강사) -->
+                            <div class="chat-unlocked" id="chatUnlocked"
+                                style="display:none; flex: 1; position: relative;">
+                                <section class="comm-main" id="commMain">
+                                    <div class="chat-active-area" id="chatActiveArea">
+                                        <div class="chat-top-header" id="chatTopHeader">
+                                            <div class="chat-header-info">
+                                                <!-- <div class="chat-header-avatar" id="chatHeaderAvatar" style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#007AFF,#5AC8FA);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;"></div> -->
+                                                <div class="chat-header-text">
+                                                    <span class="chat-header-name" id="chatHeaderName">채팅채널</span>
+                                                </div>
+                                            </div>
+                                            <div class="chat-header-actions">
+                                                <button class="btn-header-icon" id="btnChatSearch" title="메시지 검색"><i
+                                                        class="fa-solid fa-magnifying-glass"></i></button>
+                                                <button class="btn-header-icon" id="btnThemeToggle" title="테마 전환"><i
+                                                        class="fa-solid fa-moon" id="themeIcon"></i></button>
+                                                <button class="btn-header-icon" id="btnChatInfo" title="참여자 정보"><i
+                                                        class="fa-solid fa-circle-info"></i></button>
+                                            </div>
+                                        </div>
+
+                                        <!-- 메시지 내 검색바 -->
+                                        <div class="chat-search-bar" id="chatSearchBar" style="display:none;">
+                                            <input type="text" id="msgSearchInput" placeholder="메시지에서 검색...">
+                                            <span id="msgSearchCount" class="search-count"></span>
+                                            <button id="msgSearchClose" class="btn-search-close">✕</button>
+                                        </div>
+                                        <!-- 고정 메시지 바 -->
+                                        <div class="pinned-msg-bar" id="pinnedMsgBar">
+                                            <i class="fas fa-thumbtack pin-icon"></i>
+                                            <div class="pinned-separator"></div>
+                                            <div id="pinnedMsgContent">
+                                                <span class="pinned-msg-title">공지사항</span>
+                                                <span class="pinned-msg-text" id="pinnedMsgText">고정된 메시지가 없습니다.</span>
+                                            </div>
+                                            <button class="btn-pinned-menu" id="btnPinnedList" title="고정 메시지 전체 보기">
+                                                <i class="fa-solid fa-bars-staggered"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- 고정 메시지 전체보기 오버레이 (텔레그램 스타일) -->
+                                        <div class="pinned-list-overlay" id="pinnedListOverlay" style="display:none;">
+                                            <div class="pinned-list-container">
+                                                <div class="pinned-list-header">
+                                                    <div class="header-left">
+                                                        <button id="btnClosePinnedList" class="btn-back-arrow"><i
+                                                                class="fas fa-arrow-left"></i></button>
+                                                        <h3 id="pinnedListTitle">0개의 고정된 메시지</h3>
+                                                    </div>
+                                                </div>
+                                                <div class="pinned-list-body" id="pinnedListBody">
+                                                    <!-- 날짜 헤더 및 고정 메시지 아이템들이 여기에 렌더링됨 -->
+                                                </div>
+                                                <div class="pinned-list-footer" id="pinnedListFooter"
+                                                    style="display:none;">
+                                                    <button id="btnUnpinAll" class="btn-unpin-all">메시지 <span
+                                                            id="pinCountText">0</span>개 고정 해제하기</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 메시지 고정 확인 모달 -->
+                                        <div class="pin-confirm-modal" id="pinConfirmModal" style="display:none;">
+                                            <div class="pin-modal-content">
+                                                <p class="pin-modal-text">메시지를 고정 하시겠습니까?</p>
+                                                <div class="pin-modal-actions">
+                                                    <button id="btnPinCancel" class="btn-pin-cancel">취소</button>
+                                                    <button id="btnPinConfirm" class="btn-pin-confirm">고정</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="chat-messages-container" id="chatMessagesContainer"></div>
+
+                                        <!-- 하단으로 스크롤 버튼 -->
+                                        <button id="btnScrollBottom" class="btn-scroll-bottom" title="최신 메시지로 이동">
+                                            <span class="icon">↓</span>
+                                            <span class="badge" id="scrollBadge" style="display:none;">0</span>
+                                        </button>
+
+                                        <!-- 파일 드롭 오버레이 -->
+                                        <div class="file-drop-overlay" id="fileDropOverlay">
+                                            <div class="file-drop-inner">
+                                                <span>📎</span>
+                                                <p>파일을 여기에 드롭하세요</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- 답장 프리뷰 (chat_ui.js 연동) -->
+                                        <div id="replyPreview" class="reply-preview-bar" style="display:none;">
+                                            <div class="reply-preview-info">
+                                                <span class="reply-icon">⮑</span>
+                                                <span id="replyText" class="reply-preview-text"></span>
+                                            </div>
+                                            <button id="btnReplyCancel" class="btn-reply-close">✕</button>
+                                        </div>
+
+                                        <!-- 입력 UI -->
+                                        <div class="chat-input-area" id="chatInputArea">
+                                            <div class="input-pill-wrapper">
+                                                <button class="btn-input-icon-pill" id="btnAttach" title="파일 첨부"><i
+                                                        class="fa-solid fa-paperclip"></i></button>
+                                                <button class="btn-input-icon-pill" id="btnGathering"
+                                                    title="클래스 모집 카드 보내기" style="display:none;"><i
+                                                        class="fa-solid fa-calendar-check"></i></button>
+                                                <input type="file" id="fileInput" multiple hidden>
+                                                <textarea id="msgInput" placeholder="메시지 작성..." rows="1"
+                                                    spellcheck="false"></textarea>
+                                                <button class="btn-input-icon-pill" id="btnEmoji" title="이모지"><i
+                                                        class="fa-regular fa-face-smile-wink"></i></button>
+                                            </div>
+                                            <button class="btn-send-pill" id="btnSend" title="메시지 전송">
+                                                <i class="fa-solid fa-paper-plane"></i>
+                                            </button>
+
+                                            <div class="emoji-picker" id="emojiPicker" style="display:none;">
+                                                <div class="emoji-grid" id="emojiGrid"></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 채팅창 높이 조절 리사이저 핸들 -->
+                                        <div id="chatResizer" class="chat-resizer-handle">
+                                            <div class="resizer-bar"></div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- 정보 패널 (참여자 목록 등) -->
+                                <aside class="comm-info-panel" id="commInfoPanel">
+                                    <div class="info-panel-header">
+                                        <h3 id="infoPanelTitle">채널 정보</h3>
+                                        <button class="btn-close-panel" id="btnClosePanel" title="닫기">✕</button>
+                                    </div>
+                                    <div class="info-panel-body" id="infoPanelBody">
+                                        <!-- chat_ui.js 에서 동적 렌더링 -->
+                                    </div>
+                                </aside>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: Edit (강사 전용) -->
+                <div id="tabEdit" class="tab-content">
+                    <section class="content-card">
+                        <div class="edit-tab-container" id="editTabContainer">
+                            <!-- view_edit.js에서 동적 생성 -->
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Sticky Sidebar -->
+            <aside class="view-sidebar">
+                <div class="sticky-card-premium">
+                    <!-- 크리에이터 박스 제거 (요청사항) -->
+                    <h2 class="side-main-title" id="sidebarTitle">클래스 제목</h2>
+                    <div class="side-category-line">
+                        <span id="sidebarCategory">카테고리</span>
+                        <span>|</span>
+                        <span>입문자</span>
+                    </div>
+                    <div class="side-review-line">
+                        <span class="side-stars" id="sideAvgStars">⭐</span>
+                        <span class="side-rating" id="sideAvgRating">0.0</span>
+                        <span class="side-review-count">(후기 <span id="sideReviewCount">0</span>개)</span>
+                    </div>
+
+                    <!-- 내 수강권 현황 표시 -->
+                    <div id="myPassStatus"
+                        style="display:none; padding: 12px; margin: 10px 0; background: rgba(76, 201, 240, 0.1); border: 1px solid rgba(76, 201, 240, 0.3); border-radius: 8px; color: #4cc9f0; font-weight: 600; text-align: center;">
+                        <div style="margin-bottom: 8px;">내 보유 수강권: <span id="myPassCountVal">0</span>개</div>
+                        <button id="btnUsePass"
+                            style="width:100%; padding:8px; border-radius:6px; background:#4cc9f0; color:#fff; border:none; font-weight:700; cursor:pointer;">🎫
+                            수강권 1회 사용하기</button>
+                    </div>
+
+                    <!-- 수강권 구매 옵션 -->
+                    <div id="passOptionsContainer" style="display:none; margin: 15px 0;"></div>
+
+                    <div class="side-price-section">
+                        <span class="side-final-price" id="viewPrice">0원</span>
+                        <p class="side-installment" id="priceInstallment">월 0원 (5개월 할부 시)</p>
+                    </div>
+                    <div class="incentive-badges">
+                        <div class="incentive-item timer">⏰ 7일 후 얼리버드 마감</div>
+                        <div class="incentive-item coupon">🎫 신규 가입 1만원 쿠폰 적용 가능</div>
+                    </div>
+                    <div class="sidebar-cta-area">
+                        <button class="btn-cta-start" id="btnEnroll">지금 바로 시작하기</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Payment Loading Overlay -->
+    <div class="payment-overlay" id="paymentOverlay">
+        <div class="payment-spinner"></div>
+        <p class="payment-overlay-text">결제창을 불러오는 중...</p>
+        <p class="payment-overlay-sub">잠시만 기다려 주세요</p>
+    </div>
+
+    <!-- Free Class Confirm Modal -->
+    <div class="free-enroll-modal" id="freeEnrollModal">
+        <div class="free-modal-card">
+            <h3>🎉 무료 클래스 수강 신청</h3>
+            <p id="freeModalText">이 클래스는 무료입니다. 바로 수강을 시작하시겠습니까?</p>
+            <div class="free-modal-actions">
+                <button class="btn-free-cancel" id="btnFreeCancel">취소</button>
+                <button class="btn-free-confirm" id="btnFreeConfirm">수강 시작하기</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Toss UI Style Payment Bottom Sheet -->
+    <div class="bottom-sheet-overlay" id="paymentBottomSheet" style="display:none;">
+        <div class="bottom-sheet-content">
+            <div class="sheet-header">
+                <h3>수강 옵션 선택</h3>
+                <button class="btn-sheet-close" id="btnSheetClose">✕</button>
+            </div>
+
+            <div class="sheet-body">
+                <div class="payment-options">
+                    <label class="pay-option-card">
+                        <input type="radio" name="payOption" value="monthly">
+                        <div class="pay-option-inner">
+                            <span class="pay-opt-title">월정액 (정기결제)</span>
+                            <span class="pay-opt-desc">매월 자동으로 결제됩니다.</span>
+                            <span class="pay-opt-price" id="optPriceMonthly">0원/월</span>
+                        </div>
+                    </label>
+                    <label class="pay-option-card">
+                        <input type="radio" name="payOption" value="30days">
+                        <div class="pay-option-inner">
+                            <span class="pay-opt-title">수강권 한 달 패키지</span>
+                            <span class="pay-opt-desc">결제 후 30일간 무제한 수강 (1회성 결제)</span>
+                            <span class="pay-opt-price" id="optPrice30Days">0원</span>
+                        </div>
+                    </label>
+                    <label class="pay-option-card">
+                        <input type="radio" name="payOption" value="onetime" checked>
+                        <div class="pay-option-inner">
+                            <span class="pay-opt-title">1회 원데이 클래스</span>
+                            <span class="pay-opt-desc">1회 수강권 획득</span>
+                            <span class="pay-opt-price" id="optPriceOneTime">0원</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="coupon-section">
+                    <h4>🎟️ 쿠폰 할인</h4>
+                    <div class="coupon-input-group">
+                        <input type="text" id="couponCodeInput" placeholder="쿠폰 코드를 입력하세요 (예: WELCOME)">
+                        <button id="btnApplyCoupon" class="btn-apply-coupon">적용</button>
+                    </div>
+                    <p id="couponMessage" class="coupon-msg"></p>
+                </div>
+
+                <div class="payment-summary">
+                    <div class="summary-row">
+                        <span>상품 금액</span>
+                        <span id="summaryOriginalPrice">0원</span>
+                    </div>
+                    <div class="summary-row discount-row" style="display:none;" id="summaryDiscountRow">
+                        <span>쿠폰 할인</span>
+                        <span id="summaryDiscountAmount">-0원</span>
+                    </div>
+                    <div class="summary-row total-row">
+                        <span>최종 결제 금액</span>
+                        <span id="summaryFinalPrice" class="final-price-highlight">0원</span>
+                    </div>
+                </div>
+
+                <div class="sheet-footer">
+                    <button class="btn-toss-pay" id="btnTossPayStart">결제하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모집 카드 만들기 모달 (강사용 기능 고도화) -->
+    <div class="modal-overlay" id="gatheringModal"
+        style="display:none; z-index: 10000; align-items:center; justify-content:center;">
+        <div class="modal-content"
+            style="max-width: 440px; width: 90%; padding: 2.2rem; background: rgba(30, 30, 35, 0.95); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5); backdrop-filter: blur(20px);">
+            <div class="modal-header"
+                style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 24px; border-bottom:none; padding:0;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.3rem; font-weight: 800; color: #fff;">📅 클래스 모임 일정 생성</h3>
+                    <p style="margin: 6px 0 0 0; font-size: 0.85rem; color: #888;">수강생 채널에 즉시 모임 카드(투표/일정)가 전송됩니다.</p>
+                </div>
+                <button class="btn-close-modal" id="btnGatheringClose"
+                    style="background:none; border:none; color:#aaa; font-size:1.4rem; cursor:pointer; padding:4px;">✕</button>
+            </div>
+
+            <div class="modal-body" style="display:flex; flex-direction:column; gap:16px; padding:0;">
+                <!-- 1. 커리큘럼 선택 드롭다운 -->
+                <div>
+                    <label
+                        style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">진행
+                        커리큘럼 선택</label>
+                    <div style="position:relative;">
+                        <select id="gatherCurriculum"
+                            style="width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; appearance:none; font-family:inherit; font-size:0.95rem;">
+                            <!-- JS를 통해 동적 커리큘럼 리스트 주입 -->
+                            <option value="none" selected>자유 모임 (커리큘럼 미지정)</option>
+                            <option value="ch1">1강: 오리엔테이션 및 자기소개</option>
+                            <option value="ch2">2강: 실전 기초 다지기</option>
+                        </select>
+                        <i class="fas fa-chevron-down"
+                            style="position:absolute; right:15px; top:50%; transform:translateY(-50%); color:#888; pointer-events:none;"></i>
+                    </div>
+                </div>
+
+                <!-- 2. 모임명 -->
+                <div>
+                    <label
+                        style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">모임명</label>
+                    <input type="text" id="gatheringTitle" placeholder="예: 5월 첫 모임 및 환영식"
+                        style="width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.95rem; font-family:inherit;"
+                        required>
+                </div>
+
+                <!-- 3. 모임 일자 및 시간 (달력 팝업) -->
+                <div>
+                    <label
+                        style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">모임
+                        일자 및 시간 (달력 선택)</label>
+                    <div style="position:relative;">
+                        <input type="datetime-local" id="gatheringAt"
+                            style="width:100%; padding:14px 14px 14px 40px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.95rem; font-family:inherit; color-scheme: dark;"
+                            required>
+                        <i class="fa-regular fa-calendar-days"
+                            style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#4cc9f0;"></i>
+                    </div>
+                </div>
+
+                <!-- 4. 장소 -->
+                <div>
+                    <label
+                        style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">모임
+                        장소</label>
+                    <input type="text" id="gatheringLocation" placeholder="주소 또는 장소명 (예: 강남역 투썸플레이스)"
+                        style="width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.95rem; font-family:inherit;"
+                        required>
+                </div>
+
+                <!-- 4-1. 상세 설명 -->
+                <div>
+                    <label
+                        style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">상세 설명 (필수 아님)</label>
+                    <textarea id="gatheringDesc" placeholder="모임에 대한 간단한 설명을 입력해주세요."
+                        style="width:100%; height:80px; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.95rem; font-family:inherit; resize:none;"></textarea>
+                </div>
+
+                <!-- 5. 최소 / 최대 인원수 -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                    <div>
+                        <label
+                            style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">최소
+                            인원</label>
+                        <input type="number" id="gatherMin" value="2" min="1" placeholder="예: 2"
+                            style="width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.95rem; text-align:center;"
+                            required>
+                    </div>
+                    <div>
+                        <label
+                            style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">최대
+                            정원</label>
+                        <input type="number" id="gatheringCapacity" value="10" min="2" placeholder="예: 10"
+                            style="width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.95rem; text-align:center;"
+                            required>
+                    </div>
+                </div>
+
+                <div style="margin-top:20px;">
+                    <button class="btn-submit" id="btnGatheringSubmit"
+                        style="width:100%; padding: 16px; border-radius: 12px; font-weight: 800; font-size: 1.05rem; background: linear-gradient(135deg, #007aff, #005bb5); color:white; border:none; cursor:pointer; box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3); transition: transform 0.2s, box-shadow 0.2s;">
+                        모집 카드 생성 및 전송
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notice Viewer Modal (공용 모달 재활용) -->
+    <div id="classNoticeViewerModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content large"
+            style="background: var(--bg-deep); border: 1px solid var(--border-color); border-radius: 20px;">
+            <div class="modal-header" style="border-bottom:none; padding: 2rem 2rem 1rem 2rem;">
+                <h3 id="cvTitle" style="font-size: 1.6rem; font-weight: 800;">제목</h3>
+                <button class="btn-close" id="btnCvClose"
+                    style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">✕</button>
+            </div>
+            <div
+                style="padding: 0 2rem 1.5rem; font-size: 0.9rem; color: var(--comm-text2); border-bottom: 1px solid var(--border-color); display:flex; gap:15px;">
+                <span id="cvAuthor">작성자: 강사</span>
+                <span id="cvDate">등록일: -</span>
+                <span id="cvViews">조회수: 0</span>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <div id="cvContent" style="min-height: 200px; line-height: 1.6; white-space: pre-wrap;"></div>
+
+                <div
+                    style="margin-top:2rem; padding-top:1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); display:flex; justify-content:space-between;">
+                    <button id="btnCvLike"
+                        style="background: rgba(255,70,70,0.1); border: 1px solid rgba(255,70,70,0.3); color: #ff4d4d; padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer;">👍
+                        좋아요 <span id="cvLikeCount">0</span></button>
+                    <!-- 강사용 Action -->
+                    <div id="cvAdminActions" style="display:none; gap:10px;">
+                        <button id="btnCvEdit"
+                            style="background: rgba(255,255,255,0.1); color: #fff; border:none; padding: 8px 16px; border-radius:8px; cursor:pointer;">수정</button>
+                        <button id="btnCvDelete"
+                            style="background: rgba(255,70,70,0.2); color: #ff4d4d; border:none; padding: 8px 16px; border-radius:8px; cursor:pointer;">삭제</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--border-color);">
+                    <h4 style="margin-bottom: 1rem;">댓글 <span id="cvCommentCount">0</span></h4>
+                    <div style="display:flex; gap:10px; margin-bottom: 2rem;">
+                        <textarea id="cvCommentInput" placeholder="댓글을 입력하세요..."
+                            style="flex:1; background:rgba(0,0,0,0.3); border:1px solid var(--border-color); border-radius:8px; padding:12px; color:#fff; resize:none; height:40px;"></textarea>
+                        <button id="btnCvSubmitComment" class="btn-submit" style="padding: 0 20px;">등록</button>
+                    </div>
+                    <div id="cvCommentsList" style="display:flex; flex-direction:column; gap:1rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notice Editor Modal (강사용) -->
+    <div id="classNoticeEditorModal" class="modal-overlay" style="display:none;">
+        <div class="notice-editor-modal">
+            <div class="notice-editor-header">
+                <div class="notice-editor-title-row">
+                    <span class="notice-editor-badge">📢 공지사항</span>
+                    <h3 id="ceModalTitle">새 공지사항 등록</h3>
+                </div>
+                <button class="notice-editor-close" id="btnCeClose">✕</button>
+            </div>
+            <div class="notice-editor-body">
+                <input type="hidden" id="ceTargetId">
+                <div class="notice-editor-field">
+                    <label>제목</label>
+                    <input type="text" id="ceTitle" placeholder="공지사항 제목을 입력하세요">
+                </div>
+                <div class="notice-editor-field">
+                    <label>본문</label>
+                    <div id="ceEditorContainer" class="notice-editor-quill"></div>
+                    <textarea id="ceContent" style="display: none;"></textarea>
+                </div>
+            </div>
+            <div class="notice-editor-footer">
+                <button id="btnCeCancel" class="notice-editor-btn-cancel">취소</button>
+                <button id="btnCeSubmit" class="notice-editor-btn-save">💾 저장</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Scripts Load -->
+    <script src="../community/sync_bridge.js"></script>
+    <script src="../community/dm_private.js"></script>
+    <script src="../community/chat_ui.js"></script>
+    <script src="view_intro.js"></script>
+    <script src="view_curriculum.js"></script>
+    <script src="view_reviews.js"></script>
+    <script src="simple_class_chat.js"></script>
+    <script src="view_edit.js"></script>
+    <script src="view_notice.js"></script> <!-- 추가된 공지 모듈 -->
+    <script src="class_view.js"></script>
+    <script src="../bsnnnnnnnnnnnnnnnnnn/header.js?v=20260323_01"></script>
+    <script src="../dev_mode.js"></script>
+</body>
+
+</html>

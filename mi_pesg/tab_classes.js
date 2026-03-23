@@ -1,7 +1,86 @@
 // tab_classes.js - 내 클래스 관리 및 수강 신청 관리 로직 (D1 API 버전)
 window.initClassesTab = function (db, userId) {
+    const FALLBACK_CLASS_CATEGORIES = [
+        { name: '소모임/동아리', emoji: '👥' },
+        { name: '맛있는 클래스', emoji: '🍽️' },
+        { name: '운동 클래스', emoji: '🏋️' },
+        { name: '디자인', emoji: '🎨' },
+        { name: '생산성', emoji: '⚡' },
+        { name: '스포츠', emoji: '🏅' },
+        { name: '디지털 드로잉', emoji: '✏️' },
+        { name: '성공 마인드', emoji: '🧠' },
+        { name: '음악', emoji: '🎵' },
+        { name: '요리', emoji: '🍳' },
+        { name: '베이킹', emoji: '🧁' },
+        { name: '사진', emoji: '📷' },
+        { name: '영상', emoji: '🎬' },
+        { name: '공예', emoji: '🧵' },
+        { name: '여행', emoji: '🧭' },
+    ];
+
+    let categoryCache = FALLBACK_CLASS_CATEGORIES.map((item) => ({ ...item }));
+    let categoryCacheLoaded = false;
+
     const classList = document.getElementById('classList'); // 등록한 클래스
     const enrolledList = document.getElementById('enrolledClasses'); // 수강 중인 클래스
+
+    function normalizeCategories(rows) {
+        return (Array.isArray(rows) ? rows : [])
+            .map((item) => ({
+                name: String(item.name || '').trim(),
+                emoji: String(item.emoji || '✨').trim() || '✨',
+            }))
+            .filter((item) => item.name);
+    }
+
+    function escapeHtml(value = '') {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    async function loadCategories(force = false) {
+        if (!force && categoryCacheLoaded) return categoryCache;
+        try {
+            const res = await window.BSQ.api(`/api/class-categories?t=${Date.now()}`);
+            if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+                categoryCache = normalizeCategories(res.data);
+                categoryCacheLoaded = true;
+                return categoryCache;
+            }
+        } catch (error) {
+            console.warn('[tab_classes] category load failed, using fallback:', error);
+        }
+
+        categoryCache = FALLBACK_CLASS_CATEGORIES.map((item) => ({ ...item }));
+        categoryCacheLoaded = true;
+        return categoryCache;
+    }
+
+    function buildCategoryOptions(selected = '') {
+        const selectedValue = String(selected || '').trim();
+        const merged = [...categoryCache];
+        const known = new Set(merged.map((item) => item.name));
+        if (selectedValue && !known.has(selectedValue)) {
+            merged.push({ name: selectedValue, emoji: '✨' });
+        }
+
+        return merged.map((item) => `<option value="${escapeHtml(item.name)}" ${selectedValue === item.name ? 'selected' : ''}>${escapeHtml(item.emoji)} ${escapeHtml(item.name)}</option>`).join('');
+    }
+
+    async function renderEditCategoryOptions(selected = '', forceRefresh = false) {
+        const select = document.getElementById('editClassCategory');
+        if (!select) return;
+        await loadCategories(forceRefresh);
+        const selectedValue = String(selected || select.value || '').trim();
+        select.innerHTML = buildCategoryOptions(selectedValue);
+        if (selectedValue) {
+            select.value = selectedValue;
+        }
+    }
 
     // 1. 내가 등록한 클래스 로드 (D1 API)
     window.loadMyClasses = async function () {
@@ -140,6 +219,7 @@ window.initClassesTab = function (db, userId) {
             const cls = res.data?.find(c => c.id === classId);
             if (!cls) throw new Error("클래스를 찾을 수 없습니다.");
 
+            await renderEditCategoryOptions(cls.category || '', true);
             document.getElementById('editClassId').value = classId;
             document.getElementById('editClassTitle').value = cls.title || '';
             document.getElementById('editClassCategory').value = cls.category || '';
@@ -194,6 +274,17 @@ window.initClassesTab = function (db, userId) {
                 alert("수정 실패: " + error.message);
             }
         };
+    }
+
+    if (!window.__BSQ_MYPAGE_CLASS_SYNC_BOUND) {
+        window.__BSQ_MYPAGE_CLASS_SYNC_BOUND = true;
+        window.addEventListener('bsq_sync', (event) => {
+            if (event.detail?.type === 'class-categories') {
+                renderEditCategoryOptions(document.getElementById('editClassCategory')?.value || '', true).catch((error) => {
+                    console.warn('[tab_classes] category refresh failed:', error);
+                });
+            }
+        });
     }
 
     // 초기 로드

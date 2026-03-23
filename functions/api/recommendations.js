@@ -39,13 +39,15 @@ export async function onRequest(context) {
         const { results } = await db
           .prepare(`
             SELECT
-              c.id, c.title, c.thumbnail, c.image_url, c.category, c.price,
+              c.id, c.title, c.thumbnail, c.image_url, c.category, c.price, c.is_public,
               c.instructor_name, c.creator_id AS instructor_id, c.discount_rate,
               COALESCE(s.avg_rating, 0) AS avg_rating,
-              COALESCE(s.review_count, 0) AS review_count
+              COALESCE(s.review_count, 0) AS review_count,
+              COALESCE(s.bookmark_count, 0) AS bookmark_count
             FROM classes c
             LEFT JOIN class_stats s ON c.id = s.class_id
             WHERE c.id IN (${placeholders})
+              AND COALESCE(c.is_public, 1) = 1
           `)
           .bind(...classIds)
           .all();

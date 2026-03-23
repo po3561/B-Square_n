@@ -1,6 +1,6 @@
 let authSchemaReady = false;
 
-async function addColumnIfMissing(db, table, columnDefinition) {
+export async function addColumnIfMissing(db, table, columnDefinition) {
   try {
     await db.prepare(`ALTER TABLE ${table} ADD COLUMN ${columnDefinition}`).run();
   } catch (error) {
@@ -142,6 +142,45 @@ export async function ensureAuthSchema(db) {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `).run();
+  await addColumnIfMissing(db, 'user_blacklist_logs', 'previous_state INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'user_blacklist_logs', 'new_state INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'user_blacklist_logs', 'changed_by TEXT');
+  await addColumnIfMissing(db, 'user_blacklist_logs', 'reason TEXT');
+  await addColumnIfMissing(db, 'user_blacklist_logs', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS user_refund_logs (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      order_id TEXT NOT NULL,
+      class_id TEXT,
+      class_title TEXT,
+      refund_type TEXT NOT NULL,
+      original_amount INTEGER DEFAULT 0,
+      refund_amount INTEGER DEFAULT 0,
+      reason_tags TEXT,
+      reason_note TEXT,
+      status TEXT DEFAULT 'completed',
+      processed_by TEXT,
+      processed_at DATETIME,
+      metadata TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+  await addColumnIfMissing(db, 'user_refund_logs', 'user_id TEXT');
+  await addColumnIfMissing(db, 'user_refund_logs', 'order_id TEXT');
+  await addColumnIfMissing(db, 'user_refund_logs', 'class_id TEXT');
+  await addColumnIfMissing(db, 'user_refund_logs', 'class_title TEXT');
+  await addColumnIfMissing(db, 'user_refund_logs', "refund_type TEXT DEFAULT 'full'");
+  await addColumnIfMissing(db, 'user_refund_logs', 'original_amount INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'user_refund_logs', 'refund_amount INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'user_refund_logs', 'reason_tags TEXT');
+  await addColumnIfMissing(db, 'user_refund_logs', 'reason_note TEXT');
+  await addColumnIfMissing(db, 'user_refund_logs', "status TEXT DEFAULT 'completed'");
+  await addColumnIfMissing(db, 'user_refund_logs', 'processed_by TEXT');
+  await addColumnIfMissing(db, 'user_refund_logs', 'processed_at DATETIME');
+  await addColumnIfMissing(db, 'user_refund_logs', 'metadata TEXT');
+  await addColumnIfMissing(db, 'user_refund_logs', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
 
   await db.prepare('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token)').run();
   await db.prepare('CREATE INDEX IF NOT EXISTS idx_reset_user ON password_reset_tokens(user_id, expires_at)').run();
@@ -207,6 +246,7 @@ export async function ensureClassesSchema(db) {
       instructor_name TEXT,
       instructor_email TEXT,
       current_participants INTEGER DEFAULT 0,
+      is_public INTEGER DEFAULT 1,
       coupon_detail TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -250,9 +290,15 @@ export async function ensureClassesSchema(db) {
   await addColumnIfMissing(db, 'classes', 'instructor_name TEXT');
   await addColumnIfMissing(db, 'classes', 'instructor_email TEXT');
   await addColumnIfMissing(db, 'classes', 'current_participants INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'classes', 'is_public INTEGER DEFAULT 1');
   await addColumnIfMissing(db, 'classes', 'coupon_detail TEXT');
   await addColumnIfMissing(db, 'classes', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
   await addColumnIfMissing(db, 'classes', 'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_classes_creator_id ON classes(creator_id)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_classes_category ON classes(category)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_classes_public ON classes(is_public)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_classes_created_at ON classes(created_at)').run();
 }
 
 export async function ensureReviewsSchema(db) {
@@ -283,6 +329,7 @@ export async function ensureReviewsSchema(db) {
   await addColumnIfMissing(db, 'reviews', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
   await addColumnIfMissing(db, 'reviews', 'helpful_count INTEGER DEFAULT 0');
   await addColumnIfMissing(db, 'reviews', 'is_instructor INTEGER DEFAULT 0');
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_reviews_class_created ON reviews(class_id, created_at)').run();
 }
 
 export async function ensureClassStatsSchema(db) {
@@ -520,6 +567,9 @@ export async function ensureGatheringsSchema(db) {
   await addColumnIfMissing(db, 'class_gatherings', 'capacity_min INTEGER DEFAULT 0');
   await addColumnIfMissing(db, 'class_gatherings', "status TEXT DEFAULT 'open'");
   await addColumnIfMissing(db, 'class_gatherings', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_class_gatherings_class_time ON class_gatherings(class_id, gathering_at)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_gathering_participants_gathering_user ON gathering_participants(gathering_id, user_id)').run();
 }
 
 export async function ensureOperationsSchema(db) {
@@ -539,6 +589,34 @@ export async function ensureOperationsSchema(db) {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `).run();
+
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS class_participants (
+      class_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      role TEXT DEFAULT 'student',
+      remaining_passes INTEGER DEFAULT 0,
+      pass_type TEXT,
+      joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (class_id, user_id)
+    )
+  `).run();
+  await addColumnIfMissing(db, 'class_participants', 'joined_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_orders_class_paid_at ON orders(class_id, paid_at)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_orders_user_status ON orders(user_id, status)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_enrollments_class_user ON enrollments(class_id, user_id)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_enrollments_user_class ON enrollments(user_id, class_id)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_enrollments_class_time ON enrollments(class_id, enrolled_at, created_at)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_enrollments_enrolled_time ON enrollments(enrolled_at, class_id, user_id)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_enrollments_created_time ON enrollments(created_at, class_id, user_id)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_user_passes_class_user ON user_passes(class_id, user_id)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_user_passes_user_status ON user_passes(user_id, status)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_enrollments_user_time ON enrollments(user_id, enrolled_at, created_at)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_user_refund_logs_class_time ON user_refund_logs(class_id, processed_at, created_at)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_class_boards_class ON class_boards(class_id)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_class_notices_class ON class_notices(class_id)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_financial_records_order ON financial_records(related_order_id)').run();
 
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS visitors (
@@ -630,6 +708,12 @@ export async function ensureOperationsSchema(db) {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `).run();
+  await addColumnIfMissing(db, 'financial_records', 'type TEXT');
+  await addColumnIfMissing(db, 'financial_records', 'amount INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'financial_records', 'description TEXT');
+  await addColumnIfMissing(db, 'financial_records', 'related_order_id TEXT');
+  await addColumnIfMissing(db, 'financial_records', 'related_settlement_id TEXT');
+  await addColumnIfMissing(db, 'financial_records', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
 
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS coupons (
@@ -655,18 +739,6 @@ export async function ensureOperationsSchema(db) {
       author_name TEXT,
       views INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `).run();
-
-  await db.prepare(`
-    CREATE TABLE IF NOT EXISTS class_participants (
-      class_id TEXT NOT NULL,
-      user_id TEXT NOT NULL,
-      role TEXT DEFAULT 'student',
-      remaining_passes INTEGER DEFAULT 0,
-      pass_type TEXT,
-      joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (class_id, user_id)
     )
   `).run();
 

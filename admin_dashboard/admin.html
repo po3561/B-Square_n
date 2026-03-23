@@ -8,7 +8,7 @@
 
     <!-- 전역 스타일 & 관리자 전용 스타일 -->
     <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css">
-    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="admin.css?v=20260323_05">
 
     <!-- 외부 라이브러리 -->
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -20,7 +20,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
-    <script src="../bsq_server.js?v=20260323_02"></script>
+    <script src="../bsq_server.js?v=20260323_05"></script>
 </head>
 
 <body class="admin-body">
@@ -71,8 +71,7 @@
                 </button>
                 <div class="nav-sub">
                     <a href="#users" class="nav-item" data-tab="tabUsers">가입 회원</a>
-                    <a href="#roles" class="nav-item" data-tab="tabRoles">회원 그룹 관리 <span
-                            style="font-size:0.6rem; background:#6366f1; border-radius:10px; padding:2px 5px;">Beta</span></a>
+                    <a href="#roles" class="nav-item" data-tab="tabRoles">회원 특이사항관리</a>
                 </div>
             </div>
 
@@ -363,16 +362,12 @@
                             <h3 class="section-title">인기 클래스 설정</h3>
                             <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">메인 화면 상단에 노출될 인기 클래스를 관리합니다.</p>
                         </div>
-                        <button class="btn-primary" id="btnSavePopular">저장</button>
+                        <div class="recommend-card-actions">
+                            <button class="btn-small outline" id="btnOpenPopularSearch" type="button">+ 클래스 추가</button>
+                            <button class="btn-primary" id="btnSavePopular" type="button">저장</button>
+                        </div>
                     </div>
                     <div style="padding:1.5rem;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem;">
-                            <div>
-                                <h4 style="margin:0 0 0.35rem; font-size:1rem;">인기 클래스 리스트</h4>
-                                <p style="margin:0; color:var(--admin-text-muted); font-size:0.9rem;">클릭해서 추가할 클래스를 선택하고, 메인 노출 순서를 유지하세요.</p>
-                            </div>
-                            <button class="btn-primary" id="btnOpenPopularSearch" style="background:#4f46e5;">+ 클래스 추가</button>
-                        </div>
                         <div id="popularClassList" class="selected-class-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:1rem; background:#fcfcfe; padding:1.5rem; border-radius:12px; border:1px dashed #e2e8f0; min-height:120px;">
                             <!-- JS Dynamic Injection -->
                         </div>
@@ -385,10 +380,10 @@
                             <h3 class="section-title">추천 클래스 폴더 관리</h3>
                             <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">메인 화면에 노출될 추천 클래스 그룹(폴더)을 관리합니다. 폴더 내 클래스는 좌우 슬라이더로 표시됩니다.</p>
                         </div>
-                        <button class="btn-primary" id="btnSaveRecommendations">저장</button>
-                    </div>
-                    <div style="padding:1.5rem; border-bottom:1px solid var(--admin-border);">
-                        <button class="btn-primary" id="btnAddRecommendFolder" style="background:#4f46e5;">+ 새 폴더 추가</button>
+                        <div class="recommend-card-actions">
+                            <button class="btn-small outline" id="btnAddRecommendFolder" type="button">+ 새 폴더 추가</button>
+                            <button class="btn-primary" id="btnSaveRecommendations" type="button">저장</button>
+                        </div>
                     </div>
                     <div id="recommendFolderList" style="padding:1.5rem; display:flex; flex-direction:column; gap:2rem;">
                         <!-- JS Dynamic Injection -->
@@ -702,47 +697,102 @@
 
             <!-- 탭: 클래스 목록 (tabAllClasses) -->
             <section id="tabAllClasses" class="admin-tab-content">
-                <div class="admin-card">
-                    <div class="card-header" style="justify-content: space-between;">
-                        <h3 class="section-title">클래스</h3>
-                        <button class="btn-primary" style="background:#4f46e5;">+ 클래스 생성</button>
+                <div class="admin-card class-admin-shell">
+                    <div class="card-header class-admin-header">
+                        <div>
+                            <h3 class="section-title">클래스 관리</h3>
+                            <p class="section-subtitle">카테고리, 공개 상태, 통계, 삭제를 한 곳에서 관리합니다.</p>
+                        </div>
+                        <div class="class-admin-actions">
+                            <button class="btn-small outline" id="btnClassCategoryManager" type="button">카테고리 관리</button>
+                            <button class="btn-primary" id="btnOpenClassCreate" type="button" onclick="location.href='../create_class/create_class.html'">+ 클래스 생성</button>
+                        </div>
                     </div>
-                    <!-- 카테고리 필터바 -->
-                    <div
-                        style="display:flex; gap:1rem; padding:1rem 1.5rem; border-bottom:1px solid var(--admin-border); overflow-x:auto;">
-                        <button
-                            style="padding:0.4rem 1rem; border:1px solid #ddd; background:#fff; border-radius:20px; font-size:0.85rem; white-space:nowrap; font-weight:600;">전체</button>
-                        <button
-                            style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">👥
-                            소모임/동아리</button>
-                        <button
-                            style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">✨
-                            맛있는 클래스</button>
-                        <button
-                            style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">🔥
-                            운동 클래스</button>
-                        <button
-                            style="padding:0.4rem 1rem; border:none; background:transparent; font-size:0.85rem; white-space:nowrap;">+
-                            카테고리 추가</button>
+
+                    <div class="class-category-strip-wrap">
+                        <div class="class-category-strip-head">
+                            <div>
+                                <strong>전체 카테고리</strong>
+                                <p>사이트 전역에서 사용하는 카테고리 목록입니다. 추가/수정/삭제가 즉시 반영됩니다.</p>
+                            </div>
+                            <button type="button" class="btn-small outline" id="btnAddClassCategory">+ 카테고리 추가</button>
+                        </div>
+                        <div id="classCategoryStrip" class="class-category-strip">
+                            <div class="class-category-strip-empty">카테고리를 불러오는 중입니다...</div>
+                        </div>
                     </div>
-                    <div class="table-responsive">
-                        <table class="admin-table">
+
+                    <div class="class-control-row">
+                        <div class="class-search-box">
+                            <input type="search" id="adminClassSearchInput" class="admin-form-input" placeholder="클래스명, 강사, 카테고리 검색">
+                        </div>
+                        <div class="class-control-group">
+                            <select id="adminClassSortSelect" class="admin-form-input">
+                                <option value="popular">인기순</option>
+                                <option value="newest" selected>최신순</option>
+                                <option value="price-high">가격 높은순</option>
+                                <option value="price-low">가격 낮은순</option>
+                            </select>
+                            <select id="adminClassVisibilitySelect" class="admin-form-input">
+                                <option value="all" selected>전체 공개상태</option>
+                                <option value="public">공개</option>
+                                <option value="private">비공개</option>
+                            </select>
+                            <button type="button" class="btn-small outline" id="btnRefreshClasses">새로고침</button>
+                        </div>
+                    </div>
+
+                    <div class="class-ranking-panel">
+                        <div class="class-ranking-head">
+                            <div>
+                                <h4>인기 클래스 TOP 10</h4>
+                                <p>좋아요, 리뷰, 조회수, 별점을 가중치로 합산한 현재 핫한 클래스입니다.</p>
+                            </div>
+                            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
+                                <button type="button" class="btn-small outline" id="btnSyncPopularRecommendation">추천 설정 반영</button>
+                                <button type="button" class="btn-small outline" id="btnRefreshRanking">랭킹 갱신</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="admin-table class-ranking-table">
+                                <thead>
+                                    <tr>
+                                        <th>순위</th>
+                                        <th>클래스</th>
+                                        <th>카테고리</th>
+                                        <th>좋아요</th>
+                                        <th>리뷰</th>
+                                        <th>조회수</th>
+                                        <th>평점</th>
+                                        <th>점수</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hotClassesTableBody">
+                                    <tr>
+                                        <td colspan="8" style="text-align:center;">인기 통계를 불러오는 중입니다...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive class-list-table-wrap">
+                        <table class="admin-table class-list-table">
                             <thead>
                                 <tr>
-                                    <th style="width:50px;"><input type="checkbox"></th>
-                                    <th>클래스</th>
+                                    <th>클래스 이름</th>
                                     <th>카테고리</th>
-                                    <th>가격</th>
-                                    <th>수강생 수 / 정원</th>
-                                    <th>상태 (승인)</th>
+                                    <th>담당 강사</th>
+                                    <th>1회당 가격</th>
+                                    <th>총 수강생수</th>
+                                    <th>최근 활동인원</th>
                                     <th>공개여부</th>
                                     <th>관리</th>
                                 </tr>
                             </thead>
                             <tbody id="allClassesTableBody">
-                                <!-- JS Injected -->
                                 <tr>
-                                    <td colspan="7" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+                                    <td colspan="8" style="text-align:center;">데이터를 불러오는 중입니다...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1002,16 +1052,16 @@
                 </div>
             </section>
 
-            <!-- 탭: 회원 그룹 관리 (tabRoles) -->
+            <!-- 탭: 회원 특이사항관리 (tabRoles) -->
             <section id="tabRoles" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">회원 그룹 관리 <span class="admin-badge primary">Beta</span></h3>
+                        <h3 class="section-title">회원 특이사항관리</h3>
                     </div>
                     <div style="padding: 2rem; text-align:center; color: var(--mac-text-muted);">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>
-                        <h4>회원 그룹(등급) 기능은 준비 중입니다.</h4>
-                        <p>향후 업데이트를 통해 VIP, 일반 등급 등 다단계 회원 분류 기능이 제공될 예정입니다.</p>
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                        <h4>블랙리스트와 환불 내역을 확인하는 영역입니다.</h4>
+                        <p>페이지가 로드되면 블랙리스트 / 환불 내역 카드가 자동으로 채워집니다.</p>
                     </div>
                 </div>
             </section>
@@ -1266,9 +1316,10 @@
     <!-- Admin Core & UI Scripts -->
     <script src="admin_core.js?v=20260323_03"></script>
     <script src="admin_homepage_settings.js?v=20260323_02"></script>
-    <script src="admin_recommend.js?v=20260323_02"></script>
-    <script src="admin_classes.js?v=20260323_02"></script>
+    <script src="admin_recommend.js?v=20260323_05"></script>
+    <script src="admin_classes.js?v=20260323_11"></script>
     <script src="admin_users.js?v=20260323_02"></script>
+    <script src="admin_users_ext.js?v=20260323_04"></script>
     <script src="admin_payments.js?v=20260323_02"></script>
     <script src="admin_dashboard.js?v=20260323_02"></script>
     <script src="admin_extensions.js?v=20260323_02"></script>

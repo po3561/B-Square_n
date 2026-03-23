@@ -31,6 +31,21 @@
         return '';
     })();
 
+    function normalizeRequestBody(value) {
+        if (value == null) return value;
+        if (typeof value === 'string') return value;
+        if (typeof FormData !== 'undefined' && value instanceof FormData) return value;
+        if (typeof Blob !== 'undefined' && value instanceof Blob) return value;
+        if (typeof URLSearchParams !== 'undefined' && value instanceof URLSearchParams) return value;
+        if (typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer) return value;
+        if (typeof ArrayBuffer !== 'undefined' && typeof ArrayBuffer.isView === 'function' && ArrayBuffer.isView(value)) return value;
+        if (typeof ReadableStream !== 'undefined' && value instanceof ReadableStream) return value;
+        if (typeof value === 'object') return JSON.stringify(value);
+        return value;
+    }
+
+    const REQUEST_TIMEOUT_MS = 20000;
+
     // API ?곌껐 ?곹깭 諛곕꼫瑜??쒓굅?덉뒿?덈떎. (?ъ슜???붿껌)
 
     // ==================================================
@@ -50,8 +65,11 @@
             finalOptions = options;
         }
 
-        if (body && !finalOptions.body) {
-            finalOptions.body = JSON.stringify(body);
+        if (body != null && finalOptions.body == null) {
+            finalOptions.body = body;
+        }
+        if (finalOptions.body != null) {
+            finalOptions.body = normalizeRequestBody(finalOptions.body);
         }
 
         const candidateBases = [];
@@ -70,8 +88,15 @@
         const performFetch = async (baseUrl) => {
             let requestUrl = baseUrl ? (baseUrl + endpoint) : endpoint;
             const token = localStorage.getItem('bsq_token');
-            const isFormData = typeof FormData !== 'undefined' && finalOptions.body instanceof FormData;
-            const defaultHeaders = isFormData ? {} : { 'Content-Type': 'application/json' };
+            const bodyValue = finalOptions.body;
+            const isFormData = typeof FormData !== 'undefined' && bodyValue instanceof FormData;
+            const isBinaryBody =
+                (typeof Blob !== 'undefined' && bodyValue instanceof Blob) ||
+                (typeof URLSearchParams !== 'undefined' && bodyValue instanceof URLSearchParams) ||
+                (typeof ArrayBuffer !== 'undefined' && bodyValue instanceof ArrayBuffer) ||
+                (typeof ArrayBuffer !== 'undefined' && typeof ArrayBuffer.isView === 'function' && ArrayBuffer.isView(bodyValue)) ||
+                (typeof ReadableStream !== 'undefined' && bodyValue instanceof ReadableStream);
+            const defaultHeaders = (!bodyValue || isFormData || isBinaryBody) ? {} : { 'Content-Type': 'application/json' };
             const headers = { ...defaultHeaders, ...(finalOptions.headers || {}) };
 
             if (token) {
@@ -83,12 +108,29 @@
             }
 
             console.log(`[BSQ API] ${method} ${requestUrl}`);
-            return fetch(requestUrl, {
-                ...finalOptions,
-                method,
-                headers,
-                credentials: 'include'
-            });
+            const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            let timedOut = false;
+            const timeoutId = controller ? window.setTimeout(() => {
+                timedOut = true;
+                controller.abort();
+            }, REQUEST_TIMEOUT_MS) : null;
+
+            try {
+                return await fetch(requestUrl, {
+                    ...finalOptions,
+                    method,
+                    headers,
+                    credentials: 'include',
+                    signal: controller ? controller.signal : undefined,
+                });
+            } catch (error) {
+                if (timedOut || error?.name === 'AbortError') {
+                    throw new Error(`Request timed out after ${Math.round(REQUEST_TIMEOUT_MS / 1000)}s`);
+                }
+                throw error;
+            } finally {
+                if (timeoutId) window.clearTimeout(timeoutId);
+            }
         };
 
         let lastError = null;
@@ -106,7 +148,7 @@
                     } else if (errorText) {
                         try {
                             const errJson = JSON.parse(errorText);
-                            errMsg = errJson.error || errMsg;
+                            errMsg = [errJson.error, errJson.detail].filter(Boolean).join(' / ') || errMsg;
                         } catch (e) {
                             errMsg = errorText.substring(0, 100);
                         }
@@ -118,7 +160,8 @@
                 if (!result.success) {
                     console.warn(`[BSQ API] ${endpoint} warning:`, result.error, result.detail || '');
                     if (method !== 'GET') {
-                        showOnScreenAlert(`[API] ${result.error || 'Request failed.'}`);
+                        const warningText = [result.error, result.detail].filter(Boolean).join(' / ') || 'Request failed.';
+                        showOnScreenAlert(`[API] ${warningText}`);
                     }
                 } else if (result.data) {
                     result.data = fixImageUrls(result.data);
@@ -128,7 +171,13 @@
             } catch (error) {
                 lastError = error;
                 const isLastCandidate = baseUrl === candidateBases[candidateBases.length - 1];
-                const shouldRetry = /Failed to fetch/i.test(error.message || '') || /^HTTP 404\b/i.test(error.message || '');
+                const shouldRetry =
+                    /Failed to fetch/i.test(error.message || '') ||
+                    /^HTTP 404\b/i.test(error.message || '') ||
+                    /timed out/i.test(error.message || '') ||
+                    /^HTTP 5\d\d\b/i.test(error.message || '') ||
+                    /^HTTP 429\b/i.test(error.message || '') ||
+                    /^HTTP 52\d\b/i.test(error.message || '');
                 if (!isLastCandidate && shouldRetry) {
                     console.warn('[BSQ API] API base failed, trying next candidate:', baseUrl, error.message);
                     continue;

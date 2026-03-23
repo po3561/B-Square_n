@@ -422,6 +422,25 @@ option {
     align-items: center;
 }
 
+.category-sidebar li a .cat-label {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.category-sidebar li a .cat-count {
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding: 0.14rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
 /* 2-2. Hero Section (광고) */
 .hero-section {
     margin-bottom: 4rem;

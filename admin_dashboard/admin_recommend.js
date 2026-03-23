@@ -1,4 +1,6 @@
-const RECOMMEND_ADMIN_VERSION = '2026.03.23-03';
+;(function () {
+
+const RECOMMEND_ADMIN_VERSION = '2026.03.23-05';
 const POPULAR_TARGET = Object.freeze({
     folderId: 'popular_main',
     listId: 'popularClassList',
@@ -21,6 +23,9 @@ const state = {
     catalogLoading: null,
     catalogLoaded: false,
     catalogError: null,
+    categories: [],
+    categoriesLoaded: false,
+    categoriesLoading: null,
     q: '',
     category: 'all',
 };
@@ -32,6 +37,16 @@ document.addEventListener('DOMContentLoaded', init);
 function init() {
     window.addEventListener('adminTabChanged', (e) => {
         if (e.detail.tabId === 'tabRecommend') loadRecommendations();
+    });
+
+    window.addEventListener('bsq_sync', (event) => {
+        if (event.detail?.type === 'class-categories') {
+            state.categoriesLoaded = false;
+            state.categories = [];
+            if (document.getElementById('tabRecommend')?.classList.contains('active')) {
+                loadRecommendations();
+            }
+        }
     });
 
     document.getElementById('btnAddRecommendFolder')?.addEventListener('click', addNewFolder);
@@ -202,16 +217,23 @@ function activeFolder() {
 
 function categoryOptions(selected = 'all') {
     const set = new Set(['all']);
-    state.catalog.forEach((c) => {
-        const cat = idOf(c.category);
-        if (cat) set.add(cat);
-    });
-    state.folders.forEach((f) => {
-        const cat = idOf(f.category);
-        if (cat) set.add(cat);
-    });
-    const popCat = idOf(state.popular.category);
-    if (popCat) set.add(popCat);
+    if (state.categories.length > 0) {
+        state.categories.forEach((c) => {
+            const cat = idOf(c.name);
+            if (cat) set.add(cat);
+        });
+    } else {
+        state.catalog.forEach((c) => {
+            const cat = idOf(c.category);
+            if (cat) set.add(cat);
+        });
+        state.folders.forEach((f) => {
+            const cat = idOf(f.category);
+            if (cat) set.add(cat);
+        });
+        const popCat = idOf(state.popular.category);
+        if (popCat) set.add(popCat);
+    }
     const current = idOf(selected || 'all') || 'all';
     if (!set.has(current)) set.add(current);
 
@@ -236,8 +258,25 @@ function refreshSelects() {
     }
 }
 
+function stateCardHtml(variant, title, message) {
+    const icon = variant === 'error' ? '!' : variant === 'loading' ? '…' : 'i';
+    return `
+        <div class="recommend-state recommend-state--${esc(variant)}">
+            <div class="recommend-state-icon" aria-hidden="true">${icon}</div>
+            <strong>${esc(title)}</strong>
+            <p>${esc(message)}</p>
+        </div>
+    `;
+}
+
 function renderEmpty(container, type) {
-    container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem; color:#888;">${esc(type === 'popular' ? NO_POPULAR_MESSAGE : EMPTY_SELECTION_MESSAGE)}</div>`;
+    container.innerHTML = stateCardHtml(
+        'neutral',
+        type === 'popular' ? NO_POPULAR_MESSAGE : EMPTY_SELECTION_MESSAGE,
+        type === 'popular'
+            ? '오른쪽 상단의 + 클래스 추가 버튼으로 인기 클래스를 선택하세요.'
+            : '각 폴더의 + 클래스 추가 버튼으로 클래스를 채워 넣을 수 있습니다.'
+    );
 }
 
 // Rendering and API logic continue below.
@@ -511,7 +550,7 @@ async function ensureCatalogLoaded() {
     state.catalogLoading = (async () => {
         try {
             state.catalogError = null;
-            const res = await BSQ.api(`/api/admin/classes?t=${Date.now()}`);
+            const res = await BSQ.api('/api/admin/classes');
             if (!res.success) throw new Error(res.error || '관리자 클래스 카탈로그를 불러오지 못했습니다.');
             const data = Array.isArray(res.data) ? res.data : [];
             state.catalog = data;
@@ -528,6 +567,35 @@ async function ensureCatalogLoaded() {
     });
 
     return state.catalogLoading;
+}
+
+async function ensureCategoriesLoaded() {
+    if (state.categoriesLoaded) return state.categories;
+    if (state.categoriesLoading) return state.categoriesLoading;
+
+    state.categoriesLoading = (async () => {
+        try {
+            const res = await BSQ.api('/api/class-categories');
+            if (!res.success) throw new Error(res.error || '카테고리를 불러오지 못했습니다.');
+            state.categories = Array.isArray(res.data) ? res.data.map((item) => ({
+                name: idOf(item.name),
+                emoji: idOf(item.emoji || '✨') || '✨',
+                class_count: Number(item.class_count || 0),
+            })).filter((item) => item.name) : [];
+            state.categoriesLoaded = true;
+            refreshSelects();
+            return state.categories;
+        } catch (err) {
+            console.warn('[BSQ Admin] category catalog load failed', err);
+            state.categories = [];
+            state.categoriesLoaded = true;
+            return [];
+        }
+    })().finally(() => {
+        state.categoriesLoading = null;
+    });
+
+    return state.categoriesLoading;
 }
 
 function matches(c, query) {
@@ -636,12 +704,16 @@ async function loadRecommendations() {
     if (popular) popular.innerHTML = '<div style="text-align:center; padding:3rem;"><div class="admin-spinner"></div>로딩 중...</div>';
 
     try {
-        const recPromise = BSQ.api(`/api/admin/recommendations?t=${Date.now()}`);
+        const recPromise = BSQ.api('/api/admin/recommendations');
         const catalogPromise = ensureCatalogLoaded().catch((err) => {
             console.warn('[BSQ Admin] class catalog prefetch failed', err);
             return null;
         });
-        const [recResult] = await Promise.allSettled([recPromise, catalogPromise]);
+        const categoriesPromise = ensureCategoriesLoaded().catch((err) => {
+            console.warn('[BSQ Admin] category catalog prefetch failed', err);
+            return null;
+        });
+        const [recResult] = await Promise.allSettled([recPromise, catalogPromise, categoriesPromise]);
         if (recResult.status !== 'fulfilled') throw recResult.reason || new Error('추천 데이터 로드 실패');
         if (!recResult.value.success) throw new Error(recResult.value.error || '추천 데이터 로드 실패');
 
@@ -731,3 +803,4 @@ window.loadRecommendations = loadRecommendations;
 window.renderSelectedClassesInContainer = renderSelectedList;
 window.searchClassesForModal = searchClassesForModal;
 window.addFolderUI = addFolderUI;
+})();
