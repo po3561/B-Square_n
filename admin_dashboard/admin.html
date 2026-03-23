@@ -349,19 +349,40 @@
 
             <!-- 탭 5-2: 추천 클래스 관리 -->
             <section id="tabRecommend" class="admin-tab-content">
+                <div class="admin-card" style="margin-bottom:1.5rem;">
+                    <div class="card-header" style="justify-content: space-between;">
+                        <div>
+                            <h3 class="section-title">인기 클래스 설정</h3>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">메인 화면 상단에 노출될 인기 클래스를 관리합니다.</p>
+                        </div>
+                        <button class="btn-primary" id="btnSavePopular">저장</button>
+                    </div>
+                    <div style="padding:1.5rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem;">
+                            <div>
+                                <h4 style="margin:0 0 0.35rem; font-size:1rem;">인기 클래스 리스트</h4>
+                                <p style="margin:0; color:var(--admin-text-muted); font-size:0.9rem;">클릭해서 추가할 클래스를 선택하고, 메인 노출 순서를 유지하세요.</p>
+                            </div>
+                            <button class="btn-primary" id="btnOpenPopularSearch" style="background:#4f46e5;">+ 클래스 추가</button>
+                        </div>
+                        <div id="popularClassList" class="selected-class-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:1rem; background:#fcfcfe; padding:1.5rem; border-radius:12px; border:1px dashed #e2e8f0; min-height:120px;">
+                            <!-- JS Dynamic Injection -->
+                        </div>
+                    </div>
+                </div>
+
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
-                        <h3 class="section-title">추천 클래스 폴더 관리</h3>
+                        <div>
+                            <h3 class="section-title">추천 클래스 폴더 관리</h3>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">메인 화면에 노출될 추천 클래스 그룹(폴더)을 관리합니다. 폴더 내 클래스는 좌우 슬라이더로 표시됩니다.</p>
+                        </div>
                         <button class="btn-primary" id="btnSaveRecommendations">저장</button>
                     </div>
                     <div style="padding:1.5rem; border-bottom:1px solid var(--admin-border);">
-                        <p style="color:var(--admin-text-muted); font-size:0.9rem; margin-bottom:1rem;">메인 화면에 노출될 추천
-                            클래스 그룹(폴더)을 관리합니다. 폴더 내 클래스는 좌우 슬라이더로 표시됩니다.</p>
-                        <button class="btn-primary" id="btnAddRecommendFolder" style="background:#4f46e5;">+ 새 폴더
-                            추가</button>
+                        <button class="btn-primary" id="btnAddRecommendFolder" style="background:#4f46e5;">+ 새 폴더 추가</button>
                     </div>
-                    <div id="recommendFolderList"
-                        style="padding:1.5rem; display:flex; flex-direction:column; gap:2rem;">
+                    <div id="recommendFolderList" style="padding:1.5rem; display:flex; flex-direction:column; gap:2rem;">
                         <!-- JS Dynamic Injection -->
                     </div>
                 </div>
@@ -369,21 +390,24 @@
                 <!-- 클래스 선택 모달 -->
                 <div id="classSearchModal"
                     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
-                    <div
-                        style="background:#fff; width:600px; max-height:80vh; border-radius:12px; overflow:hidden; display:flex; flex-direction:column;">
-                        <div
-                            style="padding:1rem 1.5rem; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                            <h4 style="margin:0; font-size:1.1rem;">추가할 클래스 선택</h4>
-                            <button id="btnCloseClassModal"
-                                style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+                    <div style="background:#fff; width:min(920px, calc(100vw - 2rem)); max-height:84vh; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+                        <div style="padding:1rem 1.5rem; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; gap:1rem;">
+                            <div>
+                                <h4 style="margin:0; font-size:1.1rem;">추가할 클래스 선택</h4>
+                                <p id="modalResultCount" style="margin:0.35rem 0 0; color:var(--admin-text-muted); font-size:0.85rem;">총 0개</p>
+                            </div>
+                            <button id="btnCloseClassModal" style="background:none; border:none; font-size:1.6rem; cursor:pointer; line-height:1;">&times;</button>
                         </div>
-                        <div style="padding:1rem;">
-                            <input type="text" id="classSearchInput" class="admin-form-input" placeholder="클래스 제목 검색..."
-                                style="margin-bottom:1rem;">
-                            <div id="classSearchResultList"
-                                style="overflow-y:auto; max-height:400px; border:1px solid #e2e8f0; border-radius:8px;">
+                        <div style="padding:1rem 1.25rem 1.25rem;">
+                            <div style="display:flex; gap:0.75rem; align-items:center; margin-bottom:1rem; flex-wrap:wrap;">
+                                <input type="text" id="classSearchInput" class="admin-form-input" placeholder="클래스 제목, 강사, 키워드 검색..." style="margin:0; flex:1; min-width:240px;">
+                                <select id="modalCategorySelect" class="admin-form-input" style="margin:0; min-width:180px; width:auto;">
+                                    <option value="all">전체 카테고리</option>
+                                </select>
+                            </div>
+                            <div id="classSearchResultList" style="overflow-y:auto; max-height:60vh; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; background:#fff; display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:1rem;">
                                 <!-- Search results -->
-                                <div style="padding:2rem; text-align:center; color:#888;">검색어를 입력하세요.</div>
+                                <div style="grid-column:1/-1; padding:2rem; text-align:center; color:#888;">검색어를 입력하세요.</div>
                             </div>
                         </div>
                     </div>
