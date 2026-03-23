@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.addEventListener('bsq_sync', (e) => {
     console.log('[BSQ Sync] Data refresh requested:', e.detail);
     initMainPage();
+    initBanners();
   });
 
   initBanners();
@@ -46,6 +47,193 @@ function safeArray(value) {
 function setVisible(el, visible) {
   if (!el) return;
   el.style.display = visible ? 'block' : 'none';
+}
+
+function escapeHtml(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+const bannerTimers = {
+  hero: null,
+  bottom: null,
+};
+
+function clearBannerTimer(key) {
+  if (bannerTimers[key]) {
+    clearInterval(bannerTimers[key]);
+    bannerTimers[key] = null;
+  }
+}
+
+function buildBannerLinkMarkup(banner, className, innerHTML, targetBlank = true) {
+  const link = (banner.linkUrl || '').trim();
+  if (!link) {
+    return `<div class="${className}">${innerHTML}</div>`;
+  }
+  return `<a class="${className}" href="${escapeHtml(link)}"${targetBlank ? ' target="_blank" rel="noopener noreferrer"' : ''}>${innerHTML}</a>`;
+}
+
+function renderHeroBanner(container, banners) {
+  clearBannerTimer('hero');
+  if (!container) return;
+
+  if (!banners.length) {
+    container.innerHTML = `
+      <div class="banner-hero-empty" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;background:linear-gradient(135deg,#151515 0%,#070707 100%);border-radius:24px;color:#fff;">
+        <h2 style="margin:0;font-size:clamp(2rem, 4vw, 3.5rem);color:rgba(255,255,255,0.18);letter-spacing:0.28em;font-weight:900;">광고</h2>
+        <p style="margin:0;color:rgba(255,255,255,0.55);font-size:0.95rem;">메인 홈페이지 배너를 등록해 주세요.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const slides = banners.map((banner, index) => {
+    const inner = `
+      <img src="${escapeHtml(banner.imgUrl || '')}" alt="${escapeHtml(banner.title || `배너 ${index + 1}`)}"
+        style="width:100%;height:100%;object-fit:contain;display:block;background:#0b0b0b;">
+    `;
+    return buildBannerLinkMarkup(banner, `banner-hero-slide${index === 0 ? ' is-active' : ''}`, inner);
+  }).join('');
+
+  const dots = banners.length > 1
+    ? `<div class="banner-hero-dots" style="display:flex;gap:0.5rem;align-items:center;">
+        ${banners.map((_, index) => `<button type="button" class="banner-dot${index === 0 ? ' active' : ''}" data-banner-dot="${index}" aria-label="배너 ${index + 1}" style="width:10px;height:10px;border-radius:999px;border:none;background:${index === 0 ? '#fff' : 'rgba(255,255,255,0.35)'};cursor:pointer;padding:0;"></button>`).join('')}
+      </div>`
+    : '';
+
+  container.innerHTML = `
+    <div class="banner-hero-shell" style="position:relative;width:100%;height:100%;min-height:280px;overflow:hidden;border-radius:24px;background:linear-gradient(135deg,#111 0%,#050505 100%);box-shadow:0 20px 40px rgba(0,0,0,0.4);">
+      ${slides}
+      ${banners.length > 1 ? `
+        <div class="banner-hero-controls" style="position:absolute;left:1rem;right:1rem;bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;pointer-events:none;z-index:5;">
+          <button type="button" class="banner-nav banner-nav-prev" aria-label="이전 배너" style="pointer-events:auto;">‹</button>
+          ${dots}
+          <button type="button" class="banner-nav banner-nav-next" aria-label="다음 배너" style="pointer-events:auto;">›</button>
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  if (banners.length <= 1) return;
+
+  const slideNodes = Array.from(container.querySelectorAll('.banner-hero-slide'));
+  const dotNodes = Array.from(container.querySelectorAll('[data-banner-dot]'));
+  let current = 0;
+
+  const applyState = (index) => {
+    current = (index + banners.length) % banners.length;
+    slideNodes.forEach((slide, slideIndex) => {
+      const active = slideIndex === current;
+      slide.style.opacity = active ? '1' : '0';
+      slide.style.transform = `translate3d(0, 0, 0) scale(${active ? '1' : '0.98'})`;
+      slide.style.zIndex = active ? '2' : '1';
+    });
+    dotNodes.forEach((dot, dotIndex) => {
+      dot.classList.toggle('active', dotIndex === current);
+      dot.style.background = dotIndex === current ? '#fff' : 'rgba(255,255,255,0.35)';
+    });
+  };
+
+  const next = () => applyState(current + 1);
+  const prev = () => applyState(current - 1);
+
+  container.querySelector('.banner-nav-prev')?.addEventListener('click', prev);
+  container.querySelector('.banner-nav-next')?.addEventListener('click', next);
+  dotNodes.forEach((dot) => {
+    dot.addEventListener('click', () => applyState(Number(dot.dataset.bannerDot || 0)));
+  });
+
+  applyState(0);
+  bannerTimers.hero = window.setInterval(next, 6000);
+}
+
+function renderBottomBanner(container, banners) {
+  clearBannerTimer('bottom');
+  if (!container) return;
+
+  if (!banners.length) {
+    container.innerHTML = `
+      <div class="bottom-banner-empty" style="min-height:260px;border-radius:28px;background:linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.55);letter-spacing:0.2em;font-weight:700;">
+        배너
+      </div>
+    `;
+    return;
+  }
+
+  const slides = banners.map((banner, index) => {
+    const inner = `
+      <img src="${escapeHtml(banner.imgUrl || '')}" alt="${escapeHtml(banner.title || `하단 배너 ${index + 1}`)}"
+        style="width:100%;height:100%;object-fit:contain;display:block;background:#111;">
+    `;
+    return buildBannerLinkMarkup(banner, 'banner-bottom-slide', inner);
+  }).join('');
+
+  container.innerHTML = `
+    <div class="banner-bottom-shell" style="position:relative;width:100%;min-height:280px;padding:0 4.75rem;">
+      <div class="banner-bottom-stage" style="position:relative;width:100%;min-height:280px;overflow:hidden;">
+        ${slides}
+      </div>
+      ${banners.length > 1 ? `
+        <button type="button" class="banner-nav banner-nav-prev banner-bottom-prev" aria-label="이전 배너" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);">‹</button>
+        <button type="button" class="banner-nav banner-nav-next banner-bottom-next" aria-label="다음 배너" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);">›</button>
+      ` : ''}
+    </div>
+  `;
+
+  const slideNodes = Array.from(container.querySelectorAll('.banner-bottom-slide'));
+  if (slideNodes.length === 0) return;
+
+  let current = 0;
+  const applyState = (index) => {
+    current = (index + banners.length) % banners.length;
+    slideNodes.forEach((slide, slideIndex) => {
+      let offset = slideIndex - current;
+      if (offset > banners.length / 2) offset -= banners.length;
+      if (offset < -banners.length / 2) offset += banners.length;
+
+      const isCenter = offset === 0;
+      const isSide = Math.abs(offset) === 1;
+      const isVisible = isCenter || isSide;
+
+      let translateX = '0%';
+      let scale = isCenter ? '1' : '0.86';
+      let opacity = isCenter ? '1' : '0.32';
+      let blur = isCenter ? '0' : '1px';
+      let zIndex = isCenter ? '3' : '2';
+
+      if (offset === -1) translateX = '-62%';
+      if (offset === 1) translateX = '62%';
+      if (Math.abs(offset) > 1) {
+        translateX = offset < 0 ? '-115%' : '115%';
+        opacity = '0';
+        scale = '0.75';
+        blur = '3px';
+        zIndex = '1';
+      }
+
+      slide.style.opacity = opacity;
+      slide.style.transform = `translate3d(-50%, -50%, 0) translateX(${translateX}) scale(${scale})`;
+      slide.style.filter = `blur(${blur})`;
+      slide.style.zIndex = zIndex;
+      slide.style.pointerEvents = isVisible ? 'auto' : 'none';
+    });
+  };
+
+  const next = () => applyState(current + 1);
+  const prev = () => applyState(current - 1);
+
+  container.querySelector('.banner-bottom-prev')?.addEventListener('click', prev);
+  container.querySelector('.banner-bottom-next')?.addEventListener('click', next);
+
+  applyState(0);
+  if (banners.length > 1) {
+    bannerTimers.bottom = window.setInterval(next, 6500);
+  }
 }
 
 async function initMainPage() {
@@ -200,31 +388,18 @@ function renderMiniCards(classes, container) {
 
 async function initBanners() {
   const adBanner = document.querySelector('.main-ad-banner');
+  const bottomBanner = document.querySelector('.bottom-banner-section');
   const result = await window.BSQ.api('/api/site-settings');
   if (!result.success) return;
 
-  const banners = result.data ? result.data.banners : [];
-  if (!banners || banners.length === 0) return;
+  const topBanners = safeArray(result.data?.banners);
+  const bottomBanners = safeArray(result.data?.bottom_banners);
 
   if (adBanner) {
-    let currentSlide = 0;
-    adBanner.innerHTML = `
-      <div class="banner-slider" style="position:relative;width:100%;height:100%;overflow:hidden;border-radius:24px;">
-        ${banners.map((b, i) => `
-          <div class="banner-slide" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:${i === 0 ? 1 : 0};transition:opacity 0.6s ease;cursor:pointer;" onclick="if('${b.linkUrl}')window.open('${b.linkUrl}','_blank')">
-            <img src="${b.imgUrl}" alt="Banner" style="width:100%;height:100%;object-fit:cover;">
-          </div>
-        `).join('')}
-      </div>
-    `;
-    if (banners.length > 1) {
-      setInterval(() => {
-        const slides = adBanner.querySelectorAll('.banner-slide');
-        slides[currentSlide].style.opacity = '0';
-        currentSlide = (currentSlide + 1) % banners.length;
-        slides[currentSlide].style.opacity = '1';
-      }, 5000);
-    }
+    renderHeroBanner(adBanner, topBanners);
+  }
+  if (bottomBanner) {
+    renderBottomBanner(bottomBanner, bottomBanners);
   }
 }
 

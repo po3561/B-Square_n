@@ -1,6 +1,15 @@
 import { ensureSiteSettingsSchema } from './_lib/schema.js';
 import { json, options } from './_lib/http.js';
 
+function parseJsonArray(value) {
+  try {
+    const parsed = JSON.parse(value || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function onRequest(context) {
   const { request, env } = context;
   const db = env.DB;
@@ -15,16 +24,16 @@ export async function onRequest(context) {
       if (!settings) {
         return json(request, env, {
           success: true,
-          data: { site_name: 'B-Square', banners: [] },
+          data: {
+            site_name: 'B-Square',
+            banners: [],
+            bottom_banners: [],
+          },
         });
       }
 
-      let banners = [];
-      try {
-        banners = JSON.parse(settings.banners || '[]');
-      } catch {
-        banners = [];
-      }
+      const banners = parseJsonArray(settings.banners);
+      const bottomBanners = parseJsonArray(settings.bottom_banners);
 
       return json(request, env, {
         success: true,
@@ -47,6 +56,12 @@ export async function onRequest(context) {
             image: settings.seo_image,
           },
           banners,
+          bottom_banners: bottomBanners,
+          footer_hours: settings.footer_hours,
+          footer_terms_url: settings.footer_terms_url,
+          footer_privacy_url: settings.footer_privacy_url,
+          footer_instagram_url: settings.footer_instagram_url,
+          footer_youtube_url: settings.footer_youtube_url,
         },
       });
     } catch (error) {
@@ -60,6 +75,7 @@ export async function onRequest(context) {
       const body = await request.json();
       const seo = body.seo || {};
       const bannersJson = JSON.stringify(body.banners || []);
+      const bottomBannersJson = JSON.stringify(body.bottom_banners || []);
 
       const sql = `
         INSERT OR REPLACE INTO site_settings (
@@ -67,9 +83,11 @@ export async function onRequest(context) {
           company_name, ceo_name, address, biz_num,
           mail_order_num, cs_phone, cs_email,
           seo_title, seo_description, seo_keywords, seo_image,
-          banners, updated_at
+          banners, bottom_banners, footer_hours,
+          footer_terms_url, footer_privacy_url, footer_instagram_url, footer_youtube_url,
+          updated_at
         ) VALUES (
-          'global', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now')
+          'global', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now')
         )
       `;
 
@@ -90,6 +108,12 @@ export async function onRequest(context) {
         seo.keywords || '',
         seo.image || '',
         bannersJson,
+        bottomBannersJson,
+        body.footer_hours || '',
+        body.footer_terms_url || '',
+        body.footer_privacy_url || '',
+        body.footer_instagram_url || '',
+        body.footer_youtube_url || '',
       ];
 
       try {
@@ -103,9 +127,10 @@ export async function onRequest(context) {
               company_name, ceo_name, address, biz_num,
               mail_order_num, cs_phone, cs_email,
               seo_title, seo_description, seo_keywords, seo_image,
-              banners
+              banners, bottom_banners, footer_hours,
+              footer_terms_url, footer_privacy_url, footer_instagram_url, footer_youtube_url
             ) VALUES (
-              'global', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+              'global', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
           `;
           await db.prepare(fallbackSql).bind(...bindValues).run();

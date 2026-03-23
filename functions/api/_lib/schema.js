@@ -733,5 +733,11 @@ export async function ensureSiteSettingsSchema(db) {
   await addColumnIfMissing(db, 'site_settings', 'seo_keywords TEXT');
   await addColumnIfMissing(db, 'site_settings', 'seo_image TEXT');
   await addColumnIfMissing(db, 'site_settings', 'banners TEXT');
+  await addColumnIfMissing(db, 'site_settings', 'bottom_banners TEXT');
+  await addColumnIfMissing(db, 'site_settings', 'footer_hours TEXT');
+  await addColumnIfMissing(db, 'site_settings', 'footer_terms_url TEXT');
+  await addColumnIfMissing(db, 'site_settings', 'footer_privacy_url TEXT');
+  await addColumnIfMissing(db, 'site_settings', 'footer_instagram_url TEXT');
+  await addColumnIfMissing(db, 'site_settings', 'footer_youtube_url TEXT');
   await addColumnIfMissing(db, 'site_settings', 'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP');
 }

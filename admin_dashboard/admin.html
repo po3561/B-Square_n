@@ -243,85 +243,43 @@
                         <h3 class="section-title">홈페이지 설정</h3>
                         <button class="btn-primary" id="btnSaveHomepage">저장</button>
                     </div>
+
                     <div class="admin-grid-layout"
                         style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem; padding-top:1.5rem;">
                         <div class="settings-desc">
-                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">사이트 이름 및 주소 설정</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">사이트 이름을 설정할 수 있습니다.</p>
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">브랜드 로고 / 파비콘</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">헤더 좌측 로고와 브라우저 탭 파비콘을 각각 업로드할 수 있습니다.</p>
                         </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
-                            <div class="field-group" style="margin-bottom:1rem;">
-                                <label
-                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사이트
-                                    이름</label>
-                                <input type="text" id="settingSiteName" placeholder="예: 비스퀘어" class="admin-form-input">
-                            </div>
-                            <div style="display:flex; gap:1rem;">
-                                <div class="field-group" style="flex:1;">
-                                    <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사이트
-                                        대표 URL</label>
-                                    <input type="text" id="settingSiteURL" placeholder="https://"
-                                        class="admin-form-input">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr style="border:none; border-top:1px solid var(--admin-border); margin:2rem 0;">
-
-                    <div class="admin-grid-layout" style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
-                        <div class="settings-desc">
-                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">로고 설정</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">사이트 헤더 로고 및 파비콘에 사용되는 이미지를 설정할 수
-                                있습니다.</p>
-                        </div>
-                        <div class="settings-fields"
-                            style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
-                            <div style="display:flex; gap:2rem;">
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
                                 <div class="field-group">
-                                    <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">로고
-                                        이미지 업로드</label>
-                                    <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">로고 이미지 업로드</label>
+                                    <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem; flex-wrap:wrap;">
                                         <input type="file" id="settingLogoFile" accept="image/*" style="display:none;">
-                                        <button class="btn-small outline"
-                                            onclick="document.getElementById('settingLogoFile').click()">이미지 선택</button>
-                                        <button class="btn-small outline" id="btnRemoveLogo"
-                                            style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">삭제</button>
+                                        <button class="btn-small outline" type="button" onclick="document.getElementById('settingLogoFile').click()">이미지 선택</button>
+                                        <button class="btn-small outline" type="button" id="btnRemoveLogo" style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">삭제</button>
                                     </div>
                                     <input type="hidden" id="settingLogoURL">
-                                    <div
-                                        style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:8px; padding:10px; display:flex; justify-content:center; align-items:center; min-height:80px;">
-                                        <img id="previewLogo" src="" alt="로고가 없습니다."
-                                            style="max-width:200px; max-height:60px; display:none;">
-                                        <span id="logoPlaceholderTxt"
-                                            style="color:var(--mac-text-muted); font-size:0.85rem;">로고 이미지를
-                                            업로드해주세요.</span>
+                                    <div style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:12px; padding:14px; display:flex; justify-content:center; align-items:center; min-height:120px;">
+                                        <img id="previewLogo" src="" alt="로고 미리보기" style="max-width:260px; max-height:72px; display:none; object-fit:contain;">
+                                        <span id="logoPlaceholderTxt" style="color:var(--mac-text-muted); font-size:0.85rem;">로고 이미지를 업로드해주세요.</span>
                                     </div>
+                                    <p id="logoSizeHint" style="margin:0.5rem 0 0; color:var(--mac-text-muted); font-size:0.8rem;">권장 480 × 120px · PNG/WebP</p>
                                 </div>
                                 <div class="field-group">
-                                    <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">파비콘
-                                        업로드</label>
-                                    <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
-                                        <input type="file" id="settingFaviconFile" accept="image/*"
-                                            style="display:none;">
-                                        <button class="btn-small outline"
-                                            onclick="document.getElementById('settingFaviconFile').click()">이미지
-                                            선택</button>
-                                        <button class="btn-small outline" id="btnRemoveFavicon"
-                                            style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">삭제</button>
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">파비콘 업로드</label>
+                                    <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem; flex-wrap:wrap;">
+                                        <input type="file" id="settingFaviconFile" accept="image/*" style="display:none;">
+                                        <button class="btn-small outline" type="button" onclick="document.getElementById('settingFaviconFile').click()">이미지 선택</button>
+                                        <button class="btn-small outline" type="button" id="btnRemoveFavicon" style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">삭제</button>
                                     </div>
                                     <input type="hidden" id="settingFaviconURL">
-                                    <div
-                                        style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:8px; padding:10px; display:flex; justify-content:center; align-items:center; min-height:80px;">
-                                        <img id="previewFavicon" src="" alt="파비콘이 없습니다."
-                                            style="max-width:60px; max-height:60px; display:none; border-radius:8px;">
-                                        <span id="faviconPlaceholderTxt"
-                                            style="color:var(--mac-text-muted); font-size:0.85rem;">파비콘을 업로드해주세요.</span>
+                                    <div style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:12px; padding:14px; display:flex; justify-content:center; align-items:center; min-height:120px;">
+                                        <img id="previewFavicon" src="" alt="파비콘 미리보기" style="max-width:72px; max-height:72px; display:none; object-fit:contain; border-radius:10px;">
+                                        <span id="faviconPlaceholderTxt" style="color:var(--mac-text-muted); font-size:0.85rem;">파비콘을 업로드해주세요.</span>
                                     </div>
+                                    <p id="faviconSizeHint" style="margin:0.5rem 0 0; color:var(--mac-text-muted); font-size:0.8rem;">권장 512 × 512px · PNG/ICO/WebP</p>
                                 </div>
                             </div>
                         </div>
@@ -329,18 +287,36 @@
 
                     <hr style="border:none; border-top:1px solid var(--admin-border); margin:2rem 0;">
 
-                    <div class="admin-grid-layout" style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                    <div class="admin-grid-layout"
+                        style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
                         <div class="settings-desc">
-                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">광고 배너 설정</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">메인 홈페이지 상단에 롤링되는 광고 배너 이미지를
-                                관리합니다.</p>
-                            <button id="btnAddBanner" class="btn-primary"
-                                style="background:#4f46e5; margin-top:1rem; width:100%;">+ 배너 추가하기</button>
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">메인 배너 설정</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">메인 홈페이지 상단에 롤링되는 광고 배너입니다. 이미지가 잘리지 않도록 권장 비율을 지켜 업로드하세요.</p>
+                            <p style="margin:0.75rem 0 0; color:var(--admin-text-muted); font-size:0.82rem;">권장 크기: 1600 × 500px · 16:5 비율</p>
+                            <button id="btnAddBanner" class="btn-primary" type="button" style="background:#4f46e5; margin-top:1rem; width:100%;">+ 메인 배너 추가</button>
                         </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
-                            <div id="bannerListContainer" style="display:flex; flex-direction:column; gap:1rem;">
-                                <!-- 동적 로딩 배너 아이템 -->
+                            <div id="bannerListContainer" style="display:flex; flex-direction:column; gap:1rem; min-height:120px;">
+                                <!-- 메인 배너 동적 로딩 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr style="border:none; border-top:1px solid var(--admin-border); margin:2rem 0;">
+
+                    <div class="admin-grid-layout"
+                        style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                        <div class="settings-desc">
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">하단 배너 설정</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">메인 하단의 가로형 배너입니다. 슬라이드 방식으로 노출되며, 추천 비율을 맞추면 잘림 없이 표시됩니다.</p>
+                            <p style="margin:0.75rem 0 0; color:var(--admin-text-muted); font-size:0.82rem;">권장 크기: 3200 × 600px · 16:3 비율</p>
+                            <button id="btnAddBottomBanner" class="btn-primary" type="button" style="background:#4f46e5; margin-top:1rem; width:100%;">+ 하단 배너 추가</button>
+                        </div>
+                        <div class="settings-fields"
+                            style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
+                            <div id="bottomBannerListContainer" style="display:flex; flex-direction:column; gap:1rem; min-height:120px;">
+                                <!-- 하단 배너 동적 로딩 -->
                             </div>
                         </div>
                     </div>
@@ -422,56 +398,63 @@
                         <button class="btn-primary" id="btnSaveFooter">저장</button>
                     </div>
                     <div class="admin-grid-layout"
-                        style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding-top:1.5rem;">
+                        style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem; padding-top:1.5rem;">
+                        <div class="settings-desc">
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">업계 표준 푸터 정보</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">회사 정보, 고객센터, 운영시간, 정책 링크를 설정하면 메인 홈페이지 푸터에 즉시 반영됩니다.</p>
+                        </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border); grid-column: span 2;">
-                            <p style="margin-bottom:1.5rem; color:var(--admin-text-muted);">사이트 하단에 표시되는 사업자 정보를 설정합니다.
-                            </p>
+                            <p style="margin-bottom:1.5rem; color:var(--admin-text-muted);">사이트 하단에 표시되는 사업자 정보와 정책/연락처 정보를 설정합니다.</p>
 
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
                                 <div class="field-group">
-                                    <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">회사명(상호)</label>
-                                    <input type="text" id="setFooterCompany" placeholder="예: (주)비스퀘어"
-                                        class="admin-form-input">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">회사명(상호)</label>
+                                    <input type="text" id="setFooterCompany" placeholder="예: (주)비스퀘어" class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">대표자
-                                        성명</label>
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">대표자 성명</label>
                                     <input type="text" id="setFooterCEO" placeholder="대표자명" class="admin-form-input">
                                 </div>
                                 <div class="field-group" style="grid-column: span 2;">
-                                    <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">주소</label>
-                                    <input type="text" id="setFooterAddress" placeholder="사업장 소재지 주소"
-                                        class="admin-form-input">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">주소</label>
+                                    <input type="text" id="setFooterAddress" placeholder="사업장 소재지 주소" class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사업자등록번호</label>
-                                    <input type="text" id="setFooterBizNum" placeholder="000-00-00000"
-                                        class="admin-form-input">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사업자등록번호</label>
+                                    <input type="text" id="setFooterBizNum" placeholder="000-00-00000" class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">통신판매업
-                                        신고번호</label>
-                                    <input type="text" id="setFooterMailNum" placeholder="제 0000-지역-0000 호"
-                                        class="admin-form-input">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">통신판매업 신고번호</label>
+                                    <input type="text" id="setFooterMailNum" placeholder="제 0000-지역-0000 호" class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">고객센터
-                                        전화번호</label>
-                                    <input type="text" id="setFooterCS" placeholder="0000-0000"
-                                        class="admin-form-input">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">고객센터 전화번호</label>
+                                    <input type="text" id="setFooterCS" placeholder="0000-0000" class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">이메일</label>
-                                    <input type="text" id="setFooterEmail" placeholder="cs@domain.com"
-                                        class="admin-form-input">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">고객센터 이메일</label>
+                                    <input type="text" id="setFooterEmail" placeholder="cs@domain.com" class="admin-form-input">
+                                </div>
+                                <div class="field-group" style="grid-column: span 2;">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">운영시간</label>
+                                    <input type="text" id="setFooterHours" placeholder="평일 10시 ~ 오후 6시 (주말, 공휴일 제외)" class="admin-form-input">
+                                </div>
+                                <div class="field-group">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">이용약관 URL</label>
+                                    <input type="text" id="setFooterTermsUrl" placeholder="https://..." class="admin-form-input">
+                                </div>
+                                <div class="field-group">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">개인정보처리방침 URL</label>
+                                    <input type="text" id="setFooterPrivacyUrl" placeholder="https://..." class="admin-form-input">
+                                </div>
+                                <div class="field-group">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">인스타그램 URL</label>
+                                    <input type="text" id="setFooterInstagramUrl" placeholder="https://instagram.com/..." class="admin-form-input">
+                                </div>
+                                <div class="field-group">
+                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">유튜브 URL</label>
+                                    <input type="text" id="setFooterYoutubeUrl" placeholder="https://youtube.com/..." class="admin-form-input">
                                 </div>
                             </div>
                         </div>
@@ -1241,8 +1224,8 @@
     </main>
 
     <!-- Admin Core & UI Scripts -->
-    <script src="admin_core.js?v=20260323_02"></script>
-    <script src="admin_settings.js?v=20260323_02"></script>
+    <script src="admin_core.js?v=20260323_03"></script>
+    <script src="admin_homepage_settings.js?v=20260323_01"></script>
     <script src="admin_recommend.js?v=20260323_02"></script>
     <script src="admin_classes.js?v=20260323_02"></script>
     <script src="admin_users.js?v=20260323_02"></script>
@@ -1250,40 +1233,6 @@
     <script src="admin_dashboard.js?v=20260323_02"></script>
     <script src="admin_extensions.js?v=20260323_02"></script>
     <script src="admin_operator_selection.js?v=20260323_02"></script>
-
-    <script>
-        // 배너 아이템 동적 템플릿 처리 (간단한 인라인 헬퍼)
-        document.getElementById('btnAddBanner').addEventListener('click', () => {
-            const container = document.getElementById('bannerListContainer');
-            const newId = Date.now();
-            const html = `
-                <div class="banner-item" data-id="${newId}" style="display:flex; gap:1rem; padding:1rem; background:#fff; border:1px solid #ddd; border-radius:8px; position:relative;">
-                    <div style="flex:1;">
-                        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:0.3rem;">배너 이미지 URL</label>
-                        <input type="text" class="admin-form-input banner-img-input" placeholder="https://..." style="margin-bottom:0.5rem;">
-                        <label style="display:block; font-size:0.8rem; font-weight:600; margin-bottom:0.3rem;">클릭 시 이동할 링크 URL (선택)</label>
-                        <input type="text" class="admin-form-input banner-link-input" placeholder="https://...">
-                    </div>
-                    <div style="width:100px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:0.5rem;">
-                        <img class="banner-preview" src="" style="width:100%; height:50px; object-fit:cover; background:#f4f4f5; border-radius:4px; border:1px solid #eee;">
-                        <button class="btn-remove-banner" style="padding:0.3rem; background:#fee2e2; color:#ef4444; border:none; border-radius:4px; font-size:0.8rem; cursor:pointer; width:100%;">삭제</button>
-                    </div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', html);
-
-            // 프리뷰 업데이트 바인딩
-            const newItem = container.lastElementChild;
-            const input = newItem.querySelector('.banner-img-input');
-            const preview = newItem.querySelector('.banner-preview');
-            input.addEventListener('input', (e) => { preview.src = e.target.value; });
-
-            // 삭제 바인딩
-            newItem.querySelector('.btn-remove-banner').addEventListener('click', () => {
-                newItem.remove();
-            });
-        });
-    </script>
 </body>
 
 </html>

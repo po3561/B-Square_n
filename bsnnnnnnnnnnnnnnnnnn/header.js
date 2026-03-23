@@ -85,7 +85,10 @@
               <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
             </button>
             <h1 class="logo">
-              <a href="${homePrefix}index.html"><span class="logo-icon">⌘</span> B-Square</a>
+              <a href="${homePrefix}index.html" class="logo-link">
+                <img id="bsqHeaderLogoImg" class="logo-image" alt="B-Square 로고" style="display:none;">
+                <span id="bsqHeaderLogoText" class="logo-text">B-Square</span>
+              </a>
             </h1>
           </div>
           <nav class="main-nav desktop-only-flex">
@@ -148,32 +151,103 @@
     return `
       <footer class="site-footer" id="bsqFooter">
         <div class="footer-top">
+          <div class="footer-brand">
+            <a href="${homePrefix}index.html" class="footer-brand-link">
+              <img id="bsqFooterLogoImg" class="footer-logo-image" alt="B-Square 로고" style="display:none;">
+              <span id="bsqFooterBrandText" class="footer-brand-text">B-Square</span>
+            </a>
+            <p class="footer-slogan">배움을 연결하는 클래스 플랫폼</p>
+            <p class="footer-info-text" id="bsqFooterInfoText"></p>
+          </div>
+          <div class="footer-links">
+            <h4>바로가기</h4>
+            <ul class="footer-nav">
+              <li><a id="footerTermsLink" href="#">이용약관</a></li>
+              <li><a id="footerPrivacyLink" href="#"><strong>개인정보처리방침</strong></a></li>
+              <li><a href="${prefix}contact/contact.html">고객센터</a></li>
+            </ul>
+          </div>
           <div class="social-links">
-            <a href="#" class="social-icon"><span class="icon">📷</span><p>인스타그램</p></a>
-            <a href="#" class="social-icon"><span class="icon">▶</span><p>유튜브</p></a>
+            <a id="footerInstagramLink" href="#" class="social-icon" target="_blank" rel="noopener noreferrer"><span class="icon">📷</span><p>인스타그램</p></a>
+            <a id="footerYoutubeLink" href="#" class="social-icon" target="_blank" rel="noopener noreferrer"><span class="icon">▶</span><p>유튜브</p></a>
           </div>
           <div class="cs-center">
             <h4>고객센터</h4>
-            <p>평일 10시 ~ 오후 6시 (주말, 공휴일 제외)</p>
+            <p id="footerSupportHours">평일 10시 ~ 오후 6시 (주말, 공휴일 제외)</p>
             <button type="button" class="btn-contact" onclick="location.href='${prefix}contact/contact.html'">문의하기</button>
           </div>
         </div>
         <div class="footer-bottom">
-          <ul class="footer-nav">
-            <li><a href="#">회사소개</a></li>
-            <li><a href="#">이용약관</a></li>
-            <li><a href="#"><strong>개인정보처리방침</strong></a></li>
-            <li><a href="#">고객센터</a></li>
-          </ul>
-          <div class="company-info">
-            <strong>B-Square</strong>
-            <p>대표: 운영팀 | 사업자등록번호: 000-00-00000</p>
-            <p>이메일: help@example.com</p>
-            <p>주소: 대한민국 서울시</p>
-          </div>
-          <p class="copyright">© B-Square. All rights reserved.</p>
+          <p class="copyright">© <span id="footerCopyrightBrand">B-Square</span>. All rights reserved.</p>
         </div>
       </footer>`;
+  }
+
+  async function applyShellBranding() {
+    try {
+      if (window.BSQ && window.BSQ.ready) {
+        await window.BSQ.ready;
+      }
+
+      const settingsSource = window.__BSQ_SITE_SETTINGS__;
+      const settings = settingsSource || (await window.BSQ?.api?.('/api/site-settings'))?.data || null;
+      if (!settings) return;
+
+      const brandName = settings.company_name || settings.site_name || 'B-Square';
+      const logoUrl = settings.logo_url || '';
+
+      const setLogo = (imgId, textId) => {
+        const img = document.getElementById(imgId);
+        const text = document.getElementById(textId);
+        if (img) {
+          if (logoUrl) {
+            img.src = logoUrl;
+            img.style.display = 'block';
+          } else {
+            img.removeAttribute('src');
+            img.style.display = 'none';
+          }
+        }
+        if (text) {
+          text.textContent = brandName;
+          text.style.display = logoUrl ? 'none' : 'inline-flex';
+        }
+      };
+
+      setLogo('bsqHeaderLogoImg', 'bsqHeaderLogoText');
+      setLogo('bsqFooterLogoImg', 'bsqFooterBrandText');
+
+      const footerInfo = document.getElementById('bsqFooterInfoText');
+      const footerHours = document.getElementById('footerSupportHours');
+      const footerTermsLink = document.getElementById('footerTermsLink');
+      const footerPrivacyLink = document.getElementById('footerPrivacyLink');
+      const footerInstagramLink = document.getElementById('footerInstagramLink');
+      const footerYoutubeLink = document.getElementById('footerYoutubeLink');
+      const footerBrandCopy = document.getElementById('footerCopyrightBrand');
+
+      if (footerBrandCopy) footerBrandCopy.textContent = brandName;
+      if (footerHours) footerHours.textContent = settings.footer_hours || '평일 10시 ~ 오후 6시 (주말, 공휴일 제외)';
+      if (footerTermsLink) footerTermsLink.href = settings.footer_terms_url || '#';
+      if (footerPrivacyLink) footerPrivacyLink.href = settings.footer_privacy_url || '#';
+      if (footerInstagramLink) footerInstagramLink.href = settings.footer_instagram_url || '#';
+      if (footerYoutubeLink) footerYoutubeLink.href = settings.footer_youtube_url || '#';
+
+      if (footerInfo) {
+        const parts = [];
+        if (settings.ceo_name) parts.push(`대표: ${settings.ceo_name}`);
+        if (settings.biz_num) parts.push(`사업자등록번호: ${settings.biz_num}`);
+        if (settings.mail_order_num) parts.push(`통신판매업신고: ${settings.mail_order_num}`);
+        if (settings.cs_phone) parts.push(`고객센터: ${settings.cs_phone}`);
+        if (settings.cs_email) parts.push(`이메일: ${settings.cs_email}`);
+
+        const lines = [];
+        if (parts.length > 0) lines.push(parts.join(' | '));
+        if (settings.address) lines.push(`주소: ${settings.address}`);
+        footerInfo.textContent = lines.join('\n');
+      }
+    } catch (error) {
+      console.warn('[BSQ] Shell branding apply skipped:', error);
+    }
   }
 
   function injectUI() {
@@ -283,6 +357,8 @@
     window.addEventListener('bsq_dev_mode_deactivated', () => {
       renderAuthenticatedMenu(window.BSQ?.session, window.BSQ?.session?.user || null);
     });
+
+    await applyShellBranding();
   }
 
   window.handleGlobalLogout = async function () {
