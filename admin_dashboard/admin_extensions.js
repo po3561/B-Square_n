@@ -1,4 +1,4 @@
-// Admin dashboard extensions
+﻿// Admin dashboard extensions
 (function () {
   const fmt = (n) => Number(n || 0).toLocaleString('ko-KR');
 
@@ -172,7 +172,7 @@
       const mainClasses = Array.isArray(user.main_classes) ? user.main_classes : [];
       const subClasses = Array.isArray(user.sub_classes) ? user.sub_classes : [];
       const classSummary = formatClassSummary(mainClasses, subClasses);
-      const avatar = user.profile_image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.username || 'U')}&background=random`;
+      const avatar = user.profile_image_url || '/assets/default-avatar.svg';
       const normalizedRole = normalizeRole(user.role);
 
       return `
@@ -282,81 +282,473 @@
     await updateOperatorRole(userId, 'user');
   };
 
-  async function loadGlobalBoards() {
+  const NOTICE_EDITOR_TOOLBAR = [
+    [{ header: [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ color: [] }, { background: [] }],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    ['link', 'image'],
+    ['clean'],
+  ];
+
+  let globalNoticeEditor = null;
+  let currentGlobalNotice = null;
+
+  function getItemId(item) {
+    return String(item?.id || item?.push_key || item?.notice_id || '').trim();
+  }
+
+  function normalizeHtmlContent(value) {
+    const html = String(value ?? '').trim();
+    if (!html || html === '<p><br></p>') return '';
+    return html;
+  }
+
+  function stripHtml(value) {
+    const html = String(value ?? '');
+    if (!html) return '';
+    const el = document.createElement('div');
+    el.innerHTML = html;
+    return (el.textContent || el.innerText || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function truncateText(value, limit = 72) {
+    const text = stripHtml(value);
+    if (text.length <= limit) return text;
+    return `${text.slice(0, Math.max(0, limit - 1))}...`;
+  }
+
+  function formatLongDate(value) {
+    if (!value) return '-';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '-' : date.toLocaleString('ko-KR');
+  }
+
+  function getNoticeTypeLabel(item) {
+    return item?.type === 'important' ? '중요' : '일반';
+  }
+
+  function getNoticeTypeBadgeClass(item) {
+    return item?.type === 'important' ? 'danger' : 'muted';
+  }
+
+  function getClassNoticeRoleMeta(item) {
+    const explicitLabel = String(item?.author_role_label || item?.author_kind_label || '').trim();
+    const rawRole = String(item?.author_role || item?.author_type || item?.writer_role || '').trim().toLowerCase();
+
+    if (explicitLabel) {
+      return {
+        label: explicitLabel,
+        className: rawRole.includes('sub') ? 'board-role-badge--sub' : rawRole.includes('main') ? 'board-role-badge--main' : 'board-role-badge--staff',
+      };
+    }
+
+    if (rawRole.includes('main') || rawRole === 'creator' || rawRole === 'primary' || item?.is_main_instructor) {
+      return { label: '메인 강사', className: 'board-role-badge--main' };
+    }
+
+    if (rawRole.includes('sub') || rawRole === 'assistant' || item?.is_sub_instructor) {
+      return { label: '서브 강사', className: 'board-role-badge--sub' };
+    }
+
+    if (rawRole === 'operator' || rawRole === 'admin' || rawRole === 'super_admin') {
+      return { label: '운영자', className: 'board-role-badge--staff' };
+    }
+
+    return { label: item?.author_name ? '강사' : '-', className: 'board-role-badge--staff' };
+  }
+
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  function getGlobalNoticeEditor() {
+    const container = document.getElementById('globalNoticeEditor');
+    if (!container || !window.Quill) return null;
+
+    if (!globalNoticeEditor) {
+      globalNoticeEditor = new Quill('#globalNoticeEditor', {
+        theme: 'snow',
+        placeholder: '공지 내용을 입력하세요...',
+        modules: { toolbar: NOTICE_EDITOR_TOOLBAR },
+      });
+    }
+
+    return globalNoticeEditor;
+  }
+
+  function setGlobalNoticeEditorContent(html = '') {
+    const editor = getGlobalNoticeEditor();
+    const fallback = document.getElementById('globalNoticeEditorFallback');
+    const normalized = normalizeHtmlContent(html);
+
+    if (editor) {
+      editor.setText('');
+      if (normalized) editor.clipboard.dangerouslyPasteHTML(normalized);
+    }
+
+    if (fallback) fallback.value = normalized;
+  }
+
+  function getGlobalNoticeEditorContent() {
+    const editor = getGlobalNoticeEditor();
+    if (editor) return normalizeHtmlContent(editor.root.innerHTML);
+    const fallback = document.getElementById('globalNoticeEditorFallback');
+    return normalizeHtmlContent(fallback?.value || '');
+  }
+
+  function renderNoticeViewerComments(comments = []) {
+    const container = document.getElementById('globalNoticeViewerComments');
+    if (!container) return;
+
+    const items = Array.isArray(comments) ? comments : [];
+    if (!items.length) {
+      container.innerHTML = '<div class="board-empty-state">관련 댓글이 없습니다.</div>';
+      return;
+    }
+
+    container.innerHTML = items.map((comment) => `
+      <article class="board-comment-card">
+        <div class="board-comment-meta">
+          <strong>${escapeHtml(comment.user_name || comment.author_name || '사용자')}</strong>
+          <span>${escapeHtml(formatLongDate(comment.created_at))}</span>
+        </div>
+        <p>${escapeHtml(comment.content || '').replace(/\n/g, '<br>')}</p>
+      </article>
+    `).join('');
+  }
+
+  function populateNoticeViewer(detail) {
+    if (!detail) return;
+
+    currentGlobalNotice = detail;
+    document.getElementById('globalNoticeViewerTitle').textContent = detail.title || '공지 상세';
+
+    const typeBadge = document.getElementById('globalNoticeViewerType');
+    if (typeBadge) {
+      typeBadge.textContent = getNoticeTypeLabel(detail);
+      typeBadge.className = `board-view-badge admin-badge ${getNoticeTypeBadgeClass(detail)}`;
+    }
+
+    document.getElementById('globalNoticeViewerAuthor').textContent = `작성자: ${detail.author_name || '관리자'}`;
+    document.getElementById('globalNoticeViewerDate').textContent = `작성일: ${formatLongDate(detail.created_at)}`;
+    document.getElementById('globalNoticeViewerViews').textContent = `조회수: ${fmt(detail.views || 0)}`;
+    document.getElementById('globalNoticeViewerLikeCount').textContent = `좋아요: ${fmt(detail.like_count || 0)}`;
+    document.getElementById('globalNoticeViewerCommentCount').textContent = `댓글: ${fmt((detail.comments || []).length)}`;
+    document.getElementById('globalNoticeViewerHidden').textContent = `노출 상태: ${Number(detail.is_hidden || 0) ? '숨김' : '노출'}`;
+
+    const contentEl = document.getElementById('globalNoticeViewerContent');
+    if (contentEl) {
+      contentEl.innerHTML = detail.content || '<div class="board-empty-state" style="padding:0;">내용이 없습니다.</div>';
+    }
+
+    renderNoticeViewerComments(detail.comments || []);
+  }
+
+  async function fetchGlobalNoticeDetail(id) {
+    if (!id) return null;
+    const res = await BSQ.api(`/api/notices?id=${encodeURIComponent(id)}&include_hidden=1`);
+    if (!res?.success || !res.data) throw new Error(res?.error || '공지 상세 정보를 불러오지 못했습니다.');
+    return res.data;
+  }
+
+  function openGlobalNoticeEditor(item = null) {
+    currentGlobalNotice = item || null;
+    document.getElementById('globalNoticeEditorTitle').textContent = item ? '공지사항 수정' : '새 공지사항 작성';
+    document.getElementById('globalNoticeEditorId').value = getItemId(item);
+    document.getElementById('globalNoticeTitle').value = item?.title || '';
+    document.getElementById('globalNoticeTypeImportant').checked = item?.type === 'important';
+    document.getElementById('globalNoticeTypeNormal').checked = item?.type !== 'important';
+    document.getElementById('globalNoticeHidden').checked = Number(item?.is_hidden || 0) === 1;
+    setGlobalNoticeEditorContent(item?.content || '');
+    openModal('globalNoticeEditorModal');
+
+    const titleInput = document.getElementById('globalNoticeTitle');
+    window.setTimeout(() => titleInput?.focus(), 50);
+  }
+
+  async function openGlobalNoticeViewer(idOrItem) {
+    const id = typeof idOrItem === 'string' ? idOrItem : getItemId(idOrItem);
+    if (!id) return;
+
     try {
-      const res = await BSQ.api('/api/notices');
+      const detail = (typeof idOrItem === 'object' && idOrItem?.comments)
+        ? idOrItem
+        : await fetchGlobalNoticeDetail(id);
+      populateNoticeViewer(detail);
+      openModal('globalNoticeViewerModal');
+    } catch (error) {
+      console.error('[Boards] detail load failed:', error);
+      alert(error.message || '공지 상세를 불러오지 못했습니다.');
+    }
+  }
+
+  async function saveGlobalNotice() {
+    const id = document.getElementById('globalNoticeEditorId')?.value?.trim() || '';
+    const title = document.getElementById('globalNoticeTitle')?.value.trim() || '';
+    const content = getGlobalNoticeEditorContent();
+    const type = document.getElementById('globalNoticeTypeImportant')?.checked ? 'important' : 'normal';
+    const isHidden = document.getElementById('globalNoticeHidden')?.checked || false;
+
+    if (!title) {
+      alert('공지 제목을 입력하세요.');
+      return;
+    }
+
+    if (!stripHtml(content)) {
+      alert('공지 내용을 입력하세요.');
+      return;
+    }
+
+    const btn = document.getElementById('btnGlobalNoticeSave');
+    const previousText = btn?.textContent || '';
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '저장 중...';
+    }
+
+    try {
+      const payload = {
+        id: id || undefined,
+        title,
+        content,
+        type,
+        is_hidden: isHidden,
+      };
+
+      const res = await BSQ.api('/api/notices', {
+        method: 'POST',
+        body: payload,
+      });
+
+      if (!res?.success) throw new Error(res?.error || '공지 저장에 실패했습니다.');
+
+      closeModal('globalNoticeEditorModal');
+      await loadGlobalBoards();
+
+      if (payload.id) {
+        try {
+          const refreshed = await fetchGlobalNoticeDetail(payload.id);
+          populateNoticeViewer(refreshed);
+          openModal('globalNoticeViewerModal');
+        } catch {
+          // ignore refresh failures after save
+        }
+      }
+
+      alert('공지사항이 저장되었습니다.');
+    } catch (error) {
+      console.error('[Boards] save failed:', error);
+      alert(`공지 저장 실패: ${error.message}`);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = previousText || '저장';
+      }
+    }
+  }
+
+  async function removeGlobalNotice(id) {
+    if (!id) return;
+    if (!confirm('이 공지를 삭제하시겠습니까?')) return;
+
+    try {
+      const res = await BSQ.api(`/api/notices?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      if (!res?.success) throw new Error(res?.error || '공지 삭제 실패');
+      if (currentGlobalNotice && getItemId(currentGlobalNotice) === id) {
+        closeModal('globalNoticeViewerModal');
+        currentGlobalNotice = null;
+      }
+      await loadGlobalBoards();
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    }
+  }
+
+  function getClassNoticeMoveUrl(item) {
+    const classId = String(item?.class_id || '').trim();
+    if (!classId) return '';
+    return `../class_view/class_view.html?id=${encodeURIComponent(classId)}&tab=notice`;
+  }
+
+  loadGlobalBoards = async function loadGlobalBoardsClean() {
+    try {
+      const res = await BSQ.api('/api/notices?include_hidden=1');
       const body = document.getElementById('globalBoardsTableBody');
       if (!body) return;
 
-      const notices = Array.isArray(res.data) ? res.data : [];
+      const notices = Array.isArray(res.data) ? [...res.data] : [];
+      notices.sort((a, b) => {
+        if (a.type === 'important' && b.type !== 'important') return -1;
+        if (a.type !== 'important' && b.type === 'important') return 1;
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      });
+
       if (!notices.length) {
-        body.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#aaa;">등록된 공지가 없습니다.</td></tr>';
+        body.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#aaa;">등록된 공지가 없습니다.</td></tr>';
         return;
       }
 
       body.innerHTML = notices.map((n) => `
-        <tr>
-          <td>${escapeHtml(n.type || '-')}</td>
-          <td>${escapeHtml(n.title || '-')}</td>
+        <tr data-notice-id="${escapeHtml(getItemId(n))}" style="cursor:pointer;">
+          <td>
+            <div style="display:flex; flex-wrap:wrap; gap:0.35rem;">
+              <span class="admin-badge ${getNoticeTypeBadgeClass(n)}">${escapeHtml(getNoticeTypeLabel(n))}</span>
+              ${Number(n.is_hidden || 0) ? '<span class="admin-badge danger">숨김</span>' : ''}
+            </div>
+          </td>
+          <td style="text-align:left;">
+            <strong>${escapeHtml(n.title || '-')}</strong>
+            ${truncateText(n.content || '') ? `<div style="margin-top:0.35rem; color:#6b7280; font-size:0.82rem;">${escapeHtml(truncateText(n.content || '', 64))}</div>` : ''}
+          </td>
           <td>${escapeHtml(n.author_name || '-')}</td>
-          <td><button class="btn-small danger" onclick="deleteGlobalNotice('${escapeJsString(n.id)}')">삭제</button></td>
+          <td>${escapeHtml(formatDate(n.created_at))}</td>
+          <td>${fmt(n.views || 0)}</td>
+          <td>
+            <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+              <button class="btn-small outline" type="button" onclick="event.stopPropagation(); openGlobalNoticeViewer('${escapeJsString(getItemId(n))}')">보기</button>
+              <button class="btn-small outline" type="button" onclick="event.stopPropagation(); openGlobalNoticeEditorById('${escapeJsString(getItemId(n))}')">수정</button>
+              <button class="btn-small danger" type="button" onclick="event.stopPropagation(); deleteGlobalNotice('${escapeJsString(getItemId(n))}')">삭제</button>
+            </div>
+          </td>
         </tr>
       `).join('');
+
+      body.querySelectorAll('tr[data-notice-id]').forEach((row) => {
+        row.addEventListener('click', () => {
+          const noticeId = row.dataset.noticeId;
+          if (noticeId) openGlobalNoticeViewer(noticeId);
+        });
+      });
     } catch (err) {
       console.error('[Boards] Error:', err);
     }
-  }
+  };
 
-  window.deleteGlobalNotice = async function (id) {
-    if (!confirm('이 공지를 삭제할까요?')) return;
+  window.openGlobalNoticeViewer = openGlobalNoticeViewer;
+  window.openGlobalNoticeEditor = openGlobalNoticeEditor;
+  window.openGlobalNoticeEditorById = async function (id) {
+    if (!id) {
+      openGlobalNoticeEditor(null);
+      return;
+    }
     try {
-      await BSQ.api(`/api/notices?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-      loadGlobalBoards();
-    } catch (err) {
-      console.error(err);
-      alert(err.message);
+      const detail = await fetchGlobalNoticeDetail(id);
+      openGlobalNoticeEditor(detail);
+    } catch (error) {
+      alert(error.message || '공지 데이터를 불러오지 못했습니다.');
     }
   };
 
-  async function loadClassBoards() {
+  window.deleteGlobalNotice = async function (id) {
+    await removeGlobalNotice(id);
+  };
+
+  loadClassBoards = async function loadClassBoardsClean() {
     try {
       const res = await BSQ.api('/api/class-notices');
       const body = document.getElementById('classBoardsTableBody');
       if (!body) return;
 
-      const notices = Array.isArray(res.data) ? res.data : [];
+      const notices = Array.isArray(res.data) ? [...res.data] : [];
+      notices.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
       if (!notices.length) {
-        body.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#aaa;">등록된 클래스 공지가 없습니다.</td></tr>';
+        body.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#aaa;">등록된 클래스 공지가 없습니다.</td></tr>';
         return;
       }
 
-      body.innerHTML = notices.map((n) => `
-        <tr>
-          <td>${escapeHtml(n.class_title || n.class_id || '-')}</td>
-          <td>${escapeHtml(n.title || '-')}</td>
-          <td>${escapeHtml(n.author_name || '-')}</td>
-          <td>${n.created_at ? new Date(n.created_at).toLocaleDateString('ko-KR') : '-'}</td>
-          <td>
-            <button class="btn-small outline" disabled>이동</button>
-            <button class="btn-small danger" onclick="deleteClassNotice('${escapeJsString(n.id)}')">삭제</button>
-          </td>
-        </tr>
-      `).join('');
+      body.innerHTML = notices.map((n) => {
+        const roleMeta = getClassNoticeRoleMeta(n);
+        const classTitle = n.class_title || n.class_name || n.class_id || '-';
+        return `
+          <tr>
+            <td>${escapeHtml(classTitle)}</td>
+            <td>
+              <div style="display:flex; flex-direction:column; gap:0.35rem; align-items:flex-start;">
+                <span class="board-role-badge ${roleMeta.className}">${escapeHtml(roleMeta.label)}</span>
+                <span style="font-size:0.82rem; color:#6b7280;">${escapeHtml(n.author_name || '-')}</span>
+              </div>
+            </td>
+            <td style="text-align:left;">${escapeHtml(n.title || '-')}</td>
+            <td>${escapeHtml(formatDate(n.created_at))}</td>
+            <td>
+              <button class="btn-small outline" type="button" onclick="openClassNoticeTarget('${escapeJsString(getItemId(n))}', '${escapeJsString(n.class_id || '')}')">이동</button>
+            </td>
+            <td>
+              <button class="btn-small danger" type="button" onclick="deleteClassNotice('${escapeJsString(getItemId(n))}')">삭제</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     } catch (err) {
       console.error('[ClassBoards] Error:', err);
     }
-  }
+  };
+
+  window.openClassNoticeTarget = function (noticeId, classId) {
+    const targetClassId = String(classId || '').trim();
+    if (!targetClassId) return;
+    const url = getClassNoticeMoveUrl({ class_id: targetClassId });
+    if (url) window.open(url, '_blank', 'noopener');
+  };
 
   window.deleteClassNotice = async function (id) {
-    if (!confirm('이 클래스 공지를 삭제할까요?')) return;
+    if (!confirm('이 클래스 공지를 삭제하시겠습니까?')) return;
     try {
-      await BSQ.api(`/api/class-notices?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-      loadClassBoards();
+      const res = await BSQ.api(`/api/class-notices?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      if (!res?.success) throw new Error(res?.error || '클래스 공지 삭제 실패');
+      await loadClassBoards();
     } catch (err) {
       console.error(err);
       alert(err.message);
     }
   };
+
+  const writeNoticeBtnOverride = document.getElementById('btnWriteGlobalNotice');
+  if (writeNoticeBtnOverride) {
+    writeNoticeBtnOverride.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openGlobalNoticeEditor(null);
+    }, true);
+  }
+
+  document.getElementById('btnGlobalNoticeSave')?.addEventListener('click', saveGlobalNotice);
+  document.getElementById('btnGlobalNoticeEdit')?.addEventListener('click', () => {
+    if (!currentGlobalNotice) return;
+    openGlobalNoticeEditor(currentGlobalNotice);
+  });
+  document.getElementById('btnGlobalNoticeDelete')?.addEventListener('click', async () => {
+    const id = getItemId(currentGlobalNotice);
+    if (!id) return;
+    await removeGlobalNotice(id);
+  });
+
+  document.querySelectorAll('[data-action="close-global-notice-editor"]').forEach((btn) => {
+    btn.addEventListener('click', () => closeModal('globalNoticeEditorModal'));
+  });
+
+  document.querySelectorAll('[data-action="close-global-notice-viewer"]').forEach((btn) => {
+    btn.addEventListener('click', () => closeModal('globalNoticeViewerModal'));
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    closeModal('globalNoticeEditorModal');
+    closeModal('globalNoticeViewerModal');
+  });
 
   async function loadCoupons() {
     try {
@@ -677,32 +1069,6 @@
     finTypeFilter.addEventListener('change', loadFinancial);
   }
 
-  const writeNoticeBtn = document.getElementById('btnWriteGlobalNotice');
-  if (writeNoticeBtn) {
-    writeNoticeBtn.addEventListener('click', async () => {
-      const title = prompt('공지 제목을 입력하세요.');
-      if (!title) return;
-      const content = prompt('공지 내용을 입력하세요.') || '';
-
-      try {
-        const res = await BSQ.api('/api/notices', {
-          method: 'POST',
-          body: {
-            title,
-            content,
-            type: 'normal',
-          },
-        });
-
-        if (!res?.success) throw new Error(res?.error || '공지 작성 실패');
-        alert('공지가 등록되었습니다.');
-        loadGlobalBoards();
-      } catch (err) {
-        alert(`공지 작성 실패: ${err.message}`);
-      }
-    });
-  }
-
   const btnDownloadTax = document.getElementById('btnDownloadTax');
   if (btnDownloadTax) {
     btnDownloadTax.addEventListener('click', async () => {
@@ -800,7 +1166,7 @@
       const roleMeta = operatorRoleMeta(user.role);
       const mainClasses = Array.isArray(user.main_classes) ? user.main_classes : [];
       const subClasses = Array.isArray(user.sub_classes) ? user.sub_classes : [];
-      const avatar = user.profile_image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.username || 'U')}&background=random`;
+      const avatar = user.profile_image_url || '/assets/default-avatar.svg';
       const normalizedRole = normalizeOperatorRole(user.role);
       const classSummary = operatorClassSummary(mainClasses, subClasses);
 

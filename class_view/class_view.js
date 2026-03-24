@@ -14,6 +14,72 @@ let selectedPassPrice = 0;
 let userPassCount = 0;
 let isMonthlySubscribed = false;
 
+function safeParseArray(value, fallback = []) {
+    if (Array.isArray(value)) return value;
+    if (typeof value !== 'string' || !value.trim()) return fallback;
+    try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : fallback;
+    } catch {
+        return fallback;
+    }
+}
+
+function getClassImageUrl(data) {
+    if (!data) return '';
+    if (data.thumbnail_url) return data.thumbnail_url;
+    if (data.thumbnail) return data.thumbnail;
+    if (data.image_url) return data.image_url;
+    if (Array.isArray(data.image_urls) && data.image_urls.length > 0) return data.image_urls[0];
+    return '';
+}
+
+const TAB_PARAM_MAP = {
+    intro: 'tabIntro',
+    curriculum: 'tabCurriculum',
+    reviews: 'tabReviews',
+    notice: 'tabNotice',
+    chat: 'tabChat',
+    edit: 'tabEdit',
+};
+
+function getInitialTabTargetId() {
+    const value = String(urlParams.get('tab') || '').trim().toLowerCase();
+    return TAB_PARAM_MAP[value] || '';
+}
+
+function getNoticeAuthorContext() {
+    const sessionUser = window.BSQ?.session?.user || null;
+    const currentUserId = String(userId || sessionUser?.id || '').trim();
+    const creatorId = String(classData?.creator_id || classData?.instructor_id || classData?.owner_id || '').trim();
+    const subInstructors = safeParseArray(classData?.sub_instructors, [])
+        .map((item) => {
+            if (typeof item === 'string') return item;
+            if (item && typeof item === 'object') return item.id || item.user_id || item.userId || '';
+            return '';
+        })
+        .map((value) => String(value || '').trim())
+        .filter(Boolean);
+
+    let role = String(userProfile?.role || sessionUser?.role || 'instructor').trim().toLowerCase();
+
+    if (window.__BSQ_DEV_MODE__) {
+        role = role || 'admin';
+    } else if (creatorId && currentUserId && creatorId === currentUserId) {
+        role = 'main_instructor';
+    } else if (currentUserId && subInstructors.includes(currentUserId)) {
+        role = 'sub_instructor';
+    } else if (role !== 'admin' && role !== 'operator' && role !== 'super_admin') {
+        role = 'instructor';
+    }
+
+    return {
+        id: currentUserId,
+        name: sessionUser?.name || userProfile?.name || '강사',
+        role,
+    };
+}
+
 // ===== Toast Notification System =====
 function showToast(type, title, message, duration = 3500) {
     const container = document.getElementById('toastContainer');
@@ -83,7 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('🔑 로그인 확인 — userId:', userId);
 
         if (isOperator) {
-            userProfile = { name: '운영자', profile_image_url: 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png', role: 'admin' };
+            userProfile = { name: '운영자', profile_image_url: '/assets/default-avatar.svg', role: 'admin' };
         } else {
             userProfile = session.user;
         }
@@ -107,7 +173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // 서브 강사 체크
-            const subInstructors = typeof classData.sub_instructors === 'string' ? JSON.parse(classData.sub_instructors || '[]') : (classData.sub_instructors || []);
+            const subInstructors = safeParseArray(classData.sub_instructors, []);
             if (!isInstructor && userId && Array.isArray(subInstructors)) {
                 isInstructor = subInstructors.some(si => si.id == userId);
             }
@@ -129,8 +195,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // 채팅 헤더 미니 로고
             const logoMini = document.getElementById('chatLogoMini');
-            if (logoMini && classData.thumbnail_url) {
-                logoMini.style.backgroundImage = `url(${classData.thumbnail_url})`;
+            const classImageUrl = getClassImageUrl(classData);
+            if (logoMini && classImageUrl) {
+                logoMini.style.backgroundImage = `url(${classImageUrl})`;
             }
             document.getElementById('btnGoToClass')?.addEventListener('click', () => {
                 document.querySelector('[data-target="tabIntro"]')?.click();
@@ -144,12 +211,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // ★ D1 API로 수강 여부 확인
                 if (userId && !window.__BSQ_DEV_MODE__) {
                     try {
-                        const enrollResult = await window.BSQ.api(`/api/enrollments?user_id=${userId}&class_id=${classId}`);
+                        const [enrollResult, passResult] = await Promise.all([
+                            window.BSQ.api(`/api/enrollments?user_id=${userId}&class_id=${classId}`),
+                            window.BSQ.api(`/api/user-passes?user_id=${userId}`),
+                        ]);
+
                         if (enrollResult.success) {
                             isEnrolled = enrollResult.data?.enrolled || false;
                         }
 
-                        const passResult = await window.BSQ.api(`/api/user-passes?user_id=${userId}`);
                         if (passResult.success && Array.isArray(passResult.data)) {
                             const currentPass = passResult.data.find((item) => item.class_id === classId);
                             userPassCount = currentPass?.remaining_count ?? currentPass?.remaining_passes ?? currentPass?.remaining ?? 0;
@@ -165,7 +235,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // 리뷰, 공지 모듈은 우선 BSquareModules 로드 (에러가 나지 않는 선에서)
                 if (window.BSquareModules.initReviews) window.BSquareModules.initReviews(null, classId, userId, null, hasAccess, isInstructor);
-                if (window.BSquareModules.initNotice) window.BSquareModules.initNotice(null, classId, userId, null, hasAccess, isInstructor);
+                if (window.BSquareModules.initNotice) window.BSquareModules.initNotice(null, classId, userId, null, hasAccess, isInstructor, getNoticeAuthorContext());
                 
                 // ★ 채팅은 파이어베이스 잔재인 BSquareModules 대신, 순수 D1으로 작성된 SimpleClassChat 호출 (크래시 방어)
                 if (window.SimpleClassChat) {
@@ -255,6 +325,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // 5. 결제 팝업 이벤트
+    const initialTabTargetId = getInitialTabTargetId();
+    if (initialTabTargetId) {
+        document.querySelector(`[data-target="${initialTabTargetId}"]`)?.click();
+    }
+
     document.getElementById('btnEnroll')?.addEventListener('click', openPaymentBottomSheet);
     document.getElementById('btnSheetClose')?.addEventListener('click', closePaymentBottomSheet);
 
@@ -585,8 +660,9 @@ function renderCorePageInfo(data) {
     if (chatHeaderName) chatHeaderName.textContent = `${data.title} 채팅채널`;
     // 채팅 헤더 아바타에 클래스 썸네일 설정
     const chatHeaderAvatar = document.getElementById('chatHeaderAvatar');
-    if (chatHeaderAvatar && data.thumbnail_url) {
-        chatHeaderAvatar.style.backgroundImage = `url(${data.thumbnail_url})`;
+    const classImageUrl = getClassImageUrl(data);
+    if (chatHeaderAvatar && classImageUrl) {
+        chatHeaderAvatar.style.backgroundImage = `url(${classImageUrl})`;
         chatHeaderAvatar.style.backgroundSize = 'cover';
         chatHeaderAvatar.style.backgroundPosition = 'center';
     }

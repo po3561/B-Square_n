@@ -1,4 +1,4 @@
-﻿// header.js - B-Square shared header / drawer / footer shell
+// header.js - B-Square shared header / drawer / footer shell
 (function () {
   'use strict';
 
@@ -71,7 +71,7 @@
   function getOperatorProfile(user) {
     return {
       name: `${getOperatorDisplayName(user)} 님 반갑습니다`,
-      profile_image_url: user?.profile_image_url || 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png',
+      profile_image_url: user?.profile_image_url || '/assets/default-avatar.svg',
     };
   }
 
@@ -162,8 +162,8 @@
           <div class="footer-links">
             <h4>바로가기</h4>
             <ul class="footer-nav">
-              <li><a id="footerTermsLink" href="#">이용약관</a></li>
-              <li><a id="footerPrivacyLink" href="#"><strong>개인정보처리방침</strong></a></li>
+              <li><a id="footerTermsLink" href="${prefix}terms/use.html">이용약관</a></li>
+              <li><a id="footerPrivacyLink" href="${prefix}terms/privacy.html"><strong>개인정보처리방침</strong></a></li>
               <li><a href="${prefix}contact/contact.html">고객센터</a></li>
             </ul>
           </div>
@@ -190,7 +190,7 @@
       }
 
       const settingsSource = window.__BSQ_SITE_SETTINGS__;
-      const settings = settingsSource || (await window.BSQ?.api?.('/api/site-settings'))?.data || null;
+      const settings = settingsSource || (await window.BSQ?.api?.('/api/site-settings', { cacheBust: false }))?.data || null;
       if (!settings) return;
 
       const brandName = settings.company_name || settings.site_name || 'B-Square';
@@ -227,8 +227,8 @@
 
       if (footerBrandCopy) footerBrandCopy.textContent = brandName;
       if (footerHours) footerHours.textContent = settings.footer_hours || '평일 10시 ~ 오후 6시 (주말, 공휴일 제외)';
-      if (footerTermsLink) footerTermsLink.href = settings.footer_terms_url || '#';
-      if (footerPrivacyLink) footerPrivacyLink.href = settings.footer_privacy_url || '#';
+      if (footerTermsLink) footerTermsLink.href = (settings.footer_terms_url && settings.footer_terms_url !== '#') ? settings.footer_terms_url : prefix + 'terms/use.html';
+      if (footerPrivacyLink) footerPrivacyLink.href = (settings.footer_privacy_url && settings.footer_privacy_url !== '#') ? settings.footer_privacy_url : prefix + 'terms/privacy.html';
       if (footerInstagramLink) footerInstagramLink.href = settings.footer_instagram_url || '#';
       if (footerYoutubeLink) footerYoutubeLink.href = settings.footer_youtube_url || '#';
 

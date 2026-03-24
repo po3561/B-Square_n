@@ -8,19 +8,14 @@
 
     <!-- 전역 스타일 & 관리자 전용 스타일 -->
     <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css">
-    <link rel="stylesheet" href="admin.css?v=20260323_05">
+    <link rel="stylesheet" href="admin.css?v=20260324_01">
 
     <!-- 외부 라이브러리 -->
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Firebase & Supabase (권한 체크용) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
-    <script src="../bsq_server.js?v=20260323_05"></script>
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+    <script src="../bsq_server.js?v=20260324_01"></script>
 </head>
 
 <body class="admin-body">
@@ -173,25 +168,6 @@
 
     <!-- 우측 메인 콘텐츠 영역 -->
     <main class="admin-main">
-
-        <!-- 전역 시스템 에러 배너 (Firebase 권한 오류 등) -->
-        <div id="globalErrorBanner"
-            style="display:none; background:#fee2e2; border-left:5px solid #ef4444; color:#991b1b; padding:1.2rem; margin:1rem 2rem 0 2rem; border-radius:8px; display:none; align-items:flex-start; gap:1rem; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
-            <div style="font-size:1.5rem; line-height:1;">🚨</div>
-            <div style="flex:1;">
-                <h4 style="margin:0 0 0.5rem 0; font-weight:700; color:#b91c1c;">데이터베이스 저장이 거부되었습니다. (Permission Denied)
-                </h4>
-                <p style="margin:0; font-size:0.9rem; line-height:1.5;">현재 Firebase의 보안 규칙(Rules)이 업데이트되지 않아 관리자 기능과 설정
-                    저장이 차단된 상태입니다.<br>
-                    <strong>해결 방법:</strong> 최상단 폴더에 있는 <code>firebase_rules.json</code> 파일의 내용을 복사하여 <a
-                        href="https://console.firebase.google.com" target="_blank"
-                        style="color:#ef4444; text-decoration:underline; font-weight:600;">Firebase Console</a> 접속 ➡️
-                    Realtime Database ➡️ 규칙(Rules) 탭 ➡️ <strong>기존 내용을 모두 지우고 붙여넣기 한 뒤 [게시]</strong> 해주세요!
-                </p>
-            </div>
-            <button onclick="document.getElementById('globalErrorBanner').style.display='none'"
-                style="background:none; border:none; cursor:pointer; padding:0.5rem; color:#b91c1c;">✖</button>
-        </div>
 
         <header class="admin-topbar">
             <h2 id="currentTabTitle">대시보드</h2>
@@ -1107,16 +1083,17 @@
                             <thead>
                                 <tr>
                                     <th>클래스명</th>
-                                    <th>내용 요약</th>
+                                    <th>작성자 구분</th>
+                                    <th>제목</th>
                                     <th>등록일</th>
-                                    <th>작성자 (강사)</th>
                                     <th>이동</th>
+                                    <th>삭제</th>
                                 </tr>
                             </thead>
                             <tbody id="classBoardsTableBody">
                                 <!-- JS Injected -->
                                 <tr>
-                                    <td colspan="5" style="text-align:center;">클래스 공지사항을 불러오는 중입니다...</td>
+                                    <td colspan="6" style="text-align:center;">클래스 공지사항을 불러오는 중입니다...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1313,11 +1290,108 @@
         </div>
     </main>
 
+    <div class="board-modal" id="globalNoticeViewerModal" aria-hidden="true">
+        <div class="board-modal-backdrop" data-action="close-global-notice-viewer"></div>
+        <div class="board-modal-panel board-modal-panel--viewer">
+            <div class="board-modal-header">
+                <div>
+                    <p class="board-modal-eyebrow">사이트 게시판</p>
+                    <h3 id="globalNoticeViewerTitle">공지 상세</h3>
+                </div>
+                <button type="button" class="board-modal-close" data-action="close-global-notice-viewer">×</button>
+            </div>
+            <div class="board-modal-body">
+                <div class="board-view-meta" id="globalNoticeViewerMeta">
+                    <span class="board-view-badge" id="globalNoticeViewerType">일반</span>
+                    <span class="board-view-stat" id="globalNoticeViewerAuthor">작성자</span>
+                    <span class="board-view-stat" id="globalNoticeViewerDate">작성일</span>
+                    <span class="board-view-stat" id="globalNoticeViewerViews">조회수</span>
+                    <span class="board-view-stat" id="globalNoticeViewerLikeCount">좋아요</span>
+                    <span class="board-view-stat" id="globalNoticeViewerCommentCount">댓글</span>
+                    <span class="board-view-stat" id="globalNoticeViewerHidden">노출 상태</span>
+                </div>
+                <div class="board-view-content" id="globalNoticeViewerContent"></div>
+                <div class="board-view-comments">
+                    <div class="board-view-comments-head">
+                        <strong>관련 내역</strong>
+                        <span>댓글과 반응 내역을 함께 확인합니다.</span>
+                    </div>
+                    <div id="globalNoticeViewerComments" class="board-view-comments-list"></div>
+                </div>
+            </div>
+            <div class="board-modal-footer">
+                <button type="button" class="btn-small outline" id="btnGlobalNoticeEdit">수정</button>
+                <button type="button" class="btn-small danger" id="btnGlobalNoticeDelete">삭제</button>
+                <button type="button" class="btn-primary" data-action="close-global-notice-viewer">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="board-modal" id="globalNoticeEditorModal" aria-hidden="true">
+        <div class="board-modal-backdrop" data-action="close-global-notice-editor"></div>
+        <div class="board-modal-panel board-modal-panel--editor">
+            <div class="board-modal-header">
+                <div>
+                    <p class="board-modal-eyebrow">공지 작성</p>
+                    <h3 id="globalNoticeEditorTitle">새 공지사항 작성</h3>
+                </div>
+                <button type="button" class="board-modal-close" data-action="close-global-notice-editor">×</button>
+            </div>
+            <div class="board-modal-body">
+                <input type="hidden" id="globalNoticeEditorId">
+                <div class="board-form-group">
+                    <label>구분</label>
+                    <div class="board-radio-group">
+                        <label class="board-radio-chip">
+                            <input type="radio" name="globalNoticeType" id="globalNoticeTypeNormal" value="normal" checked>
+                            <div>
+                                <strong>일반 공지</strong>
+                                <span>일반 안내와 변경 사항을 등록합니다.</span>
+                            </div>
+                        </label>
+                        <label class="board-radio-chip">
+                            <input type="radio" name="globalNoticeType" id="globalNoticeTypeImportant" value="important">
+                            <div>
+                                <strong>필독 / 중요</strong>
+                                <span>상단 노출이 필요한 중요한 공지입니다.</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="board-form-group">
+                    <label for="globalNoticeTitle">제목/질문</label>
+                    <input type="text" id="globalNoticeTitle" class="board-form-input" placeholder="제목을 입력하세요">
+                </div>
+
+                <div class="board-form-group">
+                    <label for="globalNoticeEditor">본문</label>
+                    <div class="board-editor-shell">
+                        <div id="globalNoticeEditor"></div>
+                    </div>
+                    <textarea id="globalNoticeEditorFallback" hidden></textarea>
+                </div>
+
+                <div class="board-form-row">
+                    <label for="globalNoticeHidden">숨김 처리</label>
+                    <label class="board-switch">
+                        <input type="checkbox" id="globalNoticeHidden">
+                        <span>비공개로 저장</span>
+                    </label>
+                </div>
+            </div>
+            <div class="board-modal-footer">
+                <button type="button" class="btn-small outline" data-action="close-global-notice-editor">취소</button>
+                <button type="button" class="btn-primary" id="btnGlobalNoticeSave">저장</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin Core & UI Scripts -->
     <script src="admin_core.js?v=20260323_03"></script>
     <script src="admin_homepage_settings.js?v=20260323_02"></script>
     <script src="admin_recommend.js?v=20260323_05"></script>
-    <script src="admin_classes.js?v=20260323_11"></script>
+    <script src="admin_classes.js?v=20260324_01"></script>
     <script src="admin_users.js?v=20260323_02"></script>
     <script src="admin_users_ext.js?v=20260323_04"></script>
     <script src="admin_payments.js?v=20260323_02"></script>

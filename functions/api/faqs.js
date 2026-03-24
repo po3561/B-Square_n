@@ -1,17 +1,29 @@
 import { requireAdmin } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
+import { ensureBoardCompatSchema, normalizeFaq } from './_lib/board_compat.js';
+
+const RESPONSE_HEADERS = {
+  'Cache-Control': 'public, max-age=30, stale-while-revalidate=300',
+};
 
 export async function onRequestGet(context) {
   const { env, request } = context;
 
   try {
-    const { results } = await env.DB.prepare(
-      'SELECT * FROM faqs ORDER BY created_at DESC'
-    ).all();
+    await ensureBoardCompatSchema(env.DB);
+    const { results } = await env.DB.prepare('SELECT * FROM faqs ORDER BY created_at DESC').all();
 
-    return json(request, env, { success: true, data: results });
+    return json(
+      request,
+      env,
+      {
+        success: true,
+        data: Array.isArray(results) ? results.map((row) => normalizeFaq(row)).filter(Boolean) : [],
+      },
+      { headers: RESPONSE_HEADERS },
+    );
   } catch (err) {
-    return json(request, env, { success: false, error: 'FAQ 조회 오류' }, { status: 500 });
+    return json(request, env, { success: false, error: 'FAQ 조회 오류', detail: err.message }, { status: 500 });
   }
 }
 
@@ -21,6 +33,7 @@ export async function onRequestPost(context) {
   if (!auth.ok) return auth.response;
 
   try {
+    await ensureBoardCompatSchema(env.DB);
     const body = await request.json();
     const { id, question, answer, is_hidden } = body;
 
@@ -29,18 +42,21 @@ export async function onRequestPost(context) {
     }
 
     if (id) {
-      // 수정
-      await env.DB.prepare('UPDATE faqs SET question = ?, answer = ?, is_hidden = ?, updated_at = datetime("now") WHERE id = ?')
-        .bind(question, answer, is_hidden ? 1 : 0, id)
-        .run();
+      await env.DB.prepare(`
+        UPDATE faqs
+        SET question = ?, answer = ?, is_hidden = ?, updated_at = datetime("now"), push_key = COALESCE(push_key, id)
+        WHERE id = ? OR push_key = ?
+      `).bind(question, answer, is_hidden ? 1 : 0, id, id).run();
       return json(request, env, { success: true, message: 'Updated' });
-    } else {
-      const newId = 'faq_' + crypto.randomUUID().replace(/-/g, '').substring(0, 12);
-      await env.DB.prepare('INSERT INTO faqs (id, question, answer, is_hidden) VALUES (?, ?, ?, ?)')
-        .bind(newId, question, answer, is_hidden ? 1 : 0)
-        .run();
-      return json(request, env, { success: true, data: { id: newId } }, { status: 201 });
     }
+
+    const newId = 'faq_' + crypto.randomUUID().replace(/-/g, '').substring(0, 12);
+    await env.DB.prepare(`
+      INSERT INTO faqs (id, push_key, question, answer, is_hidden)
+      VALUES (?, ?, ?, ?, ?)
+    `).bind(newId, newId, question, answer, is_hidden ? 1 : 0).run();
+
+    return json(request, env, { success: true, data: { id: newId } }, { status: 201 });
   } catch (err) {
     return json(request, env, { success: false, error: err.message }, { status: 500 });
   }
@@ -50,13 +66,15 @@ export async function onRequestDelete(context) {
   const { request, env } = context;
   const auth = await requireAdmin(context);
   if (!auth.ok) return auth.response;
+
   const url = new URL(request.url);
   const id = url.searchParams.get('id');
 
   if (!id) return json(request, env, { success: false, error: 'ID is required' }, { status: 400 });
 
   try {
-    await env.DB.prepare('DELETE FROM faqs WHERE id = ?').bind(id).run();
+    await ensureBoardCompatSchema(env.DB);
+    await env.DB.prepare('DELETE FROM faqs WHERE id = ? OR push_key = ?').bind(id, id).run();
     return json(request, env, { success: true, message: 'Deleted' });
   } catch (err) {
     return json(request, env, { success: false, error: err.message }, { status: 500 });
