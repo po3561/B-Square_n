@@ -93,6 +93,18 @@ async function migrateLegacyInquiriesTable(db) {
 
   if (!hasLegacyPushKey && !userIdNotNull) return;
 
+  const cPushKey = hasLegacyPushKey ? "NULLIF(push_key, '')" : "NULL";
+  const cUserName = byName.has('user_name') ? "NULLIF(user_name, '')" : "NULL";
+  const cUserEmail = byName.has('user_email') ? "NULLIF(user_email, '')" : "NULL";
+  const cCategory = byName.has('category') ? "NULLIF(category, '')" : "NULL";
+  const cTitle = byName.has('title') ? "NULLIF(title, '')" : "NULL";
+  const cSubject = byName.has('subject') ? "NULLIF(subject, '')" : "NULL";
+  const cStatus = byName.has('status') ? "NULLIF(status, '')" : "NULL";
+
+  const cId = hasLegacyPushKey 
+    ? `COALESCE(${cPushKey}, 'inq_' || lower(hex(randomblob(12))))` 
+    : (byName.has('id') ? "COALESCE(NULLIF(id, ''), 'inq_' || lower(hex(randomblob(12))))" : "'inq_' || lower(hex(randomblob(12)))");
+
   await db.batch([
     db.prepare('ALTER TABLE inquiries RENAME TO inquiries_legacy'),
     db.prepare(`
@@ -116,18 +128,18 @@ async function migrateLegacyInquiriesTable(db) {
         content, status, created_at, updated_at
       )
       SELECT
-        COALESCE(NULLIF(push_key, ''), 'inq_' || lower(hex(randomblob(12)))) AS id,
+        ${cId} AS id,
         CASE
           WHEN user_id IS NULL OR TRIM(user_id) = '' THEN NULL
           ELSE user_id
         END AS user_id,
-        COALESCE(NULLIF(user_name, ''), '') AS name,
-        COALESCE(NULLIF(user_email, ''), '') AS email,
-        COALESCE(NULLIF(category, ''), '일반 문의') AS category,
-        COALESCE(NULLIF(title, ''), NULLIF(subject, ''), '') AS title,
-        COALESCE(NULLIF(subject, ''), NULLIF(title, ''), '') AS subject,
+        COALESCE(${cUserName}, '') AS name,
+        COALESCE(${cUserEmail}, '') AS email,
+        COALESCE(${cCategory}, '일반 문의') AS category,
+        COALESCE(${cTitle}, ${cSubject}, '') AS title,
+        COALESCE(${cSubject}, ${cTitle}, '') AS subject,
         content,
-        COALESCE(NULLIF(status, ''), 'pending') AS status,
+        COALESCE(${cStatus}, 'pending') AS status,
         COALESCE(created_at, datetime('now')) AS created_at,
         COALESCE(created_at, datetime('now')) AS updated_at
       FROM inquiries_legacy
@@ -749,6 +761,11 @@ export async function ensureOperationsSchema(db) {
     )
   `).run();
   await migrateLegacyInquiriesTable(db);
+  await addColumnIfMissing(db, 'inquiries', 'name TEXT');
+  await addColumnIfMissing(db, 'inquiries', 'email TEXT');
+  await addColumnIfMissing(db, 'inquiries', 'category TEXT');
+  await addColumnIfMissing(db, 'inquiries', 'title TEXT');
+  await addColumnIfMissing(db, 'inquiries', 'subject TEXT');
 
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS class_participants (
