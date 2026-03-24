@@ -6,7 +6,8 @@
     "d1:migrate:remote": "wrangler d1 migrations apply b-square-db --remote"
   },
   "dependencies": {
-    "googleapis": "^171.4.0"
+    "googleapis": "^171.4.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "wrangler": "^4.75.0"

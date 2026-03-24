@@ -18,6 +18,99 @@ function toNumber(value, fallback = 0) {
   return Number.isFinite(num) ? num : fallback;
 }
 
+function uniqueStrings(values = []) {
+  return Array.from(new Set(
+    (Array.isArray(values) ? values : [])
+      .map((value) => String(value || '').trim())
+      .filter(Boolean),
+  ));
+}
+
+function extractSubInstructorIds(rawValue) {
+  if (!rawValue) return [];
+
+  let parsed = rawValue;
+  if (typeof rawValue === 'string') {
+    try {
+      parsed = JSON.parse(rawValue);
+    } catch {
+      parsed = [];
+    }
+  }
+
+  if (!Array.isArray(parsed)) return [];
+
+  return uniqueStrings(parsed.map((item) => {
+    if (typeof item === 'string') return item;
+    if (item && typeof item === 'object') {
+      return item.id || item.user_id || item.userId || '';
+    }
+    return '';
+  }));
+}
+
+function buildNotInClause(column, values = []) {
+  const ids = uniqueStrings(values);
+  if (!ids.length) {
+    return { clause: '', binds: [] };
+  }
+
+  return {
+    clause: ` AND ${column} NOT IN (${ids.map(() => '?').join(',')})`,
+    binds: ids,
+  };
+}
+
+function normalizeSubInstructorItem(item, profile = {}, index = 0) {
+  const fallback = item && typeof item === 'object' ? item : {};
+  const id = String(fallback.id || fallback.user_id || fallback.userId || profile.id || '').trim();
+  const name = profile.name || fallback.name || fallback.nickname || '서브 강사';
+  const email = profile.email || fallback.email || '';
+  const phone = profile.phone || fallback.phone || '';
+  const image = profile.profile_image_url || fallback.profile_image_url || fallback.avatar || '';
+  const role = profile.role || fallback.role || 'instructor';
+
+  return {
+    id: id || `sub_instructor_${index}`,
+    user_id: id || `sub_instructor_${index}`,
+    name,
+    email,
+    phone,
+    profile_image_url: image,
+    avatar: image,
+    role,
+  };
+}
+
+async function loadSubInstructorProfiles(db, rawSubInstructors = []) {
+  const refs = Array.isArray(rawSubInstructors) ? rawSubInstructors : safeParseJSON(rawSubInstructors, []);
+  const ids = uniqueStrings(refs.map((item) => {
+    if (typeof item === 'string') return item;
+    if (item && typeof item === 'object') return item.id || item.user_id || item.userId || '';
+    return '';
+  }));
+
+  if (!ids.length) {
+    return refs.map((item, index) => normalizeSubInstructorItem(item, {}, index));
+  }
+
+  const placeholders = ids.map(() => '?').join(',');
+  const { results } = await db.prepare(`
+    SELECT id, name, email, phone, profile_image_url, role
+    FROM users
+    WHERE id IN (${placeholders})
+  `).bind(...ids).all().catch(() => ({ results: [] }));
+
+  const byId = new Map((results || []).map((row) => [String(row.id), row]));
+  return refs.map((item, index) => {
+    const rawId = typeof item === 'string'
+      ? item
+      : (item && typeof item === 'object' ? item.id || item.user_id || item.userId || '' : '');
+    const profile = rawId ? byId.get(String(rawId).trim()) || {} : {};
+    return normalizeSubInstructorItem(item, profile, index);
+  });
+}
+
 function startOfDay(date = new Date()) {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -58,6 +151,37 @@ async function loadRevenueByRange(db, classId) {
   };
 }
 
+async function loadStudentStats(db, classId, excludedIds = []) {
+  const filter = buildNotInClause('user_id', excludedIds);
+  const row = await db.prepare(`
+    SELECT
+      COUNT(DISTINCT user_id) AS total_students,
+      COUNT(DISTINCT CASE
+        WHEN datetime(COALESCE(enrolled_at, created_at)) >= datetime('now', '-30 days') THEN user_id
+      END) AS recent_active_students
+    FROM enrollments
+    WHERE class_id = ?
+      ${filter.clause}
+  `).bind(classId, ...filter.binds).first().catch(() => ({ total_students: 0, recent_active_students: 0 }));
+
+  return {
+    total_students: Number(row?.total_students || 0),
+    recent_active_students: Number(row?.recent_active_students || 0),
+  };
+}
+
+async function loadRefundSummary(db, classId) {
+  const row = await db.prepare(`
+    SELECT COALESCE(SUM(refund_amount), 0) AS total_refund_amount
+    FROM user_refund_logs
+    WHERE class_id = ?
+  `).bind(classId).first().catch(() => ({ total_refund_amount: 0 }));
+
+  return {
+    total_refund_amount: Number(row?.total_refund_amount || 0),
+  };
+}
+
 async function loadRecentRefundLogs(db, classId) {
   const { results } = await db.prepare(`
     SELECT
@@ -90,15 +214,8 @@ async function loadRecentRefundLogs(db, classId) {
   return Array.isArray(results) ? results : [];
 }
 
-async function loadMeetingStats(db, classId) {
-  const totalMeetings = await db.prepare(`
-    SELECT
-      COUNT(*) AS total_meetings,
-      COUNT(CASE WHEN datetime(gathering_at) >= datetime('now', '-30 days') THEN 1 END) AS recent_meetings
-    FROM class_gatherings
-    WHERE class_id = ?
-  `).bind(classId).first().catch(() => ({ total_meetings: 0, recent_meetings: 0 }));
-
+async function loadMeetingStats(db, classId, excludedIds = []) {
+  const filter = buildNotInClause('gp.user_id', excludedIds);
   const attendance = await db.prepare(`
     SELECT
       COUNT(*) AS attendance_count,
@@ -107,11 +224,10 @@ async function loadMeetingStats(db, classId) {
     JOIN gathering_participants gp ON gp.gathering_id = g.id
     WHERE g.class_id = ?
       AND datetime(g.gathering_at) >= datetime('now', '-30 days')
-  `).bind(classId).first().catch(() => ({ attendance_count: 0, distinct_attendees: 0 }));
+      ${filter.clause}
+  `).bind(classId, ...filter.binds).first().catch(() => ({ attendance_count: 0, distinct_attendees: 0 }));
 
   return {
-    total_meetings: Number(totalMeetings?.total_meetings || 0),
-    recent_meetings: Number(totalMeetings?.recent_meetings || 0),
     recent_attendance_count: Number(attendance?.attendance_count || 0),
     recent_attendee_count: Number(attendance?.distinct_attendees || 0),
   };
@@ -228,10 +344,13 @@ export async function onRequest(context) {
           c.created_at,
           c.updated_at,
           c.creator_id AS instructor_id,
+          COALESCE(u.name, c.instructor_name) AS creator_name,
           COALESCE(u.name, c.instructor_name) AS instructor_name,
           COALESCE(u.email, c.instructor_email, c.creator_email) AS instructor_email,
           COALESCE(u.phone, c.instructor_phone) AS instructor_phone,
+          u.role AS instructor_role,
           u.profile_image_url AS instructor_profile_image,
+          u.profile_image_url AS creator_profile_image,
           COALESCE(cs.total_visits, 0) AS total_visits,
           COALESCE(cs.total_enrollments, 0) AS total_enrollments,
           COALESCE(cs.total_passes_issued, 0) AS total_passes_issued,
@@ -251,34 +370,49 @@ export async function onRequest(context) {
         return json(request, env, { success: false, error: '클래스를 찾을 수 없습니다.' }, { status: 404 });
       }
 
-      const [instructor, refundLogs, revenueByRange, meetingStats, recentActiveRow] = await Promise.all([
-        classRow.instructor_id
-          ? db.prepare('SELECT id, name, email, phone, profile_image_url, role FROM users WHERE id = ?').bind(classRow.instructor_id).first().catch(() => null)
-          : Promise.resolve(null),
-        loadRecentRefundLogs(db, classId).catch(() => []),
-        loadRevenueByRange(db, classId).catch(() => ({ day: 0, week: 0, month: 0, year: 0 })),
-        loadMeetingStats(db, classId).catch(() => ({
-          total_meetings: 0,
-          recent_meetings: 0,
-          recent_attendance_count: 0,
-          recent_attendee_count: 0,
-        })),
-        db.prepare(`
-          SELECT COUNT(DISTINCT user_id) AS cnt
-          FROM enrollments
-          WHERE class_id = ?
-            AND (
-              enrolled_at >= datetime('now', '-30 days')
-              OR (enrolled_at IS NULL AND created_at >= datetime('now', '-30 days'))
-            )
-        `).bind(classId).first().catch(() => ({ cnt: 0 })),
+      const rawSubInstructors = safeParseJSON(classRow.sub_instructors, []);
+      const subInstructorProfiles = await loadSubInstructorProfiles(db, rawSubInstructors).catch(() => []);
+      const instructorIds = uniqueStrings([
+        classRow.instructor_id,
+        ...subInstructorProfiles.map((item) => item.id),
       ]);
 
-      const totalMeetings = Number(meetingStats?.total_meetings || 0);
-      const recentActiveCount = Number(recentActiveRow?.cnt || 0);
+      const [
+        studentStats,
+        revenueByRange,
+        meetingStats,
+        refundSummary,
+        refundLogs,
+      ] = await Promise.all([
+        loadStudentStats(db, classId, instructorIds).catch(() => ({ total_students: 0, recent_active_students: 0 })),
+        loadRevenueByRange(db, classId).catch(() => ({ day: 0, week: 0, month: 0, year: 0 })),
+        loadMeetingStats(db, classId, instructorIds).catch(() => ({ recent_attendance_count: 0, recent_attendee_count: 0 })),
+        loadRefundSummary(db, classId).catch(() => ({ total_refund_amount: 0 })),
+        loadRecentRefundLogs(db, classId).catch(() => []),
+      ]);
+
+      const totalStudents = Number(studentStats?.total_students || classRow.total_enrollments || classRow.current_participants || 0);
+      const recentActiveCount = Number(studentStats?.recent_active_students || 0);
+      const totalMeetings = Number(classRow.total_gatherings || 0);
+      const totalRevenue = Number(classRow.total_revenue || 0);
       const avgRevenuePerMeeting = totalMeetings > 0
-        ? Math.round((Number(classRow.total_revenue || 0) / totalMeetings))
+        ? Math.round(totalRevenue / totalMeetings)
         : 0;
+      const totalRefundAmount = Number(refundSummary?.total_refund_amount || 0);
+      const reviewCount = Number(classRow.review_count || 0);
+      const avgRating = Number(classRow.avg_rating || 0);
+      const bookmarkCount = Number(classRow.bookmark_count || 0);
+      const totalPassesIssued = Number(classRow.total_passes_issued || 0);
+      const totalPassesUsed = Number(classRow.total_passes_used || 0);
+      const instructor = {
+        id: classRow.instructor_id || null,
+        name: classRow.instructor_name || null,
+        email: classRow.instructor_email || null,
+        phone: classRow.instructor_phone || null,
+        profile_image_url: classRow.instructor_profile_image || null,
+        role: classRow.instructor_role || null,
+      };
+      const subInstructors = subInstructorProfiles.length ? subInstructorProfiles : rawSubInstructors.map((item, index) => normalizeSubInstructorItem(item, {}, index));
 
       return json(request, env, {
         success: true,
@@ -287,11 +421,27 @@ export async function onRequest(context) {
             ...classRow,
             image_urls: safeParseJSON(classRow.image_urls, []),
             curriculum: safeParseJSON(classRow.curriculum, []),
-            sub_instructors: safeParseJSON(classRow.sub_instructors, []),
             target_audience: safeParseJSON(classRow.target_audience, []),
             objectives: safeParseJSON(classRow.objectives, []),
             is_public: Number(classRow.is_public ?? 1) === 1,
             is_approved: Number(classRow.is_approved ?? 0) === 1,
+            total_students: totalStudents,
+            current_participants: totalStudents,
+            total_enrollments: totalStudents,
+            recent_active_students: recentActiveCount,
+            total_meetings: totalMeetings,
+            recent_meeting_attendance: Number(meetingStats?.recent_attendance_count || 0),
+            recent_meeting_attendee_count: Number(meetingStats?.recent_attendee_count || 0),
+            total_passes_issued: totalPassesIssued,
+            total_passes_used: totalPassesUsed,
+            total_revenue: totalRevenue,
+            total_gatherings: totalMeetings,
+            avg_rating: avgRating,
+            review_count: reviewCount,
+            bookmark_count: bookmarkCount,
+            like_count: bookmarkCount,
+            total_refund_amount: totalRefundAmount,
+            sub_instructors: subInstructors,
           },
           instructor,
           recent_students: [],
@@ -301,12 +451,21 @@ export async function onRequest(context) {
           revenue_by_range: revenueByRange,
           meeting_stats: meetingStats,
           summary: {
-            total_students: Number(classRow.total_enrollments || classRow.current_participants || 0),
+            total_students: totalStudents,
             recent_active_students: recentActiveCount,
             recent_meeting_attendance: meetingStats.recent_attendance_count || 0,
+            recent_meeting_attendee_count: meetingStats.recent_attendee_count || 0,
             total_meetings: totalMeetings,
             avg_revenue_per_meeting: avgRevenuePerMeeting,
-            total_refund_amount: refundLogs.reduce((sum, item) => sum + Number(item.refund_amount || 0), 0),
+            total_refund_amount: totalRefundAmount,
+            total_revenue: totalRevenue,
+            total_passes_issued: totalPassesIssued,
+            total_passes_used: totalPassesUsed,
+            review_count: reviewCount,
+            avg_rating: avgRating,
+            bookmark_count: bookmarkCount,
+            total_visits: Number(classRow.total_visits || 0),
+            total_gatherings: totalMeetings,
           },
         },
       });

@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (pendingCount) pendingCount.textContent = pendingRes.data.length;
                 pendingArea.innerHTML = pendingRes.data.map(r => `
                     <div style="display:flex; align-items:center; gap:12px; padding:10px; border-bottom:1px solid rgba(255,255,255,0.05);">
-                        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#FF9500,#FF6B00);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;">${(r.nickname || r.name || '?')[0]}</div>
+                        <div style="width:40px;height:40px;border-radius:50%;background:${r.profile_image_url ? `url(${r.profile_image_url}) center/cover` : 'linear-gradient(135deg,#FF9500,#FF6B00)'};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;overflow:hidden;">${r.profile_image_url ? '' : (r.nickname || r.name || '?')[0]}</div>
                         <div style="flex:1;">
                             <div style="font-weight:700;font-size:0.95rem;">${r.nickname || r.name || '알 수 없음'}</div>
                             <div style="font-size:0.75rem;color:#888;">${new Date(r.created_at).toLocaleDateString()}</div>
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (friendCount) friendCount.textContent = friendRes.data.length;
                 friendArea.innerHTML = friendRes.data.map(f => `
                     <div style="display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid rgba(255,255,255,0.05);">
-                        <div style="width:42px;height:42px;border-radius:50%;background:${f.profile_image ? `url(${f.profile_image}) center/cover` : 'linear-gradient(135deg,#007AFF,#5AC8FA)'};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1rem;">${f.profile_image ? '' : (f.nickname || f.name || '?')[0]}</div>
+                        <div style="width:42px;height:42px;border-radius:50%;background:${(f.profile_image_url || f.profile_image) ? `url(${f.profile_image_url || f.profile_image}) center/cover` : 'linear-gradient(135deg,#007AFF,#5AC8FA)'};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1rem;overflow:hidden;">${(f.profile_image_url || f.profile_image) ? '' : (f.nickname || f.name || '?')[0]}</div>
                         <div style="flex:1;">
                             <div style="font-weight:700;">${f.nickname || f.name || '알 수 없음'}</div>
                             <div style="font-size:0.75rem;color:#888;">${f.email || ''}</div>

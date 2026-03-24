@@ -53,7 +53,7 @@ export async function onRequestPost(context) {
     const reasonNote = normalizeText(body.reason_note || body.reason || '');
 
     if (!orderId) {
-      return json(request, env, { success: false, error: 'order_id가 필요합니다.' }, { status: 400 });
+      return json(request, env, { success: false, error: 'order_id is required.' }, { status: 400 });
     }
 
     const order = await env.DB.prepare(`
@@ -63,11 +63,11 @@ export async function onRequestPost(context) {
     `).bind(orderId).first();
 
     if (!order) {
-      return json(request, env, { success: false, error: '결제 내역을 찾을 수 없습니다.' }, { status: 404 });
+      return json(request, env, { success: false, error: 'Order not found.' }, { status: 404 });
     }
 
     if (userId && normalizeText(order.user_id) && normalizeText(order.user_id) !== userId) {
-      return json(request, env, { success: false, error: '주문과 회원 정보가 일치하지 않습니다.' }, { status: 400 });
+      return json(request, env, { success: false, error: 'Order user mismatch.' }, { status: 400 });
     }
 
     const existingRefund = await env.DB.prepare(`
@@ -79,25 +79,25 @@ export async function onRequestPost(context) {
     `).bind(orderId).first();
 
     if (existingRefund) {
-      return json(request, env, { success: false, error: '이미 환불 처리된 주문입니다.' }, { status: 409 });
+      return json(request, env, { success: false, error: 'This order has already been refunded.' }, { status: 409 });
     }
 
     const originalAmount = toNumber(order.final_amount || order.amount || 0);
     if (!originalAmount) {
-      return json(request, env, { success: false, error: '환불할 금액이 없습니다.' }, { status: 400 });
+      return json(request, env, { success: false, error: 'Refund amount is not available.' }, { status: 400 });
     }
 
     let refundAmount = originalAmount;
     if (refundType === 'partial') {
       refundAmount = toNumber(body.refund_amount);
       if (!refundAmount || refundAmount <= 0) {
-        return json(request, env, { success: false, error: '부분 환불 금액을 입력해 주세요.' }, { status: 400 });
+        return json(request, env, { success: false, error: 'Partial refund amount is required.' }, { status: 400 });
       }
       if (refundAmount >= originalAmount) {
-        return json(request, env, { success: false, error: '부분 환불 금액은 결제금액보다 작아야 합니다.' }, { status: 400 });
+        return json(request, env, { success: false, error: 'Partial refund amount must be smaller than the payment amount.' }, { status: 400 });
       }
     } else if (refundType !== 'full') {
-      return json(request, env, { success: false, error: '환불 유형이 올바르지 않습니다.' }, { status: 400 });
+      return json(request, env, { success: false, error: 'Unsupported refund type.' }, { status: 400 });
     }
 
     const refundStatus = refundType === 'partial' ? 'partial_refunded' : 'refunded';
@@ -125,14 +125,38 @@ export async function onRequestPost(context) {
       },
     });
 
-    await env.DB.prepare(`
-      UPDATE orders
-      SET status = ?, refunded_at = datetime('now'), memo = CASE
-        WHEN memo IS NULL OR memo = '' THEN ?
-        ELSE memo || ' | ' || ?
-      END
-      WHERE order_id = ?
-    `).bind(refundStatus, memoText || '환불 처리됨', memoText || '환불 처리됨', orderId).run();
+    const updates = [
+      'status = ?',
+      'refund_status = ?',
+      'refund_type = ?',
+      'refund_amount = ?',
+      'refund_reason = ?',
+      'refund_reason_note = ?',
+      'refund_processed_by = ?',
+      'refund_processed_at = datetime(\'now\')',
+      'refunded_at = datetime(\'now\')',
+      'settlement_status = ?',
+    ];
+
+    const params = [
+      refundStatus,
+      refundStatus,
+      refundType,
+      refundAmount,
+      reasonTags.join(', ') || null,
+      reasonNote || null,
+      auth.user.id,
+      'refunded',
+    ];
+
+    if (memoText) {
+      updates.push('memo = CASE WHEN memo IS NULL OR memo = \'\' THEN ? ELSE memo || \' | \' || ? END');
+      params.push(memoText, memoText);
+    }
+
+    params.push(orderId);
+
+    await env.DB.prepare(`UPDATE orders SET ${updates.join(', ')} WHERE order_id = ?`).bind(...params).run();
 
     await env.DB.prepare(`
       INSERT INTO user_refund_logs (
@@ -158,13 +182,12 @@ export async function onRequestPost(context) {
       metadata,
     ).run();
 
-    const financialId = `FR_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     await env.DB.prepare(`
       INSERT INTO financial_records (
         id, type, amount, description, related_order_id, created_at
       ) VALUES (?, 'refund', ?, ?, ?, datetime('now'))
     `).bind(
-      financialId,
+      `FR_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       refundAmount,
       `${refundType === 'partial' ? 'Partial' : 'Full'} refund for ${order.order_id}`,
       order.order_id,

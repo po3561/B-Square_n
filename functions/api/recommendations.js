@@ -1,9 +1,35 @@
 import { ensureRecommendationsSchema, ensureClassesSchema, ensureClassStatsSchema } from './_lib/schema.js';
+import { loadClassesByIds } from './_lib/class_support.js';
 import { json, options } from './_lib/http.js';
 
 const RESPONSE_HEADERS = {
-  'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+  'Cache-Control': 'public, max-age=30, stale-while-revalidate=300',
 };
+
+function uniqueStrings(values) {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => String(value || '').trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function parseClassIds(value) {
+  if (Array.isArray(value)) return uniqueStrings(value);
+  if (typeof value !== 'string') return [];
+
+  const trimmed = value.trim();
+  if (!trimmed) return [];
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    return Array.isArray(parsed) ? uniqueStrings(parsed) : [];
+  } catch {
+    return [];
+  }
+}
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -22,47 +48,22 @@ export async function onRequest(context) {
       return json(request, env, { success: true, data: [] }, { headers: RESPONSE_HEADERS });
     }
 
-    const enrichedFolders = [];
+    const allClassIds = uniqueStrings(folders.flatMap((folder) => parseClassIds(folder.class_ids)));
+    const classMap = await loadClassesByIds(db, allClassIds, { publicOnly: true });
 
-    for (const folder of folders) {
-      let classIds = [];
-      try {
-        classIds = JSON.parse(folder.class_ids || '[]');
-        if (!Array.isArray(classIds)) classIds = [];
-      } catch {
-        classIds = [];
-      }
-
-      let folderClasses = [];
-      if (classIds.length > 0) {
-        const placeholders = classIds.map(() => '?').join(',');
-        const { results } = await db
-          .prepare(`
-            SELECT
-              c.id, c.title, c.thumbnail, c.image_url, c.category, c.price, c.is_public,
-              c.instructor_name, c.creator_id AS instructor_id, c.discount_rate,
-              COALESCE(s.avg_rating, 0) AS avg_rating,
-              COALESCE(s.review_count, 0) AS review_count,
-              COALESCE(s.bookmark_count, 0) AS bookmark_count
-            FROM classes c
-            LEFT JOIN class_stats s ON c.id = s.class_id
-            WHERE c.id IN (${placeholders})
-              AND COALESCE(c.is_public, 1) = 1
-          `)
-          .bind(...classIds)
-          .all();
-
-        const classMap = new Map(results.map((item) => [String(item.id), item]));
-        folderClasses = classIds.map((id) => {
+    const enrichedFolders = folders.map((folder) => {
+      const classIds = parseClassIds(folder.class_ids);
+      const folderClasses = classIds
+        .map((id) => {
           const classData = classMap.get(String(id));
           if (!classData) {
             console.warn('[API /recommendations] Missing class for recommendation entry:', id);
           }
           return classData || null;
-        }).filter(Boolean);
-      }
+        })
+        .filter(Boolean);
 
-      enrichedFolders.push({
+      return {
         id: folder.folder_id,
         title: folder.title,
         description: folder.description || '',
@@ -71,8 +72,8 @@ export async function onRequest(context) {
         sort_order: folder.sort_order,
         total_classes: classIds.length,
         classes: folderClasses,
-      });
-    }
+      };
+    });
 
     return json(request, env, {
       success: true,
@@ -80,7 +81,7 @@ export async function onRequest(context) {
     }, { headers: RESPONSE_HEADERS });
   } catch (error) {
     console.error('[API /recommendations] Error:', error);
-    return json(request, env, { success: false, error: error.message }, { status: 500, headers: RESPONSE_HEADERS });
+    return json(request, env, { success: false, error: error.message }, { status: 500 });
   }
 }
 

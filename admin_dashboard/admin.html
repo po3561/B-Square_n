@@ -8,14 +8,14 @@
 
     <!-- 전역 스타일 & 관리자 전용 스타일 -->
     <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css">
-    <link rel="stylesheet" href="admin.css?v=20260324_01">
+    <link rel="stylesheet" href="admin.css?v=20260324_02">
 
     <!-- 외부 라이브러리 -->
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
-    <script src="../bsq_server.js?v=20260324_01"></script>
+    <script src="../bsq_server.js?v=20260324_02"></script>
 </head>
 
 <body class="admin-body">
@@ -27,9 +27,7 @@
     <!-- 좌측 사이드바 (LNB) -->
     <aside class="admin-sidebar" id="adminSidebar">
         <div class="sidebar-header">
-            <h1 class="admin-logo">B-Square<span
-                    style="font-size:0.8rem; font-weight:400; display:block; color:#aaa; margin-top:4px;">ADMINISTRATION</span>
-            </h1>
+            <h1 class="admin-logo">B-Square</h1>
         </div>
 
         <nav class="sidebar-nav">
@@ -124,19 +122,7 @@
                 <div class="nav-sub" style="display:none;">
                     <a href="#forms" class="nav-item" data-tab="tabForms">폼 관리 <span
                             style="font-size:0.6rem; background:#6366f1; border-radius:10px; padding:2px 5px;">Beta</span></a>
-                    <a href="#marketing_tools" class="nav-item" data-tab="tabMarketingTools">마케팅 툴 연동</a>
-                </div>
-            </div>
-
-            <!-- 마케팅 메시지 -->
-            <div class="nav-group">
-                <button class="nav-group-btn" aria-expanded="false">
-                    <span><span class="icon">✉️</span> 마케팅 메시지</span>
-                    <span class="arrow">▼</span>
-                </button>
-                <div class="nav-sub" style="display:none;">
-                    <a href="#msg_templates" class="nav-item" data-tab="tabMsgTemplates">메시지 템플릿 관리</a>
-                    <a href="#campaigns" class="nav-item" data-tab="tabCampaigns">캠페인 관리</a>
+                    <a href="#marketing_tools" class="nav-item" data-tab="tabMarketingTools">카카오채널 관리</a>
                 </div>
             </div>
 
@@ -255,38 +241,60 @@
                         style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem; padding-top:1.5rem;">
                         <div class="settings-desc">
                             <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">브랜드 로고 / 파비콘</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">헤더 좌측 로고와 브라우저 탭 파비콘을 각각 업로드할 수 있습니다. 업로드 후 원본 비율을 유지해 표시됩니다.</p>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">헤더 좌측 로고와 브라우저 탭 파비콘을 각각 업로드할 수
+                                있습니다. 업로드 후 원본 비율을 유지해 표시됩니다.</p>
                         </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
                                 <div class="field-group">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">로고 이미지 업로드</label>
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">로고
+                                        이미지 업로드</label>
                                     <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem; flex-wrap:wrap;">
                                         <input type="file" id="settingLogoFile" accept="image/*" style="display:none;">
-                                        <button class="btn-small outline" type="button" onclick="document.getElementById('settingLogoFile').click()">이미지 선택</button>
-                                        <button class="btn-small outline" type="button" id="btnRemoveLogo" style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">삭제</button>
+                                        <button class="btn-small outline" type="button"
+                                            onclick="document.getElementById('settingLogoFile').click()">이미지 선택</button>
+                                        <button class="btn-small outline" type="button" id="btnRemoveLogo"
+                                            style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">삭제</button>
                                     </div>
                                     <input type="hidden" id="settingLogoURL">
-                                    <div style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:12px; padding:14px; display:flex; justify-content:center; align-items:center; min-height:120px;">
-                                        <img id="previewLogo" src="" alt="로고 미리보기" style="max-width:260px; max-height:72px; display:none; object-fit:contain;">
-                                        <span id="logoPlaceholderTxt" style="color:var(--mac-text-muted); font-size:0.85rem;">로고 이미지를 업로드해주세요.</span>
+                                    <div
+                                        style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:12px; padding:14px; display:flex; justify-content:center; align-items:center; min-height:120px;">
+                                        <img id="previewLogo" src="" alt="로고 미리보기"
+                                            style="max-width:260px; max-height:72px; display:none; object-fit:contain;">
+                                        <span id="logoPlaceholderTxt"
+                                            style="color:var(--mac-text-muted); font-size:0.85rem;">로고 이미지를
+                                            업로드해주세요.</span>
                                     </div>
-                                    <p id="logoSizeHint" style="margin:0.5rem 0 0; color:var(--mac-text-muted); font-size:0.8rem;">권장 480 × 120px · PNG/WebP · 원본 유지</p>
+                                    <p id="logoSizeHint"
+                                        style="margin:0.5rem 0 0; color:var(--mac-text-muted); font-size:0.8rem;">권장 480
+                                        × 120px · PNG/WebP · 원본 유지</p>
                                 </div>
                                 <div class="field-group">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">파비콘 업로드</label>
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">파비콘
+                                        업로드</label>
                                     <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem; flex-wrap:wrap;">
-                                        <input type="file" id="settingFaviconFile" accept="image/*" style="display:none;">
-                                        <button class="btn-small outline" type="button" onclick="document.getElementById('settingFaviconFile').click()">이미지 선택</button>
-                                        <button class="btn-small outline" type="button" id="btnRemoveFavicon" style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">삭제</button>
+                                        <input type="file" id="settingFaviconFile" accept="image/*"
+                                            style="display:none;">
+                                        <button class="btn-small outline" type="button"
+                                            onclick="document.getElementById('settingFaviconFile').click()">이미지
+                                            선택</button>
+                                        <button class="btn-small outline" type="button" id="btnRemoveFavicon"
+                                            style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">삭제</button>
                                     </div>
                                     <input type="hidden" id="settingFaviconURL">
-                                    <div style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:12px; padding:14px; display:flex; justify-content:center; align-items:center; min-height:120px;">
-                                        <img id="previewFavicon" src="" alt="파비콘 미리보기" style="max-width:72px; max-height:72px; display:none; object-fit:contain; border-radius:10px;">
-                                        <span id="faviconPlaceholderTxt" style="color:var(--mac-text-muted); font-size:0.85rem;">파비콘을 업로드해주세요.</span>
+                                    <div
+                                        style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:12px; padding:14px; display:flex; justify-content:center; align-items:center; min-height:120px;">
+                                        <img id="previewFavicon" src="" alt="파비콘 미리보기"
+                                            style="max-width:72px; max-height:72px; display:none; object-fit:contain; border-radius:10px;">
+                                        <span id="faviconPlaceholderTxt"
+                                            style="color:var(--mac-text-muted); font-size:0.85rem;">파비콘을 업로드해주세요.</span>
                                     </div>
-                                    <p id="faviconSizeHint" style="margin:0.5rem 0 0; color:var(--mac-text-muted); font-size:0.8rem;">권장 512 × 512px · PNG/ICO/WebP · 정사각형</p>
+                                    <p id="faviconSizeHint"
+                                        style="margin:0.5rem 0 0; color:var(--mac-text-muted); font-size:0.8rem;">권장 512
+                                        × 512px · PNG/ICO/WebP · 정사각형</p>
                                 </div>
                             </div>
                         </div>
@@ -294,17 +302,20 @@
 
                     <hr style="border:none; border-top:1px solid var(--admin-border); margin:2rem 0;">
 
-                    <div class="admin-grid-layout"
-                        style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                    <div class="admin-grid-layout" style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
                         <div class="settings-desc">
                             <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">메인 배너 설정</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">메인 홈페이지 상단에 롤링되는 광고 배너입니다. 이미지가 잘리지 않도록 권장 비율을 지켜 업로드하세요.</p>
-                            <p style="margin:0.75rem 0 0; color:var(--admin-text-muted); font-size:0.82rem;">권장 크기: 1600 × 500px · 16:5 비율 · 중앙 안전영역 확보</p>
-                            <button id="btnAddBanner" class="btn-primary" type="button" style="background:#4f46e5; margin-top:1rem; width:100%;">+ 메인 배너 추가</button>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">메인 홈페이지 상단에 롤링되는 광고 배너입니다. 이미지가
+                                잘리지 않도록 권장 비율을 지켜 업로드하세요.</p>
+                            <p style="margin:0.75rem 0 0; color:var(--admin-text-muted); font-size:0.82rem;">권장 크기: 1600
+                                × 500px · 16:5 비율 · 중앙 안전영역 확보</p>
+                            <button id="btnAddBanner" class="btn-primary" type="button"
+                                style="background:#4f46e5; margin-top:1rem; width:100%;">+ 메인 배너 추가</button>
                         </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
-                            <div id="bannerListContainer" style="display:flex; flex-direction:column; gap:1rem; min-height:120px;">
+                            <div id="bannerListContainer"
+                                style="display:flex; flex-direction:column; gap:1rem; min-height:120px;">
                                 <!-- 메인 배너 동적 로딩 -->
                             </div>
                         </div>
@@ -312,17 +323,20 @@
 
                     <hr style="border:none; border-top:1px solid var(--admin-border); margin:2rem 0;">
 
-                    <div class="admin-grid-layout"
-                        style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                    <div class="admin-grid-layout" style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
                         <div class="settings-desc">
                             <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">하단 배너 설정</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">메인 하단의 가로형 배너입니다. 슬라이드 방식으로 노출되며, 추천 비율을 맞추면 잘림 없이 표시됩니다.</p>
-                            <p style="margin:0.75rem 0 0; color:var(--admin-text-muted); font-size:0.82rem;">권장 크기: 3200 × 600px · 16:3 비율 · 가로형 슬라이드</p>
-                            <button id="btnAddBottomBanner" class="btn-primary" type="button" style="background:#4f46e5; margin-top:1rem; width:100%;">+ 하단 배너 추가</button>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">메인 하단의 가로형 배너입니다. 슬라이드 방식으로
+                                노출되며, 추천 비율을 맞추면 잘림 없이 표시됩니다.</p>
+                            <p style="margin:0.75rem 0 0; color:var(--admin-text-muted); font-size:0.82rem;">권장 크기: 3200
+                                × 600px · 16:3 비율 · 가로형 슬라이드</p>
+                            <button id="btnAddBottomBanner" class="btn-primary" type="button"
+                                style="background:#4f46e5; margin-top:1rem; width:100%;">+ 하단 배너 추가</button>
                         </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
-                            <div id="bottomBannerListContainer" style="display:flex; flex-direction:column; gap:1rem; min-height:120px;">
+                            <div id="bottomBannerListContainer"
+                                style="display:flex; flex-direction:column; gap:1rem; min-height:120px;">
                                 <!-- 하단 배너 동적 로딩 -->
                             </div>
                         </div>
@@ -336,7 +350,8 @@
                     <div class="card-header" style="justify-content: space-between;">
                         <div>
                             <h3 class="section-title">인기 클래스 설정</h3>
-                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">메인 화면 상단에 노출될 인기 클래스를 관리합니다.</p>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">메인 화면 상단에 노출될 인기 클래스를 관리합니다.
+                            </p>
                         </div>
                         <div class="recommend-card-actions">
                             <button class="btn-small outline" id="btnOpenPopularSearch" type="button">+ 클래스 추가</button>
@@ -344,7 +359,8 @@
                         </div>
                     </div>
                     <div style="padding:1.5rem;">
-                        <div id="popularClassList" class="selected-class-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:1rem; background:#fcfcfe; padding:1.5rem; border-radius:12px; border:1px dashed #e2e8f0; min-height:120px;">
+                        <div id="popularClassList" class="selected-class-list"
+                            style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:1rem; background:#fcfcfe; padding:1.5rem; border-radius:12px; border:1px dashed #e2e8f0; min-height:120px;">
                             <!-- JS Dynamic Injection -->
                         </div>
                     </div>
@@ -354,14 +370,17 @@
                     <div class="card-header" style="justify-content: space-between;">
                         <div>
                             <h3 class="section-title">추천 클래스 폴더 관리</h3>
-                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">메인 화면에 노출될 추천 클래스 그룹(폴더)을 관리합니다. 폴더 내 클래스는 좌우 슬라이더로 표시됩니다.</p>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">메인 화면에 노출될 추천 클래스 그룹(폴더)을
+                                관리합니다. 폴더 내 클래스는 좌우 슬라이더로 표시됩니다.</p>
                         </div>
                         <div class="recommend-card-actions">
-                            <button class="btn-small outline" id="btnAddRecommendFolder" type="button">+ 새 폴더 추가</button>
+                            <button class="btn-small outline" id="btnAddRecommendFolder" type="button">+ 새 폴더
+                                추가</button>
                             <button class="btn-primary" id="btnSaveRecommendations" type="button">저장</button>
                         </div>
                     </div>
-                    <div id="recommendFolderList" style="padding:1.5rem; display:flex; flex-direction:column; gap:2rem;">
+                    <div id="recommendFolderList"
+                        style="padding:1.5rem; display:flex; flex-direction:column; gap:2rem;">
                         <!-- JS Dynamic Injection -->
                     </div>
                 </div>
@@ -369,24 +388,34 @@
                 <!-- 클래스 선택 모달 -->
                 <div id="classSearchModal"
                     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
-                    <div style="background:#fff; width:min(920px, calc(100vw - 2rem)); max-height:84vh; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.2);">
-                        <div style="padding:1rem 1.5rem; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; gap:1rem;">
+                    <div
+                        style="background:#fff; width:min(920px, calc(100vw - 2rem)); max-height:84vh; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+                        <div
+                            style="padding:1rem 1.5rem; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; gap:1rem;">
                             <div>
                                 <h4 style="margin:0; font-size:1.1rem;">추가할 클래스 선택</h4>
-                                <p id="modalResultCount" style="margin:0.35rem 0 0; color:var(--admin-text-muted); font-size:0.85rem;">총 0개</p>
+                                <p id="modalResultCount"
+                                    style="margin:0.35rem 0 0; color:var(--admin-text-muted); font-size:0.85rem;">총 0개
+                                </p>
                             </div>
-                            <button id="btnCloseClassModal" style="background:none; border:none; font-size:1.6rem; cursor:pointer; line-height:1;">&times;</button>
+                            <button id="btnCloseClassModal"
+                                style="background:none; border:none; font-size:1.6rem; cursor:pointer; line-height:1;">&times;</button>
                         </div>
                         <div style="padding:1rem 1.25rem 1.25rem;">
-                            <div style="display:flex; gap:0.75rem; align-items:center; margin-bottom:1rem; flex-wrap:wrap;">
-                                <input type="text" id="classSearchInput" class="admin-form-input" placeholder="클래스 제목, 강사, 키워드 검색..." style="margin:0; flex:1; min-width:240px;">
-                                <select id="modalCategorySelect" class="admin-form-input" style="margin:0; min-width:180px; width:auto;">
+                            <div
+                                style="display:flex; gap:0.75rem; align-items:center; margin-bottom:1rem; flex-wrap:wrap;">
+                                <input type="text" id="classSearchInput" class="admin-form-input"
+                                    placeholder="클래스 제목, 강사, 키워드 검색..." style="margin:0; flex:1; min-width:240px;">
+                                <select id="modalCategorySelect" class="admin-form-input"
+                                    style="margin:0; min-width:180px; width:auto;">
                                     <option value="all">전체 카테고리</option>
                                 </select>
                             </div>
-                            <div id="classSearchResultList" style="overflow-y:auto; max-height:60vh; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; background:#fff; display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:1rem;">
+                            <div id="classSearchResultList"
+                                style="overflow-y:auto; max-height:60vh; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; background:#fff; display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:1rem;">
                                 <!-- Search results -->
-                                <div style="grid-column:1/-1; padding:2rem; text-align:center; color:#888;">검색어를 입력하세요.</div>
+                                <div style="grid-column:1/-1; padding:2rem; text-align:center; color:#888;">검색어를 입력하세요.
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -404,7 +433,8 @@
                         style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem; padding-top:1.5rem;">
                         <div class="settings-desc">
                             <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">업계 표준 푸터 정보</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">회사 정보, 고객센터, 운영시간, 정책 링크를 설정하면 메인 홈페이지 푸터에 즉시 반영됩니다. 표준 노출 순서에 맞춰 관리하면 메인 화면에서도 더 읽기 쉬워집니다.</p>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">회사 정보, 고객센터, 운영시간, 정책 링크를 설정하면
+                                메인 홈페이지 푸터에 즉시 반영됩니다. 표준 노출 순서에 맞춰 관리하면 메인 화면에서도 더 읽기 쉬워집니다.</p>
                         </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border); grid-column: span 2;">
@@ -416,56 +446,88 @@
                                     <li>운영시간, 이용약관, 개인정보처리방침</li>
                                 </ul>
                             </div>
-                            <p style="margin-bottom:1.5rem; color:var(--admin-text-muted);">사이트 하단에 표시되는 사업자 정보와 정책/연락처 정보를 설정합니다.</p>
+                            <p style="margin-bottom:1.5rem; color:var(--admin-text-muted);">사이트 하단에 표시되는 사업자 정보와 정책/연락처
+                                정보를 설정합니다.</p>
 
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
                                 <div class="field-group">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">회사명(상호)</label>
-                                    <input type="text" id="setFooterCompany" placeholder="예: (주)비스퀘어" class="admin-form-input">
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">회사명(상호)</label>
+                                    <input type="text" id="setFooterCompany" placeholder="예: (주)비스퀘어"
+                                        class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">대표자 성명</label>
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">대표자
+                                        성명</label>
                                     <input type="text" id="setFooterCEO" placeholder="대표자명" class="admin-form-input">
                                 </div>
                                 <div class="field-group" style="grid-column: span 2;">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">주소</label>
-                                    <input type="text" id="setFooterAddress" placeholder="사업장 소재지 주소" class="admin-form-input">
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">주소</label>
+                                    <input type="text" id="setFooterAddress" placeholder="사업장 소재지 주소"
+                                        class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사업자등록번호</label>
-                                    <input type="text" id="setFooterBizNum" placeholder="000-00-00000" class="admin-form-input">
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사업자등록번호</label>
+                                    <input type="text" id="setFooterBizNum" placeholder="000-00-00000"
+                                        class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">통신판매업 신고번호</label>
-                                    <input type="text" id="setFooterMailNum" placeholder="제 0000-지역-0000 호" class="admin-form-input">
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">통신판매업
+                                        신고번호</label>
+                                    <input type="text" id="setFooterMailNum" placeholder="제 0000-지역-0000 호"
+                                        class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">고객센터 전화번호</label>
-                                    <input type="text" id="setFooterCS" placeholder="0000-0000" class="admin-form-input">
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">고객센터
+                                        전화번호</label>
+                                    <input type="text" id="setFooterCS" placeholder="0000-0000"
+                                        class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">고객센터 이메일</label>
-                                    <input type="text" id="setFooterEmail" placeholder="cs@domain.com" class="admin-form-input">
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">고객센터
+                                        이메일</label>
+                                    <input type="text" id="setFooterEmail" placeholder="cs@domain.com"
+                                        class="admin-form-input">
                                 </div>
                                 <div class="field-group" style="grid-column: span 2;">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">운영시간</label>
-                                    <input type="text" id="setFooterHours" placeholder="평일 10시 ~ 오후 6시 (주말, 공휴일 제외)" class="admin-form-input">
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">운영시간</label>
+                                    <input type="text" id="setFooterHours" placeholder="평일 10시 ~ 오후 6시 (주말, 공휴일 제외)"
+                                        class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">이용약관 URL</label>
-                                    <input type="text" id="setFooterTermsUrl" placeholder="https://..." class="admin-form-input">
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">이용약관
+                                        URL</label>
+                                    <input type="text" id="setFooterTermsUrl" placeholder="https://..."
+                                        class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">개인정보처리방침 URL</label>
-                                    <input type="text" id="setFooterPrivacyUrl" placeholder="https://..." class="admin-form-input">
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">개인정보처리방침
+                                        URL</label>
+                                    <input type="text" id="setFooterPrivacyUrl" placeholder="https://..."
+                                        class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">인스타그램 URL</label>
-                                    <input type="text" id="setFooterInstagramUrl" placeholder="https://instagram.com/..." class="admin-form-input">
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">인스타그램
+                                        URL</label>
+                                    <input type="text" id="setFooterInstagramUrl"
+                                        placeholder="https://instagram.com/..." class="admin-form-input">
                                 </div>
                                 <div class="field-group">
-                                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">유튜브 URL</label>
-                                    <input type="text" id="setFooterYoutubeUrl" placeholder="https://youtube.com/..." class="admin-form-input">
+                                    <label
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">유튜브
+                                        URL</label>
+                                    <input type="text" id="setFooterYoutubeUrl" placeholder="https://youtube.com/..."
+                                        class="admin-form-input">
                                 </div>
                             </div>
                         </div>
@@ -485,34 +547,49 @@
 
             <!-- 탭: 운영자 설정 (tabOperators) -->
             <section id="tabOperators" class="admin-tab-content">
-                <div class="admin-card">
+                <div class="admin-card operator-card-clean">
                     <div class="card-header" style="justify-content: space-between;">
                         <div>
                             <h3 class="section-title">운영자 설정</h3>
-                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">사이트를 관리하는 운영자와 강의를 진행하는 강사를 관리할
-                                수 있습니다.</p>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">운영자/강사/총괄 운영자 권한을 한 화면에서 직관적으로
+                                관리합니다.</p>
                         </div>
-                        <div style="display:flex; gap:0.5rem;">
+                        <div class="operator-header-actions" style="display:flex; gap:0.5rem;">
                             <button class="btn-primary" style="background:#4f46e5;">운영자 등록</button>
                             <button class="btn-primary" style="background:#4f46e5;">강사 등록</button>
                             <button class="btn-primary" style="background:#4f46e5;">총괄 운영자 등록</button>
                         </div>
                     </div>
-                    <div
+                    <div class="admin-overview-grid operator-overview-grid">
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">권한 설계 기준</span>
+                            <strong>총괄, 운영, 강사, 일반 회원</strong>
+                            <p>권한 변경은 즉시 반영되며 강사 역할은 클래스 정산과 연결됩니다.</p>
+                        </article>
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">관리 포인트</span>
+                            <strong>강사 정보와 담당 클래스 동시 확인</strong>
+                            <p>연락처, 가입일, 주강사/서브강사 참여 정보를 한 표에서 확인합니다.</p>
+                        </article>
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">운영 원칙</span>
+                            <strong>승격은 신중하게, 회수는 빠르게</strong>
+                            <p>민감한 탭 접근 권한은 총괄 운영자에게만 열리도록 유지합니다.</p>
+                        </article>
+                    </div>
+                    <div class="operator-summary-row"
                         style="padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--admin-border);">
-                            <div style="display:flex; gap:0.5rem;">
-                                <div style="padding:0.4rem 0.8rem; background:#111; color:#fff; border-radius:6px; font-size:0.8rem; font-weight:600;"
-                                    id="countAllOps">전체 0명</div>
-                                <div style="padding:0.4rem 0.8rem; background:#f4f4f5; color:#333; border-radius:6px; font-size:0.8rem;"
-                                id="countAdmins">총괄운영자 0명</div>
-                                <div style="padding:0.4rem 0.8rem; background:#f4f4f5; color:#333; border-radius:6px; font-size:0.8rem;"
-                                    id="countInsts">강사 0명</div>
-                            </div>
-                        <div style="display:flex; gap:0.5rem;">
-                            <select class="admin-form-input" style="padding:0.4rem; padding-right:2rem; margin:0;">
+                        <div class="operator-summary-chips" style="display:flex; gap:0.5rem;">
+                            <div class="operator-chip operator-chip--dark" id="countAllOps">전체 0명</div>
+                            <div class="operator-chip" id="countAdmins">총괄운영자 0명</div>
+                            <div class="operator-chip" id="countInsts">강사 0명</div>
+                        </div>
+                        <div class="operator-filter-row" style="display:flex; gap:0.5rem;">
+                            <select class="admin-form-input operator-page-size"
+                                style="padding:0.4rem; padding-right:2rem; margin:0;">
                                 <option>10개씩</option>
                             </select>
-                            <div style="position:relative;">
+                            <div style="position:relative;" class="operator-search-wrap">
                                 <input type="text" class="admin-form-input" placeholder="닉네임, 이름, 이메일, 연락처 검색"
                                     style="margin:0; width:200px;">
                                 <span
@@ -548,72 +625,71 @@
 
             <!-- 탭: 쿠폰 관리 (tabCoupons) -->
             <section id="tabCoupons" class="admin-tab-content">
-                <div class="admin-card">
-                    <div class="card-header" style="justify-content: space-between;">
+                <div class="admin-card admin-surface-card">
+                    <div class="card-header admin-flex-between">
                         <div>
                             <h3 class="section-title">쿠폰 관리</h3>
-                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">마케팅 이벤트나 고객 보상을 위해 사용할 수 있는 할인
-                                쿠폰을 발급하고 관리합니다.</p>
+                            <p class="section-subtitle">사이트 전체 클래스에 적용 가능한 이벤트 쿠폰을 발급하고, 발행 대비 사용 현황을 추적합니다.</p>
                         </div>
-                        <button class="btn-primary" style="background:#4f46e5;" id="btnOpenCouponModal">+ 새 쿠폰
-                            발급</button>
+                        <div class="admin-inline-actions">
+                            <button class="btn-small outline" type="button" id="btnReloadEventCoupons">새로고침</button>
+                            <button class="btn-primary" type="button" id="btnOpenEventCouponModal">이벤트 쿠폰 발급</button>
+                        </div>
                     </div>
+
+                    <div class="admin-overview-grid">
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">전체 이벤트 쿠폰</span>
+                            <strong id="couponMetricTotal">0개</strong>
+                            <p>운영 중인 글로벌 쿠폰 기준</p>
+                        </article>
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">활성 쿠폰</span>
+                            <strong id="couponMetricActive">0개</strong>
+                            <p>현재 사용 가능한 쿠폰</p>
+                        </article>
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">총 사용량</span>
+                            <strong id="couponMetricUsed">0회</strong>
+                            <p>회원이 실제 사용한 수량</p>
+                        </article>
+                    </div>
+
+                    <div class="admin-toolbar">
+                        <div class="admin-toolbar-group">
+                            <input type="search" id="couponSearchInput" class="admin-form-input"
+                                placeholder="쿠폰 코드, 쿠폰명, 설명 검색">
+                            <select id="couponStatusFilter" class="admin-form-input">
+                                <option value="all">전체 상태</option>
+                                <option value="active">활성</option>
+                                <option value="inactive">비활성</option>
+                                <option value="expired">만료</option>
+                            </select>
+                        </div>
+                        <div class="admin-toolbar-caption">
+                            카카오 메시지 발송 시에는 등록된 쿠폰 이미지가 대표 이미지로 사용됩니다.
+                        </div>
+                    </div>
+
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>쿠폰 코드</th>
-                                    <th>내용</th>
-                                    <th>할인 혜택</th>
-                                    <th>유효 기한</th>
-                                    <th>발행일</th>
+                                    <th>쿠폰</th>
+                                    <th>혜택</th>
+                                    <th>적용 범위</th>
+                                    <th>발행 / 사용</th>
+                                    <th>유효 기간</th>
+                                    <th>상태</th>
                                     <th>관리</th>
                                 </tr>
                             </thead>
-                            <tbody id="couponsTableBody">
+                            <tbody id="eventCouponsTableBody">
                                 <tr>
-                                    <td colspan="6" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+                                    <td colspan="7" style="text-align:center;">데이터를 불러오는 중입니다...</td>
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                </div>
-
-                <!-- 새 쿠폰 발급 폼 (간단히 인라인 렌더링 후 JS에서 토글) -->
-                <div id="couponFormModal"
-                    style="display:none; padding:1.5rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; margin-top:1rem;">
-                    <h4 style="margin-bottom:1rem; font-size:1.1rem; color:#1e293b;">새 쿠폰 만들기</h4>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-                        <div class="field-group">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">할인
-                                타입</label>
-                            <select id="newCouponType" class="admin-form-input">
-                                <option value="percent">% 할인</option>
-                                <option value="fixed">원 할인</option>
-                            </select>
-                        </div>
-                        <div class="field-group">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">할인액 /
-                                할인율</label>
-                            <input type="number" id="newCouponAmount" class="admin-form-input"
-                                placeholder="예: 20 또는 5000">
-                        </div>
-                        <div class="field-group" style="grid-column: span 2;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">쿠폰
-                                설명</label>
-                            <input type="text" id="newCouponDesc" class="admin-form-input"
-                                placeholder="스프링 시즌 오픈 기념 20% 할인">
-                        </div>
-                        <div class="field-group">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">만료
-                                일자</label>
-                            <input type="date" id="newCouponExpiry" class="admin-form-input">
-                        </div>
-                    </div>
-                    <div style="margin-top:1.5rem; display:flex; gap:0.5rem; justify-content:flex-end;">
-                        <button class="btn-small outline" id="btnCancelCoupon"
-                            style="color:#64748b; border-color:#cbd5e1;">취소</button>
-                        <button class="btn-primary" id="btnSaveCoupon" style="background:#10b981;">발급하기</button>
                     </div>
                 </div>
             </section>
@@ -680,8 +756,10 @@
                             <p class="section-subtitle">카테고리, 공개 상태, 통계, 삭제를 한 곳에서 관리합니다.</p>
                         </div>
                         <div class="class-admin-actions">
-                            <button class="btn-small outline" id="btnClassCategoryManager" type="button">카테고리 관리</button>
-                            <button class="btn-primary" id="btnOpenClassCreate" type="button" onclick="location.href='../create_class/create_class.html'">+ 클래스 생성</button>
+                            <button class="btn-small outline" id="btnClassCategoryManager" type="button">카테고리
+                                관리</button>
+                            <button class="btn-primary" id="btnOpenClassCreate" type="button"
+                                onclick="location.href='../create_class/create_class.html'">+ 클래스 생성</button>
                         </div>
                     </div>
 
@@ -700,7 +778,8 @@
 
                     <div class="class-control-row">
                         <div class="class-search-box">
-                            <input type="search" id="adminClassSearchInput" class="admin-form-input" placeholder="클래스명, 강사, 카테고리 검색">
+                            <input type="search" id="adminClassSearchInput" class="admin-form-input"
+                                placeholder="클래스명, 강사, 카테고리 검색">
                         </div>
                         <div class="class-control-group">
                             <select id="adminClassSortSelect" class="admin-form-input">
@@ -725,7 +804,8 @@
                                 <p>좋아요, 리뷰, 조회수, 별점을 가중치로 합산한 현재 핫한 클래스입니다.</p>
                             </div>
                             <div style="display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
-                                <button type="button" class="btn-small outline" id="btnSyncPopularRecommendation">추천 설정 반영</button>
+                                <button type="button" class="btn-small outline" id="btnSyncPopularRecommendation">추천 설정
+                                    반영</button>
                                 <button type="button" class="btn-small outline" id="btnRefreshRanking">랭킹 갱신</button>
                             </div>
                         </div>
@@ -778,29 +858,69 @@
 
             <!-- 탭: 리뷰 관리 (tabReviews) -->
             <section id="tabReviews" class="admin-tab-content">
-                <div class="admin-card">
-                    <div class="card-header">
-                        <h3 class="section-title">리뷰 관리</h3>
-                        <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">모든 클래스의 리뷰를 최신
-                            작성된 순서로 검색할 수 있습니다.</p>
+                <div class="admin-card admin-surface-card">
+                    <div class="card-header admin-flex-between">
+                        <div>
+                            <h3 class="section-title">리뷰 관리</h3>
+                            <p class="section-subtitle">별점 3점 이하 리뷰만 모아 품질 이슈를 빠르게 확인하고 즉시 조치합니다.</p>
+                        </div>
+                        <div class="admin-inline-actions">
+                            <button class="btn-small outline" type="button" id="btnReloadLowReviews">새로고침</button>
+                        </div>
                     </div>
+
+                    <div class="admin-overview-grid">
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">대상 리뷰</span>
+                            <strong id="lowReviewMetricTotal">0건</strong>
+                            <p>3점 이하 리뷰만 집계</p>
+                        </article>
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">1점 리뷰</span>
+                            <strong id="lowReviewMetricCritical">0건</strong>
+                            <p>가장 우선 확인이 필요한 리뷰</p>
+                        </article>
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">최근 등록</span>
+                            <strong id="lowReviewMetricLatest">-</strong>
+                            <p>가장 마지막으로 들어온 저평점 리뷰</p>
+                        </article>
+                    </div>
+
+                    <div class="admin-toolbar">
+                        <div class="admin-toolbar-group">
+                            <input type="search" id="reviewSearchInput" class="admin-form-input"
+                                placeholder="클래스명, 강사명, 닉네임, 이름, 연락처, 메일 검색">
+                            <select id="reviewRatingFilter" class="admin-form-input">
+                                <option value="3">3점 이하 전체</option>
+                                <option value="1">1점만</option>
+                                <option value="2">2점 이하</option>
+                                <option value="3_exact">3점만</option>
+                            </select>
+                        </div>
+                        <div class="admin-toolbar-caption">
+                            정렬 기준: 1점 우선, 같은 별점 내에서는 최신 리뷰가 먼저 보입니다.
+                        </div>
+                    </div>
+
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>클래스</th>
-                                    <th>회원 이름</th>
-                                    <th>이메일</th>
-                                    <th>등록일</th>
-                                    <th>평점</th>
-                                    <th>리뷰</th>
+                                    <th>별점</th>
+                                    <th>클래스명</th>
+                                    <th>메인 강사</th>
+                                    <th>닉네임</th>
+                                    <th>이름</th>
+                                    <th>연락처</th>
+                                    <th>메일</th>
+                                    <th>내용</th>
                                     <th>관리</th>
                                 </tr>
                             </thead>
-                            <tbody id="reviewsTableBody">
-                                <!-- JS Injected -->
+                            <tbody id="lowReviewsTableBody">
                                 <tr>
-                                    <td colspan="7" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+                                    <td colspan="9" style="text-align:center;">데이터를 불러오는 중입니다...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -810,51 +930,191 @@
 
             <!-- 탭: 정산 정보 등록 (tabSettlementInfo) -->
             <section id="tabSettlementInfo" class="admin-tab-content">
-                <div class="admin-card">
-                    <div class="card-header" style="flex-direction:column; align-items:flex-start;">
-                        <h3 class="section-title">정산 정보 관리</h3>
-                        <p style="font-size:0.85rem; color:#888; margin-top:0.5rem; line-height:1.4;">라이브클래스에서 발생한 수익을
-                            정산 받으시려면 정산 정보 등록이 필요합니다.<br>입력한 정보가 유효하지 않거나 확인이 필요한 경우 정산이 보류될 수 있습니다.</p>
+                <div class="admin-card admin-surface-card">
+                    <div class="card-header admin-flex-between">
+                        <div>
+                            <h3 class="section-title">정산 정보 관리</h3>
+                            <p class="section-subtitle">클래스별 정산 금액과 강사별 정산 합계를 월 단위로 계산하고, 수수료율을 운영자가 직접 조정합니다.</p>
+                        </div>
+                        <div class="admin-inline-actions">
+                            <button class="btn-small outline" type="button"
+                                id="btnReloadSettlementDashboard">새로고침</button>
+                            <button class="btn-primary" type="button" id="btnSaveSettlementDashboard">정산 설정 저장</button>
+                            <button class="btn-primary" type="button" id="btnGenerateSettlementBatch"
+                                style="background:#0f766e;">정산 생성</button>
+                        </div>
                     </div>
-                    <div style="padding:1.5rem; max-width:800px;">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                            <h4 style="font-size:1.1rem; font-weight:600;">정산 서류 정보 및 자료 제출</h4>
-                            <button class="btn-primary" style="background:#fff; color:#333; border:1px solid #ddd;"
-                                id="btnSaveSettlementInfo">저장</button>
+
+                    <div class="admin-overview-grid">
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">기준 월</span>
+                            <strong id="settlementMetricPeriod">-</strong>
+                            <p>매월 15일 지급 기준</p>
+                        </article>
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">클래스 기준 정산</span>
+                            <strong id="settlementMetricClassTotal">0원</strong>
+                            <p>클래스별 합산 정산 예정액</p>
+                        </article>
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">강사 기준 정산</span>
+                            <strong id="settlementMetricInstructorTotal">0원</strong>
+                            <p>강사별 총 정산 예정액</p>
+                        </article>
+                    </div>
+
+                    <div class="settlement-shell">
+                        <div class="settlement-control-panel">
+                            <div class="settlement-period-switch" id="settlementPeriodSwitch">
+                                <button type="button" class="period-chip active" data-period="month">월별</button>
+                                <button type="button" class="period-chip" data-period="year">연도별</button>
+                            </div>
+                            <div class="settlement-period-fields">
+                                <input type="number" id="settlementYearInput" class="admin-form-input" min="2024"
+                                    step="1" placeholder="연도">
+                                <input type="number" id="settlementMonthInput" class="admin-form-input" min="1" max="12"
+                                    step="1" placeholder="월">
+                            </div>
+                            <div class="settlement-fee-grid">
+                                <div class="field-group">
+                                    <label>카드 수수료(%)</label>
+                                    <input type="number" id="settlementRatePg" class="admin-form-input" step="0.1"
+                                        min="0" placeholder="6">
+                                </div>
+                                <div class="field-group">
+                                    <label>세금(%)</label>
+                                    <input type="number" id="settlementRateTax" class="admin-form-input" step="0.1"
+                                        min="0" placeholder="3.3">
+                                </div>
+                                <div class="field-group">
+                                    <label>플랫폼 수수료(%)</label>
+                                    <input type="number" id="settlementRatePlatform" class="admin-form-input" step="0.1"
+                                        min="0" placeholder="1.7">
+                                </div>
+                            </div>
+                            <div class="settlement-note-box">
+                                <strong>정산 계산식</strong>
+                                <p>발생 수익에서 카드수수료, 세금, 플랫폼 수수료를 차감한 금액을 강사 정산 예정액으로 사용합니다.</p>
+                            </div>
                         </div>
 
-                        <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">회사명
-                                <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
-                            <input type="text" id="setCoName" placeholder="예시: 주식회사 비스퀘어" class="admin-form-input">
+                        <div class="settlement-form-grid">
+                            <article class="admin-subcard">
+                                <div class="admin-subcard-head">
+                                    <h4>정산 사업자 정보</h4>
+                                    <p>세금계산서와 정산 기준 정보를 저장합니다.</p>
+                                </div>
+                                <div class="admin-form-grid two-col">
+                                    <div class="field-group">
+                                        <label>회사명</label>
+                                        <input type="text" id="settlementCompanyName" class="admin-form-input"
+                                            placeholder="주식회사 비스퀘어">
+                                    </div>
+                                    <div class="field-group">
+                                        <label>대표자명</label>
+                                        <input type="text" id="settlementCeoName" class="admin-form-input"
+                                            placeholder="대표자명">
+                                    </div>
+                                    <div class="field-group">
+                                        <label>사업자 등록번호</label>
+                                        <input type="text" id="settlementBizNumber" class="admin-form-input"
+                                            placeholder="'-' 없이 입력">
+                                    </div>
+                                    <div class="field-group">
+                                        <label>업태</label>
+                                        <input type="text" id="settlementBizType" class="admin-form-input"
+                                            placeholder="교육서비스업">
+                                    </div>
+                                    <div class="field-group full">
+                                        <label>주소</label>
+                                        <input type="text" id="settlementAddress" class="admin-form-input"
+                                            placeholder="사업자등록증 상 주소">
+                                    </div>
+                                    <div class="field-group full">
+                                        <label>담당자 이메일</label>
+                                        <input type="email" id="settlementManagerEmail" class="admin-form-input"
+                                            placeholder="settlement@b-square.co.kr">
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="admin-subcard">
+                                <div class="admin-subcard-head">
+                                    <h4>정산 계좌 정보</h4>
+                                    <p>강사 정산 승인 시 기준으로 삼는 운영 계좌입니다.</p>
+                                </div>
+                                <div class="admin-form-grid">
+                                    <div class="field-group">
+                                        <label>은행명</label>
+                                        <input type="text" id="settlementBankName" class="admin-form-input"
+                                            placeholder="은행명">
+                                    </div>
+                                    <div class="field-group">
+                                        <label>계좌번호</label>
+                                        <input type="text" id="settlementBankAccount" class="admin-form-input"
+                                            placeholder="계좌번호">
+                                    </div>
+                                    <div class="field-group">
+                                        <label>예금주</label>
+                                        <input type="text" id="settlementBankHolder" class="admin-form-input"
+                                            placeholder="예금주">
+                                    </div>
+                                </div>
+                            </article>
                         </div>
-                        <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">대표자명
-                                <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
-                            <input type="text" id="setCeo" placeholder="사업자등록증 상의 대표명을 입력해 주세요"
-                                class="admin-form-input">
-                        </div>
-                        <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">사업자
-                                등록번호 <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
-                            <input type="text" id="setBizNum" placeholder="'-' 없이 숫자만 입력해주세요" class="admin-form-input">
-                        </div>
-                        <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">회사 주소
-                                <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
-                            <input type="text" id="setAddr" placeholder="사업자등록증의 주소로 입력해주세요." class="admin-form-input">
-                        </div>
-                        <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">업태
-                                <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
-                            <input type="text" id="setBizType" placeholder="교육서비스업" class="admin-form-input">
-                        </div>
-                        <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">정산
-                                담당자 이메일 <span style="color:#3b82f6; font-size:0.75rem;">필수</span></label>
-                            <input type="text" id="setManagerEmail" placeholder="본 메일로 정산 내역 및 세금계산서가 발송됩니다."
-                                class="admin-form-input">
+
+                        <div class="settlement-dual-grid">
+                            <article class="admin-subcard">
+                                <div class="admin-subcard-head">
+                                    <h4>클래스별 정산 금액</h4>
+                                    <p>왼쪽 표는 클래스 기준 정산액, 오른쪽 표는 강사별 합산 정산액입니다.</p>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>클래스명</th>
+                                                <th>메인 강사</th>
+                                                <th>매출</th>
+                                                <th>수수료 합계</th>
+                                                <th>정산 예정액</th>
+                                                <th>상세</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="settlementClassTableBody">
+                                            <tr>
+                                                <td colspan="6" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </article>
+
+                            <article class="admin-subcard">
+                                <div class="admin-subcard-head">
+                                    <h4>강사별 정산 금액</h4>
+                                    <p>강사 1명이 여러 클래스를 운영하는 경우 정산액을 자동 합산합니다.</p>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>강사</th>
+                                                <th>담당 클래스 수</th>
+                                                <th>총 매출</th>
+                                                <th>수수료 합계</th>
+                                                <th>최종 정산 예정액</th>
+                                                <th>상세</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="settlementInstructorTableBody">
+                                            <tr>
+                                                <td colspan="6" style="text-align:center;">데이터를 불러오는 중입니다...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </article>
                         </div>
                     </div>
                 </div>
@@ -925,21 +1185,26 @@
                         <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">결제 및 신청 내역을 조건에
                             따라 검색하고 세부 내역을 확인할 수 있습니다.</p>
                     </div>
-                    <div style="padding:1.5rem; border-bottom:1px solid var(--admin-border);">
-                        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
-                            <span style="font-weight:600; width:80px;">조회 기간</span>
-                            <button
-                                style="padding:0.4rem 1rem; border:1px solid #ddd; background:#fff; border-radius:4px;">오늘</button>
-                            <button
-                                style="padding:0.4rem 1rem; border:1px solid #ddd; background:#111; color:#fff; border-radius:4px;">이번
-                                달</button>
-                            <div style="display:flex; align-items:center; gap:0.5rem; margin-left:1rem;">
-                                <input type="date" class="admin-form-input" style="margin:0; padding:0.4rem;"> ~ <input
-                                    type="date" class="admin-form-input" style="margin:0; padding:0.4rem;">
-                            </div>
+                    <div class="admin-toolbar">
+                        <div class="admin-toolbar-group">
+                            <input type="search" id="paymentSearchInput" class="admin-form-input"
+                                placeholder="주문번호, 회원명, 클래스명 검색">
+                            <select id="paymentStatusFilter" class="admin-form-input">
+                                <option value="">전체 상태</option>
+                                <option value="paid">결제 완료</option>
+                                <option value="completed">처리 완료</option>
+                                <option value="refunded">환불 완료</option>
+                                <option value="partial_refunded">부분 환불</option>
+                                <option value="pending">대기</option>
+                            </select>
+                            <input type="date" id="paymentFromDate" class="admin-form-input">
+                            <span style="color:#888;">~</span>
+                            <input type="date" id="paymentToDate" class="admin-form-input">
                         </div>
-                        <div style="text-align:center; margin-top:2rem;">
-                            <button class="btn-primary" style="background:#3b82f6; padding:0.6rem 3rem;">검색</button>
+                        <div class="admin-inline-actions">
+                            <button type="button" class="btn-small outline" id="btnPaymentToday">오늘</button>
+                            <button type="button" class="btn-small outline" id="btnPaymentThisMonth">이번 달</button>
+                            <button type="button" class="btn-primary" id="btnSearchPayments">검색</button>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -953,12 +1218,16 @@
                                     <th>결제상태</th>
                                     <th>결제수단</th>
                                     <th>결제금액</th>
+                                    <th>할인/쿠폰</th>
+                                    <th>환불금액</th>
+                                    <th>정산상태</th>
+                                    <th>상세</th>
                                 </tr>
                             </thead>
-                            <tbody id="paymentsSearchTableBody">
+                            <tbody id="paymentsViewBody">
                                 <!-- JS Injected -->
                                 <tr>
-                                    <td colspan="7" style="text-align:center;">데이터 없음</td>
+                                    <td colspan="11" style="text-align:center;">데이터 없음</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -968,30 +1237,57 @@
 
             <!-- 탭: 정산 내역 (tabSettlementHistory) -->
             <section id="tabSettlementHistory" class="admin-tab-content">
-                <div class="admin-card">
-                    <div class="card-header">
-                        <h3 class="section-title">정산 내역</h3>
-                        <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">정산 시점별 세부 정산 내역을
-                            확인하실 수 있습니다.</p>
+                <div class="admin-card admin-surface-card">
+                    <div class="card-header admin-flex-between">
+                        <div>
+                            <h3 class="section-title">정산 내역</h3>
+                            <p class="section-subtitle">최종 정산 승인 전 상태를 월별과 연도별 탭으로 관리하고, 승인 결과와 관리 아이디를 확인합니다.</p>
+                        </div>
+                        <div class="admin-inline-actions">
+                            <button class="btn-small outline" type="button"
+                                id="btnReloadSettlementHistory">새로고침</button>
+                        </div>
                     </div>
+
+                    <div class="admin-toolbar">
+                        <div class="admin-toolbar-group">
+                            <div class="settlement-period-switch" id="settlementHistoryPeriodSwitch">
+                                <button type="button" class="period-chip active" data-period="month">월별</button>
+                                <button type="button" class="period-chip" data-period="year">연도별</button>
+                            </div>
+                            <input type="number" id="settlementHistoryYearInput" class="admin-form-input" min="2024"
+                                step="1" placeholder="연도">
+                            <input type="number" id="settlementHistoryMonthInput" class="admin-form-input" min="1"
+                                max="12" step="1" placeholder="월">
+                            <select id="settlementHistoryStatusFilter" class="admin-form-input">
+                                <option value="all">전체 상태</option>
+                                <option value="pending">승인 대기</option>
+                                <option value="approved">승인 완료</option>
+                                <option value="failed">승인 실패</option>
+                                <option value="completed">정산 완료</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>정산일</th>
+                                    <th>정산 대상 강사</th>
+                                    <th>금액</th>
                                     <th>정산상태</th>
                                     <th>정산건수</th>
-                                    <th>결제금액(원)</th>
-                                    <th>판매수수료</th>
-                                    <th>PG수수료</th>
-                                    <th>정산금액(원)</th>
-                                    <th>상세 내역</th>
+                                    <th>정산 총금액</th>
+                                    <th>수수료 금액</th>
+                                    <th>최종 정산금액</th>
+                                    <th>승인</th>
+                                    <th>승인결과</th>
+                                    <th>관리 ID</th>
                                 </tr>
                             </thead>
-                            <tbody id="settlementsTableBody">
-                                <!-- JS Injected -->
+                            <tbody id="settlementHistoryTableBody">
                                 <tr>
-                                    <td colspan="8" style="text-align:center;">정산된 데이터가 없습니다.</td>
+                                    <td colspan="10" style="text-align:center;">정산된 데이터가 없습니다.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1130,31 +1426,50 @@
 
             <!-- 탭: 검색 및 코드 설정 (tabSearchCode) -->
             <section id="tabSearchCode" class="admin-tab-content">
-                <div class="admin-card">
+                <div class="admin-card admin-surface-card">
                     <div class="card-header">
                         <h3 class="section-title">검색 및 외부 스크립트 코드 설정</h3>
                     </div>
-                    <div style="padding:1.5rem;">
-                        <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Google Analytics (GA4)
-                                측정 ID</label>
-                            <input type="text" id="scriptGa4" placeholder="G-XXXXXXXXXX" class="admin-form-input">
-                            <small style="color:var(--mac-text-muted); display:block; margin-top:4px;">구글 애널리틱스 트래킹 코드가
-                                자동으로 삽입됩니다.</small>
-                        </div>
-                        <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Meta (Facebook) Pixel
-                                ID</label>
-                            <input type="text" id="scriptPixel" placeholder="123456789012345" class="admin-form-input">
-                        </div>
-                        <div class="field-group" style="margin-bottom:1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">&lt;head&gt; 사용자 정의
-                                스크립트</label>
-                            <textarea id="scriptCustomHead" class="admin-form-input"
-                                style="height:120px; font-family:monospace;"
-                                placeholder="<!-- 네이버 웹마스터 소유확인 등 -->"></textarea>
-                        </div>
-                        <div style="text-align:right;">
+                    <div class="admin-form-grid search-code-grid">
+                        <article class="admin-subcard">
+                            <div class="admin-subcard-head">
+                                <h4>검색 추적</h4>
+                                <p>실제로 바로 적용 가능한 추적 코드만 먼저 노출합니다.</p>
+                            </div>
+                            <div class="field-group" style="margin-bottom:1.5rem;">
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Google Analytics
+                                    (GA4)
+                                    측정 ID</label>
+                                <input type="text" id="scriptGa4" placeholder="G-XXXXXXXXXX" class="admin-form-input">
+                                <small style="color:var(--mac-text-muted); display:block; margin-top:4px;">구글 애널리틱스 트래킹
+                                    코드가
+                                    자동으로 삽입됩니다.</small>
+                            </div>
+                            <div class="field-group">
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Meta Pixel
+                                    ID</label>
+                                <input type="text" id="scriptPixel" placeholder="123456789012345"
+                                    class="admin-form-input">
+                            </div>
+                        </article>
+                        <article class="admin-subcard">
+                            <div class="admin-subcard-head">
+                                <h4>사용자 정의 코드</h4>
+                                <p>필요한 검증 태그나 외부 위젯은 이 영역만 우선 지원합니다.</p>
+                            </div>
+                            <div class="field-group" style="margin-bottom:1rem;">
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:600;">&lt;head&gt;
+                                    스크립트</label>
+                                <textarea id="scriptCustomHead" class="admin-form-input admin-code-area"
+                                    placeholder="<!-- 네이버 웹마스터, 소유확인, 추적 코드 -->"></textarea>
+                            </div>
+                            <div class="field-group">
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:600;">메모</label>
+                                <textarea class="admin-form-input" rows="4"
+                                    placeholder="적용 목적과 담당자를 남겨 두면 운영 중 추적이 쉬워집니다." disabled></textarea>
+                            </div>
+                        </article>
+                        <div class="admin-inline-actions admin-actions-right">
                             <button class="btn-primary" id="btnSaveScripts">스크립트 저장</button>
                         </div>
                     </div>
@@ -1177,118 +1492,279 @@
 
             <!-- 탭: 마케팅 툴 연동 (tabMarketingTools) -->
             <section id="tabMarketingTools" class="admin-tab-content">
-                <div class="admin-card">
+                <div class="admin-card admin-surface-card">
                     <div class="card-header">
-                        <h3 class="section-title">마케팅 툴 연동</h3>
+                        <h3 class="section-title">카카오채널 관리</h3>
                     </div>
-                    <div style="padding:1.5rem;">
-                        <div
-                            style="display:flex; align-items:center; justify-content:space-between; padding:1rem; border:1px solid var(--mac-border-light); border-radius:8px; margin-bottom:1rem;">
-                            <div style="display:flex; align-items:center; gap:1rem;">
-                                <div style="font-size:2rem;">💬</div>
-                                <div>
-                                    <h4 style="margin:0 0 0.2rem 0;">카카오톡 알림톡 API</h4>
-                                    <p style="margin:0; font-size:0.85rem; color:var(--mac-text-muted);">클래스 신청 및 취소 시
-                                        자동 발송</p>
-                                </div>
+                    <div class="marketing-kakao-shell">
+                        <article class="marketing-kakao-hero">
+                            <div>
+                                <p class="marketing-kakao-eyebrow">External Messaging Placeholder</p>
+                                <h4>카카오채널 중심 운영 구조</h4>
+                                <p>외부 메시지와 광고 메시지는 카카오채널 기준으로만 관리합니다. 실제 전송 연동 전까지는 채널 정보, 템플릿 정책, 운영 메모를 정리하는 틀만 제공합니다.
+                                </p>
                             </div>
-                            <span class="admin-badge muted">미연동</span>
-                        </div>
-                        <div
-                            style="display:flex; align-items:center; justify-content:space-between; padding:1rem; border:1px solid var(--mac-border-light); border-radius:8px;">
-                            <div style="display:flex; align-items:center; gap:1rem;">
-                                <div style="font-size:2rem;">📧</div>
-                                <div>
-                                    <h4 style="margin:0 0 0.2rem 0;">스티비 (Stibee) 연동</h4>
-                                    <p style="margin:0; font-size:0.85rem; color:var(--mac-text-muted);">뉴스레터 이메일 마케팅
-                                        자동화</p>
+                            <span class="admin-badge muted">준비 중</span>
+                        </article>
+                        <div class="marketing-kakao-grid">
+                            <article class="admin-subcard">
+                                <div class="admin-subcard-head">
+                                    <h4>채널 기본 정보</h4>
+                                    <p>채널명, 검색용 ID, 관리자 메모를 기록합니다.</p>
                                 </div>
-                            </div>
-                            <span class="admin-badge muted">미연동</span>
+                                <div class="admin-form-grid">
+                                    <div class="field-group">
+                                        <label>카카오채널명</label>
+                                        <input type="text" class="admin-form-input" placeholder="B-Square">
+                                    </div>
+                                    <div class="field-group">
+                                        <label>채널 검색 ID</label>
+                                        <input type="text" class="admin-form-input" placeholder="@bsquare">
+                                    </div>
+                                    <div class="field-group full">
+                                        <label>운영 메모</label>
+                                        <textarea class="admin-form-input" rows="4"
+                                            placeholder="알림톡/친구톡 운영 정책 메모"></textarea>
+                                    </div>
+                                </div>
+                            </article>
+                            <article class="admin-subcard">
+                                <div class="admin-subcard-head">
+                                    <h4>운영 안내</h4>
+                                    <p>카카오 채널 연동이 완료되면 캠페인 분류와 발송 상태만 관리합니다.</p>
+                                </div>
+                                <div class="admin-empty-state" style="padding:1rem 1.1rem; text-align:left;">
+                                    <strong style="display:block; margin-bottom:0.35rem;">메시지 관리 제외</strong>
+                                    <p style="margin:0; color:#64748b;">운영자 메시지 발송은 따로 노출하지 않고, 카카오 채널 중심의 캠페인 스캐폴드만
+                                        유지합니다.</p>
+                                </div>
+                            </article>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 탭: 메시지 템플릿 관리 (tabMsgTemplates) -->
-            <section id="tabMsgTemplates" class="admin-tab-content">
-                <div class="admin-card">
-                    <div class="card-header">
-                        <h3 class="section-title">메시지 템플릿 관리</h3>
+            <!-- 탭: 캠페인 관리 (tabCampaigns) -->
+            <section id="tabCampaigns" class="admin-tab-content" style="display:none;"></section>
+
+            <!-- 탭: 부가세 신고 자료 (tabTax) -->
+            <section id="tabTax" class="admin-tab-content">
+                <div class="admin-card admin-surface-card">
+                    <div class="card-header admin-flex-between">
+                        <div>
+                            <h3 class="section-title">부가세 신고 자료</h3>
+                            <p class="section-subtitle">과세 매출, 환불, 공급가액, 부가세를 신고 기간 기준으로 묶어 검토하고 CSV로 내려받습니다.</p>
+                        </div>
+                        <div class="admin-inline-actions">
+                            <button class="btn-small outline" type="button" id="btnRefreshTaxReport">새로고침</button>
+                            <button class="btn-primary" id="btnDownloadTaxReport" type="button">CSV 다운로드</button>
+                        </div>
+                    </div>
+                    <div class="admin-toolbar">
+                        <div class="admin-toolbar-group">
+                            <input type="month" id="taxStartMonth" class="admin-form-input">
+                            <input type="month" id="taxEndMonth" class="admin-form-input">
+                        </div>
+                        <div class="admin-toolbar-caption">
+                            주문 데이터 기준으로 요약하며, 환불 건은 별도 차감 항목으로 표시합니다.
+                        </div>
+                    </div>
+                    <div class="admin-overview-grid">
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">총 과세 매출</span>
+                            <strong id="taxMetricRevenue">0원</strong>
+                            <p>신고 대상 결제 합계</p>
+                        </article>
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">총 환불액</span>
+                            <strong id="taxMetricRefund">0원</strong>
+                            <p>차감 대상 환불 합계</p>
+                        </article>
+                        <article class="admin-overview-card">
+                            <span class="admin-overview-label">예상 부가세</span>
+                            <strong id="taxMetricVat">0원</strong>
+                            <p>공급가액 기준 10% 계산</p>
+                        </article>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>치환 태그</th>
-                                    <th>발송 상황</th>
-                                    <th>템플릿 내용 (미리보기)</th>
-                                    <th>수정</th>
+                                    <th>주문번호</th>
+                                    <th>회원</th>
+                                    <th>클래스</th>
+                                    <th>결제일</th>
+                                    <th>결제금액</th>
+                                    <th>환불금액</th>
+                                    <th>공급가액</th>
+                                    <th>부가세</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="taxReportTableBody">
                                 <tr>
-                                    <td><code>#{userName}</code>, <code>#{className}</code></td>
-                                    <td>결제 완료 시</td>
-                                    <td style="color:var(--mac-text-muted); font-size:0.85rem;">"#{userName}님,
-                                        #{className} 결제가 완료되었습니다..."</td>
-                                    <td><button class="btn-small outline">수정</button></td>
-                                </tr>
-                                <tr>
-                                    <td><code>#{userName}</code>, <code>#{refundAmount}</code></td>
-                                    <td>환불 승인 시</td>
-                                    <td style="color:var(--mac-text-muted); font-size:0.85rem;">"#{userName}님, 요청하신
-                                        환불(#{refundAmount}원)이..."</td>
-                                    <td><button class="btn-small outline">수정</button></td>
+                                    <td colspan="8" style="text-align:center;">데이터를 불러오는 중입니다...</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </section>
-
-            <!-- 탭: 캠페인 관리 (tabCampaigns) -->
-            <section id="tabCampaigns" class="admin-tab-content">
-                <div class="admin-card">
-                    <div class="card-header">
-                        <h3 class="section-title">캠페인 및 프로모션 관리</h3>
-                    </div>
-                    <div style="padding: 2rem; text-align:center; color: var(--mac-text-muted);">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
-                        <h4>캠페인 성과 추적 도구는 준비 중입니다.</h4>
-                        <p>Utm 파라미터를 기반으로 한 유입 경로 분석 기능이 제공될 예정입니다.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 탭: 부가세 신고 자료 (tabTax) -->
-            <section id="tabTax" class="admin-tab-content">
-                <div class="admin-card">
-                    <div class="card-header" style="justify-content:space-between;">
-                        <h3 class="section-title">부가세 신고 자료 생성</h3>
-                        <button class="btn-primary" id="btnDownloadTax" style="background:#34c759;">Excel 다운로드</button>
-                    </div>
-                    <div style="padding:1.5rem;">
-                        <p style="color:var(--mac-text-muted); font-size:0.9rem; margin-bottom:1.5rem;">지정한 기간 동안 완료된
-                            수강권 결제(과세 매출) 기록을 취합하여 세무 대리인 제출용 엑셀 파일을 생성합니다.</p>
-                        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
-                            <span style="font-weight:600;">신고 기준 기간</span>
-                            <div style="display:flex; align-items:center; gap:0.5rem;">
-                                <input type="month" class="admin-form-input" style="width:150px;"> ~ <input type="month"
-                                    class="admin-form-input" style="width:150px;">
-                            </div>
-                        </div>
-                        <div
-                            style="padding:1.5rem; background:#f5f5f7; border-radius:8px; border:1px dashed var(--mac-border);">
-                            <h4 style="margin:0 0 0.5rem 0;">📑 예상 조회 요약</h4>
-                            <p style="margin:0; font-size:0.9rem;">총 과세 매출: <strong style="color:var(--mac-primary);"
-                                    id="totalTaxRevenue">계산 중...</strong>원</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </div>
     </main>
+
+    <div class="admin-sheet-modal" id="reviewDetailModal" aria-hidden="true">
+        <div class="admin-sheet-backdrop" data-close-modal="reviewDetailModal"></div>
+        <div class="admin-sheet-panel admin-sheet-panel--medium">
+            <div class="admin-sheet-header">
+                <div>
+                    <p class="admin-sheet-eyebrow">리뷰 상세</p>
+                    <h3 id="reviewDetailTitle">저평점 리뷰</h3>
+                </div>
+                <button type="button" class="admin-sheet-close" data-close-modal="reviewDetailModal">×</button>
+            </div>
+            <div class="admin-sheet-body">
+                <div id="reviewDetailBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-sheet-modal" id="eventCouponModal" aria-hidden="true">
+        <div class="admin-sheet-backdrop" data-close-modal="eventCouponModal"></div>
+        <div class="admin-sheet-panel admin-sheet-panel--wide">
+            <div class="admin-sheet-header">
+                <div>
+                    <p class="admin-sheet-eyebrow">이벤트 쿠폰 발급</p>
+                    <h3>사이트 공용 쿠폰 생성</h3>
+                </div>
+                <button type="button" class="admin-sheet-close" data-close-modal="eventCouponModal">×</button>
+            </div>
+            <div class="admin-sheet-body">
+                <div class="coupon-modal-grid">
+                    <div class="admin-form-grid two-col">
+                        <div class="field-group">
+                            <label>쿠폰 코드</label>
+                            <input type="text" id="eventCouponCode" class="admin-form-input"
+                                placeholder="예: SPRINGOPEN">
+                        </div>
+                        <div class="field-group">
+                            <label>쿠폰명</label>
+                            <input type="text" id="eventCouponName" class="admin-form-input" placeholder="봄 시즌 오픈 쿠폰">
+                        </div>
+                        <div class="field-group">
+                            <label>할인 타입</label>
+                            <select id="eventCouponType" class="admin-form-input">
+                                <option value="percent">퍼센트 할인</option>
+                                <option value="fixed">정액 할인</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label>할인값</label>
+                            <input type="number" id="eventCouponAmount" class="admin-form-input" min="0"
+                                placeholder="20 또는 5000">
+                        </div>
+                        <div class="field-group">
+                            <label>최소 주문 금액</label>
+                            <input type="number" id="eventCouponMinOrder" class="admin-form-input" min="0"
+                                placeholder="0">
+                        </div>
+                        <div class="field-group">
+                            <label>최대 발행 수량</label>
+                            <input type="number" id="eventCouponMaxIssue" class="admin-form-input" min="0"
+                                placeholder="0이면 무제한">
+                        </div>
+                        <div class="field-group">
+                            <label>시작일</label>
+                            <input type="date" id="eventCouponStartsAt" class="admin-form-input">
+                        </div>
+                        <div class="field-group">
+                            <label>종료일</label>
+                            <input type="date" id="eventCouponExpiresAt" class="admin-form-input">
+                        </div>
+                        <div class="field-group full">
+                            <label>쿠폰 설명</label>
+                            <textarea id="eventCouponDescription" class="admin-form-input" rows="4"
+                                placeholder="노출 문구, 발급 목적, 사용 조건을 적어 주세요."></textarea>
+                        </div>
+                        <div class="field-group full">
+                            <label>쿠폰 이미지 URL</label>
+                            <input type="url" id="eventCouponImageUrl" class="admin-form-input"
+                                placeholder="https://...">
+                        </div>
+                        <div class="field-group full">
+                            <label>쿠폰 이미지 업로드</label>
+                            <input type="file" id="eventCouponImageFile" class="admin-form-input" accept="image/*">
+                        </div>
+                    </div>
+                    <aside class="coupon-preview-panel">
+                        <div class="coupon-preview-card">
+                            <div class="coupon-preview-image" id="eventCouponImagePreview">이미지 미리보기</div>
+                            <div class="coupon-preview-content">
+                                <strong id="eventCouponPreviewName">쿠폰명</strong>
+                                <p id="eventCouponPreviewDesc">쿠폰 설명이 여기에 표시됩니다.</p>
+                                <span id="eventCouponPreviewBadge">전체 클래스 적용</span>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+            <div class="admin-sheet-footer">
+                <button type="button" class="btn-small outline" data-close-modal="eventCouponModal">취소</button>
+                <button type="button" class="btn-primary" id="btnSaveEventCoupon">쿠폰 발급</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-sheet-modal" id="couponDetailModal" aria-hidden="true">
+        <div class="admin-sheet-backdrop" data-close-modal="couponDetailModal"></div>
+        <div class="admin-sheet-panel admin-sheet-panel--medium">
+            <div class="admin-sheet-header">
+                <div>
+                    <p class="admin-sheet-eyebrow">쿠폰 상세</p>
+                    <h3 id="couponDetailTitle">이벤트 쿠폰</h3>
+                </div>
+                <button type="button" class="admin-sheet-close" data-close-modal="couponDetailModal">×</button>
+            </div>
+            <div class="admin-sheet-body">
+                <div id="couponDetailBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-sheet-modal" id="settlementDetailModal" aria-hidden="true">
+        <div class="admin-sheet-backdrop" data-close-modal="settlementDetailModal"></div>
+        <div class="admin-sheet-panel admin-sheet-panel--wide">
+            <div class="admin-sheet-header">
+                <div>
+                    <p class="admin-sheet-eyebrow">정산 상세</p>
+                    <h3 id="settlementDetailTitle">정산 상세 정보</h3>
+                </div>
+                <button type="button" class="admin-sheet-close" data-close-modal="settlementDetailModal">×</button>
+            </div>
+            <div class="admin-sheet-body">
+                <div id="settlementDetailBody"></div>
+            </div>
+            <div class="admin-sheet-footer">
+                <button type="button" class="btn-small outline" data-close-modal="settlementDetailModal">닫기</button>
+                <button type="button" class="btn-primary" id="btnDownloadSettlementExcel">세부내용 엑셀받기</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-sheet-modal" id="paymentDetailModal" aria-hidden="true">
+        <div class="admin-sheet-backdrop" data-close-modal="paymentDetailModal"></div>
+        <div class="admin-sheet-panel admin-sheet-panel--wide">
+            <div class="admin-sheet-header">
+                <div>
+                    <p class="admin-sheet-eyebrow">결제 상세</p>
+                    <h3 id="paymentDetailTitle">결제 상세 정보</h3>
+                </div>
+                <button type="button" class="admin-sheet-close" data-close-modal="paymentDetailModal">×</button>
+            </div>
+            <div class="admin-sheet-body">
+                <div id="paymentDetailBody"></div>
+            </div>
+        </div>
+    </div>
 
     <div class="board-modal" id="globalNoticeViewerModal" aria-hidden="true">
         <div class="board-modal-backdrop" data-action="close-global-notice-viewer"></div>
@@ -1343,14 +1819,16 @@
                     <label>구분</label>
                     <div class="board-radio-group">
                         <label class="board-radio-chip">
-                            <input type="radio" name="globalNoticeType" id="globalNoticeTypeNormal" value="normal" checked>
+                            <input type="radio" name="globalNoticeType" id="globalNoticeTypeNormal" value="normal"
+                                checked>
                             <div>
                                 <strong>일반 공지</strong>
                                 <span>일반 안내와 변경 사항을 등록합니다.</span>
                             </div>
                         </label>
                         <label class="board-radio-chip">
-                            <input type="radio" name="globalNoticeType" id="globalNoticeTypeImportant" value="important">
+                            <input type="radio" name="globalNoticeType" id="globalNoticeTypeImportant"
+                                value="important">
                             <div>
                                 <strong>필독 / 중요</strong>
                                 <span>상단 노출이 필요한 중요한 공지입니다.</span>
@@ -1388,16 +1866,16 @@
     </div>
 
     <!-- Admin Core & UI Scripts -->
-    <script src="admin_core.js?v=20260323_03"></script>
-    <script src="admin_homepage_settings.js?v=20260323_02"></script>
-    <script src="admin_recommend.js?v=20260323_05"></script>
-    <script src="admin_classes.js?v=20260324_01"></script>
-    <script src="admin_users.js?v=20260323_02"></script>
-    <script src="admin_users_ext.js?v=20260323_04"></script>
-    <script src="admin_payments.js?v=20260323_02"></script>
-    <script src="admin_dashboard.js?v=20260323_02"></script>
-    <script src="admin_extensions.js?v=20260323_02"></script>
-    <script src="admin_operator_selection.js?v=20260323_02"></script>
+    <script src="admin_core.js?v=20260324_02"></script>
+    <script src="admin_homepage_settings.js?v=20260324_02"></script>
+    <script src="admin_recommend.js?v=20260324_02"></script>
+    <script src="admin_classes.js?v=20260324_02"></script>
+    <script src="admin_users.js?v=20260324_02"></script>
+    <script src="admin_users_ext.js?v=20260324_02"></script>
+    <script src="admin_payments.js?v=20260324_02"></script>
+    <script src="admin_dashboard.js?v=20260324_02"></script>
+    <script src="admin_extensions.js?v=20260324_02"></script>
+    <script src="admin_operator_selection.js?v=20260324_02"></script>
 </body>
 
 </html>

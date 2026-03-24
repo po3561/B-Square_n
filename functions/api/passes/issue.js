@@ -1,5 +1,6 @@
 import { requireClassManager } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
+import { refreshClassStats } from '../_lib/class_support.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -56,6 +57,10 @@ export async function onRequestPost(context) {
     } catch (e) {
       console.warn('[Pass Issue] Log insert failed:', e.message);
     }
+
+    await refreshClassStats(env.DB, class_id).catch((error) => {
+      console.warn('[Pass Issue] refreshClassStats after issue failed:', error.message);
+    });
 
     return json(request, env, {
       success: true,

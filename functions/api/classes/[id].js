@@ -40,7 +40,9 @@ export async function onRequest(context) {
         SELECT
           c.*,
           c.creator_id AS instructor_id,
+          COALESCE(u.name, c.instructor_name) AS creator_name,
           u.profile_image_url AS instructor_profile_image,
+          u.profile_image_url AS creator_profile_image,
           COALESCE(cs.total_visits, 0) AS total_visits,
           COALESCE(cs.total_enrollments, 0) AS total_enrollments,
           COALESCE(cs.total_passes_issued, 0) AS total_passes_issued,
@@ -64,46 +66,26 @@ export async function onRequest(context) {
 
     await bumpClassVisit(db, classId);
 
-    const reviewStats = await db
-      .prepare('SELECT AVG(rating) AS avg_rating, COUNT(*) AS review_count FROM reviews WHERE class_id = ?')
+    const chatCountResult = await db
+      .prepare('SELECT COUNT(*) AS count FROM chat_messages WHERE class_id = ?')
       .bind(classId)
-      .first();
+      .first()
+      .catch(() => ({ count: 0 }));
 
-    let enrollmentCount = { count: 0 };
-    try {
-      const enrollResult = await db
-        .prepare('SELECT COUNT(*) AS count FROM enrollments WHERE class_id = ?')
-        .bind(classId)
-        .first();
-      enrollmentCount = enrollResult || { count: 0 };
-    } catch (error) {
-      console.warn('[API /classes/:id] enrollment stats failed:', error.message);
-    }
-
-    let chatCount = 0;
+    const chatCount = Number(chatCountResult?.count || 0);
     let dailyChatAvg = 0;
-    try {
-      const chatResult = await db
-        .prepare('SELECT COUNT(*) AS count FROM chat_messages WHERE class_id = ?')
-        .bind(classId)
-        .first();
-      chatCount = chatResult?.count || 0;
-
-      if (classData.created_at) {
-        const createdDate = new Date(classData.created_at);
-        const now = new Date();
-        const diffDays = Math.max(1, Math.ceil((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24)));
-        dailyChatAvg = Number((chatCount / diffDays).toFixed(1));
-      }
-    } catch (error) {
-      console.warn('[API /classes/:id] chat stats failed:', error.message);
+    if (classData.created_at) {
+      const createdDate = new Date(classData.created_at);
+      const now = new Date();
+      const diffDays = Math.max(1, Math.ceil((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24)));
+      dailyChatAvg = Number((chatCount / diffDays).toFixed(1));
     }
 
     const result = {
       ...classData,
-      avg_rating: reviewStats?.avg_rating ? Number(reviewStats.avg_rating).toFixed(1) : Number(classData.avg_rating || 0).toFixed(1),
-      review_count: reviewStats?.review_count || classData.review_count || 0,
-      enrollment_count: enrollmentCount?.count || 0,
+      avg_rating: Number(classData.avg_rating || 0).toFixed(1),
+      review_count: Number(classData.review_count || 0),
+      enrollment_count: Number(classData.total_enrollments || classData.current_participants || 0),
       daily_chat_avg: dailyChatAvg,
       image_urls: safeParseJSON(classData.image_urls, []),
       curriculum: safeParseJSON(classData.curriculum, []),

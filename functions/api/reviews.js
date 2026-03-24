@@ -1,6 +1,7 @@
 import { requireClassManager, requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
-import { ensureClassesSchema } from './_lib/schema.js';
+import { refreshClassStats } from './_lib/class_support.js';
+import { ensureClassesSchema, ensureReviewsSchema } from './_lib/schema.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -11,6 +12,7 @@ export async function onRequestGet(context) {
 
   try {
     await ensureClassesSchema(env.DB);
+    await ensureReviewsSchema(env.DB);
 
     const { results } = await env.DB.prepare(
       'SELECT * FROM reviews WHERE class_id = ? ORDER BY created_at DESC'
@@ -31,6 +33,7 @@ export async function onRequestPost(context) {
 
   try {
     await ensureClassesSchema(env.DB);
+    await ensureReviewsSchema(env.DB);
 
     const body = await request.json();
 
@@ -54,6 +57,9 @@ export async function onRequestPost(context) {
     await env.DB.prepare(
       'INSERT INTO reviews (push_key, class_id, user_id, user_name, rating, content) VALUES (?, ?, ?, ?, ?, ?)'
     ).bind(push_key, class_id, auth.user.id, user_name || auth.user.name || auth.user.username || '수강생', rating || 5, content).run();
+    await refreshClassStats(env.DB, class_id).catch((error) => {
+      console.warn('[API /reviews] refreshClassStats after review insert failed:', error.message);
+    });
 
     return json(request, env, { success: true, data: { id: push_key } }, { status: 201 });
   } catch (err) {

@@ -279,7 +279,7 @@ async function openUserDetail(userId) {
     body.innerHTML = `
       <div style="display:grid; gap:1rem;">
         <section style="display:grid; grid-template-columns:110px 1fr; gap:1rem; align-items:start; padding:1rem; border:1px solid #e5e7eb; border-radius:18px; background:#fff;">
-          <img src="${escapeHtml(user.profile_image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.username || 'U')}&background=random`)}" alt="" style="width:110px; height:110px; border-radius:24px; object-fit:cover; background:#f8fafc;">
+          <img src="${escapeHtml(user.profile_image_url || '/assets/default-avatar.svg')}" alt="" style="width:110px; height:110px; border-radius:24px; object-fit:cover; background:#f8fafc;">
           <div style="display:grid; gap:0.75rem;">
             <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
               <span class="admin-badge primary">${escapeHtml(user.role || 'user')}</span>
@@ -683,7 +683,7 @@ if (!window.__BSQ_ADMIN_USERS_CLEAN__) {
       body.innerHTML = `
         <div style="display:grid; gap:1rem;">
           <section style="display:grid; grid-template-columns:110px 1fr; gap:1rem; align-items:start; padding:1rem; border:1px solid #e5e7eb; border-radius:18px; background:#fff;">
-            <img src="${escapeHtml(user.profile_image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.username || 'U')}&background=random`)}" alt="" style="width:110px; height:110px; border-radius:24px; object-fit:cover; background:#f8fafc;">
+            <img src="${escapeHtml(user.profile_image_url || '/assets/default-avatar.svg')}" alt="" style="width:110px; height:110px; border-radius:24px; object-fit:cover; background:#f8fafc;">
             <div style="display:grid; gap:0.75rem;">
               <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
                 <span class="admin-badge primary">${escapeHtml(user.role || 'user')}</span>

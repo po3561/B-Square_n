@@ -19,6 +19,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 전역 State
     const state = { notices: [], classNotices: [], faqs: [], searchQuery: '' };
 
+    function escapeHtml(value = '') {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     // DOM Elements
     const noticeListEl = document.getElementById('noticeList');
     const faqListEl = document.getElementById('faqList');
@@ -29,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ==== 운영 공지 로드 (D1 API) ====
     async function loadNotices() {
-        const result = await window.BSQ.api('/api/notices');
+        const result = await window.BSQ.api('/api/notices', { cacheBust: false });
         if (result.success && result.data) {
             state.notices = result.data.map(n => ({ ...n, source: 'official' }));
             renderNotices();
@@ -38,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ==== 클래스 공지 로드 ====
     async function loadClassNotices() {
-        const result = await window.BSQ.api('/api/class-notices');
+        const result = await window.BSQ.api('/api/class-notices', { cacheBust: false });
         if (result.success && result.data) {
             state.classNotices = result.data.map(n => ({ ...n, source: 'class' }));
             renderClassNotices();
@@ -47,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ==== FAQ 로드 ====
     async function loadFaqs() {
-        const result = await window.BSQ.api('/api/faqs');
+        const result = await window.BSQ.api('/api/faqs', { cacheBust: false });
         if (result.success && result.data) {
             state.faqs = result.data;
             renderFaqs();
@@ -84,8 +93,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `
                 <div class="notice-item ${rowClass}" data-id="${n.id}" data-source="${n.source}">
                     <div class="item-type"><span class="item-badge ${badgeClass}">${badgeText}</span></div>
-                    <div class="item-title">${n.title}</div>
-                    <div class="item-author">${n.author_name || '관리자'}</div>
+                    <div class="item-title">${escapeHtml(n.title || '')}</div>
+                    <div class="item-author">${escapeHtml(n.author_name || '관리자')}</div>
                     <div class="item-date">${dateStr}</div>
                     <div class="item-views">${n.views || 0}</div>
                 </div>
@@ -115,8 +124,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `
                 <div class="notice-item normal" data-classid="${n.class_id || ''}">
                     <div class="item-type"><span class="item-badge class-notice">${n.class_name || '클래스'}</span></div>
-                    <div class="item-title">${n.title}</div>
-                    <div class="item-author">${n.author_name || '강사'}</div>
+                    <div class="item-title">${escapeHtml(n.title || '')}</div>
+                    <div class="item-author">${escapeHtml(n.author_name || '강사')}</div>
                     <div class="item-date">${dateStr}</div>
                     <div class="item-views">${n.views || 0}</div>
                 </div>
@@ -142,10 +151,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         faqListEl.innerHTML = state.faqs.map(f => `
             <div class="faq-item" data-id="${f.id}">
                 <div class="faq-question">
-                    <div class="faq-question-text">Q. ${f.question}</div>
+                    <div class="faq-question-text">Q. ${escapeHtml(f.question || '')}</div>
                     <div class="faq-toggle">▼</div>
                 </div>
-                <div class="faq-answer">${(f.answer || '').replace(/\n/g, '<br>')}</div>
+                <div class="faq-answer">${escapeHtml(f.answer || '').replace(/\n/g, '<br>')}</div>
             </div>
         `).join('');
 
@@ -204,10 +213,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         commentsList.innerHTML = (data.comments || []).map(c => `
             <div class="comment-item">
                 <div class="comment-meta">
-                    <span class="comment-author">${c.user_name}</span>
+                    <span class="comment-author">${escapeHtml(c.user_name || '')}</span>
                     <span class="comment-date">${new Date(c.created_at).toLocaleString()}</span>
                 </div>
-                <div class="comment-text">${(c.content || '').replace(/\n/g, '<br>')}</div>
+                <div class="comment-text">${escapeHtml(c.content || '').replace(/\n/g, '<br>')}</div>
             </div>
         `).join('');
 

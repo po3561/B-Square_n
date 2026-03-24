@@ -72,6 +72,9 @@
             finalOptions.body = normalizeRequestBody(finalOptions.body);
         }
 
+        const shouldBustCache = finalOptions.cacheBust !== false;
+        delete finalOptions.cacheBust;
+
         const candidateBases = [];
         const pushBase = (value) => {
             const normalized = String(value || '').trim().replace(/\/+$/, '');
@@ -102,7 +105,7 @@
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
-            if (method === 'GET') {
+            if (method === 'GET' && shouldBustCache) {
                 const connector = requestUrl.includes('?') ? '&' : '?';
                 requestUrl += `${connector}t=${Date.now()}`;
             }

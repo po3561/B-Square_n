@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function loadCategories() {
     try {
-      const res = await window.BSQ.api(`/api/class-categories?t=${Date.now()}`);
+      const res = await window.BSQ.api('/api/class-categories', { cacheBust: false });
       if (res.success && Array.isArray(res.data) && res.data.length > 0) {
         state.categories = res.data.map((item) => ({
           name: String(item.name || '').trim(),
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function loadClasses() {
     try {
-      const result = await window.BSQ.api(`/api/classes?limit=500&t=${Date.now()}`);
+      const result = await window.BSQ.api('/api/classes?limit=500', { cacheBust: false });
       state.allClasses = result.success && Array.isArray(result.data) ? result.data : [];
     } catch (error) {
       console.error('[class_list] D1 API load error:', error);
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const discountRate = Number(cls.discount_rate || 0);
       const originalPrice = Number(cls.price || 0);
       const currentPrice = getEffectivePrice(cls);
-      const imageUrl = cls.image_url || cls.thumbnail || 'https://via.placeholder.com/400x250';
+      const imageUrl = cls.image_url || cls.thumbnail || '/assets/default-cover.svg';
       const avgRating = cls.avg_rating ? Number(cls.avg_rating).toFixed(1) : '0.0';
       const reviewCount = Number(cls.review_count || 0);
       const likeCount = Number(cls.like_count || cls.bookmark_count || 0);
@@ -270,8 +270,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function reloadData() {
-    await loadCategories();
-    await loadClasses();
+    await Promise.all([loadCategories(), loadClasses()]);
     renderCategorySidebar();
     renderClasses();
   }

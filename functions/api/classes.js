@@ -3,6 +3,10 @@ import { json } from './_lib/http.js';
 import { ensureClassesSchema, ensureReviewsSchema, ensureClassStatsSchema } from './_lib/schema.js';
 import { ensureClassBookmarksSchema } from './_lib/class_support.js';
 
+const RESPONSE_HEADERS = {
+    'Cache-Control': 'public, max-age=15, stale-while-revalidate=120',
+};
+
 export async function onRequest(context) {
     const { request, env } = context;
     const db = env.DB;
@@ -87,7 +91,7 @@ export async function onRequest(context) {
                 is_public: Number(cls.is_public ?? 1) === 1,
             }));
 
-            return json(request, env, { success: true, data: enriched, meta: { limit, offset, count: enriched.length } });
+            return json(request, env, { success: true, data: enriched, meta: { limit, offset, count: enriched.length } }, { headers: RESPONSE_HEADERS });
         } catch (error) {
             return json(request, env, { success: false, error: '클래스 목록 조회 중 오류가 발생했습니다.', detail: error.message }, { status: 500 });
         }

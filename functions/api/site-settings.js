@@ -1,6 +1,10 @@
 import { ensureSiteSettingsSchema } from './_lib/schema.js';
 import { json, options } from './_lib/http.js';
 
+const RESPONSE_HEADERS = {
+  'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
+};
+
 function parseJsonArray(value) {
   try {
     const parsed = JSON.parse(value || '[]');
@@ -29,7 +33,7 @@ export async function onRequest(context) {
             banners: [],
             bottom_banners: [],
           },
-        });
+        }, { headers: RESPONSE_HEADERS });
       }
 
       const banners = parseJsonArray(settings.banners);
@@ -63,7 +67,7 @@ export async function onRequest(context) {
           footer_instagram_url: settings.footer_instagram_url,
           footer_youtube_url: settings.footer_youtube_url,
         },
-      });
+      }, { headers: RESPONSE_HEADERS });
     } catch (error) {
       console.error('[API /site-settings GET] Error:', error);
       return json(request, env, { success: false, error: error.message }, { status: 500 });

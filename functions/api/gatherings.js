@@ -1,4 +1,5 @@
 import { ensureGatheringsSchema } from './_lib/schema.js';
+import { refreshClassStats } from './_lib/class_support.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -33,25 +34,36 @@ export async function onRequestGet(context) {
     
     if (action === 'detail') {
         const gathering_id = url.searchParams.get('gathering_id');
-        const gatherRes = await env.DB.prepare('SELECT * FROM class_gatherings WHERE id = ?').bind(gathering_id).first();
+        const gatherRes = await env.DB.prepare(`
+          SELECT g.*, COALESCE(p.participant_count, 0) AS current_participants
+          FROM class_gatherings g
+          LEFT JOIN (
+            SELECT gathering_id, COUNT(*) AS participant_count
+            FROM gathering_participants
+            GROUP BY gathering_id
+          ) p ON p.gathering_id = g.id
+          WHERE g.id = ?
+        `).bind(gathering_id).first();
         if(!gatherRes) return new Response(JSON.stringify({ success: false, error: 'Not found' }), { status: 404, headers: cors });
-        
-        const cntRes = await env.DB.prepare('SELECT COUNT(*) as cnt FROM gathering_participants WHERE gathering_id = ?').bind(gathering_id).first();
-        gatherRes.current_participants = cntRes.cnt;
         
         return new Response(JSON.stringify({ success: true, data: gatherRes }), { headers: cors });
     }
 
     // Default: get gatherings for a class
-    const { results } = await env.DB.prepare(
-      'SELECT * FROM class_gatherings WHERE class_id = ? ORDER BY gathering_at ASC'
+    const { results } = await env.DB.prepare(`
+      SELECT
+        g.*,
+        COALESCE(p.participant_count, 0) AS current_participants
+      FROM class_gatherings g
+      LEFT JOIN (
+        SELECT gathering_id, COUNT(*) AS participant_count
+        FROM gathering_participants
+        GROUP BY gathering_id
+      ) p ON p.gathering_id = g.id
+      WHERE g.class_id = ?
+      ORDER BY g.gathering_at ASC
+    `
     ).bind(class_id).all();
-
-    // Also fetch participant counts
-    for (const g of results) {
-       const cntRes = await env.DB.prepare('SELECT COUNT(*) as cnt FROM gathering_participants WHERE gathering_id = ?').bind(g.id).first();
-       g.current_participants = cntRes.cnt;
-    }
 
     return new Response(JSON.stringify({ success: true, data: results }), { headers: cors });
   } catch (err) {
@@ -104,6 +116,10 @@ export async function onRequestPost(context) {
         INSERT INTO class_gatherings (id, class_id, instructor_id, title, description, location, gathering_at, deadline_at, capacity_min, capacity_max, status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open')
       `).bind(id, class_id, effectiveInstructorId, title, description || '', location || '', gathering_at, effectiveDeadlineAt, effectiveCapacityMin, effectiveCapacityMax).run();
+
+      await refreshClassStats(env.DB, class_id).catch((error) => {
+        console.warn('[API /gatherings] refreshClassStats after gathering create failed:', error.message);
+      });
 
       return new Response(JSON.stringify({ success: true, data: { id } }), { status: 201, headers: cors });
       

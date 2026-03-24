@@ -24,8 +24,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Admin Check Logic (D1 Session)
     async function applyAdminUI() {
-        const user = window.BSQ?.getUser();
-        const isLoggedIn = window.BSQ?.isLoggedIn();
+        const user = window.BSQ?.userProfile || window.BSQ?.session?.user || null;
+        const isLoggedIn = !!window.BSQ?.isLoggedIn;
         
         let isAdmin = false;
         if (isLoggedIn && user) {
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.disabled = true;
 
         try {
-            const user = window.BSQ?.getUser();
+            const user = window.BSQ?.userProfile || window.BSQ?.session?.user || null;
             const endpoint = dataType === 'notice' ? '/api/notices' : '/api/faqs';
             
             let payload = {};

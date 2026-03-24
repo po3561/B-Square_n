@@ -119,6 +119,7 @@ export async function onRequest(context) {
 
   const url = new URL(request.url);
   const roomType = url.searchParams.get('room_type') || 'dm';
+  const pinnedOnly = ['1', 'true', 'yes'].includes((url.searchParams.get('pinned_only') || '').toLowerCase());
 
   try {
     await ensureDmMessagesSchema(env.DB);
@@ -144,6 +145,10 @@ export async function onRequest(context) {
       if (sinceClause.sql) {
         query += sinceClause.sql;
         binds.push(sinceClause.bind);
+      }
+
+      if (pinnedOnly) {
+        query += ' AND is_pinned = 1';
       }
 
       query += ' ORDER BY id ASC LIMIT ?';
@@ -255,16 +260,29 @@ export async function onRequest(context) {
 
     if (request.method === 'PATCH' && subResource) {
       const body = await request.json();
-      const content = body.content || body.message || '';
-      if (!content) {
-        return json(request, env, { success: false, error: 'content가 필요합니다.' }, { status: 400 });
+      const content = typeof body.content === 'string' ? body.content.trim() : '';
+      const hasContent = content.length > 0;
+      const hasPinState = body.is_pinned !== undefined;
+
+      if (!hasContent && !hasPinState) {
+        return json(request, env, { success: false, error: 'content 또는 is_pinned 값이 필요합니다.' }, { status: 400 });
       }
 
-      await env.DB.prepare(`
-        UPDATE dm_messages
-        SET content = ?, message = ?, is_edited = 1, updated_at = datetime('now')
-        WHERE id = ? AND room_id = ? AND sender_id = ?
-      `).bind(content, content, subResource, roomId, auth.user.id).run();
+      if (hasContent) {
+        await env.DB.prepare(`
+          UPDATE dm_messages
+          SET content = ?, message = ?, is_edited = 1, updated_at = datetime('now')
+          WHERE id = ? AND room_id = ? AND sender_id = ?
+        `).bind(content, content, subResource, roomId, auth.user.id).run();
+      }
+
+      if (hasPinState) {
+        await env.DB.prepare(`
+          UPDATE dm_messages
+          SET is_pinned = ?, updated_at = datetime('now')
+          WHERE id = ? AND room_id = ?
+        `).bind(body.is_pinned ? 1 : 0, subResource, roomId).run();
+      }
 
       return json(request, env, { success: true });
     }

@@ -1,4 +1,5 @@
 import { ensureClassStatsSchema, ensureClassesSchema, ensureRecommendationsSchema } from '../_lib/schema.js';
+import { loadClassesByIds } from '../_lib/class_support.js';
 import { json as jsonResponse, options } from '../_lib/http.js';
 
 function json(request, env, data, init = {}) {
@@ -111,59 +112,34 @@ function parseDeletedFolderIds(body) {
 }
 
 async function enrichFolders(db, folders) {
-  const enrichedFolders = [];
+  const classIds = Array.isArray(folders)
+    ? folders.flatMap((folder) => parseMaybeJsonArray(folder.class_ids))
+    : [];
+  const classMap = await loadClassesByIds(db, classIds, { publicOnly: false });
 
-  for (const folder of folders) {
-    let classIds = [];
-    try {
-      classIds = JSON.parse(folder.class_ids || '[]');
-      if (!Array.isArray(classIds)) classIds = [];
-    } catch {
-      classIds = [];
-    }
+  return (folders || []).map((folder) => {
+    const folderClassIds = parseMaybeJsonArray(folder.class_ids);
+    const folderClasses = folderClassIds
+      .map((id) => {
+        const classData = classMap.get(String(id));
+        if (!classData) {
+          console.warn('[API /admin/recommendations] Missing class for recommendation entry:', id);
+        }
+        return classData || null;
+      })
+      .filter(Boolean);
 
-    let folderClasses = [];
-    if (classIds.length > 0) {
-      const placeholders = classIds.map(() => '?').join(',');
-      const { results } = await db
-        .prepare(`
-          SELECT
-            c.id, c.title, c.thumbnail, c.image_url, c.category, c.price,
-            c.instructor_name, c.creator_id AS instructor_id, c.discount_rate,
-            COALESCE(s.avg_rating, 0) AS avg_rating,
-            COALESCE(s.review_count, 0) AS review_count
-          FROM classes c
-          LEFT JOIN class_stats s ON c.id = s.class_id
-          WHERE c.id IN (${placeholders})
-        `)
-        .bind(...classIds)
-        .all();
-
-      const classMap = new Map((results || []).map((item) => [String(item.id), item]));
-      folderClasses = classIds
-        .map((id) => {
-          const classData = classMap.get(String(id));
-          if (!classData) {
-            console.warn('[API /admin/recommendations] Missing class for recommendation entry:', id);
-          }
-          return classData || null;
-        })
-        .filter(Boolean);
-    }
-
-    enrichedFolders.push({
+    return {
       folder_id: folder.folder_id,
       title: folder.title,
       description: folder.description || '',
       category: folder.category || 'all',
       type: folder.type || 'regular',
       sort_order: folder.sort_order,
-      class_ids: classIds,
+      class_ids: folderClassIds,
       classes: folderClasses,
-    });
-  }
-
-  return enrichedFolders;
+    };
+  });
 }
 
 async function upsertFolders(db, folders) {

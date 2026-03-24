@@ -1,4 +1,4 @@
-import { addColumnIfMissing, ensureClassesSchema } from './schema.js';
+import { addColumnIfMissing, ensureClassStatsSchema, ensureClassesSchema } from './schema.js';
 
 let classCategoriesSchemaReady = false;
 let classBookmarksSchemaReady = false;
@@ -44,6 +44,51 @@ function uniqueCategories(values) {
         .filter(Boolean),
     ),
   );
+}
+
+function uniqueStrings(values) {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => String(value || '').trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function extractSubInstructorIds(rawValue) {
+  if (!rawValue) return [];
+
+  let parsed = rawValue;
+  if (typeof rawValue === 'string') {
+    try {
+      parsed = JSON.parse(rawValue);
+    } catch {
+      parsed = [];
+    }
+  }
+
+  if (!Array.isArray(parsed)) return [];
+
+  return uniqueStrings(parsed.map((item) => {
+    if (typeof item === 'string') return item;
+    if (item && typeof item === 'object') {
+      return item.id || item.user_id || item.userId || '';
+    }
+    return '';
+  }));
+}
+
+function buildNotInClause(column, values = []) {
+  const ids = uniqueStrings(values);
+  if (!ids.length) {
+    return { clause: '', binds: [] };
+  }
+
+  return {
+    clause: ` AND ${column} NOT IN (${ids.map(() => '?').join(',')})`,
+    binds: ids,
+  };
 }
 
 function categorySortOrder(name, fallbackIndex) {
@@ -130,6 +175,122 @@ export async function ensureClassBookmarksSchema(db) {
   }
 }
 
+export async function loadClassStaffIds(db, classId) {
+  const id = String(classId || '').trim();
+  if (!id) return [];
+
+  await ensureClassesSchema(db);
+
+  const row = await db.prepare(`
+    SELECT creator_id, sub_instructors
+    FROM classes
+    WHERE id = ?
+  `).bind(id).first().catch(() => null);
+
+  if (!row) return [];
+
+  return uniqueStrings([
+    row.creator_id,
+    ...extractSubInstructorIds(row.sub_instructors),
+  ]);
+}
+
+export async function refreshClassStats(db, classId) {
+  const id = String(classId || '').trim();
+  if (!id) return null;
+
+  await ensureClassesSchema(db);
+  await ensureClassStatsSchema(db);
+
+  const staffIds = await loadClassStaffIds(db, id).catch(() => []);
+  const enrollmentFilter = buildNotInClause('user_id', staffIds);
+  const reviewFilter = buildNotInClause('user_id', staffIds);
+  const bookmarkFilter = buildNotInClause('user_id', staffIds);
+  const passFilter = buildNotInClause('user_id', staffIds);
+
+  const [
+    enrollmentRow,
+    reviewRow,
+    bookmarkRow,
+    revenueRow,
+    gatheringRow,
+    passRow,
+  ] = await Promise.all([
+    db.prepare(`SELECT COUNT(DISTINCT user_id) AS total_enrollments FROM enrollments WHERE class_id = ?${enrollmentFilter.clause}`).bind(id, ...enrollmentFilter.binds).first().catch(() => ({ total_enrollments: 0 })),
+    db.prepare(`SELECT COALESCE(AVG(rating), 0) AS avg_rating, COUNT(*) AS review_count FROM reviews WHERE class_id = ?${reviewFilter.clause}`).bind(id, ...reviewFilter.binds).first().catch(() => ({ avg_rating: 0, review_count: 0 })),
+    db.prepare(`SELECT COUNT(*) AS bookmark_count FROM class_bookmarks WHERE class_id = ?${bookmarkFilter.clause}`).bind(id, ...bookmarkFilter.binds).first().catch(() => ({ bookmark_count: 0 })),
+    db.prepare('SELECT COALESCE(SUM(final_amount), 0) AS total_revenue FROM orders WHERE class_id = ? AND paid_at IS NOT NULL').bind(id).first().catch(() => ({ total_revenue: 0 })),
+    db.prepare('SELECT COUNT(*) AS total_gatherings FROM class_gatherings WHERE class_id = ?').bind(id).first().catch(() => ({ total_gatherings: 0 })),
+    db.prepare(`
+      SELECT
+        COALESCE(SUM(COALESCE(total_count, total_passes, total, remaining_count, remaining_passes, remaining, 0)), 0) AS total_passes_issued,
+        COALESCE(SUM(
+          COALESCE(total_count, total_passes, total, remaining_count, remaining_passes, remaining, 0)
+          - COALESCE(remaining_count, remaining_passes, remaining, 0)
+        ), 0) AS total_passes_used
+      FROM user_passes
+      WHERE class_id = ?${passFilter.clause}
+    `).bind(id, ...passFilter.binds).first().catch(() => ({ total_passes_issued: 0, total_passes_used: 0 })),
+  ]);
+
+  const totalEnrollments = Number(enrollmentRow?.total_enrollments || 0);
+  const reviewCount = Number(reviewRow?.review_count || 0);
+  const avgRating = Number(reviewRow?.avg_rating || 0);
+  const bookmarkCount = Number(bookmarkRow?.bookmark_count || 0);
+  const totalRevenue = Number(revenueRow?.total_revenue || 0);
+  const totalGatherings = Number(gatheringRow?.total_gatherings || 0);
+  const totalPassesIssued = Number(passRow?.total_passes_issued || 0);
+  const totalPassesUsed = Number(passRow?.total_passes_used || 0);
+
+  const statements = [
+    db.prepare(`
+      INSERT INTO class_stats (
+        class_id, total_enrollments, total_passes_issued, total_passes_used,
+        total_revenue, total_gatherings, avg_rating, review_count,
+        bookmark_count, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      ON CONFLICT(class_id) DO UPDATE SET
+        total_enrollments = excluded.total_enrollments,
+        total_passes_issued = excluded.total_passes_issued,
+        total_passes_used = excluded.total_passes_used,
+        total_revenue = excluded.total_revenue,
+        total_gatherings = excluded.total_gatherings,
+        avg_rating = excluded.avg_rating,
+        review_count = excluded.review_count,
+        bookmark_count = excluded.bookmark_count,
+        updated_at = excluded.updated_at
+    `).bind(
+      id,
+      totalEnrollments,
+      totalPassesIssued,
+      totalPassesUsed,
+      totalRevenue,
+      totalGatherings,
+      avgRating,
+      reviewCount,
+      bookmarkCount,
+    ),
+    db.prepare(`
+      UPDATE classes
+      SET current_participants = ?
+      WHERE id = ?
+    `).bind(totalEnrollments, id),
+  ];
+
+  await db.batch(statements);
+
+  return {
+    total_enrollments: totalEnrollments,
+    total_passes_issued: totalPassesIssued,
+    total_passes_used: totalPassesUsed,
+    total_revenue: totalRevenue,
+    total_gatherings: totalGatherings,
+    avg_rating: avgRating,
+    review_count: reviewCount,
+    bookmark_count: bookmarkCount,
+  };
+}
+
 export async function loadClassCategories(db, { activeOnly = true } = {}) {
   await ensureClassCategoriesSchema(db);
 
@@ -176,6 +337,69 @@ export async function loadBookmarkCountMap(db, classIds = []) {
   `).bind(...ids).all();
 
   return new Map((results || []).map((row) => [String(row.class_id), Number(row.bookmark_count || 0)]));
+}
+
+function chunkArray(values, size = 200) {
+  if (!Array.isArray(values) || values.length === 0) return [];
+  const chunks = [];
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
+  }
+  return chunks;
+}
+
+export async function loadClassesByIds(db, classIds = [], { publicOnly = true } = {}) {
+  await ensureClassesSchema(db);
+  await ensureClassStatsSchema(db);
+
+  const ids = uniqueStrings(classIds);
+  if (!ids.length) return new Map();
+
+  const classMap = new Map();
+  const publicClause = publicOnly ? 'AND COALESCE(c.is_public, 1) = 1' : '';
+
+  for (const chunk of chunkArray(ids, 200)) {
+    const placeholders = chunk.map(() => '?').join(',');
+    const { results } = await db.prepare(`
+      SELECT
+        c.id,
+        c.title,
+        c.thumbnail,
+        c.image_url,
+        c.category,
+        c.price,
+        c.discount_rate,
+        c.coupon_pack,
+        c.class_type,
+        c.is_free,
+        c.is_public,
+        c.current_participants,
+        c.created_at,
+        c.updated_at,
+        c.creator_id AS instructor_id,
+        c.instructor_name,
+        c.instructor_email,
+        c.instructor_phone,
+        u.name AS creator_name,
+        COALESCE(u.email, c.creator_email) AS creator_email,
+        u.phone AS creator_phone,
+        COALESCE(s.avg_rating, 0) AS avg_rating,
+        COALESCE(s.review_count, 0) AS review_count,
+        COALESCE(s.bookmark_count, 0) AS bookmark_count,
+        COALESCE(s.total_enrollments, c.current_participants, 0) AS total_enrollments
+      FROM classes c
+      LEFT JOIN users u ON u.id = c.creator_id
+      LEFT JOIN class_stats s ON s.class_id = c.id
+      WHERE c.id IN (${placeholders})
+      ${publicClause}
+    `).bind(...chunk).all();
+
+    for (const row of results || []) {
+      classMap.set(String(row.id), row);
+    }
+  }
+
+  return classMap;
 }
 
 export function getEffectiveClassPrice(row) {

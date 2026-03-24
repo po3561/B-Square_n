@@ -1,5 +1,6 @@
 import { requireSession } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
+import { refreshClassStats } from '../_lib/class_support.js';
 
 function pickRemaining(row) {
   return row.remaining_count ?? row.remaining_passes ?? row.remaining ?? 0;
@@ -57,6 +58,10 @@ export async function onRequestPost(context) {
           WHERE id = ?
         `).bind(nextRemaining, pass.id).run();
       });
+    });
+
+    await refreshClassStats(env.DB, classId).catch((error) => {
+      console.warn('[API /user-passes/use] refreshClassStats after use failed:', error.message);
     });
 
     return json(request, env, {

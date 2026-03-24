@@ -113,7 +113,7 @@
     const src = user?.profile_image_url;
     if (src && String(src).trim()) return src;
     const name = encodeURIComponent(user?.name || user?.username || user?.email || 'U');
-    return `https://ui-avatars.com/api/?name=${name}&background=random&color=fff`;
+    return '/assets/default-avatar.svg';
   }
 
   function getUserDisplayName(user) {

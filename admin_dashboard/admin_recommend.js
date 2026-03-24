@@ -575,7 +575,7 @@ async function ensureCategoriesLoaded() {
 
     state.categoriesLoading = (async () => {
         try {
-            const res = await BSQ.api('/api/class-categories');
+            const res = await BSQ.api('/api/class-categories', { cacheBust: false });
             if (!res.success) throw new Error(res.error || '카테고리를 불러오지 못했습니다.');
             state.categories = Array.isArray(res.data) ? res.data.map((item) => ({
                 name: idOf(item.name),

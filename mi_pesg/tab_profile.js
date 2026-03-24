@@ -46,7 +46,7 @@ window.initProfileTab = function (userId, user) {
 
     async function loadCategories() {
         try {
-            const res = await window.BSQ.api(`/api/class-categories?t=${Date.now()}`);
+            const res = await window.BSQ.api('/api/class-categories', { cacheBust: false });
             if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
                 return normalizeCategories(res.data);
             }

@@ -243,7 +243,7 @@ export async function requireClassManager(context, classId) {
   if (
     isAtLeastRole(current.user.role, 'operator') ||
     cls.creator_id === userId ||
-    String(cls.sub_instructors || '').includes(userId)
+    hasSubInstructorAccess(cls.sub_instructors, userId)
   ) {
     return current;
   }
@@ -255,4 +255,33 @@ export async function requireClassManager(context, classId) {
       error: '클래스 관리 권한이 필요합니다.',
     }, { status: 403 }),
   };
+}
+
+function hasSubInstructorAccess(rawValue, userId) {
+  const targetId = String(userId || '').trim();
+  if (!targetId) return false;
+
+  const matches = (value) => String(value || '').trim() === targetId;
+
+  if (Array.isArray(rawValue)) {
+    return rawValue.some((item) => matches(item?.id ?? item?.user_id ?? item));
+  }
+
+  const rawText = String(rawValue || '').trim();
+  if (!rawText) return false;
+
+  try {
+    const parsed = JSON.parse(rawText);
+    if (Array.isArray(parsed)) {
+      return parsed.some((item) => matches(item?.id ?? item?.user_id ?? item));
+    }
+  } catch {
+    // fall through to delimited string matching
+  }
+
+  return rawText
+    .split(/[,\s]+/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .some(matches);
 }

@@ -1,5 +1,5 @@
 ;(function () {
-var ADMIN_CLASSES_VERSION = '2026.03.23-11';
+var ADMIN_CLASSES_VERSION = '2026.03.24-01';
 
 var PREMIUM_EMOJIS = [
   '✨', '💎', '🪄', '🌈', '🔥', '⚡', '🌿', '🍀', '🫧', '🎯',
@@ -797,6 +797,40 @@ function renderRefundCard(refund) {
   `;
 }
 
+function renderProfileAvatar(person = {}, className = 'class-instructor-avatar', fallback = 'A') {
+  const image = person.profile_image_url || person.avatar || person.image_url || '';
+  const label = String(person.name || person.nickname || fallback).trim().charAt(0) || fallback;
+  const avatarStyle = image
+    ? ` style="background-image:url('${escapeAttr(image)}'); background-size:cover; background-position:center; background-repeat:no-repeat; color:transparent;"`
+    : '';
+
+  return `<div class="${className}"${avatarStyle}>${image ? '' : escapeHtml(label)}</div>`;
+}
+
+function renderSubInstructorCard(person, index) {
+  const name = person.name || person.nickname || `서브 강사 ${index + 1}`;
+  const roleLabel = person.role === 'admin'
+    ? '관리자'
+    : person.role === 'operator'
+      ? '운영자'
+      : '서브 강사';
+
+  return `
+    <article class="class-sub-instructor-card">
+      ${renderProfileAvatar(person, 'class-sub-instructor-avatar', '서')}
+      <div class="class-sub-instructor-copy">
+        <strong>${escapeHtml(name)}</strong>
+        <span>${escapeHtml(person.email || '이메일 정보 없음')}</span>
+        <span>${escapeHtml(person.phone || '연락처 정보 없음')}</span>
+      </div>
+      <div class="class-sub-instructor-meta">
+        <span class="class-sub-instructor-role">${escapeHtml(roleLabel)}</span>
+        <span>ID ${escapeHtml(person.id || person.user_id || '-')}</span>
+      </div>
+    </article>
+  `;
+}
+
 function renderClassDetailModal() {
   const body = document.getElementById('classDetailBody');
   if (!body || !state.detail) return;
@@ -808,20 +842,29 @@ function renderClassDetailModal() {
   const revenue = detail.revenue_by_range || {};
   const meetingStats = detail.meeting_stats || {};
   const refunds = Array.isArray(detail.refund_logs) ? detail.refund_logs : [];
+  const subInstructors = Array.isArray(cls.sub_instructors)
+    ? cls.sub_instructors
+    : Array.isArray(detail.sub_instructors)
+      ? detail.sub_instructors
+      : [];
   const selectedRevenue = toNumber(revenue[state.detailRange], 0);
+  const instructorName = instructor.name || cls.instructor_name || '-';
+  const instructorAvatar = instructor.profile_image_url || cls.instructor_profile_image || cls.creator_profile_image || '';
+  const instructorInitial = String(instructorName).trim().charAt(0) || 'A';
   const metricCards = [
-    { label: '총 수강생수', value: formatNumber(summary.total_students || cls.total_enrollments || cls.current_participants || 0) },
-    { label: '최근 활동인원', value: formatNumber(summary.recent_active_students || 0) },
-    { label: '최근 모임참석 수강생', value: formatNumber(summary.recent_meeting_attendance || meetingStats.recent_attendance_count || 0) },
-    { label: '수강권 총 발행', value: formatNumber(cls.total_passes_issued || 0) },
-    { label: '수강권 사용', value: formatNumber(cls.total_passes_used || 0) },
-    { label: '모임 1회 평균 매출', value: formatCurrency(summary.avg_revenue_per_meeting || 0) },
-    { label: '좋아요 수', value: formatNumber(cls.bookmark_count || cls.like_count || 0) },
-    { label: '조회수', value: formatNumber(cls.total_visits || 0) },
-    { label: '리뷰 수', value: formatNumber(cls.review_count || 0) },
-    { label: '별점', value: Number(cls.avg_rating || 0).toFixed(1) },
-    { label: '환불 누적', value: formatCurrency(summary.total_refund_amount || 0) },
-    { label: '공개 상태', value: cls.is_public ? '공개' : '비공개' },
+    { label: '총 수강생수', value: formatNumber(summary.total_students ?? cls.total_students ?? cls.total_enrollments ?? cls.current_participants ?? 0) },
+    { label: '최근 활동인원', value: formatNumber(summary.recent_active_students ?? cls.recent_active_students ?? 0) },
+    { label: '최근 모임참석 수강생', value: formatNumber(summary.recent_meeting_attendee_count ?? summary.recent_meeting_attendance ?? cls.recent_meeting_attendee_count ?? cls.recent_meeting_attendance ?? meetingStats.recent_attendee_count ?? 0) },
+    { label: '수강권 총 발행', value: formatNumber(summary.total_passes_issued ?? cls.total_passes_issued ?? 0) },
+    { label: '수강권 사용', value: formatNumber(summary.total_passes_used ?? cls.total_passes_used ?? 0) },
+    { label: '총 모임 수', value: formatNumber(summary.total_meetings ?? cls.total_meetings ?? cls.total_gatherings ?? 0) },
+    { label: '모임 1회 평균 매출', value: formatCurrency(summary.avg_revenue_per_meeting ?? 0) },
+    { label: '좋아요 수', value: formatNumber(summary.bookmark_count ?? cls.bookmark_count ?? cls.like_count ?? 0) },
+    { label: '조회수', value: formatNumber(summary.total_visits ?? cls.total_visits ?? 0) },
+    { label: '리뷰 수', value: formatNumber(summary.review_count ?? cls.review_count ?? 0) },
+    { label: '별점', value: Number(summary.avg_rating ?? cls.avg_rating ?? 0).toFixed(1) },
+    { label: '환불 누적', value: formatCurrency(summary.total_refund_amount ?? cls.total_refund_amount ?? 0) },
+    { label: '공개 상태', value: cls.is_public ? '공개' : '비공개', wide: true },
   ];
 
   body.innerHTML = `
@@ -845,13 +888,28 @@ function renderClassDetailModal() {
         <div class="class-detail-panel class-detail-instructor">
           <div class="class-detail-panel-title">메인 강사상세정보</div>
           <div class="class-detail-instructor-card">
-            <div class="class-instructor-avatar large">${escapeHtml(String(instructor.name || cls.instructor_name || 'A').trim().charAt(0) || 'A')}</div>
+            ${renderProfileAvatar({
+              profile_image_url: instructorAvatar,
+              name: instructorName,
+            }, 'class-instructor-avatar large', instructorInitial)}
             <div class="class-instructor-copy">
-              <strong>${escapeHtml(instructor.name || cls.instructor_name || '-')}</strong>
+              <strong>${escapeHtml(instructorName)}</strong>
               <span>ID ${escapeHtml(instructor.id || cls.instructor_id || '-')}</span>
               <span>${escapeHtml(instructor.email || cls.instructor_email || '-')}</span>
               <span>${escapeHtml(instructor.phone || cls.instructor_phone || '-')}</span>
             </div>
+          </div>
+
+          <div class="class-detail-sub-instructors">
+            <div class="class-detail-panel-title class-detail-sub-instructors-title">
+              서브 강사 정보
+              <span>${formatNumber(subInstructors.length)}명</span>
+            </div>
+            ${subInstructors.length
+              ? `<div class="class-detail-sub-instructor-list">
+                  ${subInstructors.map((person, index) => renderSubInstructorCard(person, index)).join('')}
+                </div>`
+              : '<div class="class-empty-inline class-detail-sub-instructor-empty">등록된 서브 강사가 없습니다.</div>'}
           </div>
         </div>
 
@@ -878,7 +936,7 @@ function renderClassDetailModal() {
 
       <div class="class-detail-stats-grid">
         ${metricCards.map((item) => `
-          <div class="class-detail-stat-card">
+          <div class="class-detail-stat-card${item.wide ? ' class-detail-stat-card--wide' : ''}">
             <span>${escapeHtml(item.label)}</span>
             <strong>${escapeHtml(item.value)}</strong>
           </div>

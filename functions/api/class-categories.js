@@ -2,7 +2,7 @@ import { json, options } from './_lib/http.js';
 import { loadClassCategories } from './_lib/class_support.js';
 
 const RESPONSE_HEADERS = {
-  'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+  'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
 };
 
 export async function onRequest(context) {
@@ -28,7 +28,7 @@ export async function onRequest(context) {
       })),
     }, { headers: RESPONSE_HEADERS });
   } catch (error) {
-    return json(request, env, { success: false, error: error.message }, { status: 500, headers: RESPONSE_HEADERS });
+    return json(request, env, { success: false, error: error.message }, { status: 500 });
   }
 }
 
