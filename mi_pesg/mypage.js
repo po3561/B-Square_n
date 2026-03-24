@@ -230,8 +230,8 @@ function renderFriendCard(item, mode) {
                 </div>
             </div>
             <div class="friend-actions">
-                <button class="friend-action message" data-friend-message="${escapeHtml(item.friend_id)}" title="메시지"><i class="fa-solid fa-comment"></i></button>
-                <button class="friend-action remove" data-friend-remove="${escapeHtml(item.friend_id)}" title="삭제"><i class="fa-solid fa-user-minus"></i></button>
+                <button class="friend-action message" data-friend-message="${escapeHtml(item.friend_id)}" title="메시지"><i class="fa-solid fa-comment"></i> 메시지 보내기</button>
+                <button class="friend-action remove" data-friend-remove="${escapeHtml(item.friend_id)}" title="삭제"><i class="fa-solid fa-user-minus"></i> 친구 삭제</button>
             </div>
         </article>
     `;
