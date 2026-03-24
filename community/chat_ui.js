@@ -12,10 +12,95 @@ window.CommunityModules.ChatUI = (function () {
     let editingMsgKey = null;
     let themeStorageKey = 'bsq_theme';
     let isSending = false;
-    let currentPins = {};
+    let currentPins = [];
     let pollTimer = null;
     let lastMsgTimestamp = 0;
     let messageStream = null;
+
+    function isClassRoom(roomType = currentRoomType) {
+        return roomType === 'class';
+    }
+
+    function parseMaybeJson(value, fallback = null) {
+        if (value == null || value === '') return fallback;
+        if (typeof value === 'object') return value;
+        try {
+            return JSON.parse(value);
+        } catch {
+            return fallback;
+        }
+    }
+
+    function normalizeIncomingMessage(row) {
+        if (!row) return row;
+
+        const normalized = { ...row };
+        const content = normalized.content || normalized.message || normalized.text || '';
+        normalized.content = content;
+        normalized.message = normalized.message || content;
+        normalized.text = normalized.text || content;
+        normalized.reactions = parseMaybeJson(normalized.reactions, {}) || {};
+        normalized.reply_data = parseMaybeJson(normalized.reply_data, null);
+        normalized.edited = !!(normalized.edited || normalized.is_edited === 1 || normalized.is_edited === true);
+
+        if (normalized.reply_data && typeof normalized.reply_data === 'object') {
+            normalized.reply_to = normalized.reply_to || normalized.reply_data.id || null;
+            normalized.reply_text = normalized.reply_text || normalized.reply_data.message || normalized.reply_data.content || '';
+            normalized.reply_user = normalized.reply_user || normalized.reply_data.user_name || normalized.reply_data.sender_name || '';
+        }
+
+        if ((normalized.type === 'gathering' || normalized.type === 'gathering_card') && content && !normalized.gather_title) {
+            const payload = parseMaybeJson(content, null);
+            if (payload && typeof payload === 'object') {
+                normalized.gather_title = payload.title || payload.gather_title || '';
+                normalized.gather_time = payload.gathering_at || payload.gather_time || '';
+                normalized.gather_place = payload.location || payload.gather_place || '';
+                normalized.min_capacity = payload.min_capacity || payload.capacity_min || normalized.min_capacity || null;
+                normalized.capacity_min = payload.capacity_min || payload.min_capacity || normalized.capacity_min || null;
+                normalized.max_capacity = payload.max_capacity || payload.capacity_max || normalized.max_capacity || null;
+                normalized.capacity_max = payload.capacity_max || payload.max_capacity || normalized.capacity_max || null;
+                normalized.current_count = payload.current_count || normalized.current_count || 0;
+                normalized.status = payload.status || normalized.status || 'open';
+                normalized.type = 'gathering_card';
+            }
+        }
+
+        return normalized;
+    }
+
+    function getRoomMessageCollectionUrl() {
+        return isClassRoom() ? '/api/chat' : `/api/dm/${currentRoomId}/messages`;
+    }
+
+    function getRoomMessagesUrl({ since = '', limit = 100, pinnedOnly = false, stream = false } = {}) {
+        if (isClassRoom()) {
+            const params = new URLSearchParams();
+            params.set('class_id', currentRoomId);
+            params.set('limit', String(limit));
+            if (since !== '' && since != null) params.set('since', String(since));
+            if (pinnedOnly) params.set('pinned_only', 'true');
+            if (stream) params.set('stream', '1');
+            return `/api/chat?${params.toString()}`;
+        }
+
+        const params = new URLSearchParams();
+        params.set('room_type', currentRoomType || 'dm');
+        params.set('limit', String(limit));
+        if (since !== '' && since != null) params.set('since', String(since));
+        if (pinnedOnly) params.set('pinned_only', '1');
+        if (stream) params.set('stream', '1');
+        return `/api/dm/${currentRoomId}/messages?${params.toString()}`;
+    }
+
+    function getRoomMessageItemUrl(messageId, action = '') {
+        if (!messageId) return getRoomMessageCollectionUrl();
+        if (isClassRoom()) {
+            const base = `/api/chat/${encodeURIComponent(messageId)}`;
+            return action ? `${base}/${action}` : base;
+        }
+        const base = `/api/dm/${currentRoomId}/messages/${encodeURIComponent(messageId)}`;
+        return action ? `${base}/${action}` : base;
+    }
 
     const EMOJIS = ['😀', '😂', '🥰', '😍', '🤔', '😅', '😎', '🥳', '😢', '😡', '👍', '👎', '❤️', '🔥', '⭐', '🎉', '💯', '🙌', '👏', '🤝', '💪', '🙏', '✨', '💬', '📌', '📎', '🎵', '🎮', '☕', '🍕', '🎊', '💐', '🌈', '🍀', '🐶', '🐱', '🦊', '🐻'];
 
@@ -114,7 +199,11 @@ window.CommunityModules.ChatUI = (function () {
         const msgInput = document.getElementById('msgInput');
         if (msgInput) {
             msgInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendCurrentMessage(); }
+                const enterToSend = window.CommunityShellSettings?.enterToSend !== false;
+                if (enterToSend && e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendCurrentMessage();
+                }
             });
         }
     }
@@ -144,6 +233,7 @@ window.CommunityModules.ChatUI = (function () {
         const panel = document.getElementById('commInfoPanel');
         if (panel) {
             const isVisible = panel.classList.toggle('visible');
+            panel.style.display = isVisible ? 'flex' : '';
             if (isVisible) renderInfoPanel();
         }
     }
@@ -153,13 +243,29 @@ window.CommunityModules.ChatUI = (function () {
         window.__BSQ_INFO_LISTENER_SET__ = true;
 
         const btn = document.getElementById('btnChatInfo');
-        if (btn) { btn.onclick = (e) => { e.preventDefault(); toggleInfoPanel(); }; }
+        const panel = document.getElementById('commInfoPanel');
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleInfoPanel();
+            });
+        }
+
+        if (panel) {
+            panel.addEventListener('click', (e) => e.stopPropagation());
+            panel.addEventListener('pointerdown', (e) => e.stopPropagation());
+        }
 
         document.addEventListener('click', (e) => {
-            const panel = document.getElementById('commInfoPanel');
-            if (panel && panel.classList.contains('visible')) {
-                if (!panel.contains(e.target) || e.target.closest('#btnClosePanel')) {
+            const activePanel = document.getElementById('commInfoPanel');
+            if (activePanel && activePanel.classList.contains('visible')) {
+                if (e.target.closest('#btnChatInfo') || activePanel.contains(e.target)) {
+                    return;
+                }
+                if (!activePanel.contains(e.target) || e.target.closest('#btnClosePanel')) {
                     panel.classList.remove('visible');
+                    activePanel.style.display = '';
                 }
             }
         });
@@ -284,7 +390,10 @@ window.CommunityModules.ChatUI = (function () {
         const searchBar = document.getElementById('chatSearchBar');
         if (searchBar) searchBar.style.display = 'none';
         const infoPanel = document.getElementById('commInfoPanel');
-        if (infoPanel) infoPanel.classList.remove('visible');
+        if (infoPanel) {
+            infoPanel.classList.remove('visible');
+            infoPanel.style.display = '';
+        }
 
         lastScrollTop = 0; unreadCount = 0;
         const inputArea = document.querySelector('.chat-input-area');
@@ -295,34 +404,47 @@ window.CommunityModules.ChatUI = (function () {
         document.getElementById('chatHeaderName').textContent = name;
         const statusEl = document.getElementById('chatHeaderStatus');
         const btnGathering = document.getElementById('btnGathering');
+        const btnGoToClass = document.getElementById('btnGoToClass');
 
         if (roomType === 'class') {
             if (statusEl) { statusEl.textContent = '클래스 채팅'; statusEl.className = 'chat-header-status'; }
             if (btnGathering) {
                 btnGathering.style.display = (window.__BSQ_DEV_MODE__ || roomInfo?.is_instructor) ? 'inline-flex' : 'none';
             }
+            if (btnGoToClass) {
+                btnGoToClass.style.display = 'inline-flex';
+                btnGoToClass.href = `../class_view/class_view.html?id=${encodeURIComponent(roomId)}`;
+            }
         } else if (roomType === 'dm') {
             if (statusEl) { statusEl.textContent = '1:1 채팅'; statusEl.className = 'chat-header-status'; }
             if (btnGathering) btnGathering.style.display = 'none';
+            if (btnGoToClass) btnGoToClass.style.display = 'none';
         } else if (roomType === 'group') {
             if (statusEl) { statusEl.textContent = '그룹 채팅'; statusEl.className = 'chat-header-status'; }
             if (btnGathering) btnGathering.style.display = 'none';
+            if (btnGoToClass) btnGoToClass.style.display = 'none';
         }
 
+        try {
+            localStorage.setItem('bsq_comm_last_room', String(roomId));
+            localStorage.setItem('bsq_comm_last_type', String(roomType));
+        } catch {}
+
         loadMessages();
+        loadPinnedMessages();
         startMessageStream();
         pollTimer = setInterval(loadMessages, 3000);
     }
 
     function startMessageStream() {
-        if (!currentRoomId) return;
+        if (!currentRoomId || document.visibilityState !== 'visible') return;
 
         try {
             const baseUrl = window.BSQ?.apiBaseUrl || window.location.origin;
-            const streamUrl = `${baseUrl}/api/dm/${currentRoomId}/messages/stream?room_type=${encodeURIComponent(currentRoomType)}&since=${lastMsgTimestamp}`;
+            const streamUrl = `${baseUrl}${getRoomMessagesUrl({ since: lastMsgTimestamp, stream: true })}`;
             messageStream = new EventSource(streamUrl, { withCredentials: true });
             messageStream.addEventListener('message', (event) => {
-                const msg = JSON.parse(event.data);
+                const msg = normalizeIncomingMessage(JSON.parse(event.data));
                 const ts = new Date(msg.created_at || msg.timestamp || Date.now()).getTime();
                 if (ts > lastMsgTimestamp) lastMsgTimestamp = ts;
                 renderMessage(msg.id || msg.key, msg, true);
@@ -342,15 +464,16 @@ window.CommunityModules.ChatUI = (function () {
     async function loadMessages() {
         if (!currentRoomId) return;
         try {
-            const endpoint = `/api/dm/${currentRoomId}/messages?room_type=${encodeURIComponent(currentRoomType)}&since=${lastMsgTimestamp}`;
+            const endpoint = getRoomMessagesUrl({ since: lastMsgTimestamp });
             const res = await window.BSQ.api(endpoint);
 
             if (res?.success && res.data) {
                 const messages = Array.isArray(res.data) ? res.data : (res.data.messages || []);
                 messages.forEach(msg => {
-                    const ts = new Date(msg.created_at || msg.timestamp).getTime();
+                    const normalized = normalizeIncomingMessage(msg);
+                    const ts = new Date(normalized.created_at || normalized.timestamp || Date.now()).getTime();
                     if (ts > lastMsgTimestamp) lastMsgTimestamp = ts;
-                    renderMessage(msg.id || msg.key, msg, true);
+                    renderMessage(normalized.id || normalized.key, normalized, true);
                 });
             }
         } catch (e) {
@@ -358,9 +481,48 @@ window.CommunityModules.ChatUI = (function () {
         }
     }
 
+    async function loadPinnedMessages() {
+        if (!currentRoomId) return;
+        try {
+            const endpoint = getRoomMessagesUrl({ pinnedOnly: true, limit: 50 });
+            const res = await window.BSQ.api(endpoint);
+            if (res?.success && res.data) {
+                currentPins = (Array.isArray(res.data) ? res.data : (res.data.messages || []))
+                    .map(normalizeIncomingMessage)
+                    .filter(msg => msg.is_pinned)
+                    .sort((a, b) => new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0));
+                renderPinnedBar();
+            }
+        } catch (error) {
+            console.warn('Pinned load error:', error);
+        }
+    }
+
+    function renderPinnedBar() {
+        const bar = document.getElementById('pinnedMsgBar');
+        const content = document.getElementById('pinnedMsgContent');
+        if (!bar || !content) return;
+
+        if (!currentPins.length) {
+            bar.style.display = 'none';
+            bar.onclick = null;
+            return;
+        }
+
+        const top = currentPins[0];
+        const text = String(top.content || top.message || top.text || '').replace(/<[^>]+>/g, '');
+        const summary = text.length > 70 ? `${text.slice(0, 70)}…` : text;
+        content.textContent = `고정 메시지 ${currentPins.length}개 · ${summary || '메시지 확인'}`;
+        bar.style.display = 'flex';
+        bar.onclick = () => {
+            document.getElementById(`msg-${top.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
+    }
+
     // ==== 메시지 렌더링 ====
     function renderMessage(msgId, msgData, append = true) {
         if (!msgData) return;
+        msgData = normalizeIncomingMessage(msgData);
 
         let currentUserId = bridge()?.getUserId?.() || '';
         if (window.__BSQ_DEV_MODE__) currentUserId = 'OPERATOR_GHOST';
@@ -371,7 +533,7 @@ window.CommunityModules.ChatUI = (function () {
         if (row) return; // 이미 렌더링됨
 
         row = document.createElement('div');
-        row.className = `msg-row ${isMine ? 'mine' : 'other'} ${(msgData.sender_id || msgData.user_id) === 'OPERATOR_GHOST' ? 'operator' : ''}`;
+        row.className = `msg-row ${isMine ? 'mine' : 'other'} ${(msgData.sender_id || msgData.user_id) === 'OPERATOR_GHOST' ? 'operator' : ''}${msgData.is_pinned ? ' pinned' : ''}`;
         row.id = `msg-${msgId}`;
 
         let senderName = msgData.user_name || msgData.sender_name || '';
@@ -379,7 +541,7 @@ window.CommunityModules.ChatUI = (function () {
 
         if ((msgData.sender_id || msgData.user_id) === 'OPERATOR_GHOST') {
             senderName = '운영자';
-            senderAvatar = 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png';
+            senderAvatar = '/assets/default-avatar.svg';
         }
 
         const timeStr = (msgData.timestamp || msgData.created_at) ? new Date(msgData.timestamp || msgData.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
@@ -497,10 +659,14 @@ window.CommunityModules.ChatUI = (function () {
         if (!reactions || Object.keys(reactions).length === 0) return '';
         let html = '<div class="msg-reactions">';
         for (const [emoji, users] of Object.entries(reactions)) {
-            const uids = typeof users === 'object' ? Object.keys(users) : [];
+            const uids = Array.isArray(users)
+                ? users.map(String)
+                : (users && typeof users === 'object' ? Object.keys(users) : []);
             const count = uids.length;
             if (count === 0) continue;
-            const isMine = users[currentUserId] === true;
+            const isMine = Array.isArray(users)
+                ? users.map(String).includes(String(currentUserId))
+                : !!(users && typeof users === 'object' && (users[currentUserId] === true || users[currentUserId] === 1));
             html += `<div class="reaction-pill ${isMine ? 'mine' : ''}" onclick="window.CommunityModules.ChatUI.toggleEmojiReaction('${msgId}', '${emoji}')">
                 <span class="reaction-emoji-sm">${emoji}</span><span class="reaction-count-sm">${count}</span>
             </div>`;
@@ -521,6 +687,7 @@ window.CommunityModules.ChatUI = (function () {
             const menu = document.createElement('div');
             menu.className = 'msg-context-menu';
             const isInstructor = currentRoomInfo?.is_instructor || window.__BSQ_DEV_MODE__;
+            const isPinned = !!(msg && (msg.is_pinned === 1 || msg.is_pinned === true));
 
             const quickReactions = ['🥰', '❤️', '👍', '😢', '👎', '🔥'];
             let quickHtml = '<div class="msg-quick-react-bar">';
@@ -538,6 +705,16 @@ window.CommunityModules.ChatUI = (function () {
                 ${isMine ? '<div class="ctx-item" data-action="edit"><div class="ctx-item-label"><i class="fas fa-pen"></i> 수정</div></div>' : ''}
                 ${isMine ? '<div class="ctx-item danger" data-action="delete"><div class="ctx-item-label"><i class="fas fa-trash"></i> 삭제</div></div>' : ''}
             `;
+            try {
+                const replyItem = menu.querySelector('[data-action="reply"]');
+                const pinItem = document.createElement('div');
+                pinItem.className = 'ctx-item';
+                pinItem.dataset.action = 'pin';
+                pinItem.innerHTML = `<div class="ctx-item-label"><i class="fas fa-thumbtack"></i> ${isPinned ? '고정 해제' : '고정'}</div>`;
+                if (replyItem) menu.insertBefore(pinItem, replyItem);
+                else menu.prepend(pinItem);
+            } catch {}
+
             menu.style.position = 'fixed';
             menu.style.left = x + 'px'; menu.style.top = y + 'px';
             document.body.appendChild(menu);
@@ -547,9 +724,15 @@ window.CommunityModules.ChatUI = (function () {
             if (y + rect.height > window.innerHeight) menu.style.top = (window.innerHeight - rect.height - 10) + 'px';
 
             menu.querySelectorAll('.ctx-item').forEach(item => {
-                item.addEventListener('click', (ev) => {
+                item.addEventListener('click', async (ev) => {
                     ev.stopPropagation();
                     const action = item.dataset.action;
+                    if (action === 'pin') {
+                        await setMessagePinned(key, !isPinned);
+                        try { msg.is_pinned = !isPinned ? 1 : 0; } catch {}
+                        menu.remove();
+                        return;
+                    }
                     const senderName = msg.user_name || msg.sender_name || '사용자';
                     if (action === 'reply') setReply(key, msg.content, senderName);
                     else if (action === 'copy') { navigator.clipboard?.writeText((msg.content || '').replace(/<[^>]*>?/gm, '')); alert('복사되었습니다.'); }
@@ -592,12 +775,32 @@ window.CommunityModules.ChatUI = (function () {
     async function deleteMsg(key) {
         if (!confirm('이 메시지를 삭제하시겠습니까?')) return;
         try {
-            await window.BSQ.api(`/api/dm/${currentRoomId}/messages/${key}`, { method: 'DELETE' });
+            await window.BSQ.api(getRoomMessageItemUrl(key), { method: 'DELETE' });
             removeMessage(key);
         } catch (e) { console.error('Delete failed:', e); }
     }
 
     // ==== 메시지 전송 (D1 API) ====
+    async function setMessagePinned(messageId, nextPinned) {
+        if (!currentRoomId || !messageId) return;
+        try {
+            const endpoint = isClassRoom() ? '/api/chat' : getRoomMessageItemUrl(messageId);
+            const payload = isClassRoom() ? { id: messageId, is_pinned: !!nextPinned } : { is_pinned: !!nextPinned };
+            await window.BSQ.api(endpoint, {
+                method: 'PATCH',
+                body: JSON.stringify(payload)
+            });
+
+            const rowEl = document.getElementById(`msg-${messageId}`);
+            if (rowEl) rowEl.classList.toggle('pinned', !!nextPinned);
+
+            await loadPinnedMessages();
+        } catch (e) {
+            console.warn('setMessagePinned failed:', e);
+            window.BSQCommunityShared?.toast?.('고정 처리에 실패했습니다.');
+        }
+    }
+
     async function sendCurrentMessage() {
         const msgInput = document.getElementById('msgInput');
         if (!msgInput) return;
@@ -613,20 +816,25 @@ window.CommunityModules.ChatUI = (function () {
             if (window.__BSQ_DEV_MODE__) currentUserId = 'OPERATOR_GHOST';
 
             if (editingMsgKey) {
-                await window.BSQ.api(`/api/dm/${currentRoomId}/messages/${editingMsgKey}`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({ content, edited: true })
+                const editPayload = { content, message: content, edited: true };
+                await window.BSQ.api(getRoomMessageItemUrl(editingMsgKey), {
+                    method: isClassRoom() ? 'PUT' : 'PATCH',
+                    body: JSON.stringify(editPayload)
                 });
                 editingMsgKey = null;
             } else {
                 const profile = await bridge()?.getUserProfile?.(currentUserId) || { name: '사용자', profile_image_url: '' };
                 const pushData = {
                     content,
+                    message: content,
                     sender_id: currentUserId,
+                    user_avatar: profile.profile_image_url || '',
+                    user_avatar: profile.profile_image_url || '',
                     user_name: profile.name || '사용자',
                     user_avatar: profile.profile_image_url || '',
                     type: 'text',
                     room_type: currentRoomType,
+                    class_id: isClassRoom() ? currentRoomId : null,
                     is_instructor: (currentRoomInfo?.is_instructor) || window.__BSQ_DEV_MODE__ || false
                 };
 
@@ -634,9 +842,14 @@ window.CommunityModules.ChatUI = (function () {
                     pushData.reply_to = replyTarget;
                     pushData.reply_text = document.getElementById('replyText')?.textContent?.split(': ')[1] || '';
                     pushData.reply_user = document.getElementById('replyText')?.textContent?.split('님에게')[0] || '';
+                    pushData.reply_data = {
+                        id: replyTarget,
+                        user_name: pushData.reply_user,
+                        message: pushData.reply_text,
+                    };
                 }
 
-                await window.BSQ.api(`/api/dm/${currentRoomId}/messages`, {
+                await window.BSQ.api(getRoomMessageCollectionUrl(), {
                     method: 'POST',
                     body: JSON.stringify(pushData)
                 });
@@ -707,17 +920,20 @@ window.CommunityModules.ChatUI = (function () {
                 if (window.__BSQ_DEV_MODE__) currentUserId = 'OPERATOR_GHOST';
                 const profile = await bridge()?.getUserProfile?.(currentUserId) || { name: '사용자' };
 
-                await window.BSQ.api(`/api/dm/${currentRoomId}/messages`, {
+                await window.BSQ.api(getRoomMessageCollectionUrl(), {
                     method: 'POST',
                     body: JSON.stringify({
-                        content: isImage ? '' : file.name,
+                        content: file.name,
+                        message: file.name,
                         sender_id: currentUserId,
+                        user_avatar: profile.profile_image_url || '',
                         user_name: profile.name || '사용자',
                         type: isImage ? 'image' : 'file',
                         file_name: file.name,
                         file_size: file.size,
                         file_data: e.target.result,
-                        room_type: currentRoomType
+                        room_type: currentRoomType,
+                        class_id: isClassRoom() ? currentRoomId : null
                     })
                 });
                 await loadMessages();
@@ -754,7 +970,7 @@ window.CommunityModules.ChatUI = (function () {
             if (window.__BSQ_DEV_MODE__) currentUserId = 'OPERATOR_GHOST';
             const profile = await bridge()?.getUserProfile?.(currentUserId) || { name: '강사' };
 
-            await window.BSQ.api(`/api/dm/${currentRoomId}/messages`, {
+            await window.BSQ.api(getRoomMessageCollectionUrl(), {
                 method: 'POST',
                 body: JSON.stringify({
                     type: 'gathering_card',
@@ -770,7 +986,8 @@ window.CommunityModules.ChatUI = (function () {
                     sender_id: currentUserId,
                     user_name: profile.name || '강사',
                     is_instructor: true,
-                    room_type: 'class'
+                    room_type: currentRoomType,
+                    class_id: isClassRoom() ? currentRoomId : null
                 })
             });
             await loadMessages();
@@ -826,7 +1043,11 @@ window.CommunityModules.ChatUI = (function () {
 
     function toggleEmojiReaction(msgId, emoji) {
         // D1에서는 리액션을 API로 처리
-        window.BSQ.api(`/api/dm/${currentRoomId}/messages/${msgId}/reaction`, {
+        const endpoint = isClassRoom()
+            ? `/api/chat/${encodeURIComponent(msgId)}/reaction`
+            : `/api/dm/${currentRoomId}/messages/${msgId}/reaction`;
+
+        window.BSQ.api(endpoint, {
             method: 'POST',
             body: JSON.stringify({ emoji })
         }).then(() => loadMessages()).catch(e => console.warn('Reaction error:', e));

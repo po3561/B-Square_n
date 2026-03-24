@@ -1,0 +1,75 @@
+import { requireSession } from '../../_lib/auth.js';
+import { json, options } from '../../_lib/http.js';
+import { ensureChatMessagesSchema } from '../../_lib/schema.js';
+
+function parseReactions(value) {
+  if (!value) return {};
+  if (typeof value === 'object') return value;
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+export async function onRequest(context) {
+  const { request, env, params } = context;
+
+  if (request.method === 'OPTIONS') {
+    return options(request, env);
+  }
+
+  const auth = await requireSession(context);
+  if (!auth.ok) return auth.response;
+
+  const messageId = params?.id;
+  if (!messageId) {
+    return json(request, env, { success: false, error: 'message id required' }, { status: 400 });
+  }
+
+  if (request.method !== 'POST' && request.method !== 'PATCH') {
+    return json(request, env, { success: false, error: 'method not allowed' }, { status: 405 });
+  }
+
+  try {
+    await ensureChatMessagesSchema(env.DB);
+
+    const body = await request.json();
+    const emoji = String(body.emoji || body.reaction || '').trim();
+    if (!emoji) {
+      return json(request, env, { success: false, error: 'emoji required' }, { status: 400 });
+    }
+
+    const message = await env.DB.prepare(
+      'SELECT id, reactions FROM chat_messages WHERE id = ?'
+    ).bind(messageId).first();
+    if (!message) {
+      return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
+    }
+
+    const reactions = parseReactions(message.reactions);
+    reactions[emoji] = Array.isArray(reactions[emoji]) ? reactions[emoji] : [];
+
+    const userId = String(auth.user.id);
+    const idx = reactions[emoji].indexOf(userId);
+    if (idx >= 0) {
+      reactions[emoji].splice(idx, 1);
+      if (reactions[emoji].length === 0) delete reactions[emoji];
+    } else {
+      reactions[emoji].push(userId);
+    }
+
+    await env.DB.prepare(
+      "UPDATE chat_messages SET reactions = ?, updated_at = datetime('now') WHERE id = ?"
+    ).bind(JSON.stringify(reactions), messageId).run();
+
+    return json(request, env, { success: true, data: { id: messageId, reactions } });
+  } catch (error) {
+    return json(request, env, {
+      success: false,
+      error: 'reaction processing failed',
+      detail: error.message,
+    }, { status: 500 });
+  }
+}
