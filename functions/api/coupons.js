@@ -38,16 +38,24 @@ function parseTargetIds(value) {
     .filter(Boolean);
 }
 
+function resolveTargetClassId(coupon) {
+  const targetIds = parseTargetIds(coupon.target_ids);
+  return normalizeText(coupon.target_class_id || targetIds[0] || '');
+}
+
 function couponAppliesToClass(coupon, classId) {
   const scope = normalizeText(coupon.scope || 'all_classes') || 'all_classes';
   if (!classId || scope === 'all_classes') return true;
   if (scope === 'single_class') {
+    const targetClassId = resolveTargetClassId(coupon);
+    if (targetClassId && String(targetClassId) === String(classId)) return true;
     return parseTargetIds(coupon.target_ids).includes(classId);
   }
   return true;
 }
 
 function mapCouponPayload(coupon, scope, extra = {}) {
+  const targetClassId = resolveTargetClassId(coupon);
   return {
     ...coupon,
     scope,
@@ -58,6 +66,8 @@ function mapCouponPayload(coupon, scope, extra = {}) {
     image_url: coupon.image_url || '',
     coupon_code: coupon.coupon_code || coupon.code || '',
     code: coupon.code || coupon.coupon_code || '',
+    target_class_id: targetClassId || null,
+    target_ids: parseTargetIds(coupon.target_ids),
     ...extra,
   };
 }

@@ -30,6 +30,26 @@ window.CommunityModules.ChatList = (() => {
     function getMuted() { return getSettings().muted || []; }
     function getFolders() { return getSettings().folders || []; }
     function getRoomFolders() { return getSettings().roomFolders || {}; }
+    const AUTO_CLASS_FOLDER = '클래스';
+
+    function ensureAutoClassFolder(room) {
+        if (!room || room.type !== 'class' || !room.is_instructor || !room.roomId) return false;
+
+        const settings = getSettings();
+        settings.folders = settings.folders || [];
+        settings.roomFolders = settings.roomFolders || {};
+
+        if (!settings.folders.includes(AUTO_CLASS_FOLDER)) {
+            settings.folders.push(AUTO_CLASS_FOLDER);
+        }
+
+        if (!settings.roomFolders[room.roomId]) {
+            settings.roomFolders[room.roomId] = AUTO_CLASS_FOLDER;
+        }
+
+        saveSettings(settings);
+        return true;
+    }
 
     function togglePin(roomId) {
         const settings = getSettings();
@@ -171,8 +191,11 @@ window.CommunityModules.ChatList = (() => {
             rows.forEach(row => {
                 const room = normalizeRoom(row);
                 roomsCache.set(room.roomId, room);
+                ensureAutoClassFolder(room);
             });
 
+            renderFolderTabs();
+            renderFolderManagerList();
             renderRooms(activeSearchQuery);
         } catch (error) {
             console.error('Chat rooms load error:', error);

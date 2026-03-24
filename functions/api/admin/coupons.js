@@ -21,9 +21,25 @@ function normalizeScope(value) {
   return 'all_classes';
 }
 
+function parseTargetIds(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map((item) => normalizeText(item)).filter(Boolean);
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed.map((item) => normalizeText(item)).filter(Boolean);
+  } catch {}
+  return String(value).split(',').map((item) => normalizeText(item)).filter(Boolean);
+}
+
 function buildTargetIds(scope, targetClassId) {
   if (scope !== 'single_class' || !targetClassId) return '[]';
   return JSON.stringify([String(targetClassId).trim()]);
+}
+
+function couponTargetsClass(coupon, classId) {
+  const targetClassId = normalizeText(coupon.target_class_id);
+  if (targetClassId && String(targetClassId) === String(classId)) return true;
+  return parseTargetIds(coupon.target_ids).includes(classId);
 }
 
 async function generateUniqueCouponCode(db, maxAttempts = 8) {
@@ -109,17 +125,7 @@ export async function onRequest(context) {
 
         const classId = body.class_id || '';
         const scope = normalizeScope(coupon.scope);
-        const targetIds = Array.isArray(coupon.target_ids)
-          ? coupon.target_ids
-          : (() => {
-              try {
-                return JSON.parse(coupon.target_ids || '[]');
-              } catch {
-                return [];
-              }
-            })();
-        const targetClassId = coupon.target_class_id || targetIds[0] || null;
-        if (scope === 'single_class' && targetClassId && classId && String(targetClassId) !== String(classId)) {
+        if (scope === 'single_class' && classId && !couponTargetsClass(coupon, classId)) {
           return json(request, env, { success: false, error: 'This coupon is limited to another class.' }, { status: 400 });
         }
 

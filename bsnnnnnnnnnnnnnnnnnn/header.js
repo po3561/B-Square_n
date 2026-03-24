@@ -67,6 +67,26 @@
     localStorage.setItem(OP_MODE_KEY, enabled ? '1' : '0');
   }
 
+  function getStoredOperatorProfile() {
+    try {
+      const raw = localStorage.getItem('bsq_user');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') return parsed;
+      }
+    } catch {}
+
+    return {
+      id: 'OPERATOR_GHOST',
+      email: 'operator@b-square.kr',
+      name: '운영자',
+      username: 'operator',
+      profile_image_url: '/assets/default-avatar.svg',
+      role: 'super_admin',
+      operator_seq: 1,
+    };
+  }
+
   function getOperatorDisplayName(user) {
     const seq = Number(user?.operator_seq || 0);
     return seq > 0 ? `운영자 ${seq}` : '운영자';
@@ -371,7 +391,12 @@
     menus.forEach((menuEl) => {
       if (!session || !user) {
         menuEl.innerHTML = `<a href="${prefix}login/login.html" class="btn-login-main">로그인</a>`;
-        window.__BSQ_DEV_MODE__ = false;
+        window.__BSQ_DEV_MODE__ = isOperatorModeEnabled();
+        if (window.__BSQ_DEV_MODE__) {
+          window.__BSQ_OPERATOR_PROFILE__ = getStoredOperatorProfile();
+        } else {
+          delete window.__BSQ_OPERATOR_PROFILE__;
+        }
         return;
       }
 
@@ -379,6 +404,14 @@
       const operatorMode = operatorEligible && isOperatorModeEnabled();
       window.__BSQ_DEV_MODE__ = operatorMode;
       const profile = operatorMode ? getOperatorProfile(user) : user;
+      if (operatorMode) {
+        window.__BSQ_OPERATOR_PROFILE__ = {
+          ...user,
+          profile_image_url: user.profile_image_url || '/assets/default-avatar.svg',
+        };
+      } else {
+        delete window.__BSQ_OPERATOR_PROFILE__;
+      }
       const profileHref = operatorMode ? `${prefix}admin_dashboard/admin.html` : `${prefix}mi_pesg/mypage.html`;
       const modeLabel = operatorEligible ? (operatorMode ? '운영자 모드' : '일반 모드') : '';
 
@@ -402,7 +435,6 @@
       }
     });
 
-    window.dispatchEvent(new Event(window.__BSQ_DEV_MODE__ ? 'bsq_dev_mode_activated' : 'bsq_dev_mode_deactivated'));
   }
 
   function renderAuthenticatedMenu(session, user) {
@@ -420,13 +452,6 @@
     const user = session?.user || null;
     renderAuthenticatedMenu(session, user);
 
-    window.addEventListener('bsq_dev_mode_activated', () => {
-      renderAuthenticatedMenu(window.BSQ?.session, window.BSQ?.session?.user || null);
-    });
-    window.addEventListener('bsq_dev_mode_deactivated', () => {
-      renderAuthenticatedMenu(window.BSQ?.session, window.BSQ?.session?.user || null);
-    });
-
     await applyShellBranding();
   }
 
@@ -435,6 +460,7 @@
       await window.BSQ.logout();
     }
     localStorage.removeItem(OP_MODE_KEY);
+    delete window.__BSQ_OPERATOR_PROFILE__;
     window.__BSQ_DEV_MODE__ = false;
     window.location.href = homePrefix + 'index.html';
   };

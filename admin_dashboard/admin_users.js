@@ -384,6 +384,8 @@ async function toggleUserBlacklist(userId, currentState) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  if (window.__BSQ_ADMIN_USERS_EXT__) return;
+
   ensureUsersToolbar();
 
   const tabUsers = document.getElementById('tabUsers');

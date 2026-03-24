@@ -96,7 +96,7 @@ async function registerClassChats(userId) {
 function wireShellActions(userId, deps) {
     const { shared, SyncBridge, ChatList, ChatUI, DM } = deps;
     const menu = document.getElementById('hamburgerMenu');
-    const btnHamburger = document.getElementById('btnHamburger');
+    const btnHamburger = document.getElementById('commHamburgerBtn') || document.querySelector('.comm-nav-rail .btn-hamburger');
 
     const closeMenu = () => {
         if (!menu) return;
@@ -543,11 +543,6 @@ async function openInitialRoute(userId, { shared, ChatList, ChatUI, DM }) {
     const classId = params.get('class');
     const groupId = params.get('group');
 
-    if (dmTarget) {
-        await openDirectChat(dmTarget, { userId, shared, SyncBridge: window.CommunityModules.SyncBridge, ChatList, ChatUI, DM });
-        return;
-    }
-
     if (room && type) {
         const roomInfo = ChatList.getRoom(room) || {
             roomId: room,
@@ -560,6 +555,16 @@ async function openInitialRoute(userId, { shared, ChatList, ChatUI, DM }) {
         };
         ChatUI.openRoom(room, type, roomInfo);
         ChatList.setActiveRoom(room);
+        if (params.get('panel') === 'info') {
+            setTimeout(() => ChatUI.renderInfoPanel(room, type, roomInfo), 0);
+        }
+        updateRoomQuery({
+            room,
+            type,
+            name: params.get('name') || '',
+            avatar: params.get('avatar') || '',
+            panel: params.get('panel') || '',
+        });
         return;
     }
 
@@ -567,6 +572,16 @@ async function openInitialRoute(userId, { shared, ChatList, ChatUI, DM }) {
         const roomInfo = ChatList.getRoom(classId) || { roomId: classId, type: 'class', class_name: params.get('name') || '클래스' };
         ChatUI.openRoom(classId, 'class', roomInfo);
         ChatList.setActiveRoom(classId);
+        if (params.get('panel') === 'info') {
+            setTimeout(() => ChatUI.renderInfoPanel(classId, 'class', roomInfo), 0);
+        }
+        updateRoomQuery({
+            room: classId,
+            type: 'class',
+            name: params.get('name') || '',
+            avatar: params.get('avatar') || '',
+            panel: params.get('panel') || '',
+        });
         return;
     }
 
@@ -574,15 +589,48 @@ async function openInitialRoute(userId, { shared, ChatList, ChatUI, DM }) {
         const roomInfo = ChatList.getRoom(groupId) || { roomId: groupId, type: 'group', group_name: params.get('name') || '그룹' };
         ChatUI.openRoom(groupId, 'group', roomInfo);
         ChatList.setActiveRoom(groupId);
+        if (params.get('panel') === 'info') {
+            setTimeout(() => ChatUI.renderInfoPanel(groupId, 'group', roomInfo), 0);
+        }
+        updateRoomQuery({
+            room: groupId,
+            type: 'group',
+            name: params.get('name') || '',
+            avatar: params.get('avatar') || '',
+            panel: params.get('panel') || '',
+        });
+        return;
     }
+
+    if (dmTarget) {
+        await openDirectChat(dmTarget, { userId, shared, SyncBridge: window.CommunityModules.SyncBridge, ChatList, ChatUI, DM });
+        return;
+    }
+
 }
 
 function updateRoomQuery(params) {
     const url = new URL(location.href);
-    Object.entries(params).forEach(([key, value]) => {
-        if (value) url.searchParams.set(key, value);
-        else url.searchParams.delete(key);
+    const routeKeys = new Set(['dm', 'room', 'type', 'class', 'group']);
+
+    routeKeys.forEach((key) => url.searchParams.delete(key));
+    Object.entries(params || {}).forEach(([key, value]) => {
+        if (!routeKeys.has(key) && value !== undefined && value !== null && value !== '') {
+            url.searchParams.set(key, value);
+        }
     });
+
+    if (params?.room && params?.type) {
+        url.searchParams.set('room', params.room);
+        url.searchParams.set('type', params.type);
+    } else if (params?.dm) {
+        url.searchParams.set('dm', params.dm);
+    } else if (params?.class) {
+        url.searchParams.set('class', params.class);
+    } else if (params?.group) {
+        url.searchParams.set('group', params.group);
+    }
+
     history.replaceState({}, '', url);
 }
 

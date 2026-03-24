@@ -1,0 +1,8 @@
+-- Canonical schema already includes these fields in 0001_canonical_schema.sql.
+-- This migration is intentionally a no-op to preserve numbering without
+-- re-adding columns that would fail on fresh apply.
+--
+-- Historical note:
+-- - recommendations.type/category are already defined in 0001.
+-- - dm_messages.room_type is already defined in 0001.
+-- - idx_dm_messages_room_created already exists in 0001.

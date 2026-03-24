@@ -45,6 +45,97 @@ export async function addColumnIfMissing(db, table, columnDefinition) {
   }
 }
 
+async function normalizeUserCartItemKeys(db) {
+  await db.prepare(`
+    UPDATE user_cart_items
+    SET
+      item_type = COALESCE(NULLIF(TRIM(item_type), ''), 'class'),
+      reference_id = COALESCE(NULLIF(TRIM(reference_id), ''), NULLIF(TRIM(class_id), ''), id)
+    WHERE
+      item_type IS NULL
+      OR TRIM(item_type) = ''
+      OR reference_id IS NULL
+      OR TRIM(reference_id) = ''
+  `).run();
+}
+
+async function dedupeUserCartItems(db) {
+  await db.prepare(`
+    DELETE FROM user_cart_items
+    WHERE rowid IN (
+      SELECT rowid
+      FROM (
+        SELECT
+          rowid,
+          ROW_NUMBER() OVER (
+            PARTITION BY user_id, item_type, reference_id
+            ORDER BY COALESCE(datetime(updated_at), datetime(created_at), '') DESC, rowid DESC
+          ) AS rn
+        FROM user_cart_items
+      )
+      WHERE rn > 1
+    )
+  `).run();
+}
+
+async function getTableColumns(db, table) {
+  const { results } = await db.prepare(`PRAGMA table_info(${table})`).all().catch(() => ({ results: [] }));
+  return results || [];
+}
+
+async function migrateLegacyInquiriesTable(db) {
+  const columns = await getTableColumns(db, 'inquiries');
+  if (!columns.length) return;
+
+  const byName = new Map(columns.map((column) => [column.name, column]));
+  const hasLegacyPushKey = byName.has('push_key');
+  const userIdNotNull = Number(byName.get('user_id')?.notnull || 0) === 1;
+
+  if (!hasLegacyPushKey && !userIdNotNull) return;
+
+  await db.batch([
+    db.prepare('ALTER TABLE inquiries RENAME TO inquiries_legacy'),
+    db.prepare(`
+      CREATE TABLE inquiries (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        name TEXT,
+        email TEXT,
+        category TEXT,
+        title TEXT,
+        subject TEXT,
+        content TEXT,
+        status TEXT DEFAULT 'pending',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `),
+    db.prepare(`
+      INSERT INTO inquiries (
+        id, user_id, name, email, category, title, subject,
+        content, status, created_at, updated_at
+      )
+      SELECT
+        COALESCE(NULLIF(push_key, ''), 'inq_' || lower(hex(randomblob(12)))) AS id,
+        CASE
+          WHEN user_id IS NULL OR TRIM(user_id) = '' THEN NULL
+          ELSE user_id
+        END AS user_id,
+        COALESCE(NULLIF(user_name, ''), '') AS name,
+        COALESCE(NULLIF(user_email, ''), '') AS email,
+        COALESCE(NULLIF(category, ''), '일반 문의') AS category,
+        COALESCE(NULLIF(title, ''), NULLIF(subject, ''), '') AS title,
+        COALESCE(NULLIF(subject, ''), NULLIF(title, ''), '') AS subject,
+        content,
+        COALESCE(NULLIF(status, ''), 'pending') AS status,
+        COALESCE(created_at, datetime('now')) AS created_at,
+        COALESCE(created_at, datetime('now')) AS updated_at
+      FROM inquiries_legacy
+    `),
+    db.prepare('DROP TABLE inquiries_legacy'),
+  ]);
+}
+
 export async function ensureAuthSchema(db) {
   if (authSchemaReady) return;
 
@@ -648,6 +739,8 @@ export async function ensureOperationsSchema(db) {
       user_id TEXT,
       name TEXT,
       email TEXT,
+      category TEXT,
+      title TEXT,
       subject TEXT,
       content TEXT,
       status TEXT DEFAULT 'pending',
@@ -655,6 +748,7 @@ export async function ensureOperationsSchema(db) {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `).run();
+  await migrateLegacyInquiriesTable(db);
 
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS class_participants (
@@ -692,6 +786,7 @@ export async function ensureOperationsSchema(db) {
       coupon_discount_amount INTEGER DEFAULT 0,
       final_amount INTEGER DEFAULT 0,
       coupon_code TEXT,
+      method TEXT,
       pay_method TEXT,
       card_name TEXT,
       status TEXT,
@@ -730,6 +825,16 @@ export async function ensureOperationsSchema(db) {
   `).run();
   await addColumnIfMissing(db, 'orders', 'refunded_at DATETIME');
   await addColumnIfMissing(db, 'orders', 'discount_amount INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'orders', 'user_name TEXT');
+  await addColumnIfMissing(db, 'orders', 'user_email TEXT');
+  await addColumnIfMissing(db, 'orders', 'order_type TEXT');
+  await addColumnIfMissing(db, 'orders', 'coupon_code TEXT');
+  await addColumnIfMissing(db, 'orders', 'method TEXT');
+  await addColumnIfMissing(db, 'orders', 'pay_method TEXT');
+  await addColumnIfMissing(db, 'orders', 'card_name TEXT');
+  await addColumnIfMissing(db, 'orders', 'merchant_uid TEXT');
+  await addColumnIfMissing(db, 'orders', 'receipt_url TEXT');
+  await addColumnIfMissing(db, 'orders', 'memo TEXT');
   await addColumnIfMissing(db, 'orders', 'coupon_scope TEXT');
   await addColumnIfMissing(db, 'orders', 'coupon_name TEXT');
   await addColumnIfMissing(db, 'orders', 'base_amount INTEGER DEFAULT 0');
@@ -743,6 +848,8 @@ export async function ensureOperationsSchema(db) {
   await addColumnIfMissing(db, 'orders', 'instructor_id TEXT');
   await addColumnIfMissing(db, 'orders', 'instructor_name TEXT');
   await addColumnIfMissing(db, 'orders', 'refund_amount INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'orders', 'refund_type TEXT');
+  await addColumnIfMissing(db, 'orders', 'refund_status TEXT');
   await addColumnIfMissing(db, 'orders', 'refund_reason TEXT');
   await addColumnIfMissing(db, 'orders', 'refund_reason_note TEXT');
   await addColumnIfMissing(db, 'orders', 'refund_processed_by TEXT');
@@ -758,6 +865,42 @@ export async function ensureOperationsSchema(db) {
   await addColumnIfMissing(db, 'orders', 'platform_fee_amount INTEGER DEFAULT 0');
   await addColumnIfMissing(db, 'orders', 'net_revenue_amount INTEGER DEFAULT 0');
   await addColumnIfMissing(db, 'orders', 'instructor_settlement_amount INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'orders', 'class_title TEXT');
+
+  await db.prepare(`
+    UPDATE orders
+    SET user_name = COALESCE(NULLIF(user_name, ''), (
+          SELECT name FROM users WHERE users.id = orders.user_id
+        )),
+        user_email = COALESCE(NULLIF(user_email, ''), (
+          SELECT email FROM users WHERE users.id = orders.user_id
+        )),
+        class_title = COALESCE(NULLIF(class_title, ''), (
+          SELECT title FROM classes WHERE classes.id = orders.class_id
+        )),
+        order_type = COALESCE(NULLIF(order_type, ''), 'class_pass'),
+        method = COALESCE(NULLIF(method, ''), NULLIF(pay_method, '')),
+        pay_method = COALESCE(NULLIF(pay_method, ''), NULLIF(method, ''), 'card'),
+        card_name = COALESCE(NULLIF(card_name, ''), NULLIF(pay_method, ''), NULLIF(method, '')),
+        merchant_uid = COALESCE(NULLIF(merchant_uid, ''), order_id),
+        receipt_url = COALESCE(NULLIF(receipt_url, ''), receipt_url),
+        memo = COALESCE(memo, '')
+    WHERE
+      (user_name IS NULL OR user_name = '')
+      OR (user_email IS NULL OR user_email = '')
+      OR (class_title IS NULL OR class_title = '')
+      OR (order_type IS NULL OR order_type = '')
+      OR (method IS NULL OR method = '')
+      OR (pay_method IS NULL OR pay_method = '')
+      OR (card_name IS NULL OR card_name = '')
+      OR (merchant_uid IS NULL OR merchant_uid = '')
+      OR memo IS NULL
+  `).run().catch(() => {});
+
+  await addColumnIfMissing(db, 'inquiries', 'category TEXT');
+  await addColumnIfMissing(db, 'inquiries', 'title TEXT');
+  await addColumnIfMissing(db, 'inquiries', 'subject TEXT');
+  await addColumnIfMissing(db, 'inquiries', 'submitted_by TEXT');
 
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS enrollments (
@@ -804,6 +947,14 @@ export async function ensureOperationsSchema(db) {
   await addColumnIfMissing(db, 'enrollments', 'enrolled_at DATETIME DEFAULT CURRENT_TIMESTAMP');
   await addColumnIfMissing(db, 'enrollments', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
   await addColumnIfMissing(db, 'enrollments', 'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+  await addColumnIfMissing(db, 'enrollments', 'id TEXT');
+
+  // Backfill legacy rows so queries that project enrollments.id can keep working.
+  await db.prepare(`
+    UPDATE enrollments
+    SET id = 'legacy_enr_' || lower(hex(randomblob(12)))
+    WHERE id IS NULL OR id = ''
+  `).run();
 
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS user_passes (
@@ -993,6 +1144,11 @@ export async function ensureOperationsSchema(db) {
   await addColumnIfMissing(db, 'user_cart_items', 'metadata TEXT');
   await addColumnIfMissing(db, 'user_cart_items', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
   await addColumnIfMissing(db, 'user_cart_items', 'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+  await db.prepare(`DROP INDEX IF EXISTS idx_user_cart_items_unique`).run();
+  await normalizeUserCartItemKeys(db);
+  await dedupeUserCartItems(db);
+  await db.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_cart_items_unique_ops ON user_cart_items(user_id, item_type, reference_id)`).run();
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_user_cart_items_user_class ON user_cart_items(user_id, class_id)`).run();
 
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS settlement_fee_settings (
@@ -1564,7 +1720,7 @@ export async function ensureCommerceSchema(db) {
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_coupon_usage_code_user ON coupon_usage(coupon_code, user_id, used_at)`).run();
   await db.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_coupon_wallet_unique ON user_coupon_wallet(user_id, coupon_code)`).run();
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_user_coupon_wallet_user_status ON user_coupon_wallet(user_id, status, claimed_at)`).run();
-  await db.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_cart_items_unique ON user_cart_items(user_id, class_id)`).run();
+  await db.prepare(`DROP INDEX IF EXISTS idx_user_cart_items_unique`).run();
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_user_cart_items_user_class ON user_cart_items(user_id, class_id)`).run();
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_settlement_batches_period ON settlement_batches(period_year, period_month, instructor_id)`).run();
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_settlement_batch_items_batch ON settlement_batch_items(batch_id, class_id)`).run();

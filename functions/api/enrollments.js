@@ -1,4 +1,4 @@
-import { requireClassManager, requireSession } from './_lib/auth.js';
+import { isAtLeastRole, requireClassManager, requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
 import { ensureCommerceSchema, ensureOperationsSchema } from './_lib/schema.js';
 import { refreshClassStats } from './_lib/class_support.js';
@@ -14,6 +14,22 @@ function normalizeCode(value) {
 function toNumber(value, fallback = 0) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function parseTargetIds(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map((item) => normalizeText(item)).filter(Boolean);
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed.map((item) => normalizeText(item)).filter(Boolean);
+  } catch {}
+  return String(value).split(',').map((item) => normalizeText(item)).filter(Boolean);
+}
+
+function couponTargetsClass(coupon, classId) {
+  const targetClassId = normalizeText(coupon.target_class_id);
+  if (targetClassId && String(targetClassId) === String(classId)) return true;
+  return parseTargetIds(coupon.target_ids).includes(classId);
 }
 
 function generateId(prefix) {
@@ -88,7 +104,7 @@ async function resolveCoupon(db, { classId, code, userId, baseAmount }) {
   if (globalCoupon.expires_at && new Date(globalCoupon.expires_at) < new Date()) {
     throw new Error('Coupon has expired.');
   }
-  if (normalizeText(globalCoupon.scope || 'all_classes') === 'single_class' && globalCoupon.target_class_id && String(globalCoupon.target_class_id) !== String(classId)) {
+  if (normalizeText(globalCoupon.scope || 'all_classes') === 'single_class' && classId && !couponTargetsClass(globalCoupon, classId)) {
     throw new Error('This coupon is limited to another class.');
   }
 
@@ -220,7 +236,7 @@ export async function onRequestGet(context) {
 
   try {
     if (userId && classId) {
-      if (auth.user.id !== userId && auth.user.role !== 'admin') {
+      if (auth.user.id !== userId && !isAtLeastRole(auth.user.role, 'admin')) {
         return json(request, env, { success: false, error: '권한이 없습니다.' }, { status: 403 });
       }
 
@@ -263,7 +279,7 @@ export async function onRequestGet(context) {
     }
 
     if (userId) {
-      if (auth.user.id !== userId && auth.user.role !== 'admin') {
+      if (auth.user.id !== userId && !isAtLeastRole(auth.user.role, 'admin')) {
         return json(request, env, { success: false, error: '권한이 없습니다.' }, { status: 403 });
       }
 

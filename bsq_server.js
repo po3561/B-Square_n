@@ -8,6 +8,8 @@
     let _session = null;     // 嚥≪뮄????紐꾨?{ user: { id, email, name, ... }, expires_at }
     let _readyResolve = null;
     const readyPromise = new Promise(resolve => { _readyResolve = resolve; });
+    const OPERATOR_MODE_KEY = 'bsq_operator_view_mode';
+    const OPERATOR_GHOST_TOKEN = 'OPERATOR_GHOST';
     // ==================================================
     // API 踰좎씠??URL ?먮룞 媛먯? 諛??먭꺽 ?쒕쾭 ?곕룞
     // ==================================================
@@ -250,37 +252,131 @@
         }, type === 'success' ? 2000 : 5000);
     }
 
+    function getOperatorFallbackUser() {
+        const fallbackUser = {
+            id: OPERATOR_GHOST_TOKEN,
+            email: 'operator@b-square.kr',
+            name: '운영자',
+            role: 'super_admin',
+            profile_image_url: '/assets/default-avatar.svg',
+        };
+
+        try {
+            const localUserStr = localStorage.getItem('bsq_user');
+            if (!localUserStr) return fallbackUser;
+
+            const localUser = JSON.parse(localUserStr);
+            if (!localUser || localUser.id !== OPERATOR_GHOST_TOKEN) return fallbackUser;
+
+            return {
+                ...fallbackUser,
+                ...localUser,
+                id: OPERATOR_GHOST_TOKEN,
+                role: 'super_admin',
+                profile_image_url: localUser.profile_image_url || fallbackUser.profile_image_url,
+            };
+        } catch {
+            return fallbackUser;
+        }
+    }
+
+    function isOperatorEligibleRole(role) {
+        const value = String(role || '').trim().toLowerCase();
+        return value === 'operator' || value === 'admin' || value === 'super_admin';
+    }
+
+    function setOperatorViewGlobals(user) {
+        window.__BSQ_DEV_MODE__ = true;
+        window.__BSQ_OPERATOR_PROFILE__ = {
+            ...(user || {}),
+            profile_image_url: user?.profile_image_url || '/assets/default-avatar.svg',
+        };
+    }
+
+    function clearOperatorViewGlobals() {
+        window.__BSQ_DEV_MODE__ = false;
+        delete window.__BSQ_OPERATOR_PROFILE__;
+    }
+
+    async function runCheckSession() {
+        const operatorModeRequested = localStorage.getItem(OPERATOR_MODE_KEY) === '1';
+        if (operatorModeRequested && !localStorage.getItem('bsq_token')) {
+            localStorage.setItem('bsq_token', OPERATOR_GHOST_TOKEN);
+            if (!localStorage.getItem('bsq_user')) {
+                localStorage.setItem('bsq_user', JSON.stringify(getOperatorFallbackUser()));
+            }
+        }
+
+        const result = await apiCall('/api/auth/session');
+        const session = result?.data?.session || null;
+
+        if (result.success && session?.user) {
+            _session = session;
+            console.log('[BSQ Server] ???β돦裕????筌먦끉逾?', _session.user.email);
+            localStorage.setItem('bsq_user', JSON.stringify(_session.user));
+
+            const sessionUser = _session.user;
+            const operatorModeActive = operatorModeRequested && isOperatorEligibleRole(sessionUser.role);
+
+            if (operatorModeActive) {
+                setOperatorViewGlobals(sessionUser);
+            } else {
+                clearOperatorViewGlobals();
+                if (operatorModeRequested && !isOperatorEligibleRole(sessionUser.role)) {
+                    localStorage.removeItem(OPERATOR_MODE_KEY);
+                }
+            }
+        } else if (result.success) {
+            const ghostToken = localStorage.getItem('bsq_token') === OPERATOR_GHOST_TOKEN;
+            if (operatorModeRequested && ghostToken) {
+                const fallbackUser = getOperatorFallbackUser();
+                _session = { user: fallbackUser };
+                localStorage.setItem('bsq_user', JSON.stringify(fallbackUser));
+                setOperatorViewGlobals(fallbackUser);
+            } else {
+                localStorage.removeItem('bsq_token');
+                localStorage.removeItem('bsq_user');
+                if (operatorModeRequested) {
+                    localStorage.removeItem(OPERATOR_MODE_KEY);
+                }
+                clearOperatorViewGlobals();
+                _session = null;
+            }
+        } else {
+            const ghostToken = localStorage.getItem('bsq_token') === OPERATOR_GHOST_TOKEN;
+            if (operatorModeRequested && ghostToken) {
+                const fallbackUser = getOperatorFallbackUser();
+                _session = { user: fallbackUser };
+                localStorage.setItem('bsq_user', JSON.stringify(fallbackUser));
+                setOperatorViewGlobals(fallbackUser);
+            } else {
+                clearOperatorViewGlobals();
+                _session = null;
+                if (operatorModeRequested && !ghostToken) {
+                    localStorage.removeItem(OPERATOR_MODE_KEY);
+                }
+            }
+        }
+
+        updateConnectionHub();
+        return _session;
+    }
+
+    async function runLogout() {
+        const result = await apiCall('/api/auth/session', { method: 'DELETE' });
+        localStorage.removeItem('bsq_token');
+        localStorage.removeItem('bsq_user');
+        localStorage.removeItem(OPERATOR_MODE_KEY);
+        clearOperatorViewGlobals();
+        _session = null;
+        updateConnectionHub();
+        return result;
+    }
+
     // ==================================================
     // ?紐꾨?疫꿸퀡而??紐꾩쵄 筌ｋ똾寃?& ?癒?짗 ??녿┛??    // ==================================================
     async function checkSession() {
-        const result = await apiCall('/api/auth/session');
-
-        if (result.success && result.data?.session) {
-            _session = result.data.session;
-            console.log('[BSQ Server] ??嚥≪뮄????類ㅼ뵥:', _session.user.email);
-            // 嚥≪뮇類???쎈꽅?귐? 筌ㅼ뮇???            localStorage.setItem('bsq_user', JSON.stringify(_session.user));
-
-            // 揶쏆뮆而???μ빓?? 筌뤴뫀諭??癒?짗 揶쏅Ŋ?
-        } else {
-            // ???紐꾨?API ??쎈솭 ??(404/401 ??: ?紐꾨??븍뜆?ょ㎉???욧퍙
-            if (result.error && (result.error.includes('筌≪뼚??????곷뮸??덈뼄') || result.error.includes('Invalid'))) {
-                console.warn('[BSQ Server] ?醫묓닔 ?紐꾨??븍뜆?ょ㎉?揶쏅Ŋ?. 嚥≪뮇類??紐꾨???λ뜃由?酉鍮??덈뼄.');
-                localStorage.removeItem('bsq_token');
-                localStorage.removeItem('bsq_user');
-                _session = null;
-            } else {
-                // ??λ떄 ???뻿 ?關釉??野껋럩??LocalStorage Fallback
-                try {
-                    const localUserStr = localStorage.getItem('bsq_user');
-                    if (localUserStr) {
-                        const localUser = JSON.parse(localUserStr);
-                        _session = { user: localUser };
-                    }
-                } catch (e) { _session = null; }
-            }
-        }
-        updateConnectionHub();
-        return _session;
+        return await runCheckSession();
     }
 
     // ==================================================
@@ -442,12 +538,7 @@
     }
 
     async function logout() {
-        const result = await apiCall('/api/auth/session', { method: 'DELETE' });
-        localStorage.removeItem('bsq_token');
-        localStorage.removeItem('bsq_user');
-        _session = null;
-        updateConnectionHub();
-        return result;
+        return await runLogout();
     }
 
     // [?醫됲뇣] ??쇰뻻揶???녿┛???紐꺿봺椰?

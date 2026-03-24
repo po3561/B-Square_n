@@ -36,16 +36,38 @@ function getClassImageUrl(data) {
 
 const TAB_PARAM_MAP = {
     intro: 'tabIntro',
+    tabintro: 'tabIntro',
     curriculum: 'tabCurriculum',
-    reviews: 'tabReviews',
+    tabcurriculum: 'tabCurriculum',
+    review: 'tabReview',
+    reviews: 'tabReview',
+    tabreview: 'tabReview',
+    tabreviews: 'tabReview',
     notice: 'tabNotice',
+    tabnotice: 'tabNotice',
     chat: 'tabChat',
+    tabchat: 'tabChat',
     edit: 'tabEdit',
+    tabedit: 'tabEdit',
 };
 
+function normalizeTabTargetId(rawValue) {
+    const value = String(rawValue || '').trim().replace(/^#/, '');
+    if (!value) return '';
+
+    if (document.getElementById(value)) {
+        return value;
+    }
+
+    const lowerValue = value.toLowerCase();
+    return TAB_PARAM_MAP[lowerValue] || '';
+}
+
 function getInitialTabTargetId() {
-    const value = String(urlParams.get('tab') || '').trim().toLowerCase();
-    return TAB_PARAM_MAP[value] || '';
+    const hashTarget = normalizeTabTargetId(window.location.hash);
+    if (hashTarget) return hashTarget;
+
+    return normalizeTabTargetId(urlParams.get('tab'));
 }
 
 function getNoticeAuthorContext() {
@@ -437,7 +459,6 @@ async function handleFreeEnrollment() {
         const result = await window.BSQ.api('/api/enrollments', {
             method: 'POST',
             body: JSON.stringify({
-                user_id: userId,
                 class_id: classId,
                 payment_method: 'free',
                 amount_paid: 0
@@ -497,16 +518,41 @@ function setLocalCartItems(items) {
 }
 
 function buildCartPayload() {
+    const itemType = 'class';
+    const referenceId = classId;
+    const title = classData?.title || '클래스';
+    const subtitle = classData?.instructor_name || classData?.creator_name || classData?.category || '클래스';
+    const instructorId = classData?.creator_id || classData?.instructor_id || '';
+    const instructorName = classData?.instructor_name || classData?.creator_name || '';
+    const thumbnailUrl = getClassImageUrl(classData);
+    const listPrice = Number(classData?.price || 0);
+    const salePrice = Number(finalPaymentPrice || classData?.price || 0);
+    const href = `../class_view/class_view.html?id=${encodeURIComponent(classId)}`;
+    const createdAt = new Date().toISOString();
+
     return {
         id: `class-${classId}`,
-        type: 'class',
+        type: itemType,
+        item_type: itemType,
+        reference_id: referenceId,
         class_id: classId,
-        title: classData?.title || '클래스',
-        subtitle: classData?.instructor_name || classData?.creator_name || classData?.category || '클래스',
-        price: Number(finalPaymentPrice || classData?.price || 0),
-        image_url: getClassImageUrl(classData),
-        href: `../class_view/class_view.html?id=${encodeURIComponent(classId)}`,
-        created_at: new Date().toISOString(),
+        title,
+        subtitle,
+        instructor_id: instructorId,
+        instructor_name: instructorName,
+        price: salePrice,
+        list_price: listPrice,
+        sale_price: salePrice,
+        thumbnail_url: thumbnailUrl,
+        image_url: thumbnailUrl,
+        href,
+        metadata: {
+            href,
+            created_at: createdAt,
+            class_type: classData?.class_type || 'VOD',
+            discount_rate: Number(classData?.discount_rate || 0),
+        },
+        created_at: createdAt,
     };
 }
 
@@ -514,12 +560,16 @@ function renderWalletCouponChips(coupons) {
     const container = document.getElementById('walletCouponList');
     if (!container) return;
 
-    if (!Array.isArray(coupons) || !coupons.length) {
-        container.innerHTML = '<div class="wallet-coupon-chip empty">보유한 쿠폰이 없습니다.</div>';
+    const visibleCoupons = Array.isArray(coupons)
+        ? coupons.filter((coupon) => coupon?.is_available !== false && coupon?.usable_for_class !== false)
+        : [];
+
+    if (!visibleCoupons.length) {
+        container.innerHTML = '<div class="wallet-coupon-chip empty">현재 클래스에 사용할 수 있는 쿠폰이 없습니다.</div>';
         return;
     }
 
-    container.innerHTML = coupons.map((coupon) => `
+    container.innerHTML = visibleCoupons.map((coupon) => `
         <button type="button" class="wallet-coupon-chip" data-wallet-code="${String(coupon.code || coupon.coupon_code || '').replace(/"/g, '&quot;')}">
             <strong>${String(coupon.code || coupon.coupon_code || '')}</strong>
             <span>${String(coupon.name || coupon.title || '쿠폰')}</span>
@@ -548,9 +598,7 @@ async function loadWalletCouponsIntoSheet() {
 
     try {
         const response = await requestWithFallbacks([
-            { url: `/api/user/coupons?user_id=${encodeURIComponent(userId)}` },
-            { url: `/api/coupons/wallet?user_id=${encodeURIComponent(userId)}` },
-            { url: `/api/coupon-wallet?user_id=${encodeURIComponent(userId)}` },
+            { url: `/api/user/coupons?class_id=${encodeURIComponent(classId)}` },
         ]);
         const coupons = Array.isArray(response?.data)
             ? response.data
@@ -571,16 +619,15 @@ async function saveCurrentClassToCart() {
             {
                 url: '/api/cart',
                 method: 'POST',
-                body: { user_id: userId || null, ...payload },
-            },
-            {
-                url: '/api/user/cart',
-                method: 'POST',
-                body: { user_id: userId || null, ...payload },
+                body: payload,
             },
         ]);
     } catch (error) {
-        const currentItems = getLocalCartItems().filter((item) => String(item.id || item.class_id) !== payload.id);
+        const payloadKey = payload.reference_id || payload.class_id || payload.id;
+        const currentItems = getLocalCartItems().filter((item) => {
+            const itemKey = item.referenceId || item.reference_id || item.class_id || item.id || item.cart_id;
+            return String(itemKey) !== String(payloadKey) && String(itemKey) !== String(payload.id);
+        });
         currentItems.unshift(payload);
         setLocalCartItems(currentItems);
     }
@@ -794,7 +841,6 @@ async function finalizeEnrollment(rsp) {
         const result = await window.BSQ.api('/api/enrollments', {
             method: 'POST',
             body: JSON.stringify({
-                user_id: userId,
                 class_id: classId,
                 payment_method: rsp.pay_method || 'card',
                 amount_paid: rsp.paid_amount || 0,

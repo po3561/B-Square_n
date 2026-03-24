@@ -1,4 +1,4 @@
-import { requireSession } from './_lib/auth.js';
+import { isAtLeastRole, requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
 import { ensureGroupChatsSchema, ensureUserChatsSchema } from './_lib/schema.js';
 
@@ -19,14 +19,14 @@ export async function onRequestGet(context) {
             const data = await env.DB.prepare('SELECT * FROM group_chats WHERE group_id = ?').bind(group_id).first();
             if (!data) return json(request, env, { success: false, error: '그룹을 찾을 수 없습니다.' }, { status: 404 });
             data.members = safeParseJSON(data.members, []);
-            if (!data.members.includes(auth.user.id) && auth.user.role !== 'admin') {
+            if (!data.members.includes(auth.user.id) && !isAtLeastRole(auth.user.role, 'admin')) {
                 return json(request, env, { success: false, error: '조회 권한이 없습니다.' }, { status: 403 });
             }
             return json(request, env, { success: true, data });
         }
 
         if (user_id) {
-            if (user_id !== auth.user.id && auth.user.role !== 'admin') {
+            if (user_id !== auth.user.id && !isAtLeastRole(auth.user.role, 'admin')) {
                 return json(request, env, { success: false, error: '조회 권한이 없습니다.' }, { status: 403 });
             }
             const { results } = await env.DB.prepare(
@@ -97,7 +97,7 @@ export async function onRequestPatch(context) {
         if (!group) return json(request, env, { success: false, error: '그룹 없음' }, { status: 404 });
 
         let members = safeParseJSON(group.members, []);
-        if (!members.includes(auth.user.id) && auth.user.role !== 'admin') {
+        if (!members.includes(auth.user.id) && !isAtLeastRole(auth.user.role, 'admin')) {
             return json(request, env, { success: false, error: '수정 권한이 없습니다.' }, { status: 403 });
         }
 

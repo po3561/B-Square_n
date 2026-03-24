@@ -2,5 +2,10 @@ node_modules/
 .wrangler/
 .firebase
 .playwright-cli/
+.codex_tmp/
+wrangler-dev*.log
+wrangler-pages-dev*.log
+client_secret_*.json
 *.sql
+!migrations/*.sql
 credentials.json

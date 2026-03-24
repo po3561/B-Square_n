@@ -155,17 +155,29 @@ window.initClassesTab = function initClassesTab(_db, userId) {
                 : Array.isArray(payload)
                     ? payload
                     : [];
-        return rows.map((item) => ({
-            id: item.id || item.cart_id || item.class_id || item.content_id || `${item.type || 'item'}-${item.title || ''}`,
-            itemId: item.class_id || item.content_id || item.item_id || item.id || '',
-            type: item.type || item.item_type || 'class',
-            title: item.title || item.name || '이름 없는 항목',
-            subtitle: item.subtitle || item.instructor_name || item.category || '',
-            price: Number(item.price || item.amount || item.final_amount || 0),
-            imageUrl: item.image_url || item.thumbnail || item.thumb || '',
-            href: item.href || item.url || (item.class_id ? `../class_view/class_view.html?id=${encodeURIComponent(item.class_id)}` : ''),
-            createdAt: item.created_at || item.saved_at || item.updated_at || '',
-        }));
+        return rows.map((item) => {
+            const referenceId = item.reference_id || item.referenceId || item.class_id || item.content_id || item.item_id || '';
+            const rowId = item.id || item.cart_id || item.row_id || '';
+            const title = item.title || item.class_title || item.name || '이름 없는 항목';
+            const subtitle = item.subtitle || item.instructor_name || item.class_category || item.category || '';
+            const price = Number(item.sale_price || item.class_price || item.list_price || item.price || item.amount || item.final_amount || 0);
+            const imageUrl = item.thumbnail_url || item.class_image_url || item.image_url || item.thumbnail || item.thumb || '';
+            const href = item.href || item.url || (referenceId || item.class_id ? `../class_view/class_view.html?id=${encodeURIComponent(referenceId || item.class_id)}` : '');
+
+            return {
+                id: referenceId || rowId || `${item.item_type || item.type || 'item'}-${title || ''}`,
+                itemId: referenceId || item.class_id || item.content_id || item.item_id || rowId || '',
+                referenceId,
+                rowId,
+                type: item.item_type || item.type || 'class',
+                title,
+                subtitle,
+                price,
+                imageUrl,
+                href,
+                createdAt: item.created_at || item.added_at || item.saved_at || item.updated_at || '',
+            };
+        });
     }
 
     async function requestWithFallbacks(requests, options = {}) {
@@ -247,9 +259,7 @@ window.initClassesTab = function initClassesTab(_db, userId) {
     async function loadCouponWallet() {
         try {
             const response = await requestWithFallbacks([
-                { url: `/api/user/coupons?user_id=${encodeURIComponent(userId)}` },
-                { url: `/api/coupons/wallet?user_id=${encodeURIComponent(userId)}` },
-                { url: `/api/coupon-wallet?user_id=${encodeURIComponent(userId)}` },
+                { url: '/api/user/coupons' },
             ]);
             commerceState.wallet = normalizeWalletItems(response);
         } catch (error) {
@@ -279,17 +289,7 @@ window.initClassesTab = function initClassesTab(_db, userId) {
                 {
                     url: '/api/user/coupons/claim',
                     method: 'POST',
-                    body: { user_id: userId, code },
-                },
-                {
-                    url: '/api/coupons/claim',
-                    method: 'POST',
-                    body: { user_id: userId, code },
-                },
-                {
-                    url: '/api/coupon-wallet/claim',
-                    method: 'POST',
-                    body: { user_id: userId, code },
+                    body: { code },
                 },
             ], { method: 'POST' });
 
@@ -311,8 +311,7 @@ window.initClassesTab = function initClassesTab(_db, userId) {
     async function loadCartItems() {
         try {
             const response = await requestWithFallbacks([
-                { url: `/api/cart?user_id=${encodeURIComponent(userId)}` },
-                { url: `/api/user/cart?user_id=${encodeURIComponent(userId)}` },
+                { url: '/api/cart' },
             ]);
             commerceState.cart = normalizeCartItems(response);
             setLocalCartItems(commerceState.cart);
@@ -338,8 +337,7 @@ window.initClassesTab = function initClassesTab(_db, userId) {
         let removed = false;
         try {
             await requestWithFallbacks([
-                { url: `/api/cart?id=${encodeURIComponent(cartId)}&user_id=${encodeURIComponent(userId)}`, method: 'DELETE' },
-                { url: `/api/user/cart?id=${encodeURIComponent(cartId)}&user_id=${encodeURIComponent(userId)}`, method: 'DELETE' },
+                { url: `/api/cart?id=${encodeURIComponent(cartId)}`, method: 'DELETE' },
             ], { method: 'DELETE' });
             removed = true;
         } catch (error) {
@@ -347,7 +345,10 @@ window.initClassesTab = function initClassesTab(_db, userId) {
         }
 
         if (!removed) {
-            const items = getLocalCartItems().filter((item) => String(item.id || item.cart_id || item.class_id) !== String(cartId));
+            const items = getLocalCartItems().filter((item) => {
+                const itemKey = item.referenceId || item.reference_id || item.class_id || item.id || item.cart_id;
+                return String(itemKey) !== String(cartId);
+            });
             setLocalCartItems(items);
         }
 
@@ -482,8 +483,8 @@ window.initClassesTab = function initClassesTab(_db, userId) {
 
     window.openEditTab = async function openEditTab(classId) {
         try {
-            const res = await window.BSQ.api(`/api/classes?q=${encodeURIComponent(classId)}`);
-            const cls = (res?.data || []).find((item) => item.id === classId);
+            const res = await window.BSQ.api(`/api/classes/${encodeURIComponent(classId)}`);
+            const cls = res?.data || null;
             if (!cls) throw new Error('클래스를 찾을 수 없습니다.');
 
             await renderEditCategoryOptions(cls.category || '', true);
@@ -491,7 +492,7 @@ window.initClassesTab = function initClassesTab(_db, userId) {
             document.getElementById('editClassTitle').value = cls.title || '';
             document.getElementById('editClassCategory').value = cls.category || '';
             document.getElementById('editClassSummary').value = cls.summary || '';
-            document.getElementById('editClassDescription').value = cls.description || '';
+            document.getElementById('editClassDescription').value = cls.description || cls.description_text || '';
             document.getElementById('editClassPrice').value = cls.price || 0;
             document.getElementById('editClassDiscount').value = cls.discount_rate || 0;
             document.getElementById('editClassCoupon').checked = Boolean(cls.coupon_pack);
@@ -513,12 +514,13 @@ window.initClassesTab = function initClassesTab(_db, userId) {
     if (editForm) {
         editForm.onsubmit = async (event) => {
             event.preventDefault();
-            const updateData = {
-                id: document.getElementById('editClassId').value,
+            const classId = document.getElementById('editClassId').value;
+            const updates = {
                 title: document.getElementById('editClassTitle').value,
                 category: document.getElementById('editClassCategory').value,
                 summary: document.getElementById('editClassSummary').value,
                 description: document.getElementById('editClassDescription').value,
+                description_text: document.getElementById('editClassDescription').value,
                 price: parseInt(document.getElementById('editClassPrice').value, 10) || 0,
                 discount_rate: parseInt(document.getElementById('editClassDiscount').value, 10) || 0,
                 coupon_pack: document.getElementById('editClassCoupon').checked ? 1 : 0,
@@ -526,9 +528,12 @@ window.initClassesTab = function initClassesTab(_db, userId) {
             };
 
             try {
-                const res = await window.BSQ.api('/api/classes', {
-                    method: 'PATCH',
-                    body: JSON.stringify(updateData),
+                const res = await window.BSQ.api('/api/classes/update', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        class_id: classId,
+                        updates,
+                    }),
                 });
                 if (!res?.success) throw new Error(res?.error || '수정에 실패했습니다.');
 

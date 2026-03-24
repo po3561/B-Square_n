@@ -79,7 +79,16 @@ window.BSQCommunityShared = window.BSQCommunityShared || {};
 
     function openPopupRoom(options = {}) {
         const url = makePopupUrl(options);
-        const features = 'width=520,height=820,resizable=yes,scrollbars=no,noopener=yes,noreferrer=yes';
+        const isSmallScreen = window.innerWidth <= 768 || window.matchMedia?.('(max-width: 768px)')?.matches;
+        const width = isSmallScreen
+            ? Math.max(360, Math.min(window.screen.availWidth || 360, window.innerWidth || 360))
+            : Math.max(520, Math.min(980, Math.floor((window.screen.availWidth || 1280) * 0.88)));
+        const height = isSmallScreen
+            ? Math.max(640, Math.min(window.screen.availHeight || 640, window.innerHeight || 640))
+            : Math.max(760, Math.min(920, Math.floor((window.screen.availHeight || 900) * 0.9)));
+        const left = Math.max(0, Math.floor(((window.screen.availWidth || width) - width) / 2));
+        const top = Math.max(0, Math.floor(((window.screen.availHeight || height) - height) / 2));
+        const features = `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no,noopener=yes,noreferrer=yes`;
         const win = window.open(url, '_blank', features);
         if (win) win.focus();
         return win;

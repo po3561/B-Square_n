@@ -12,6 +12,12 @@ window.SimpleClassChat = (function () {
         pinnedMessages: []
     };
 
+    function isChatTabVisible() {
+        const chatTabBtn = document.querySelector('[data-target="tabChat"]');
+        const chatTab = document.getElementById('tabChat');
+        return !!(chatTabBtn?.classList.contains('active') && chatTab?.classList.contains('active') && document.visibilityState === 'visible');
+    }
+
     function init(_, classId, userId, hasAccess, isInstructor) {
         state.classId = classId;
         state.userId = userId;
@@ -110,8 +116,11 @@ window.SimpleClassChat = (function () {
         const infoPanel = document.getElementById('commInfoPanel');
         const btnClosePanel = document.getElementById('btnClosePanel');
         if (btnChatInfo && infoPanel) {
-            btnChatInfo.onclick = () => {
+            btnChatInfo.onclick = (e) => {
+                e?.preventDefault?.();
+                e?.stopPropagation?.();
                 infoPanel.classList.toggle('visible');
+                infoPanel.style.display = infoPanel.classList.contains('visible') ? 'flex' : '';
                 // 푸시 모션 시 스크롤 하단 유지 보정
                 setTimeout(() => {
                     const container = document.getElementById('chatMessagesContainer');
@@ -120,7 +129,10 @@ window.SimpleClassChat = (function () {
             };
         }
         if (btnClosePanel && infoPanel) {
-            btnClosePanel.onclick = () => infoPanel.classList.remove('visible');
+            btnClosePanel.onclick = () => {
+                infoPanel.classList.remove('visible');
+                infoPanel.style.display = '';
+            };
         }
     }
 
@@ -266,10 +278,13 @@ window.SimpleClassChat = (function () {
 
         const btnInfo = document.getElementById('btnChatInfo');
         if (btnInfo) {
-            btnInfo.onclick = () => {
+            btnInfo.onclick = (e) => {
+                e?.preventDefault?.();
+                e?.stopPropagation?.();
                 const panel = document.getElementById('commInfoPanel');
                 if (panel) {
                     const isVisible = panel.classList.toggle('visible');
+                    panel.style.display = isVisible ? 'flex' : '';
                     if (isVisible) {
                         renderInfoPanel();
                     }
@@ -280,7 +295,11 @@ window.SimpleClassChat = (function () {
         const btnClosePanel = document.getElementById('btnClosePanel');
         if (btnClosePanel) {
             btnClosePanel.onclick = () => {
-                document.getElementById('commInfoPanel')?.classList.remove('visible');
+                const panel = document.getElementById('commInfoPanel');
+                if (panel) {
+                    panel.classList.remove('visible');
+                    panel.style.display = '';
+                }
             };
         }
 
@@ -399,6 +418,8 @@ window.SimpleClassChat = (function () {
     }
 
     async function fetchChats(container, isInit = false) {
+        if (!isInit && !isChatTabVisible()) return;
+
         let url = `/api/chat?class_id=${state.classId}&limit=${isInit ? 50 : 20}`;
         if (state.lastMessageId && !isInit) url += `&after=${state.lastMessageId}`;
 
@@ -480,7 +501,7 @@ window.SimpleClassChat = (function () {
 
         const avatar = document.createElement('div');
         avatar.className = 'msg-avatar';
-        const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.user_name || 'U')}&background=random&color=fff`;
+        const defaultAvatar = '/assets/default-avatar.svg';
         avatar.style.backgroundImage = `url(${msg.user_avatar || defaultAvatar})`;
 
         const wrapper = document.createElement('div');
@@ -925,8 +946,28 @@ window.SimpleClassChat = (function () {
         `).join('');
     }
 
-    function addReaction(msgId, emoji) {
-        if (typeof showToast === 'function') showToast('success', '리액션', `${emoji} 반응을 남겼습니다.`);
+    async function addReaction(msgId, emoji) {
+        try {
+            const res = await window.BSQ.api(`/api/chat/${encodeURIComponent(msgId)}/reaction`, {
+                method: 'POST',
+                body: JSON.stringify({ emoji })
+            });
+
+            if (res?.success) {
+                const messagesEl = document.getElementById('chatMessagesContainer');
+                if (messagesEl) {
+                    messagesEl.innerHTML = '';
+                    state.lastMessageId = null;
+                    fetchChats(messagesEl, true);
+                }
+                if (typeof showToast === 'function') showToast('success', '리액션', `${emoji} 반응이 적용되었습니다.`);
+            } else if (typeof showToast === 'function') {
+                showToast('error', '리액션 실패', res?.error || '반응 처리에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('addReaction failed:', error);
+            if (typeof showToast === 'function') showToast('error', '리액션 실패', '반응 처리 중 오류가 발생했습니다.');
+        }
     }
 
     function initResizer() {
@@ -1027,7 +1068,7 @@ window.SimpleClassChat = (function () {
                                    : isSub   ? '<span class="ip-role-badge ip-role-sub"><i class="fa-solid fa-chalkboard-user"></i> 서브강사</span>'
                                    :           '<span class="ip-role-badge ip-role-student"><i class="fa-solid fa-user"></i> 수강생</span>';
 
-                    const avatarUrl = m.profile_image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(nickname)}&background=random&color=fff&size=40`;
+                    const avatarUrl = m.profile_image_url || '/assets/default-avatar.svg';
 
                     let detailHtml = '';
                     if (state.isInstructor && (m.name || m.phone)) {

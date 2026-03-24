@@ -20,6 +20,24 @@ function safeParseJSON(value, fallback) {
   }
 }
 
+function buildTickets(classData) {
+  const priceOneTime = Number(classData?.tickets_price_one_time || 0);
+  const passCount = Number(classData?.tickets_pass_count || 0);
+  const priceMulti = Number(classData?.tickets_price_multi || 0);
+  const priceMonthly = Number(classData?.tickets_price_monthly || 0);
+
+  if (!priceOneTime && !passCount && !priceMulti && !priceMonthly) {
+    return null;
+  }
+
+  return {
+    price_one_time: priceOneTime || null,
+    pass_count: passCount || null,
+    price_multi: priceMulti || null,
+    price_monthly: priceMonthly || null,
+  };
+}
+
 export async function onRequest(context) {
   const { env, params } = context;
   const db = env.DB;
@@ -95,6 +113,7 @@ export async function onRequest(context) {
       bookmark_count: Number(classData.bookmark_count || 0),
       like_count: Number(classData.bookmark_count || 0),
       total_visits: Number(classData.total_visits || 0) + 1,
+      tickets: buildTickets(classData),
     };
 
     return Response.json({ success: true, data: result });

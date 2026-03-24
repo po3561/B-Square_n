@@ -1,38 +1,42 @@
-﻿// header.js - B-Square shared header / drawer / footer shell
+// header.js - B-Square shared header / drawer / footer shell
 (function () {
   'use strict';
 
-  const currentPath = window.location.pathname;
-  const isHomePage = currentPath.includes('bsnnnnnnnnnnnnnnnnnn');
+  const currentPath = window.location.pathname || '';
+  const isSharedBundle = currentPath.includes('/bsnnnnnnnnnnnnnnnnnn/') || currentPath.includes('bsnnnnnnnnnnnnnnnnnn');
   const prefix = '../';
-  const homePrefix = isHomePage ? '' : '../bsnnnnnnnnnnnnnnnnnn/';
+  const homePrefix = isSharedBundle ? '' : '../bsnnnnnnnnnnnnnnnnnn/';
   const OP_MODE_KEY = 'bsq_operator_view_mode';
 
+  const NAV_ITEMS = [
+    { id: 'class', label: '클래스', href: 'class/class_list.html' },
+    { id: 'create', label: '등록', href: 'create_class/create_class.html' },
+    { id: 'notice', label: '공지사항', href: 'notice/notice.html' },
+    { id: 'contact', label: '문의', href: 'contact/contact.html' },
+    { id: 'community', label: '커뮤니티', href: 'community/community.html' },
+  ];
+
+  const BOTTOM_NAV_ITEMS = [
+    { id: 'home', label: '홈', href: homePrefix + 'index.html', icon: '⌂' },
+    { id: 'class', label: '클래스', href: prefix + 'class/class_list.html', icon: '▦' },
+    { id: 'create', label: '등록', href: prefix + 'create_class/create_class.html', icon: '＋' },
+    { id: 'community', label: '커뮤니티', href: prefix + 'community/community.html', icon: '◎' },
+    { id: 'mypage', label: '마이페이지', href: prefix + 'mi_pesg/mypage.html', icon: '◔' },
+  ];
+
   function getActiveNav() {
-    const p = currentPath.toLowerCase();
-    if (p.includes('class_list') || (p.includes('/class/') && !p.includes('class_view'))) return 'class';
-    if (p.includes('create_class')) return 'create';
-    if (p.includes('notice')) return 'notice';
-    if (p.includes('contact')) return 'contact';
-    if (p.includes('community')) return 'community';
-    if (p.includes('class_view')) return 'classview';
-    if (p.includes('mypage') || p.includes('mi_pesg')) return 'mypage';
+    const path = currentPath.toLowerCase();
+    if (path.includes('class_list') || (path.includes('/class/') && !path.includes('class_view'))) return 'class';
+    if (path.includes('create_class')) return 'create';
+    if (path.includes('notice')) return 'notice';
+    if (path.includes('contact')) return 'contact';
+    if (path.includes('community')) return 'community';
+    if (path.includes('class_view')) return 'classview';
+    if (path.includes('mypage') || path.includes('mi_pesg')) return 'mypage';
     return 'home';
   }
 
   const activeNav = getActiveNav();
-
-  function getNavHref(id) {
-    switch (id) {
-      case 'class': return 'class/class_list.html';
-      case 'create': return 'create_class/create_class.html';
-      case 'notice': return 'notice/notice.html';
-      case 'contact': return 'contact/contact.html';
-      case 'community': return 'community/community.html';
-      case 'mypage': return 'mi_pesg/mypage.html';
-      default: return 'bsnnnnnnnnnnnnnnnnnn/index.html';
-    }
-  }
 
   function normalizeRole(role) {
     const value = String(role || '').trim().toLowerCase();
@@ -65,45 +69,51 @@
 
   function getOperatorDisplayName(user) {
     const seq = Number(user?.operator_seq || 0);
-    return seq > 0 ? `운영자${seq}` : '운영자';
+    return seq > 0 ? `운영자 ${seq}` : '운영자';
   }
 
   function getOperatorProfile(user) {
     return {
-      name: `${getOperatorDisplayName(user)} 님 반갑습니다`,
-      profile_image_url: user?.profile_image_url || 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png',
+      name: `${getOperatorDisplayName(user)}님 반갑습니다`,
+      profile_image_url: user?.profile_image_url || '/assets/default-avatar.svg',
     };
   }
 
   function buildHeaderHTML() {
-    const nav = (id, label) => `<li><a href="${prefix}${getNavHref(id)}"${activeNav === id ? ' class="nav-active"' : ''}>${label}</a></li>`;
     return `
       <header class="site-header" id="bsqHeader">
         <div class="header-inner">
-          <div class="header-left" style="display:flex;align-items:center;gap:10px;">
+          <div class="header-left">
             <button class="btn-hamburger mobile-only-flex" id="btnHamburger" aria-label="메뉴 열기">
               <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
             </button>
             <h1 class="logo">
-              <a href="${homePrefix}index.html" class="logo-link">
+              <a href="${homePrefix}index.html" class="logo-link" aria-label="B-Square 홈으로 이동">
                 <img id="bsqHeaderLogoImg" class="logo-image" alt="B-Square 로고" style="display:none;">
                 <span id="bsqHeaderLogoText" class="logo-text">B-Square</span>
               </a>
             </h1>
           </div>
-          <nav class="main-nav desktop-only-flex">
+
+          <nav class="main-nav desktop-only-flex" aria-label="주요 메뉴">
             <ul>
-              ${nav('class', '클래스')}
-              ${nav('create', '등록')}
-              ${nav('notice', '공지사항')}
-              ${nav('contact', '문의')}
-              ${nav('community', '커뮤니티')}
+              ${NAV_ITEMS.map((item) => `
+                <li>
+                  <a href="${prefix}${item.href}"${activeNav === item.id ? ' class="nav-active"' : ''}>${item.label}</a>
+                </li>
+              `).join('')}
             </ul>
           </nav>
+
           <div class="header-right header-utils">
             <div class="search-bar desktop-only-flex">
-              <input type="text" placeholder="검색어를 입력하세요" id="bsqSearchInput" onkeydown="if(event.key==='Enter'){const q=this.value.trim();if(q)location.href='${prefix}class/class_list.html?q='+encodeURIComponent(q);}">
-              <button type="button" onclick="const q=document.getElementById('bsqSearchInput').value.trim();if(q)location.href='${prefix}class/class_list.html?q='+encodeURIComponent(q);">검색</button>
+              <input
+                type="text"
+                id="bsqSearchInput"
+                placeholder="검색어를 입력하세요"
+                onkeydown="if(event.key==='Enter'){const q=this.value.trim();if(q)location.href='${prefix}class/class_list.html?q='+encodeURIComponent(q);}"
+              >
+              <button type="button" onclick="const el=document.getElementById('bsqSearchInput');const q=el ? el.value.trim() : '';if(q)location.href='${prefix}class/class_list.html?q='+encodeURIComponent(q);">검색</button>
             </div>
             <div class="user-menu" id="userMenu" style="display:flex;gap:10px;align-items:center;"></div>
           </div>
@@ -117,9 +127,9 @@
       <aside class="drawer-menu mobile-only" id="drawerMenu">
         <div class="drawer-header">
           <h2 class="drawer-title">B-Square</h2>
-          <button class="drawer-close" id="drawerClose">닫기</button>
+          <button class="drawer-close" id="drawerClose" type="button">닫기</button>
         </div>
-        <nav class="drawer-nav">
+        <nav class="drawer-nav" aria-label="모바일 메뉴">
           <a href="${homePrefix}index.html" class="drawer-nav-item${activeNav === 'home' ? ' active' : ''}">홈</a>
           <a href="${prefix}class/class_list.html" class="drawer-nav-item${activeNav === 'class' ? ' active' : ''}">클래스</a>
           <a href="${prefix}create_class/create_class.html" class="drawer-nav-item${activeNav === 'create' ? ' active' : ''}">등록</a>
@@ -132,53 +142,100 @@
   }
 
   function buildBottomNavHTML() {
-    const item = (href, icon, label, id) =>
-      `<a href="${href}" class="nav-item${activeNav === id ? ' active' : ''}">
-        <span class="icon">${icon}</span>
-        <span class="label">${label}</span>
-      </a>`;
     return `
-      <nav class="bottom-nav mobile-only" id="bsqBottomNav">
-        ${item(prefix + 'class/class_list.html', '📚', '클래스', 'class')}
-        ${item(prefix + 'class/class_list.html', '🎟️', '멤버십', 'membership')}
-        ${item(prefix + 'community/community.html', '💬', '커뮤니티', 'community')}
-        ${item(prefix + 'mi_pesg/mypage.html', '👤', '마이페이지', 'mypage')}
-        ${item(prefix + 'mi_pesg/mypage.html', '🏫', '내 클래스', 'myclasses')}
+      <nav class="bottom-nav mobile-only" id="bsqBottomNav" aria-label="하단 메뉴">
+        ${BOTTOM_NAV_ITEMS.map((item) => `
+          <a href="${item.href}" class="nav-item${activeNav === item.id ? ' active' : ''}">
+            <span class="icon">${item.icon}</span>
+            <span class="label">${item.label}</span>
+          </a>
+        `).join('')}
       </nav>`;
   }
 
   function buildFooterHTML() {
     return `
       <footer class="site-footer" id="bsqFooter">
-        <div class="footer-top">
-          <div class="footer-brand">
-            <a href="${homePrefix}index.html" class="footer-brand-link">
-              <img id="bsqFooterLogoImg" class="footer-logo-image" alt="B-Square 로고" style="display:none;">
-              <span id="bsqFooterBrandText" class="footer-brand-text">B-Square</span>
-            </a>
-            <p class="footer-slogan">배움을 연결하는 클래스 플랫폼</p>
+        <div class="footer-inner">
+          <div class="footer-grid">
+            <section class="footer-support">
+              <h3 class="footer-support-title">고객센터</h3>
+              <p class="footer-support-hours" id="footerSupportHours">오전 10시 ~ 오후 6시 (주말, 공휴일 제외)</p>
+              <button type="button" class="btn-contact" onclick="location.href='${prefix}contact/contact.html'">문의하기</button>
+
+              <div class="footer-store-badges" aria-label="앱 다운로드">
+                <a href="#" class="store-badge" aria-label="App Store에서 다운로드">
+                  <span class="store-badge-icon"></span>
+                  <span class="store-badge-copy">
+                    <strong>App Store에서</strong>
+                    <small>다운로드 하기</small>
+                  </span>
+                </a>
+                <a href="#" class="store-badge" aria-label="Google Play에서 다운로드">
+                  <span class="store-badge-icon">▶</span>
+                  <span class="store-badge-copy">
+                    <strong>Google Play에서</strong>
+                    <small>다운로드</small>
+                  </span>
+                </a>
+              </div>
+
+              <div class="footer-social-links" aria-label="소셜 링크">
+                <a id="footerInstagramLink" href="#" class="footer-social-link" target="_blank" rel="noopener noreferrer">
+                  <span class="icon">IG</span><span>인스타그램</span>
+                </a>
+                <a id="footerYoutubeLink" href="#" class="footer-social-link" target="_blank" rel="noopener noreferrer">
+                  <span class="icon">YT</span><span>유튜브</span>
+                </a>
+              </div>
+            </section>
+
+            <div class="footer-links-grid">
+              <section class="footer-link-column">
+                <h4>공지사항</h4>
+                <a href="${prefix}notice/notice.html">전체 카테고리</a>
+                <a href="${prefix}notice/notice.html">헬프센터</a>
+                <a href="${prefix}contact/contact.html">지원 기기 및 이용환경</a>
+              </section>
+
+              <section class="footer-link-column">
+                <h4>크리에이터 지원</h4>
+                <a href="${prefix}notice/notice.html">지식재산권 침해 신고 센터</a>
+                <a href="${prefix}contact/contact.html">국비 지원</a>
+                <a href="${prefix}contact/contact.html">기업고객 문의</a>
+                <a href="${prefix}create_class/create_class.html">클래스 개설 구매</a>
+              </section>
+
+              <section class="footer-link-column">
+                <h4>정책</h4>
+                <a id="footerPrivacyLink" href="${prefix}terms_privacy.html"><strong>개인정보 처리방침</strong></a>
+                <a id="footerTermsLink" href="${prefix}terms_use.html">이용약관</a>
+                <a href="${prefix}terms_use.html#giftcard">기프트카드 및 캐시 이용약관</a>
+                <a href="#">환불 정책</a>
+                <a href="#">청소년 보호 정책</a>
+              </section>
+
+              <section class="footer-link-column">
+                <h4>사업자 정보 확인</h4>
+                <a href="#">제휴 및 대외협력</a>
+                <a href="#">채용</a>
+                <a href="${prefix}contact/contact.html">고객센터</a>
+              </section>
+            </div>
+          </div>
+
+          <div class="footer-bottom">
+            <div class="footer-legal-links" aria-label="바로가기">
+              <a href="${prefix}terms_use.html">이용약관</a>
+              <a href="${prefix}terms_privacy.html"><strong>개인정보처리방침</strong></a>
+              <a href="${prefix}contact/contact.html">고객센터</a>
+            </div>
             <p class="footer-info-text" id="bsqFooterInfoText"></p>
+            <p class="footer-company-more">
+              <a href="${prefix}contact/contact.html">사업자 정보 자세히 보기 &gt;</a>
+            </p>
+            <p class="copyright">© <span id="footerCopyrightBrand">B-Square</span>. All rights reserved.</p>
           </div>
-          <div class="footer-links">
-            <h4>바로가기</h4>
-            <ul class="footer-nav">
-              <li><a id="footerTermsLink" href="#">이용약관</a></li>
-              <li><a id="footerPrivacyLink" href="#"><strong>개인정보처리방침</strong></a></li>
-              <li><a href="${prefix}contact/contact.html">고객센터</a></li>
-            </ul>
-          </div>
-          <div class="social-links">
-            <a id="footerInstagramLink" href="#" class="social-icon" target="_blank" rel="noopener noreferrer"><span class="icon">📷</span><p>인스타그램</p></a>
-            <a id="footerYoutubeLink" href="#" class="social-icon" target="_blank" rel="noopener noreferrer"><span class="icon">▶</span><p>유튜브</p></a>
-          </div>
-          <div class="cs-center">
-            <h4>고객센터</h4>
-            <p id="footerSupportHours">평일 10시 ~ 오후 6시 (주말, 공휴일 제외)</p>
-            <button type="button" class="btn-contact" onclick="location.href='${prefix}contact/contact.html'">문의하기</button>
-          </div>
-        </div>
-        <div class="footer-bottom">
-          <p class="copyright">© <span id="footerCopyrightBrand">B-Square</span>. All rights reserved.</p>
         </div>
       </footer>`;
   }
@@ -190,7 +247,7 @@
       }
 
       const settingsSource = window.__BSQ_SITE_SETTINGS__;
-      const settings = settingsSource || (await window.BSQ?.api?.('/api/site-settings'))?.data || null;
+      const settings = settingsSource || (await window.BSQ?.api?.('/api/site-settings', { cacheBust: false }))?.data || null;
       if (!settings) return;
 
       const brandName = settings.company_name || settings.site_name || 'B-Square';
@@ -199,6 +256,7 @@
       const setLogo = (imgId, textId) => {
         const img = document.getElementById(imgId);
         const text = document.getElementById(textId);
+
         if (img) {
           if (logoUrl) {
             img.src = logoUrl;
@@ -208,6 +266,7 @@
             img.style.display = 'none';
           }
         }
+
         if (text) {
           text.textContent = brandName;
           text.style.display = logoUrl ? 'none' : 'inline-flex';
@@ -226,23 +285,25 @@
       const footerBrandCopy = document.getElementById('footerCopyrightBrand');
 
       if (footerBrandCopy) footerBrandCopy.textContent = brandName;
-      if (footerHours) footerHours.textContent = settings.footer_hours || '평일 10시 ~ 오후 6시 (주말, 공휴일 제외)';
-      if (footerTermsLink) footerTermsLink.href = settings.footer_terms_url || '#';
-      if (footerPrivacyLink) footerPrivacyLink.href = settings.footer_privacy_url || '#';
+      if (footerHours) footerHours.textContent = settings.footer_hours || '오전 10시 ~ 오후 6시 (주말, 공휴일 제외)';
+      if (footerTermsLink) footerTermsLink.href = (settings.footer_terms_url && settings.footer_terms_url !== '#') ? settings.footer_terms_url : prefix + 'terms_use.html';
+      if (footerPrivacyLink) footerPrivacyLink.href = (settings.footer_privacy_url && settings.footer_privacy_url !== '#') ? settings.footer_privacy_url : prefix + 'terms_privacy.html';
       if (footerInstagramLink) footerInstagramLink.href = settings.footer_instagram_url || '#';
       if (footerYoutubeLink) footerYoutubeLink.href = settings.footer_youtube_url || '#';
 
       if (footerInfo) {
-        const parts = [];
-        if (settings.ceo_name) parts.push(`대표: ${settings.ceo_name}`);
-        if (settings.biz_num) parts.push(`사업자등록번호: ${settings.biz_num}`);
-        if (settings.mail_order_num) parts.push(`통신판매업신고: ${settings.mail_order_num}`);
-        if (settings.cs_phone) parts.push(`고객센터: ${settings.cs_phone}`);
-        if (settings.cs_email) parts.push(`이메일: ${settings.cs_email}`);
-
         const lines = [];
-        if (parts.length > 0) lines.push(parts.join(' | '));
-        if (settings.address) lines.push(`주소: ${settings.address}`);
+        if (settings.company_name) lines.push(settings.company_name);
+
+        const details = [];
+        if (settings.ceo_name) details.push(`대표 ${settings.ceo_name}`);
+        if (settings.biz_num) details.push(`사업자등록번호 ${settings.biz_num}`);
+        if (settings.mail_order_num) details.push(`통신판매업신고 ${settings.mail_order_num}`);
+        if (settings.cs_phone) details.push(`고객센터 ${settings.cs_phone}`);
+        if (settings.cs_email) details.push(`이메일 ${settings.cs_email}`);
+        if (details.length > 0) lines.push(details.join(' · '));
+        if (settings.address) lines.push(`주소 ${settings.address}`);
+
         footerInfo.textContent = lines.join('\n');
       }
     } catch (error) {
@@ -257,6 +318,14 @@
       linkCSS.rel = 'stylesheet';
       linkCSS.href = prefix + 'mobile_210px_optimize.css';
       document.head.appendChild(linkCSS);
+    }
+
+    if (!document.getElementById('bsqShellOverridesCSS')) {
+      const shellCSS = document.createElement('link');
+      shellCSS.id = 'bsqShellOverridesCSS';
+      shellCSS.rel = 'stylesheet';
+      shellCSS.href = homePrefix + 'shell_overrides.css';
+      document.head.appendChild(shellCSS);
     }
 
     document.querySelector('header.site-header')?.remove();
@@ -302,7 +371,7 @@
     menus.forEach((menuEl) => {
       if (!session || !user) {
         menuEl.innerHTML = `<a href="${prefix}login/login.html" class="btn-login-main">로그인</a>`;
-        window.__BSQ_DEV_MODE__ = false;
+        window.__BSQ_DEV_MODE__ = isOperatorModeEnabled();
         return;
       }
 
@@ -311,7 +380,7 @@
       window.__BSQ_DEV_MODE__ = operatorMode;
       const profile = operatorMode ? getOperatorProfile(user) : user;
       const profileHref = operatorMode ? `${prefix}admin_dashboard/admin.html` : `${prefix}mi_pesg/mypage.html`;
-      const modeLabel = operatorEligible ? (operatorMode ? '일반 모드' : '운영자 모드') : '';
+      const modeLabel = operatorEligible ? (operatorMode ? '운영자 모드' : '일반 모드') : '';
 
       menuEl.innerHTML = `
         <a href="${profileHref}" class="user-profile-btn" style="text-decoration:none;">

@@ -20,11 +20,78 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     const avgRating = classData.avg_rating || '0.0';
     const dailyChatAvg = classData.daily_chat_avg || 0; // 채팅 하루 평균 (API 응답 확장 시 연동)
 
+    function escapeHtml(value = '') {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     // ========================
     // 2. 데이터 준비
     // ========================
-    const categories = ['디자인', '생산성', '스포츠', '디지털 드로잉', '성공 마인드', '음악', '베이킹', '사진', '영상', '공예'];
-    const catOptions = categories.map(c => `<option value="${c}" ${classData.category === c ? 'selected' : ''}>${c}</option>`).join('');
+    const fallbackCategories = [
+        { name: '소모임/동아리', emoji: '👥' },
+        { name: '맛있는 클래스', emoji: '🍽️' },
+        { name: '운동 클래스', emoji: '🏋️' },
+        { name: '디자인', emoji: '🎨' },
+        { name: '생산성', emoji: '⚡' },
+        { name: '스포츠', emoji: '🏅' },
+        { name: '디지털 드로잉', emoji: '✏️' },
+        { name: '성공 마인드', emoji: '🧠' },
+        { name: '음악', emoji: '🎵' },
+        { name: '요리', emoji: '🍳' },
+        { name: '베이킹', emoji: '🧁' },
+        { name: '사진', emoji: '📷' },
+        { name: '영상', emoji: '🎬' },
+        { name: '공예', emoji: '🧵' },
+        { name: '여행', emoji: '🧭' },
+    ];
+
+    async function loadCategories() {
+        let categories = fallbackCategories;
+        try {
+            const categoryRes = await window.BSQ.api('/api/class-categories', { cacheBust: false });
+            if (categoryRes.success && Array.isArray(categoryRes.data) && categoryRes.data.length > 0) {
+                categories = categoryRes.data.map((item) => ({
+                    name: String(item.name || '').trim(),
+                    emoji: String(item.emoji || '✨').trim() || '✨',
+                })).filter((item) => item.name);
+            }
+        } catch (error) {
+            console.warn('[view_edit] category load failed, using fallback:', error);
+        }
+
+        const currentCategory = String(classData.category || '').trim();
+        if (currentCategory && !categories.some((item) => item.name === currentCategory)) {
+            categories = [...categories, { name: currentCategory, emoji: '✨' }];
+        }
+
+        return categories;
+    }
+
+    function buildCategoryOptions(categories, selectedCategory = '') {
+        const selected = String(selectedCategory || '').trim();
+        return categories.map((c) => `<option value="${escapeHtml(c.name)}" ${selected === c.name ? 'selected' : ''}>${escapeHtml(c.emoji || '✨')} ${escapeHtml(c.name)}</option>`).join('');
+    }
+
+    async function refreshCategorySelect() {
+        const select = document.getElementById('editCategory');
+        if (!select) return;
+
+        const currentValue = String(select.value || classData.category || '').trim();
+        const categories = await loadCategories();
+        const selectedValue = categories.some((item) => item.name === currentValue)
+            ? currentValue
+            : String(classData.category || '').trim();
+
+        select.innerHTML = buildCategoryOptions(categories, selectedValue);
+    }
+
+    const categories = await loadCategories();
+    const catOptions = buildCategoryOptions(categories, classData.category || '');
 
     const curriculum = classData.curriculum || [];
     const curriculumHTML = curriculum.map((ch, i) => `
@@ -288,6 +355,17 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
 
         </div>
     `;
+
+    if (!window.__BSQ_EDIT_CATEGORY_SYNC_BOUND) {
+        window.__BSQ_EDIT_CATEGORY_SYNC_BOUND = true;
+        window.addEventListener('bsq_sync', (event) => {
+            if (event.detail?.type === 'class-categories') {
+                refreshCategorySelect().catch((error) => {
+                    console.warn('[view_edit] category refresh failed:', error);
+                });
+            }
+        });
+    }
 
     // ========================
     // 3-1. Quill 리치 텍스트 에디터 연동

@@ -43,6 +43,7 @@ window.CommunityModules.SyncBridge = (function () {
         }
 
         async function poll() {
+            if (document.visibilityState !== 'visible') return;
             try {
                 const endpoint = `/api/dm/${roomId}/messages?room_type=${encodeURIComponent(type)}&since=${lastTimestamp}&limit=100`;
                 const res = await window.BSQ.api(endpoint);
@@ -78,7 +79,7 @@ window.CommunityModules.SyncBridge = (function () {
     // ---- D1 API 기반 프로필 로드 ----
     async function getUserProfile(uid) {
         if (uid === 'OPERATOR_GHOST') {
-            return { name: '운영자', profile_image_url: 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png', is_operator: true };
+            return { name: '운영자', profile_image_url: '/assets/default-avatar.svg', is_operator: true };
         }
 
         try {

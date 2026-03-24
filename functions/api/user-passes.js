@@ -1,4 +1,4 @@
-import { requireSession } from './_lib/auth.js';
+import { isAtLeastRole, requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
 
 export async function onRequestGet(context) {
@@ -8,7 +8,7 @@ export async function onRequestGet(context) {
   if (!auth.ok) return auth.response;
   const user_id = url.searchParams.get('user_id') || auth.user.id;
 
-  if (user_id !== auth.user.id && auth.user.role !== 'admin') {
+  if (user_id !== auth.user.id && !isAtLeastRole(auth.user.role, 'admin')) {
     return json(request, env, { success: false, error: '조회 권한이 없습니다.' }, { status: 403 });
   }
 

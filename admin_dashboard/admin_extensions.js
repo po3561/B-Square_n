@@ -1494,11 +1494,7 @@
     body.querySelectorAll('[data-review-delete]').forEach((button) => button.addEventListener('click', async () => {
       if (!confirm('이 리뷰를 삭제할까요?')) return;
       try {
-        try {
-          await window.BSQ.api(`/api/admin/reviews?id=${encodeURIComponent(button.dataset.reviewDelete)}`, { method: 'DELETE' });
-        } catch (error) {
-          await window.BSQ.api(`/api/reviews?id=${encodeURIComponent(button.dataset.reviewDelete)}&admin=1`, { method: 'DELETE' });
-        }
+        await window.BSQ.api(`/api/admin/reviews?id=${encodeURIComponent(button.dataset.reviewDelete)}`, { method: 'DELETE' });
         state.reviews = state.reviews.filter((item) => item.id !== button.dataset.reviewDelete);
         renderReviews();
       } catch (error) {
@@ -1511,12 +1507,7 @@
     const body = $('lowReviewsTableBody');
     if (body) body.innerHTML = '<tr><td colspan="9" style="text-align:center;">리뷰를 불러오는 중입니다...</td></tr>';
     try {
-      let res;
-      try {
-        res = await window.BSQ.api('/api/admin/reviews?rating_max=3&sort=rating_asc');
-      } catch (error) {
-        res = await window.BSQ.api('/api/reviews?admin=1&rating_max=3&sort=rating_asc');
-      }
+      const res = await window.BSQ.api('/api/admin/reviews?rating_max=3&sort=rating_asc');
       state.reviews = list(res).map((row) => ({
         id: row.id || row.push_key || row.review_id || '',
         rating: Number(row.rating || 0),

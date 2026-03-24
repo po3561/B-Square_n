@@ -1,40 +1,87 @@
-// GET /api/inquiries — 문의 목록 (관리자)
-// POST /api/inquiries — 문의 접수
+import { ensureOperationsSchema } from './_lib/schema.js';
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Credentials': 'true',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+  'Content-Type': 'application/json',
+};
+
+function normalizeText(value) {
+  return String(value ?? '').trim();
+}
+
+function json(body, init = {}) {
+  return new Response(JSON.stringify(body), {
+    ...init,
+    headers: CORS_HEADERS,
+  });
+}
+
 export async function onRequestGet(context) {
   const { env } = context;
-  const cors = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
 
   try {
+    await ensureOperationsSchema(env.DB);
     const { results } = await env.DB.prepare('SELECT * FROM inquiries ORDER BY created_at DESC').all();
-    return new Response(JSON.stringify({ success: true, data: results }), { headers: cors });
+    return json({ success: true, data: results || [] });
   } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: '문의 조회 오류' }), { status: 500, headers: cors });
+    console.error('[API /inquiries] GET error:', err);
+    return json({ success: false, error: 'Inquiry lookup failed.' }, { status: 500 });
   }
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const cors = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
 
   try {
+    await ensureOperationsSchema(env.DB);
+
     const body = await request.json();
-    const { name, email, category, title, content } = body;
+    const name = normalizeText(body.name || body.user_name);
+    const email = normalizeText(body.email || body.user_email);
+    const category = normalizeText(body.category) || '일반 문의';
+    const title = normalizeText(body.title || body.subject);
+    const content = normalizeText(body.content);
+    const userId = normalizeText(body.user_id || '');
+    const submittedBy = normalizeText(body.submitted_by || body.user_id || '');
 
     if (!name || !email || !title || !content) {
-      return new Response(JSON.stringify({ success: false, error: '필수 항목을 모두 입력해주세요.' }), { status: 400, headers: cors });
+      return json({ success: false, error: 'name, email, title and content are required.' }, { status: 400 });
     }
 
-    const id = 'inq_' + crypto.randomUUID().replace(/-/g, '').substring(0, 12);
-    await env.DB.prepare(
-      'INSERT INTO inquiries (id, name, email, category, title, content, submitted_by) VALUES (?, ?, ?, ?, ?, ?, ?)'
-    ).bind(id, name, email, category || '일반', title, content, body.submitted_by || null).run();
+    const id = `inq_${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`;
+    await env.DB.prepare(`
+      INSERT INTO inquiries (
+        id, user_id, name, email, category, title, subject, content, submitted_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      userId || null,
+      name,
+      email,
+      category,
+      title,
+      title,
+      content,
+      submittedBy || null,
+    ).run();
 
-    return new Response(JSON.stringify({ success: true, data: { id } }), { status: 201, headers: cors });
+    return json({ success: true, data: { id } }, { status: 201 });
   } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: '문의 접수 오류' }), { status: 500, headers: cors });
+    console.error('[API /inquiries] POST error:', err);
+    return json({ success: false, error: 'Inquiry submission failed.' }, { status: 500 });
   }
 }
 
 export async function onRequestOptions() {
-  return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } });
+  return new Response(null, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+    },
+  });
 }

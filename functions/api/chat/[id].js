@@ -1,4 +1,4 @@
-import { requireClassManager, requireSession } from '../_lib/auth.js';
+import { isAtLeastRole, requireClassManager, requireSession } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
 import { ensureChatMessagesSchema } from '../_lib/schema.js';
 
@@ -26,7 +26,7 @@ export async function onRequest(context) {
     }
 
     const isOwner = String(message.user_id) === String(auth.user.id);
-    if (!isOwner && auth.user.role !== 'admin') {
+    if (!isOwner && !isAtLeastRole(auth.user.role, 'admin')) {
       const classAuth = await requireClassManager(context, message.class_id);
       if (!classAuth.ok) return classAuth.response;
     }

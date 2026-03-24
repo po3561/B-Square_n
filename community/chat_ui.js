@@ -1,4 +1,4 @@
-// chat_ui.js - 모듈3: 채팅 UI 기능 (D1 API 버전)
+﻿// chat_ui.js - 모듈3: 채팅 UI 기능 (D1 API 버전)
 // Firebase/Supabase 의존성 완전 제거 → BSQ.api 기반
 window.CommunityModules = window.CommunityModules || {};
 
@@ -66,6 +66,137 @@ window.CommunityModules.ChatUI = (function () {
         }
 
         return normalized;
+    }
+
+    function getMessageContainer() {
+        return document.getElementById('chatMessagesContainer');
+    }
+
+    function isNearBottom(container, threshold = 140) {
+        if (!container) return true;
+        return container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
+    }
+
+    function normalizePreviewText(text, maxLength = 110) {
+        const clean = String(text || '').replace(/\s+/g, ' ').trim();
+        if (!clean) return '';
+        return clean.length > maxLength ? `${clean.slice(0, maxLength)}…` : clean;
+    }
+
+    function serializeReactionValue(value) {
+        if (!value) return '';
+        if (Array.isArray(value)) return value.map(String).sort().join(',');
+        if (typeof value === 'object') return Object.keys(value).sort().map(key => `${key}:${value[key]}`).join(',');
+        return String(value);
+    }
+
+    function buildMessageSignature(msgData) {
+        const reactionEntries = msgData?.reactions && typeof msgData.reactions === 'object'
+            ? Object.keys(msgData.reactions).sort().map(key => `${key}=${serializeReactionValue(msgData.reactions[key])}`).join('|')
+            : '';
+
+        return [
+            msgData?.type || '',
+            msgData?.content || '',
+            msgData?.message || '',
+            msgData?.text || '',
+            msgData?.file_name || '',
+            msgData?.file_size || '',
+            msgData?.file_data ? 'file' : '',
+            msgData?.gather_title || '',
+            msgData?.gather_time || '',
+            msgData?.gather_place || '',
+            msgData?.capacity_min || '',
+            msgData?.capacity_max || '',
+            msgData?.current_count || '',
+            msgData?.status || '',
+            msgData?.reply_to || '',
+            msgData?.reply_text || '',
+            msgData?.reply_user || '',
+            msgData?.is_pinned ? '1' : '0',
+            msgData?.edited ? '1' : '0',
+            msgData?.updated_at || '',
+            msgData?.timestamp || msgData?.created_at || '',
+            reactionEntries
+        ].join('||');
+    }
+
+    function renderReplyPreviewText(previewTextEl, replyTarget) {
+        if (!previewTextEl) return;
+        previewTextEl.innerHTML = '';
+
+        const title = document.createElement('span');
+        title.className = 'reply-preview-name';
+        title.textContent = replyTarget?.senderName || '이전 메시지';
+
+        const snippet = document.createElement('span');
+        snippet.className = 'reply-preview-snippet';
+        snippet.textContent = normalizePreviewText(replyTarget?.text || replyTarget?.message || '');
+
+        previewTextEl.append(title, snippet);
+    }
+
+    function clearReplyPreview() {
+        replyTarget = null;
+        const preview = document.getElementById('replyPreview');
+        const previewText = document.getElementById('replyText');
+        if (preview) preview.style.display = 'none';
+        if (previewText) previewText.innerHTML = '';
+    }
+
+    function buildPinnedMessagesSectionHtml(roomType) {
+        if (!currentPins.length) return '';
+
+        const title = roomType === 'dm' ? '고정 메시지' : '고정 메시지';
+        const items = currentPins.map(pin => {
+            const messageId = pin.id || pin.key || '';
+            const senderName = pin.user_name || pin.sender_name || '메시지';
+            const snippet = normalizePreviewText(pin.content || pin.message || pin.text || '');
+            const timestamp = pin.updated_at || pin.timestamp || pin.created_at || '';
+            const timeText = timestamp ? new Date(timestamp).toLocaleString('ko-KR', {
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : '';
+
+            return `
+                <button type="button" class="info-pinned-item" data-msg-id="${escapeAttr(messageId)}">
+                    <span class="info-pinned-item-title">${escapeHtml(senderName)}</span>
+                    <span class="info-pinned-item-snippet">${escapeHtml(snippet || '고정된 메시지')}</span>
+                    ${timeText ? `<span class="info-pinned-item-meta">${escapeHtml(timeText)}</span>` : ''}
+                </button>
+            `;
+        }).join('');
+
+        return `
+            <section class="info-pinned-section">
+                <div class="info-section-title">
+                    <i class="fa-solid fa-thumbtack"></i>
+                    <span>${escapeHtml(title)} ${currentPins.length}</span>
+                </div>
+                <div class="info-pinned-list">${items}</div>
+            </section>
+        `;
+    }
+
+    function bindPinnedMessageItems(container) {
+        if (!container) return;
+        container.querySelectorAll('.info-pinned-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const msgId = item.dataset.msgId;
+                const target = msgId ? document.getElementById(`msg-${msgId}`) : null;
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    target.classList.add('msg-focus');
+                    window.setTimeout(() => target.classList.remove('msg-focus'), 1400);
+                }
+            });
+        });
+    }
+
+    function refreshVisibleMessages() {
+        return loadMessages({ refreshAll: true });
     }
 
     function getRoomMessageCollectionUrl() {
@@ -374,8 +505,9 @@ window.CommunityModules.ChatUI = (function () {
         currentRoomType = roomType;
         currentRoomInfo = roomInfo || {};
         editingMsgKey = null;
-        replyTarget = null;
+        clearReplyPreview();
         lastMsgTimestamp = 0;
+        const autoOpenInfoPanel = new URLSearchParams(location.search).get('panel') === 'info';
 
         const container = document.getElementById('chatMessagesContainer');
         if (container) container.innerHTML = '';
@@ -430,10 +562,11 @@ window.CommunityModules.ChatUI = (function () {
             localStorage.setItem('bsq_comm_last_type', String(roomType));
         } catch {}
 
-        loadMessages();
+        loadMessages({ refreshAll: true });
         loadPinnedMessages();
         startMessageStream();
-        pollTimer = setInterval(loadMessages, 3000);
+        if (autoOpenInfoPanel) setTimeout(() => renderInfoPanel(roomId, roomType, roomInfo), 0);
+        pollTimer = setInterval(() => loadMessages({ refreshAll: true }), 3500);
     }
 
     function startMessageStream() {
@@ -461,19 +594,25 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     // ==== D1 API 메시지 로드 ====
-    async function loadMessages() {
+        async function loadMessages({ refreshAll = false } = {}) {
         if (!currentRoomId) return;
         try {
-            const endpoint = getRoomMessagesUrl({ since: lastMsgTimestamp });
+            const endpoint = getRoomMessagesUrl({
+                since: refreshAll ? '' : lastMsgTimestamp,
+                limit: refreshAll ? 250 : 100,
+            });
             const res = await window.BSQ.api(endpoint);
 
             if (res?.success && res.data) {
-                const messages = Array.isArray(res.data) ? res.data : (res.data.messages || []);
+                const messages = (Array.isArray(res.data) ? res.data : (res.data.messages || []))
+                    .map(normalizeIncomingMessage)
+                    .sort((a, b) => new Date(a.timestamp || a.created_at || 0) - new Date(b.timestamp || b.created_at || 0));
+
                 messages.forEach(msg => {
-                    const normalized = normalizeIncomingMessage(msg);
-                    const ts = new Date(normalized.created_at || normalized.timestamp || Date.now()).getTime();
+                    const msgId = msg.id || msg.key;
+                    const ts = new Date(msg.updated_at || msg.created_at || msg.timestamp || Date.now()).getTime();
                     if (ts > lastMsgTimestamp) lastMsgTimestamp = ts;
-                    renderMessage(normalized.id || normalized.key, normalized, true);
+                    renderMessage(msgId, msg, true);
                 });
             }
         } catch (e) {
@@ -492,6 +631,10 @@ window.CommunityModules.ChatUI = (function () {
                     .filter(msg => msg.is_pinned)
                     .sort((a, b) => new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0));
                 renderPinnedBar();
+
+                if (document.getElementById('commInfoPanel')?.classList.contains('visible')) {
+                    await renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo);
+                }
             }
         } catch (error) {
             console.warn('Pinned load error:', error);
@@ -510,48 +653,51 @@ window.CommunityModules.ChatUI = (function () {
         }
 
         const top = currentPins[0];
-        const text = String(top.content || top.message || top.text || '').replace(/<[^>]+>/g, '');
-        const summary = text.length > 70 ? `${text.slice(0, 70)}…` : text;
-        content.textContent = `고정 메시지 ${currentPins.length}개 · ${summary || '메시지 확인'}`;
+        const text = normalizePreviewText(top.content || top.message || top.text || '', 70);
+        content.textContent = `고정 메시지 ${currentPins.length}개 · ${text || '메시지 확인'}`;
         bar.style.display = 'flex';
         bar.onclick = () => {
             document.getElementById(`msg-${top.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         };
     }
 
-    // ==== 메시지 렌더링 ====
-    function renderMessage(msgId, msgData, append = true) {
+        function renderMessage(msgId, msgData, append = true) {
         if (!msgData) return;
         msgData = normalizeIncomingMessage(msgData);
+
+        const container = getMessageContainer();
+        if (!container) return;
 
         let currentUserId = bridge()?.getUserId?.() || '';
         if (window.__BSQ_DEV_MODE__) currentUserId = 'OPERATOR_GHOST';
 
-        const isMine = (msgData.sender_id || msgData.user_id) === currentUserId;
+        const normalizedId = String(msgId || msgData.id || msgData.key || '');
+        if (!normalizedId) return;
 
-        let row = document.getElementById(`msg-${msgId}`);
-        if (row) return; // 이미 렌더링됨
-
-        row = document.createElement('div');
-        row.className = `msg-row ${isMine ? 'mine' : 'other'} ${(msgData.sender_id || msgData.user_id) === 'OPERATOR_GHOST' ? 'operator' : ''}${msgData.is_pinned ? ' pinned' : ''}`;
-        row.id = `msg-${msgId}`;
+        const senderId = msgData.sender_id || msgData.user_id || '';
+        const isMine = senderId === currentUserId;
+        const signature = buildMessageSignature(msgData);
+        const row = document.getElementById(`msg-${normalizedId}`);
+        const shouldStickToBottom = isMine || isNearBottom(container) || !container.children.length;
 
         let senderName = msgData.user_name || msgData.sender_name || '';
         let senderAvatar = msgData.user_avatar || msgData.sender_avatar || '';
 
-        if ((msgData.sender_id || msgData.user_id) === 'OPERATOR_GHOST') {
+        if (senderId === 'OPERATOR_GHOST') {
             senderName = '운영자';
             senderAvatar = '/assets/default-avatar.svg';
         }
 
-        const timeStr = (msgData.timestamp || msgData.created_at) ? new Date(msgData.timestamp || msgData.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
+        const timeStr = (msgData.timestamp || msgData.created_at)
+            ? new Date(msgData.timestamp || msgData.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+            : '';
 
         const instructorBadge = (currentRoomType === 'class' && msgData.is_instructor)
-            ? '<span class="chat-instructor-badge">강사</span>' : '';
+            ? '<span class="chat-instructor-badge">강사</span>'
+            : '';
 
-        const contentHtml = generateMessageContentHtml(msgId, msgData, currentUserId);
-
-        row.innerHTML = `
+        const contentHtml = generateMessageContentHtml(normalizedId, msgData, currentUserId);
+        const rowInnerHtml = `
             ${!isMine ? `<div class="msg-avatar" style="${senderAvatar ? `background-image:url(${senderAvatar})` : ''}">${!senderAvatar ? '👤' : ''}</div>` : ''}
             <div class="msg-bubble-wrap">
                 ${!isMine && (currentRoomType === 'class' || currentRoomType === 'group') ? `<span class="msg-sender-name">${senderName}${instructorBadge}</span>` : ''}
@@ -564,19 +710,36 @@ window.CommunityModules.ChatUI = (function () {
             </div>
         `;
 
-        // 이미지 라이트박스
-        row.querySelectorAll('.msg-image').forEach(img => {
-            img.addEventListener('click', () => openLightbox(img.src));
-        });
+        const applyRowState = (targetRow) => {
+            targetRow.className = `msg-row ${isMine ? 'mine' : 'other'} ${(senderId === 'OPERATOR_GHOST') ? 'operator' : ''}${msgData.is_pinned ? ' pinned' : ''}`;
+            targetRow.id = `msg-${normalizedId}`;
+            targetRow.dataset.signature = signature;
+            targetRow.innerHTML = rowInnerHtml;
+            targetRow.querySelectorAll('.msg-image').forEach(img => {
+                img.addEventListener('click', () => openLightbox(img.src));
+            });
+            if (!targetRow.dataset.ctxBound) {
+                setupMsgContextMenu(targetRow, normalizedId, msgData, isMine);
+                targetRow.dataset.ctxBound = '1';
+            }
+        };
 
-        // 컨텍스트 메뉴
-        setupMsgContextMenu(row, msgId, msgData, isMine);
+        if (row) {
+            if (row.dataset.signature === signature) {
+                row.classList.toggle('pinned', !!msgData.is_pinned);
+                return;
+            }
 
-        const container = document.getElementById('chatMessagesContainer');
-        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 400;
-        container.appendChild(row);
+            applyRowState(row);
+            if (isMine || shouldStickToBottom) scrollToBottom();
+            return;
+        }
 
-        if (isMine || isNearBottom) scrollToBottom();
+        const newRow = document.createElement('div');
+        applyRowState(newRow);
+        container.appendChild(newRow);
+
+        if (isMine || shouldStickToBottom) scrollToBottom();
         else {
             unreadCount++;
             const badge = document.getElementById('scrollBadge');
@@ -680,7 +843,7 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     // ==== 메시지 컨텍스트 메뉴 ====
-    function setupMsgContextMenu(row, key, msg, isMine) {
+        function setupMsgContextMenu(row, key, msg, isMine) {
         let pressTimer;
         const showMenu = (x, y) => {
             closeAllMenus();
@@ -689,7 +852,7 @@ window.CommunityModules.ChatUI = (function () {
             const isInstructor = currentRoomInfo?.is_instructor || window.__BSQ_DEV_MODE__;
             const isPinned = !!(msg && (msg.is_pinned === 1 || msg.is_pinned === true));
 
-            const quickReactions = ['🥰', '❤️', '👍', '😢', '👎', '🔥'];
+            const quickReactions = ['😀', '❤️', '👍', '🙏', '🔥', '✨'];
             let quickHtml = '<div class="msg-quick-react-bar">';
             quickReactions.forEach(e => {
                 quickHtml += `<span class="quick-emoji" onclick="window.CommunityModules.ChatUI.toggleEmojiReaction('${key}', '${e}'); window.CommunityModules.ChatUI.closeAllMenus();">${e}</span>`;
@@ -734,8 +897,8 @@ window.CommunityModules.ChatUI = (function () {
                         return;
                     }
                     const senderName = msg.user_name || msg.sender_name || '사용자';
-                    if (action === 'reply') setReply(key, msg.content, senderName);
-                    else if (action === 'copy') { navigator.clipboard?.writeText((msg.content || '').replace(/<[^>]*>?/gm, '')); alert('복사되었습니다.'); }
+                    if (action === 'reply') setReply(key, msg.content, senderName, msg);
+                    else if (action === 'copy') { navigator.clipboard?.writeText((msg.content || '').replace(/<[^>]*>?/gm, '')); alert('복사했습니다.'); }
                     else if (action === 'edit') startEdit(key, msg.content);
                     else if (action === 'delete') deleteMsg(key);
                     menu.remove();
@@ -750,13 +913,19 @@ window.CommunityModules.ChatUI = (function () {
         row.addEventListener('touchmove', () => clearTimeout(pressTimer));
     }
 
-    function setReply(key, text, senderName) {
-        replyTarget = key;
+    function setReply(messageId, text, senderName, messageData) {
+        replyTarget = {
+            id: String(messageId || messageData?.id || messageData?.key || ''),
+            text: String(text || messageData?.content || messageData?.message || ''),
+            senderName: senderName || messageData?.user_name || messageData?.sender_name || '',
+            senderId: messageData?.sender_id || messageData?.user_id || '',
+            message: messageData || null,
+        };
         const preview = document.getElementById('replyPreview');
         const previewText = document.getElementById('replyText');
         if (preview && previewText) {
             preview.style.display = 'flex';
-            previewText.textContent = `${senderName || '사용자'}님에게 답장: ${text || ''}`;
+            renderReplyPreviewText(previewText, replyTarget);
         }
         document.getElementById('msgInput')?.focus();
     }
@@ -795,13 +964,14 @@ window.CommunityModules.ChatUI = (function () {
             if (rowEl) rowEl.classList.toggle('pinned', !!nextPinned);
 
             await loadPinnedMessages();
+            await refreshVisibleMessages();
         } catch (e) {
             console.warn('setMessagePinned failed:', e);
             window.BSQCommunityShared?.toast?.('고정 처리에 실패했습니다.');
         }
     }
 
-    async function sendCurrentMessage() {
+        async function sendCurrentMessage() {
         const msgInput = document.getElementById('msgInput');
         if (!msgInput) return;
         const content = msgInput.value.trim();
@@ -829,9 +999,7 @@ window.CommunityModules.ChatUI = (function () {
                     message: content,
                     sender_id: currentUserId,
                     user_avatar: profile.profile_image_url || '',
-                    user_avatar: profile.profile_image_url || '',
                     user_name: profile.name || '사용자',
-                    user_avatar: profile.profile_image_url || '',
                     type: 'text',
                     room_type: currentRoomType,
                     class_id: isClassRoom() ? currentRoomId : null,
@@ -839,13 +1007,15 @@ window.CommunityModules.ChatUI = (function () {
                 };
 
                 if (replyTarget) {
-                    pushData.reply_to = replyTarget;
-                    pushData.reply_text = document.getElementById('replyText')?.textContent?.split(': ')[1] || '';
-                    pushData.reply_user = document.getElementById('replyText')?.textContent?.split('님에게')[0] || '';
+                    const replyData = typeof replyTarget === 'object' ? replyTarget : { id: replyTarget };
+                    pushData.reply_to = replyData.id;
+                    pushData.reply_text = replyData.text || '';
+                    pushData.reply_user = replyData.senderName || '';
                     pushData.reply_data = {
-                        id: replyTarget,
-                        user_name: pushData.reply_user,
-                        message: pushData.reply_text,
+                        id: replyData.id,
+                        user_name: replyData.senderName || '',
+                        message: replyData.text || '',
+                        sender_id: replyData.senderId || '',
                     };
                 }
 
@@ -858,13 +1028,10 @@ window.CommunityModules.ChatUI = (function () {
             msgInput.value = '';
             msgInput.style.background = '';
             msgInput.dispatchEvent(new Event('input'));
-            replyTarget = null;
             editingMsgKey = null;
-            const rp = document.getElementById('replyPreview');
-            if (rp) rp.style.display = 'none';
+            clearReplyPreview();
 
-            // 즉시 메시지 새로고침
-            await loadMessages();
+            await refreshVisibleMessages();
 
         } catch (e) {
             console.error('Send error:', e);
@@ -874,7 +1041,6 @@ window.CommunityModules.ChatUI = (function () {
         }
     }
 
-    // ==== 이모지 피커 ====
     function setupEmojiPicker() {
         const btn = document.getElementById('btnEmoji');
         const picker = document.getElementById('emojiPicker');
@@ -936,7 +1102,7 @@ window.CommunityModules.ChatUI = (function () {
                         class_id: isClassRoom() ? currentRoomId : null
                     })
                 });
-                await loadMessages();
+                await refreshVisibleMessages();
             };
             reader.readAsDataURL(file);
         });
@@ -951,10 +1117,9 @@ window.CommunityModules.ChatUI = (function () {
         });
     }
 
-    function setupReply() {
+        function setupReply() {
         document.getElementById('btnReplyCancel')?.addEventListener('click', () => {
-            replyTarget = null;
-            document.getElementById('replyPreview').style.display = 'none';
+            clearReplyPreview();
         });
     }
 
@@ -990,7 +1155,7 @@ window.CommunityModules.ChatUI = (function () {
                     class_id: isClassRoom() ? currentRoomId : null
                 })
             });
-            await loadMessages();
+            await refreshVisibleMessages();
         } catch (e) {
             console.error('Send Gathering error:', e);
             alert("모집 카드 전송에 실패했습니다.");
@@ -1009,7 +1174,7 @@ window.CommunityModules.ChatUI = (function () {
             });
             if (res?.success) {
                 alert("모임 참여가 완료되었습니다!");
-                await loadMessages();
+                await refreshVisibleMessages();
             } else {
                 alert(res?.error || "참여 처리에 실패했습니다.");
             }
@@ -1031,7 +1196,7 @@ window.CommunityModules.ChatUI = (function () {
             });
             if (res?.success) {
                 alert("모집이 마감되었습니다.");
-                await loadMessages();
+                await refreshVisibleMessages();
             } else {
                 alert(res?.error || "마감 처리에 실패했습니다.");
             }
@@ -1041,8 +1206,7 @@ window.CommunityModules.ChatUI = (function () {
         }
     }
 
-    function toggleEmojiReaction(msgId, emoji) {
-        // D1에서는 리액션을 API로 처리
+        function toggleEmojiReaction(msgId, emoji) {
         const endpoint = isClassRoom()
             ? `/api/chat/${encodeURIComponent(msgId)}/reaction`
             : `/api/dm/${currentRoomId}/messages/${msgId}/reaction`;
@@ -1050,7 +1214,7 @@ window.CommunityModules.ChatUI = (function () {
         window.BSQ.api(endpoint, {
             method: 'POST',
             body: JSON.stringify({ emoji })
-        }).then(() => loadMessages()).catch(e => console.warn('Reaction error:', e));
+        }).then(() => refreshVisibleMessages()).catch(e => console.warn('Reaction error:', e));
     }
 
     function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
@@ -1062,7 +1226,7 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     // ==== 정보 패널 렌더링 (D1 API) ====
-    async function renderInfoPanel(roomId, roomType, roomInfo) {
+        async function renderInfoPanel(roomId, roomType, roomInfo) {
         roomId = roomId || currentRoomId;
         roomType = roomType || currentRoomType;
         roomInfo = roomInfo || currentRoomInfo;
@@ -1080,7 +1244,7 @@ window.CommunityModules.ChatUI = (function () {
         body.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--comm-text2);"><i class="fas fa-circle-notch fa-spin"></i></div>';
 
         if (roomType === 'dm') {
-            if (title) title.textContent = '프로필';
+            if (title) title.textContent = '상대 프로필';
             await renderDmProfile(body, roomInfo);
         } else if (roomType === 'class') {
             if (title) title.textContent = '클래스 정보';
@@ -1089,87 +1253,10 @@ window.CommunityModules.ChatUI = (function () {
             if (title) title.textContent = '그룹 정보';
             body.innerHTML = `<div class="info-profile-section"><div class="info-avatar">👥</div><h4 class="info-name">${roomInfo?.group_name || '그룹'}</h4></div>`;
         }
-    }
 
-    async function renderDmProfile(body, roomInfo) {
-        const targetId = roomInfo?.target_id;
-        if (!targetId) { body.innerHTML = '<p style="padding:20px;color:#888;">프로필 정보 없음</p>'; return; }
-
-        try {
-            const res = await window.BSQ.api(`/api/users/${targetId}`);
-            const profile = res?.success ? res.data : {};
-            const name = profile.name || profile.nickname || roomInfo?.target_name || '사용자';
-            const avatar = profile.profile_image_url || '';
-
-            body.innerHTML = `
-                <div class="info-profile-section">
-                    <div class="info-avatar" style="${avatar ? `background-image:url(${avatar})` : ''}">${!avatar ? '👤' : ''}</div>
-                    <h4 class="info-name">${name}</h4>
-                    <p class="info-id">${profile.email || ''}</p>
-                </div>
-                <div class="info-divider"></div>
-                <div class="info-actions">
-                    <button class="btn-info-action" onclick="window.addFriend?.('${targetId}')">➕ 친구 추가</button>
-                </div>
-            `;
-        } catch (e) {
-            body.innerHTML = '<p style="padding:20px;color:#ff4d4d;">프로필 로드 실패</p>';
-        }
-    }
-
-    async function renderClassInfoPanel(body, classId, roomInfo) {
-        const isInstructor = roomInfo?.is_instructor || window.__BSQ_DEV_MODE__;
-        const view = isInstructor ? 'instructor' : 'student';
-
-        try {
-            const memberRes = await window.BSQ.api(`/api/classes/members?class_id=${classId}&view=${view}`);
-            if (!memberRes?.success) { body.innerHTML = '<p style="padding:20px;color:#ff4d4d;">멤버 정보 로드 실패</p>'; return; }
-
-            const { class_info, members, total_members, pass_stats } = memberRes.data;
-
-            let membersHtml = members.map(m => {
-                const isInstr = m.role === 'instructor';
-                let detailsHtml = '';
-                if (view === 'instructor') {
-                    detailsHtml = `
-                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
-                            ${m.name ? `<span style="font-size:0.78rem;color:#ccc;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px;">${m.name}</span>` : ''}
-                            ${m.phone ? `<span style="font-size:0.78rem;color:#ccc;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px;">${m.phone}</span>` : ''}
-                            <span style="font-size:0.78rem;color:#4ade80;background:rgba(74,222,128,0.1);padding:2px 8px;border-radius:4px;">수강권 ${m.remaining_passes || 0}</span>
-                        </div>`;
-                }
-                return `
-                    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:6px;">
-                        <div style="width:36px;height:36px;border-radius:50%;background:#333;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;">
-                            ${m.profile_image_url ? `<img src="${m.profile_image_url}" style="width:100%;height:100%;object-fit:cover;">` : '👤'}
-                        </div>
-                        <div style="flex:1;min-width:0;">
-                            <div style="font-weight:700;color:#fff;font-size:0.9rem;">${m.nickname || '사용자'} ${isInstr ? '<span style="background:#ffd700;color:#000;padding:1px 5px;border-radius:3px;font-size:0.65rem;font-weight:800;">강사</span>' : ''}</div>
-                            ${detailsHtml}
-                        </div>
-                        <button onclick="window.addFriend?.('${m.user_id}')" style="padding:5px 10px;border-radius:6px;background:linear-gradient(135deg,#6e8efb,#a777e3);color:white;border:none;font-size:0.75rem;font-weight:700;cursor:pointer;">친구추가</button>
-                    </div>`;
-            }).join('');
-
-            let statsHtml = '';
-            if (view === 'instructor') {
-                statsHtml = `
-                    <div style="padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;margin-top:12px;">
-                        <div style="font-weight:700;color:#fff;margin-bottom:8px;">📊 수강권 현황</div>
-                        <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="color:#aaa;">발행</span><strong style="color:#4ade80;">${pass_stats.total_issued}개</strong></div>
-                        <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">사용</span><strong style="color:#f97316;">${pass_stats.total_used}개</strong></div>
-                    </div>`;
-            }
-
-            body.innerHTML = `
-                <div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:12px;">
-                    <strong style="color:#fff;">클래스 참여자 / 총 ${total_members}명 수강</strong>
-                </div>
-                ${membersHtml}
-                ${statsHtml}
-            `;
-        } catch (e) {
-            body.innerHTML = `<p style="padding:20px;color:#ff4d4d;">오류: ${e.message}</p>`;
+        if (currentPins.length) {
+            body.innerHTML += buildPinnedMessagesSectionHtml(roomType);
+            bindPinnedMessageItems(body);
         }
     }
 
@@ -1201,3 +1288,12 @@ window.CommunityModules.ChatUI = (function () {
         v2ToggleContact: async (targetId) => { window.addFriend?.(targetId); }
     };
 })();
+
+
+
+
+
+
+
+
+

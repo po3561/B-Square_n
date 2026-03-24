@@ -50,7 +50,7 @@ async function loadReviews(classId, isInstructor) {
             reviewList.innerHTML = items.map(r => {
                 const stars = '★'.repeat(r.rating || 5) + '☆'.repeat(5 - (r.rating || 5));
                 const dateStr = new Date(r.created_at).toLocaleDateString();
-                const avatarUrl = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
+                const avatarUrl = '/assets/default-avatar.svg';
 
                 return `
                 <div class="review-item-premium">

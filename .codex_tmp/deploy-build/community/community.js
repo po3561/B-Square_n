@@ -117,7 +117,7 @@ function renderLoginPrompt() {
 
 // ---- 햄버거 메뉴 ----
 function setupHamburgerMenu(userId, SyncBridge, ChatUI, ChatList) {
-    const btn = document.getElementById('btnHamburger');
+    const btn = document.getElementById('commHamburgerBtn') || document.querySelector('.comm-nav-rail .btn-hamburger');
     const menu = document.getElementById('hamburgerMenu');
     if (!btn || !menu) return;
 

@@ -1,6 +1,6 @@
 import { requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
-import { ensureOperationsSchema } from './_lib/schema.js';
+import { ensureCommerceSchema } from './_lib/schema.js';
 
 function normalizeText(value) {
   return String(value ?? '').trim();
@@ -20,6 +20,11 @@ function parseTargetIds(value) {
   return String(value).split(',').map((item) => normalizeText(item)).filter(Boolean);
 }
 
+function resolveTargetClassId(coupon) {
+  const targetIds = parseTargetIds(coupon.target_ids);
+  return normalizeText(coupon.target_class_id || targetIds[0] || '');
+}
+
 function isCouponActive(coupon) {
   if (!coupon || !Number(coupon.is_active ?? 1)) return false;
   const now = Date.now();
@@ -32,6 +37,8 @@ function couponAppliesToClass(coupon, classId) {
   const scope = normalizeText(coupon.scope || 'all_classes') || 'all_classes';
   if (!classId || scope === 'all_classes') return true;
   if (scope === 'single_class') {
+    const targetClassId = resolveTargetClassId(coupon);
+    if (targetClassId && String(targetClassId) === String(classId)) return true;
     return parseTargetIds(coupon.target_ids).includes(classId);
   }
   return true;
@@ -53,6 +60,7 @@ async function getWalletCoupon(db, walletId) {
       c.scope,
       c.target_kind,
       c.target_ids,
+      c.target_class_id,
       c.min_order_amount,
       c.starts_at,
       c.expires_at AS coupon_expires_at,
@@ -69,7 +77,7 @@ export async function onRequestGet(context) {
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
 
-  await ensureOperationsSchema(env.DB);
+  await ensureCommerceSchema(env.DB);
 
   try {
     const url = new URL(request.url);
@@ -87,6 +95,7 @@ export async function onRequestGet(context) {
         c.scope,
         c.target_kind,
         c.target_ids,
+        c.target_class_id,
         c.min_order_amount,
         c.starts_at,
         c.expires_at AS coupon_expires_at,
@@ -123,7 +132,7 @@ export async function onRequestPost(context) {
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
 
-  await ensureOperationsSchema(env.DB);
+  await ensureCommerceSchema(env.DB);
 
   try {
     const body = await request.json();

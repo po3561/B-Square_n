@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <span class="inq-title"><span class="inq-badge ${badgeClass}">${badgeText}</span>${inq.title}</span>
                         <span class="inq-date">${date}</span>
                     </div>
-                    <div class="inq-meta">${inq.name} · ${inq.email} · ${inq.category || '일반'}</div>
+                    <div class="inq-meta">${inq.name} · ${inq.email} · ${inq.category || '일반 문의'}</div>
                 </div>
             `;
         }).join('');

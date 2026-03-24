@@ -14,6 +14,72 @@ let selectedPassPrice = 0;
 let userPassCount = 0;
 let isMonthlySubscribed = false;
 
+function safeParseArray(value, fallback = []) {
+    if (Array.isArray(value)) return value;
+    if (typeof value !== 'string' || !value.trim()) return fallback;
+    try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : fallback;
+    } catch {
+        return fallback;
+    }
+}
+
+function getClassImageUrl(data) {
+    if (!data) return '';
+    if (data.thumbnail_url) return data.thumbnail_url;
+    if (data.thumbnail) return data.thumbnail;
+    if (data.image_url) return data.image_url;
+    if (Array.isArray(data.image_urls) && data.image_urls.length > 0) return data.image_urls[0];
+    return '';
+}
+
+const TAB_PARAM_MAP = {
+    intro: 'tabIntro',
+    curriculum: 'tabCurriculum',
+    reviews: 'tabReviews',
+    notice: 'tabNotice',
+    chat: 'tabChat',
+    edit: 'tabEdit',
+};
+
+function getInitialTabTargetId() {
+    const value = String(urlParams.get('tab') || '').trim().toLowerCase();
+    return TAB_PARAM_MAP[value] || '';
+}
+
+function getNoticeAuthorContext() {
+    const sessionUser = window.BSQ?.session?.user || null;
+    const currentUserId = String(userId || sessionUser?.id || '').trim();
+    const creatorId = String(classData?.creator_id || classData?.instructor_id || classData?.owner_id || '').trim();
+    const subInstructors = safeParseArray(classData?.sub_instructors, [])
+        .map((item) => {
+            if (typeof item === 'string') return item;
+            if (item && typeof item === 'object') return item.id || item.user_id || item.userId || '';
+            return '';
+        })
+        .map((value) => String(value || '').trim())
+        .filter(Boolean);
+
+    let role = String(userProfile?.role || sessionUser?.role || 'instructor').trim().toLowerCase();
+
+    if (window.__BSQ_DEV_MODE__) {
+        role = role || 'admin';
+    } else if (creatorId && currentUserId && creatorId === currentUserId) {
+        role = 'main_instructor';
+    } else if (currentUserId && subInstructors.includes(currentUserId)) {
+        role = 'sub_instructor';
+    } else if (role !== 'admin' && role !== 'operator' && role !== 'super_admin') {
+        role = 'instructor';
+    }
+
+    return {
+        id: currentUserId,
+        name: sessionUser?.name || userProfile?.name || '강사',
+        role,
+    };
+}
+
 // ===== Toast Notification System =====
 function showToast(type, title, message, duration = 3500) {
     const container = document.getElementById('toastContainer');
@@ -64,6 +130,36 @@ function setButtonLoading(loading) {
     }
 }
 
+function ensureCommerceControls() {
+    const ctaArea = document.querySelector('.sidebar-cta-area');
+    if (ctaArea && !document.getElementById('btnAddToCart')) {
+        const cartButton = document.createElement('button');
+        cartButton.type = 'button';
+        cartButton.id = 'btnAddToCart';
+        cartButton.className = 'btn-cta-secondary';
+        cartButton.textContent = '장바구니 담기';
+        ctaArea.appendChild(cartButton);
+    }
+
+    const couponSection = document.querySelector('.coupon-section');
+    const couponMessage = document.getElementById('couponMessage');
+    if (couponSection && couponMessage && !document.getElementById('btnLoadWalletCoupons')) {
+        const utilityRow = document.createElement('div');
+        utilityRow.className = 'coupon-utility-row';
+        utilityRow.innerHTML = `
+            <button type="button" id="btnLoadWalletCoupons" class="btn-coupon-utility">보유 쿠폰 불러오기</button>
+            <button type="button" id="btnGoMyCoupons" class="btn-coupon-utility">마이페이지 쿠폰함</button>
+        `;
+
+        const walletList = document.createElement('div');
+        walletList.id = 'walletCouponList';
+        walletList.className = 'wallet-coupon-inline-list';
+
+        couponSection.insertBefore(utilityRow, couponMessage);
+        couponSection.insertBefore(walletList, couponMessage);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     if (!classId) {
         alert("잘못된 접근입니다.");
@@ -73,6 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 1. BSQ 초기화 대기 (D1 API 기반)
     if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
+    ensureCommerceControls();
 
     // 2. 세션 확인 (D1 API 쿠키 기반)
     const session = window.BSQ?.session;
@@ -83,7 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('🔑 로그인 확인 — userId:', userId);
 
         if (isOperator) {
-            userProfile = { name: '운영자', profile_image_url: 'https://cdn-icons-png.flaticon.com/512/6024/6024190.png', role: 'admin' };
+            userProfile = { name: '운영자', profile_image_url: '/assets/default-avatar.svg', role: 'admin' };
         } else {
             userProfile = session.user;
         }
@@ -107,7 +204,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // 서브 강사 체크
-            const subInstructors = typeof classData.sub_instructors === 'string' ? JSON.parse(classData.sub_instructors || '[]') : (classData.sub_instructors || []);
+            const subInstructors = safeParseArray(classData.sub_instructors, []);
             if (!isInstructor && userId && Array.isArray(subInstructors)) {
                 isInstructor = subInstructors.some(si => si.id == userId);
             }
@@ -129,8 +226,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // 채팅 헤더 미니 로고
             const logoMini = document.getElementById('chatLogoMini');
-            if (logoMini && classData.thumbnail_url) {
-                logoMini.style.backgroundImage = `url(${classData.thumbnail_url})`;
+            const classImageUrl = getClassImageUrl(classData);
+            if (logoMini && classImageUrl) {
+                logoMini.style.backgroundImage = `url(${classImageUrl})`;
             }
             document.getElementById('btnGoToClass')?.addEventListener('click', () => {
                 document.querySelector('[data-target="tabIntro"]')?.click();
@@ -144,12 +242,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // ★ D1 API로 수강 여부 확인
                 if (userId && !window.__BSQ_DEV_MODE__) {
                     try {
-                        const enrollResult = await window.BSQ.api(`/api/enrollments?user_id=${userId}&class_id=${classId}`);
+                        const [enrollResult, passResult] = await Promise.all([
+                            window.BSQ.api(`/api/enrollments?user_id=${userId}&class_id=${classId}`),
+                            window.BSQ.api(`/api/user-passes?user_id=${userId}`),
+                        ]);
+
                         if (enrollResult.success) {
                             isEnrolled = enrollResult.data?.enrolled || false;
                         }
 
-                        const passResult = await window.BSQ.api(`/api/user-passes?user_id=${userId}`);
                         if (passResult.success && Array.isArray(passResult.data)) {
                             const currentPass = passResult.data.find((item) => item.class_id === classId);
                             userPassCount = currentPass?.remaining_count ?? currentPass?.remaining_passes ?? currentPass?.remaining ?? 0;
@@ -165,7 +266,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // 리뷰, 공지 모듈은 우선 BSquareModules 로드 (에러가 나지 않는 선에서)
                 if (window.BSquareModules.initReviews) window.BSquareModules.initReviews(null, classId, userId, null, hasAccess, isInstructor);
-                if (window.BSquareModules.initNotice) window.BSquareModules.initNotice(null, classId, userId, null, hasAccess, isInstructor);
+                if (window.BSquareModules.initNotice) window.BSquareModules.initNotice(null, classId, userId, null, hasAccess, isInstructor, getNoticeAuthorContext());
                 
                 // ★ 채팅은 파이어베이스 잔재인 BSquareModules 대신, 순수 D1으로 작성된 SimpleClassChat 호출 (크래시 방어)
                 if (window.SimpleClassChat) {
@@ -255,13 +356,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // 5. 결제 팝업 이벤트
+    const initialTabTargetId = getInitialTabTargetId();
+    if (initialTabTargetId) {
+        document.querySelector(`[data-target="${initialTabTargetId}"]`)?.click();
+    }
+
     document.getElementById('btnEnroll')?.addEventListener('click', openPaymentBottomSheet);
+    document.getElementById('btnAddToCart')?.addEventListener('click', saveCurrentClassToCart);
     document.getElementById('btnSheetClose')?.addEventListener('click', closePaymentBottomSheet);
 
     document.querySelectorAll('input[name="payOption"]').forEach(radio => {
         radio.addEventListener('change', updatePaymentSummary);
     });
     document.getElementById('btnApplyCoupon')?.addEventListener('click', applyCoupon);
+    document.getElementById('btnLoadWalletCoupons')?.addEventListener('click', loadWalletCouponsIntoSheet);
+    document.getElementById('btnGoMyCoupons')?.addEventListener('click', goToMyCouponWallet);
     document.getElementById('btnTossPayStart')?.addEventListener('click', executeTossPayment);
 
     // 6. 무료 클래스 모달
@@ -356,6 +465,135 @@ let currentDiscountAmount = 0;
 let finalPaymentPrice = 0;
 let appliedCouponCode = null;
 
+function getCartStorageKey() {
+    return `bsq-cart:${userId || 'guest'}`;
+}
+
+function requestWithFallbacks(requests) {
+    const queue = Array.isArray(requests) ? requests : [];
+    return queue.reduce((promise, request) => promise.catch(async () => {
+        const response = await window.BSQ.api(request.url, {
+            method: request.method || 'GET',
+            body: request.body,
+            cacheBust: false,
+        });
+        if (response?.success === false) {
+            throw new Error(response.error || 'request failed');
+        }
+        return response;
+    }), Promise.reject(new Error('request failed')));
+}
+
+function getLocalCartItems() {
+    try {
+        return JSON.parse(localStorage.getItem(getCartStorageKey()) || '[]');
+    } catch {
+        return [];
+    }
+}
+
+function setLocalCartItems(items) {
+    localStorage.setItem(getCartStorageKey(), JSON.stringify(items));
+}
+
+function buildCartPayload() {
+    return {
+        id: `class-${classId}`,
+        type: 'class',
+        class_id: classId,
+        title: classData?.title || '클래스',
+        subtitle: classData?.instructor_name || classData?.creator_name || classData?.category || '클래스',
+        price: Number(finalPaymentPrice || classData?.price || 0),
+        image_url: getClassImageUrl(classData),
+        href: `../class_view/class_view.html?id=${encodeURIComponent(classId)}`,
+        created_at: new Date().toISOString(),
+    };
+}
+
+function renderWalletCouponChips(coupons) {
+    const container = document.getElementById('walletCouponList');
+    if (!container) return;
+
+    if (!Array.isArray(coupons) || !coupons.length) {
+        container.innerHTML = '<div class="wallet-coupon-chip empty">보유한 쿠폰이 없습니다.</div>';
+        return;
+    }
+
+    container.innerHTML = coupons.map((coupon) => `
+        <button type="button" class="wallet-coupon-chip" data-wallet-code="${String(coupon.code || coupon.coupon_code || '').replace(/"/g, '&quot;')}">
+            <strong>${String(coupon.code || coupon.coupon_code || '')}</strong>
+            <span>${String(coupon.name || coupon.title || '쿠폰')}</span>
+        </button>
+    `).join('');
+
+    container.querySelectorAll('[data-wallet-code]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const input = document.getElementById('couponCodeInput');
+            if (!input) return;
+            input.value = button.dataset.walletCode || '';
+            await applyCoupon();
+        });
+    });
+}
+
+async function loadWalletCouponsIntoSheet() {
+    const container = document.getElementById('walletCouponList');
+    if (!container) return;
+    if (!userId || userId === 'OPERATOR_GHOST') {
+        container.innerHTML = '<div class="wallet-coupon-chip empty">로그인 후 쿠폰함을 불러올 수 있습니다.</div>';
+        return;
+    }
+
+    container.innerHTML = '<div class="wallet-coupon-chip empty">쿠폰함을 불러오는 중입니다.</div>';
+
+    try {
+        const response = await requestWithFallbacks([
+            { url: `/api/user/coupons?user_id=${encodeURIComponent(userId)}` },
+            { url: `/api/coupons/wallet?user_id=${encodeURIComponent(userId)}` },
+            { url: `/api/coupon-wallet?user_id=${encodeURIComponent(userId)}` },
+        ]);
+        const coupons = Array.isArray(response?.data)
+            ? response.data
+            : Array.isArray(response?.items)
+                ? response.items
+                : [];
+        renderWalletCouponChips(coupons);
+    } catch (error) {
+        container.innerHTML = '<div class="wallet-coupon-chip empty">쿠폰함을 불러오지 못했습니다.</div>';
+    }
+}
+
+async function saveCurrentClassToCart() {
+    const payload = buildCartPayload();
+
+    try {
+        await requestWithFallbacks([
+            {
+                url: '/api/cart',
+                method: 'POST',
+                body: { user_id: userId || null, ...payload },
+            },
+            {
+                url: '/api/user/cart',
+                method: 'POST',
+                body: { user_id: userId || null, ...payload },
+            },
+        ]);
+    } catch (error) {
+        const currentItems = getLocalCartItems().filter((item) => String(item.id || item.class_id) !== payload.id);
+        currentItems.unshift(payload);
+        setLocalCartItems(currentItems);
+    }
+
+    if (window.BSQ?.triggerSync) window.BSQ.triggerSync('cart');
+    showToast('success', '장바구니에 담았습니다', '마이페이지에서 쿠폰과 함께 확인할 수 있습니다.');
+}
+
+function goToMyCouponWallet() {
+    localStorage.setItem('bsq-mypage-target-tab', 'tabCoupons');
+    window.location.href = '../mi_pesg/mypage.html';
+}
+
 function openPaymentBottomSheet() {
     if (window.__BSQ_DEV_MODE__) {
         isEnrolled = true;
@@ -395,7 +633,9 @@ function openPaymentBottomSheet() {
     document.getElementById('couponCodeInput').value = '';
     document.getElementById('couponMessage').textContent = '';
     document.getElementById('summaryDiscountRow').style.display = 'none';
+    renderWalletCouponChips([]);
     updatePaymentSummary();
+    loadWalletCouponsIntoSheet().catch(() => {});
 }
 
 function closePaymentBottomSheet() {
@@ -585,8 +825,9 @@ function renderCorePageInfo(data) {
     if (chatHeaderName) chatHeaderName.textContent = `${data.title} 채팅채널`;
     // 채팅 헤더 아바타에 클래스 썸네일 설정
     const chatHeaderAvatar = document.getElementById('chatHeaderAvatar');
-    if (chatHeaderAvatar && data.thumbnail_url) {
-        chatHeaderAvatar.style.backgroundImage = `url(${data.thumbnail_url})`;
+    const classImageUrl = getClassImageUrl(data);
+    if (chatHeaderAvatar && classImageUrl) {
+        chatHeaderAvatar.style.backgroundImage = `url(${classImageUrl})`;
         chatHeaderAvatar.style.backgroundSize = 'cover';
         chatHeaderAvatar.style.backgroundPosition = 'center';
     }
