@@ -162,8 +162,8 @@
           <div class="footer-links">
             <h4>바로가기</h4>
             <ul class="footer-nav">
-              <li><a id="footerTermsLink" href="${prefix}terms/use.html">이용약관</a></li>
-              <li><a id="footerPrivacyLink" href="${prefix}terms/privacy.html"><strong>개인정보처리방침</strong></a></li>
+              <li><a id="footerTermsLink" href="${prefix}terms_use.html">이용약관</a></li>
+              <li><a id="footerPrivacyLink" href="${prefix}terms_privacy.html"><strong>개인정보처리방침</strong></a></li>
               <li><a href="${prefix}contact/contact.html">고객센터</a></li>
             </ul>
           </div>
@@ -227,8 +227,8 @@
 
       if (footerBrandCopy) footerBrandCopy.textContent = brandName;
       if (footerHours) footerHours.textContent = settings.footer_hours || '평일 10시 ~ 오후 6시 (주말, 공휴일 제외)';
-      if (footerTermsLink) footerTermsLink.href = (settings.footer_terms_url && settings.footer_terms_url !== '#') ? settings.footer_terms_url : prefix + 'terms/use.html';
-      if (footerPrivacyLink) footerPrivacyLink.href = (settings.footer_privacy_url && settings.footer_privacy_url !== '#') ? settings.footer_privacy_url : prefix + 'terms/privacy.html';
+      if (footerTermsLink) footerTermsLink.href = (settings.footer_terms_url && settings.footer_terms_url !== '#') ? settings.footer_terms_url : prefix + 'terms_use.html';
+      if (footerPrivacyLink) footerPrivacyLink.href = (settings.footer_privacy_url && settings.footer_privacy_url !== '#') ? settings.footer_privacy_url : prefix + 'terms_privacy.html';
       if (footerInstagramLink) footerInstagramLink.href = settings.footer_instagram_url || '#';
       if (footerYoutubeLink) footerYoutubeLink.href = settings.footer_youtube_url || '#';
 
