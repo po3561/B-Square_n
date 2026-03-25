@@ -74,7 +74,7 @@
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') return parsed;
       }
-    } catch {}
+    } catch { }
 
     return {
       id: 'OPERATOR_GHOST',
@@ -183,25 +183,8 @@
               <p class="footer-support-hours" id="footerSupportHours">오전 10시 ~ 오후 6시 (주말, 공휴일 제외)</p>
               <button type="button" class="btn-contact" onclick="location.href='${prefix}contact/contact.html'">문의하기</button>
 
-              <div class="footer-store-badges" aria-label="앱 다운로드">
-                <a href="#" class="store-badge" aria-label="App Store에서 다운로드">
-                  <span class="store-badge-icon"></span>
-                  <span class="store-badge-copy">
-                    <strong>App Store에서</strong>
-                    <small>다운로드 하기</small>
-                  </span>
-                </a>
-                <a href="#" class="store-badge" aria-label="Google Play에서 다운로드">
-                  <span class="store-badge-icon">▶</span>
-                  <span class="store-badge-copy">
-                    <strong>Google Play에서</strong>
-                    <small>다운로드</small>
-                  </span>
-                </a>
-              </div>
-
               <div class="footer-social-links" aria-label="소셜 링크">
-                <a id="footerInstagramLink" href="#" class="footer-social-link" target="_blank" rel="noopener noreferrer">
+                <a id="footerInstagramLink" href="https://www.instagram.com/b_square.01?igsh=MzZ4b3pod2FsMDQ1" class="footer-social-link" target="_blank" rel="noopener noreferrer">
                   <span class="icon">IG</span><span>인스타그램</span>
                 </a>
                 <a id="footerYoutubeLink" href="#" class="footer-social-link" target="_blank" rel="noopener noreferrer">
@@ -213,26 +196,21 @@
             <div class="footer-links-grid">
               <section class="footer-link-column">
                 <h4>공지사항</h4>
-                <a href="${prefix}notice/notice.html">전체 카테고리</a>
+                <a href="${prefix}class/class_list.html">전체 카테고리</a>
                 <a href="${prefix}notice/notice.html">헬프센터</a>
-                <a href="${prefix}contact/contact.html">지원 기기 및 이용환경</a>
               </section>
 
               <section class="footer-link-column">
                 <h4>크리에이터 지원</h4>
-                <a href="${prefix}notice/notice.html">지식재산권 침해 신고 센터</a>
-                <a href="${prefix}contact/contact.html">국비 지원</a>
+                <a href="https://koipa.re.kr/ippolice">지식재산권 침해 신고 센터</a>
                 <a href="${prefix}contact/contact.html">기업고객 문의</a>
-                <a href="${prefix}create_class/create_class.html">클래스 개설 구매</a>
               </section>
 
               <section class="footer-link-column">
                 <h4>정책</h4>
-                <a id="footerPrivacyLink" href="${homePrefix}terms_privacy.html"><strong>개인정보 처리방침</strong></a>
+                <a id="footerPrivacyLink" href="${homePrefix}terms_privacy.html">개인정보처리방침</a>
                 <a id="footerTermsLink" href="${homePrefix}terms_use.html">이용약관</a>
-                <a href="${homePrefix}terms_use.html#giftcard">기프트카드 및 캐시 이용약관</a>
-                <a href="#">환불 정책</a>
-                <a href="#">청소년 보호 정책</a>
+                <a href="#">환불 정책</a
               </section>
 
               <section class="footer-link-column">
