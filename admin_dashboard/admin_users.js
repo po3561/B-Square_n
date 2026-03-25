@@ -45,7 +45,7 @@ function getReferrerLabel(code) {
     'as001': '대학1', 'as002': '대학2', 'as003': '대학3', 'as004': '대학4',
     'cs020': '행정'
   };
-  return mapping[code] ? `${mapping[code]} (${code})` : code;
+  return mapping[code] || code;
 }
 
 function ensureUsersToolbar() {
@@ -295,6 +295,7 @@ async function openUserDetail(userId) {
           <div style="display:grid; gap:0.75rem;">
             <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
               <span class="admin-badge primary">${escapeHtml(user.role || 'user')}</span>
+              ${user.referrer_code ? '<span class="admin-badge success" style="background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd;">스페셜 회원</span>' : ''}
               <span class="admin-badge muted">${escapeHtml(user.membership_level || 'Free')}</span>
               ${user.is_blacklisted ? '<span class="admin-badge danger">블랙리스트</span>' : '<span class="admin-badge muted">정상</span>'}
             </div>
@@ -302,6 +303,7 @@ async function openUserDetail(userId) {
               <div><div style="font-size:0.75rem; color:#64748b;">닉네임</div><div style="font-weight:600;">${escapeHtml(user.username || '-')}</div></div>
               <div><div style="font-size:0.75rem; color:#64748b;">이름</div><div style="font-weight:600;">${escapeHtml(user.name || '-')}</div></div>
               <div><div style="font-size:0.75rem; color:#64748b;">연락처</div><div style="font-weight:600;">${escapeHtml(user.phone || '-')}</div></div>
+              <div><div style="font-size:0.75rem; color:#64748b;">청년회 소속 지역</div><div style="font-weight:600; color:#0369a1;">${escapeHtml(getReferrerLabel(user.referrer_code))}</div></div>
               <div><div style="font-size:0.75rem; color:#64748b;">메일</div><div style="font-weight:600;">${escapeHtml(user.email || '-')}</div></div>
               <div><div style="font-size:0.75rem; color:#64748b;">생년월일</div><div style="font-weight:600;">${escapeHtml(user.birthdate || '-')}</div></div>
               <div><div style="font-size:0.75rem; color:#64748b;">가입일자</div><div style="font-weight:600;">${escapeHtml(formatDate(user.signup_date || user.created_at))}</div></div>
@@ -702,6 +704,7 @@ if (!window.__BSQ_ADMIN_USERS_CLEAN__) {
             <div style="display:grid; gap:0.75rem;">
               <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
                 <span class="admin-badge primary">${escapeHtml(user.role || 'user')}</span>
+                ${user.referrer_code ? '<span class="admin-badge success" style="background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd;">스페셜 회원</span>' : ''}
                 <span class="admin-badge muted">${escapeHtml(user.membership_level || '일반')}</span>
                 ${user.is_blacklisted ? '<span class="admin-badge danger">블랙리스트</span>' : '<span class="admin-badge muted">정상</span>'}
               </div>
@@ -709,6 +712,7 @@ if (!window.__BSQ_ADMIN_USERS_CLEAN__) {
                 <div><div style="font-size:0.75rem; color:#64748b;">닉네임</div><div style="font-weight:600;">${escapeHtml(user.username || '-')}</div></div>
                 <div><div style="font-size:0.75rem; color:#64748b;">이름</div><div style="font-weight:600;">${escapeHtml(user.name || '-')}</div></div>
                 <div><div style="font-size:0.75rem; color:#64748b;">연락처</div><div style="font-weight:600;">${escapeHtml(user.phone || '-')}</div></div>
+                <div><div style="font-size:0.75rem; color:#64748b;">청년회 소속 지역</div><div style="font-weight:600; color:#0369a1;">${escapeHtml(getReferrerLabel(user.referrer_code))}</div></div>
                 <div><div style="font-size:0.75rem; color:#64748b;">메일</div><div style="font-weight:600;">${escapeHtml(user.email || '-')}</div></div>
                 <div><div style="font-size:0.75rem; color:#64748b;">생년월일</div><div style="font-weight:600;">${escapeHtml(user.birthdate || '-')}</div></div>
                 <div><div style="font-size:0.75rem; color:#64748b;">가입일자</div><div style="font-weight:600;">${escapeHtml(formatDateClean(user.signup_date || user.created_at))}</div></div>
