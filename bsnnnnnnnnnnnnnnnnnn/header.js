@@ -228,9 +228,9 @@
 
               <section class="footer-link-column">
                 <h4>정책</h4>
-                <a id="footerPrivacyLink" href="${prefix}terms_privacy.html"><strong>개인정보 처리방침</strong></a>
-                <a id="footerTermsLink" href="${prefix}terms_use.html">이용약관</a>
-                <a href="${prefix}terms_use.html#giftcard">기프트카드 및 캐시 이용약관</a>
+                <a id="footerPrivacyLink" href="${homePrefix}terms_privacy.html"><strong>개인정보 처리방침</strong></a>
+                <a id="footerTermsLink" href="${homePrefix}terms_use.html">이용약관</a>
+                <a href="${homePrefix}terms_use.html#giftcard">기프트카드 및 캐시 이용약관</a>
                 <a href="#">환불 정책</a>
                 <a href="#">청소년 보호 정책</a>
               </section>
@@ -246,8 +246,8 @@
 
           <div class="footer-bottom">
             <div class="footer-legal-links" aria-label="바로가기">
-              <a href="${prefix}terms_use.html">이용약관</a>
-              <a href="${prefix}terms_privacy.html"><strong>개인정보처리방침</strong></a>
+              <a href="${homePrefix}terms_use.html">이용약관</a>
+              <a href="${homePrefix}terms_privacy.html"><strong>개인정보처리방침</strong></a>
               <a href="${prefix}contact/contact.html">고객센터</a>
             </div>
             <p class="footer-info-text" id="bsqFooterInfoText"></p>
@@ -306,8 +306,8 @@
 
       if (footerBrandCopy) footerBrandCopy.textContent = brandName;
       if (footerHours) footerHours.textContent = settings.footer_hours || '오전 10시 ~ 오후 6시 (주말, 공휴일 제외)';
-      if (footerTermsLink) footerTermsLink.href = (settings.footer_terms_url && settings.footer_terms_url !== '#') ? settings.footer_terms_url : prefix + 'terms_use.html';
-      if (footerPrivacyLink) footerPrivacyLink.href = (settings.footer_privacy_url && settings.footer_privacy_url !== '#') ? settings.footer_privacy_url : prefix + 'terms_privacy.html';
+      if (footerTermsLink) footerTermsLink.href = (settings.footer_terms_url && settings.footer_terms_url !== '#') ? settings.footer_terms_url : homePrefix + 'terms_use.html';
+      if (footerPrivacyLink) footerPrivacyLink.href = (settings.footer_privacy_url && settings.footer_privacy_url !== '#') ? settings.footer_privacy_url : homePrefix + 'terms_privacy.html';
       if (footerInstagramLink) footerInstagramLink.href = settings.footer_instagram_url || '#';
       if (footerYoutubeLink) footerYoutubeLink.href = settings.footer_youtube_url || '#';
 
