@@ -245,9 +245,14 @@ select,
     color: var(--text-primary);
 }
 
+/* ==========================================
+   3. FOOTER (Refined & Consolidated)
+=========================================== */
 .site-footer {
     background: #050505;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 4rem 1.5rem 3rem;
+    color: var(--text-secondary);
 }
 
 .footer-inner {
@@ -255,127 +260,140 @@ select,
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 3rem;
 }
 
 .footer-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.75rem;
+    gap: 2.5rem;
 }
 
 .footer-support {
-    padding-right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 }
 
 .footer-support-title {
-    margin: 0;
-    font-size: 1.3rem;
+    font-size: 1.6rem;
     font-weight: 800;
     color: var(--text-primary);
+    letter-spacing: -0.5px;
 }
 
 .footer-support-hours {
-    margin-top: 0.6rem;
-    color: var(--text-secondary);
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.45);
     line-height: 1.6;
 }
 
-.footer-store-badges {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-top: 1.25rem;
-}
-
-.store-badge {
+.btn-contact {
     display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
-    min-width: 0;
-    flex: 1 1 220px;
-    padding: 0.85rem 0.95rem;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    background: rgba(255, 255, 255, 0.03);
-    color: var(--text-primary);
-}
-
-.store-badge-copy strong {
+    justify-content: center;
+    width: fit-content;
+    padding: 0.75rem 1.8rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 600;
     font-size: 0.9rem;
-}
-
-.store-badge-copy small {
-    font-size: 0.72rem;
 }
 
 .footer-social-links {
     display: flex;
-    gap: 0.85rem;
+    gap: 1.25rem;
     flex-wrap: wrap;
-    margin-top: 1rem;
+    margin-top: 0.25rem;
+}
+
+.footer-social-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.85rem;
+}
+
+.footer-social-link .icon {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
 }
 
 .footer-links-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.25rem 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 1.5rem;
 }
 
 .footer-link-column {
     display: flex;
     flex-direction: column;
-    gap: 0.65rem;
+    gap: 0.85rem;
 }
 
 .footer-link-column h4 {
-    margin: 0 0 0.25rem;
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--text-primary);
+    margin-bottom: 0.25rem;
 }
 
 .footer-link-column a {
-    color: var(--text-secondary);
-    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.9rem;
+    line-height: 1.4;
 }
 
 .footer-bottom {
     display: flex;
     flex-direction: column;
-    gap: 0.85rem;
-    padding-top: 1.2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    gap: 1.25rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .footer-legal-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.65rem 1rem;
-    color: var(--text-secondary);
-    font-size: 0.8rem;
+    gap: 0.75rem 1.25rem;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.85rem;
 }
 
-.footer-company-more {
-    margin: 0;
-    font-size: 0.8rem;
-}
-
-.footer-company-more a {
+.footer-legal-links a strong {
     color: var(--text-primary);
-    font-weight: 600;
+    font-weight: 700;
+}
+
+.footer-company-name, .company-info strong {
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
 }
 
 .footer-info-text {
     white-space: pre-line;
     line-height: 1.7;
-    color: rgba(255, 255, 255, 0.78);
+    color: rgba(255, 255, 255, 0.25);
     font-size: 0.8rem;
 }
 
 .copyright {
-    margin-top: 0.2rem;
-    opacity: 0.45;
+    margin-top: 0.5rem;
+    color: rgba(255, 255, 255, 0.15);
     font-size: 0.72rem;
 }
 
@@ -443,139 +461,7 @@ select,
     color: var(--text-primary);
 }
 
-.site-footer {
-    background: #050505;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
 
-.footer-inner {
-    max-width: 1300px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.footer-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.75rem;
-}
-
-.footer-support {
-    padding-right: 0;
-}
-
-.footer-support-title {
-    margin: 0;
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--text-primary);
-}
-
-.footer-support-hours {
-    margin-top: 0.6rem;
-    color: var(--text-secondary);
-    line-height: 1.6;
-}
-
-.footer-store-badges {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-top: 1.25rem;
-}
-
-.store-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    min-width: 0;
-    flex: 1 1 220px;
-    padding: 0.85rem 0.95rem;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    background: rgba(255, 255, 255, 0.03);
-    color: var(--text-primary);
-}
-
-.store-badge-copy strong {
-    font-size: 0.9rem;
-}
-
-.store-badge-copy small {
-    font-size: 0.72rem;
-}
-
-.footer-social-links {
-    display: flex;
-    gap: 0.85rem;
-    flex-wrap: wrap;
-    margin-top: 1rem;
-}
-
-.footer-links-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.25rem 1rem;
-}
-
-.footer-link-column {
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-}
-
-.footer-link-column h4 {
-    margin: 0 0 0.25rem;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.footer-link-column a {
-    color: var(--text-secondary);
-    line-height: 1.45;
-}
-
-.footer-bottom {
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-    padding-top: 1.2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.footer-legal-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.65rem 1rem;
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-}
-
-.footer-company-more {
-    margin: 0;
-    font-size: 0.8rem;
-}
-
-.footer-company-more a {
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-.footer-info-text {
-    white-space: pre-line;
-    line-height: 1.7;
-    color: rgba(255, 255, 255, 0.78);
-    font-size: 0.8rem;
-}
-
-.copyright {
-    margin-top: 0.2rem;
-    opacity: 0.45;
-    font-size: 0.72rem;
-}
 
 .logo-link {
     display: inline-flex;
