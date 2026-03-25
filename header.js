@@ -17,7 +17,6 @@
   const homePrefix = currentPath.split('/').length > 2 ? '../' : './';
   const prefix = homePrefix;
 
-
   const OP_MODE_KEY = 'bsq_operator_view_mode';
 
   const NAV_ITEMS = [
@@ -80,14 +79,6 @@
   }
 
   function getStoredOperatorProfile() {
-    try {
-      const raw = localStorage.getItem('bsq_user');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object') return parsed;
-      }
-    } catch { }
-
     return {
       id: 'OPERATOR_GHOST',
       email: 'operator@b-square.kr',
@@ -166,7 +157,7 @@
           <a href="${prefix}class/class_list.html" class="drawer-nav-item${activeNav === 'class' ? ' active' : ''}">클래스</a>
           <a href="${prefix}create_class/create_class.html" class="drawer-nav-item${activeNav === 'create' ? ' active' : ''}">등록</a>
           <a href="${prefix}notice/notice.html" class="drawer-nav-item${activeNav === 'notice' ? ' active' : ''}">공지사항</a>
-          <a href="${prefix}contact/contact.html" class="drawer-nav-item${activeNav === 'contact' ? ' active' : ''}">문의</a>
+          <a href="${prefix}contact/contact.html" class="drawer-nav-item${activeNav === 'notice' ? ' active' : ''}">문의</a>
           <a href="${prefix}community/community.html" class="drawer-nav-item${activeNav === 'community' ? ' active' : ''}">커뮤니티</a>
           <a href="${prefix}mi_pesg/mypage.html" class="drawer-nav-item${activeNav === 'mypage' ? ' active' : ''}">마이페이지</a>
         </nav>
@@ -284,7 +275,6 @@
       };
 
       setLogo('bsqHeaderLogoImg', 'bsqHeaderLogoText');
-      setLogo('bsqFooterLogoImg', 'bsqFooterBrandText');
 
       const footerInfo = document.getElementById('bsqFooterInfoText');
       const footerHours = document.getElementById('footerSupportHours');

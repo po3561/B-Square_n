@@ -1,16 +1,16 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ÃÑ°ý °ü¸®ÀÚ ´ë½Ãº¸µå | B-Square</title>
+    <title>ì´ê´„ ê´€ë¦¬ìž ëŒ€ì‹œë³´ë“œ | B-Square</title>
 
-    <!-- Àü¿ª ½ºÅ¸ÀÏ & °ü¸®ÀÚ Àü¿ë ½ºÅ¸ÀÏ -->
+    <!-- ì „ì—­ ìŠ¤íƒ€ì¼ & ê´€ë¦¬ìž ì „ìš© ìŠ¤íƒ€ì¼ -->
     <link rel="stylesheet" href="../style_pc.css">
     <link rel="stylesheet" href="admin.css?v=20260324_02">
 
-    <!-- ¿ÜºÎ ¶óÀÌºê·¯¸® -->
+    <!-- ì™¸ë¶€ ë¼ì´ë¸ŒëŸ¬ë¦¬ -->
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
@@ -20,11 +20,11 @@
 
 <body class="admin-body">
 
-    <!-- ¸ð¹ÙÀÏ »çÀÌµå¹Ù ¿À¹ö·¹ÀÌ + ÇÜ¹ö°Å ¹öÆ° -->
+    <!-- ëª¨ë°”ì¼ ì‚¬ì´ë“œë°” ì˜¤ë²„ë ˆì´ + í–„ë²„ê±° ë²„íŠ¼ -->
     <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
-    <button class="admin-hamburger-btn" id="adminHamburgerBtn" aria-label="¸Þ´º ¿­±â">?</button>
+    <button class="admin-hamburger-btn" id="adminHamburgerBtn" aria-label="ë©”ë‰´ ì—´ê¸°">?</button>
 
-    <!-- ÁÂÃø »çÀÌµå¹Ù (LNB) -->
+    <!-- ì¢Œì¸¡ ì‚¬ì´ë“œë°” (LNB) -->
     <aside class="admin-sidebar" id="adminSidebar">
         <div class="sidebar-header">
             <h1 class="admin-logo">B-Square</h1>
@@ -33,110 +33,110 @@
         <nav class="sidebar-nav">
             <a href="#" class="nav-item-link" onclick="location.href='../index.html'"
                 style="color: var(--primary-accent); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1.5rem; margin-bottom: 1rem;">
-                <span class="icon">¢Ö</span> »çÀÌÆ® ¹Ù·Î°¡±â
+                <span class="icon">â†—</span> ì‚¬ì´íŠ¸ ë°”ë¡œê°€ê¸°
             </a>
 
-            <!-- ´ë½Ãº¸µå È¨ -->
+            <!-- ëŒ€ì‹œë³´ë“œ í™ˆ -->
             <a href="#dashboard" class="nav-item" data-tab="tabDashboard">
-                <span class="icon">??</span> ´ë½Ãº¸µå
+                <span class="icon">??</span> ëŒ€ì‹œë³´ë“œ
             </a>
 
-            <!-- »çÀÌÆ® µðÀÚÀÎ -->
+            <!-- ì‚¬ì´íŠ¸ ë””ìžì¸ -->
             <div class="nav-group">
                 <button class="nav-group-btn" aria-expanded="true">
-                    <span><span class="icon">??</span> »çÀÌÆ® µðÀÚÀÎ</span>
-                    <span class="arrow">¡å</span>
+                    <span><span class="icon">??</span> ì‚¬ì´íŠ¸ ë””ìžì¸</span>
+                    <span class="arrow">â–¼</span>
                 </button>
                 <div class="nav-sub">
-                    <a href="#menu_settings" class="nav-item" data-tab="tabMenuSettings">¸Þ´º ¼³Á¤</a>
-                    <a href="#homepage_settings" class="nav-item" data-tab="tabHomepage">È¨ÆäÀÌÁö ¼³Á¤</a>
-                    <a href="#recommend_settings" class="nav-item" data-tab="tabRecommend">ÃßÃµ Å¬·¡½º °ü¸®</a>
-                    <a href="#page_settings" class="nav-item" data-tab="tabPages">ÆäÀÌÁö °ü¸®</a>
-                    <a href="#footer_settings" class="nav-item" data-tab="tabFooter">ÇªÅÍ ¼³Á¤</a>
+                    <a href="#menu_settings" class="nav-item" data-tab="tabMenuSettings">ë©”ë‰´ ì„¤ì •</a>
+                    <a href="#homepage_settings" class="nav-item" data-tab="tabHomepage">í™ˆíŽ˜ì´ì§€ ì„¤ì •</a>
+                    <a href="#recommend_settings" class="nav-item" data-tab="tabRecommend">ì¶”ì²œ í´ëž˜ìŠ¤ ê´€ë¦¬</a>
+                    <a href="#page_settings" class="nav-item" data-tab="tabPages">íŽ˜ì´ì§€ ê´€ë¦¬</a>
+                    <a href="#footer_settings" class="nav-item" data-tab="tabFooter">í‘¸í„° ì„¤ì •</a>
                 </div>
             </div>
 
-            <!-- È¸¿ø °ü¸® -->
+            <!-- íšŒì› ê´€ë¦¬ -->
             <div class="nav-group">
                 <button class="nav-group-btn" aria-expanded="true">
-                    <span><span class="icon">??</span> È¸¿ø °ü¸®</span>
-                    <span class="arrow">¡å</span>
+                    <span><span class="icon">??</span> íšŒì› ê´€ë¦¬</span>
+                    <span class="arrow">â–¼</span>
                 </button>
                 <div class="nav-sub">
-                    <a href="#users" class="nav-item" data-tab="tabUsers">°¡ÀÔ È¸¿ø</a>
-                    <a href="#roles" class="nav-item" data-tab="tabRoles">È¸¿ø Æ¯ÀÌ»çÇ×°ü¸®</a>
+                    <a href="#users" class="nav-item" data-tab="tabUsers">ê°€ìž… íšŒì›</a>
+                    <a href="#roles" class="nav-item" data-tab="tabRoles">íšŒì› íŠ¹ì´ì‚¬í•­ê´€ë¦¬</a>
                 </div>
             </div>
 
-            <!-- Å¬·¡½º °ü¸® -->
+            <!-- í´ëž˜ìŠ¤ ê´€ë¦¬ -->
             <div class="nav-group">
                 <button class="nav-group-btn" aria-expanded="true">
-                    <span><span class="icon">??</span> Å¬·¡½º °ü¸®</span>
-                    <span class="arrow">¡å</span>
+                    <span><span class="icon">??</span> í´ëž˜ìŠ¤ ê´€ë¦¬</span>
+                    <span class="arrow">â–¼</span>
                 </button>
                 <div class="nav-sub">
-                    <a href="#classes" class="nav-item" data-tab="tabAllClasses">Å¬·¡½º</a>
+                    <a href="#classes" class="nav-item" data-tab="tabAllClasses">í´ëž˜ìŠ¤</a>
                 </div>
             </div>
 
-            <!-- °Ô½ÃÆÇ °ü¸® -->
+            <!-- ê²Œì‹œíŒ ê´€ë¦¬ -->
             <div class="nav-group">
                 <button class="nav-group-btn" aria-expanded="false">
-                    <span><span class="icon">??</span> °Ô½ÃÆÇ °ü¸®</span>
-                    <span class="arrow">¡å</span>
+                    <span><span class="icon">??</span> ê²Œì‹œíŒ ê´€ë¦¬</span>
+                    <span class="arrow">â–¼</span>
                 </button>
                 <div class="nav-sub" style="display:none;">
-                    <a href="#boards" class="nav-item" data-tab="tabBoards">»çÀÌÆ® °Ô½ÃÆÇ</a>
-                    <a href="#class_boards" class="nav-item" data-tab="tabClassBoards">Å¬·¡½º °Ô½ÃÆÇ</a>
+                    <a href="#boards" class="nav-item" data-tab="tabBoards">ì‚¬ì´íŠ¸ ê²Œì‹œíŒ</a>
+                    <a href="#class_boards" class="nav-item" data-tab="tabClassBoards">í´ëž˜ìŠ¤ ê²Œì‹œíŒ</a>
                 </div>
             </div>
 
-            <!-- ¸®½ºÆ®Çü ´ÜÀÏ ¸Þ´ºµé -->
+            <!-- ë¦¬ìŠ¤íŠ¸í˜• ë‹¨ì¼ ë©”ë‰´ë“¤ -->
             <a href="#reviews" class="nav-item" data-tab="tabReviews">
-                <span class="icon">??</span> ¸®ºä °ü¸®
+                <span class="icon">??</span> ë¦¬ë·° ê´€ë¦¬
             </a>
             <a href="#bookmarks" class="nav-item" data-tab="tabBookmarks">
-                <span class="icon">??</span> ÂòÇÑ ¸ñ·Ï
+                <span class="icon">??</span> ì°œí•œ ëª©ë¡
             </a>
             <a href="#coupons" class="nav-item" data-tab="tabCoupons">
-                <span class="icon">??</span> ÄíÆù °ü¸®
+                <span class="icon">??</span> ì¿ í° ê´€ë¦¬
             </a>
             <a href="#operators" class="nav-item active" data-tab="tabOperators">
-                <span class="icon">?????</span> ¿î¿µÀÚ ¼³Á¤
+                <span class="icon">?????</span> ìš´ì˜ìž ì„¤ì •
             </a>
 
             <a href="#search_code" class="nav-item" data-tab="tabSearchCode">
-                <span class="icon">??</span> °Ë»ö ¹× ÄÚµå ¼³Á¤
+                <span class="icon">??</span> ê²€ìƒ‰ ë° ì½”ë“œ ì„¤ì •
             </a>
             <a href="#seo" class="nav-item" data-tab="tabSEO">
-                <span class="icon">??</span> SEO °ü¸® <span
+                <span class="icon">??</span> SEO ê´€ë¦¬ <span
                     style="font-size:0.6rem; background:#6366f1; border-radius:10px; padding:2px 5px;">Beta</span>
             </a>
 
-            <!-- ¸¶ÄÉÆÃ °ü¸® -->
+            <!-- ë§ˆì¼€íŒ… ê´€ë¦¬ -->
             <div class="nav-group">
                 <button class="nav-group-btn" aria-expanded="false">
-                    <span><span class="icon">??</span> ¸¶ÄÉÆÃ °ü¸®</span>
-                    <span class="arrow">¡å</span>
+                    <span><span class="icon">??</span> ë§ˆì¼€íŒ… ê´€ë¦¬</span>
+                    <span class="arrow">â–¼</span>
                 </button>
                 <div class="nav-sub" style="display:none;">
-                    <a href="#forms" class="nav-item" data-tab="tabForms">Æû °ü¸® <span
+                    <a href="#forms" class="nav-item" data-tab="tabForms">í¼ ê´€ë¦¬ <span
                             style="font-size:0.6rem; background:#6366f1; border-radius:10px; padding:2px 5px;">Beta</span></a>
-                    <a href="#marketing_tools" class="nav-item" data-tab="tabMarketingTools">Ä«Ä«¿ÀÃ¤³Î °ü¸®</a>
+                    <a href="#marketing_tools" class="nav-item" data-tab="tabMarketingTools">ì¹´ì¹´ì˜¤ì±„ë„ ê´€ë¦¬</a>
                 </div>
             </div>
 
-            <!-- ¸ÅÃâ ¹× Á¤»ê °ü¸® -->
+            <!-- ë§¤ì¶œ ë° ì •ì‚° ê´€ë¦¬ -->
             <div class="nav-group">
                 <button class="nav-group-btn" aria-expanded="true">
-                    <span><span class="icon">??</span> ¸ÅÃâ ¹× Á¤»ê °ü¸®</span>
-                    <span class="arrow">¡å</span>
+                    <span><span class="icon">??</span> ë§¤ì¶œ ë° ì •ì‚° ê´€ë¦¬</span>
+                    <span class="arrow">â–¼</span>
                 </button>
                 <div class="nav-sub">
-                    <a href="#payments" class="nav-item" data-tab="tabPaymentsView">°áÁ¦ Á¶È¸</a>
-                    <a href="#settlement_info" class="nav-item" data-tab="tabSettlementInfo">Á¤»ê Á¤º¸ °ü¸®</a>
-                    <a href="#settlement_history" class="nav-item" data-tab="tabSettlementHistory">Á¤»ê ³»¿ª</a>
-                    <a href="#tax" class="nav-item" data-tab="tabTax">ºÎ°¡¼¼ ½Å°í ÀÚ·á</a>
+                    <a href="#payments" class="nav-item" data-tab="tabPaymentsView">ê²°ì œ ì¡°íšŒ</a>
+                    <a href="#settlement_info" class="nav-item" data-tab="tabSettlementInfo">ì •ì‚° ì •ë³´ ê´€ë¦¬</a>
+                    <a href="#settlement_history" class="nav-item" data-tab="tabSettlementHistory">ì •ì‚° ë‚´ì—­</a>
+                    <a href="#tax" class="nav-item" data-tab="tabTax">ë¶€ê°€ì„¸ ì‹ ê³  ìžë£Œ</a>
                 </div>
             </div>
         </nav>
@@ -145,94 +145,94 @@
             <div class="admin-profile">
                 <div class="avatar">?????</div>
                 <div class="info">
-                    <div class="role" style="font-size:0.7rem; color:#aaa;">ÃÑ°ý °ü¸®ÀÚ</div>
-                    <div class="name" id="adminUserName">·Îµù Áß...</div>
+                    <div class="role" style="font-size:0.7rem; color:#aaa;">ì´ê´„ ê´€ë¦¬ìž</div>
+                    <div class="name" id="adminUserName">ë¡œë”© ì¤‘...</div>
                 </div>
             </div>
         </div>
     </aside>
 
-    <!-- ¿ìÃø ¸ÞÀÎ ÄÜÅÙÃ÷ ¿µ¿ª -->
+    <!-- ìš°ì¸¡ ë©”ì¸ ì½˜í…ì¸  ì˜ì—­ -->
     <main class="admin-main">
 
         <header class="admin-topbar">
-            <h2 id="currentTabTitle">´ë½Ãº¸µå</h2>
+            <h2 id="currentTabTitle">ëŒ€ì‹œë³´ë“œ</h2>
             <div class="topbar-actions">
-                <button class="btn-refresh" id="btnAdminRefresh">?? µ¥ÀÌÅÍ »õ·Î°íÄ§</button>
+                <button class="btn-refresh" id="btnAdminRefresh">?? ë°ì´í„° ìƒˆë¡œê³ ì¹¨</button>
             </div>
         </header>
 
         <div class="admin-content-wrapper">
 
-            <!-- ÅÇ 1: ´ë½Ãº¸µå È¨ -->
+            <!-- íƒ­ 1: ëŒ€ì‹œë³´ë“œ í™ˆ -->
             <section id="tabDashboard" class="admin-tab-content active">
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-title">ÃÑ °Å·¡¾× (KRW)</div>
+                        <div class="stat-title">ì´ ê±°ëž˜ì•¡ (KRW)</div>
                         <div class="stat-value" id="statRevenue">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">ÃÑ °¡ÀÔÀÚ ¼ö</div>
+                        <div class="stat-title">ì´ ê°€ìž…ìž ìˆ˜</div>
                         <div class="stat-value" id="statUsers">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">¿î¿µÁßÀÎ Å¬·¡½º</div>
+                        <div class="stat-title">ìš´ì˜ì¤‘ì¸ í´ëž˜ìŠ¤</div>
                         <div class="stat-value" id="statClasses">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">¿À´Ã ¹æ¹®ÀÚ</div>
+                        <div class="stat-title">ì˜¤ëŠ˜ ë°©ë¬¸ìž</div>
                         <div class="stat-value" id="statVisitors" style="color:#10b981;">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-title">ÇöÀç Á¢¼ÓÀÚ (Live)</div>
+                        <div class="stat-title">í˜„ìž¬ ì ‘ì†ìž (Live)</div>
                         <div class="stat-value" id="statActive" style="color:#ef4444;">0</div>
                     </div>
                 </div>
 
                 <div class="chart-container">
-                    <h3 class="section-title">ÃÖ±Ù 7ÀÏ ÁöÇ¥ ºÐ¼®</h3>
+                    <h3 class="section-title">ìµœê·¼ 7ì¼ ì§€í‘œ ë¶„ì„</h3>
                     <div class="chart-wrapper">
                         <canvas id="mainDashboardChart"></canvas>
                     </div>
                 </div>
             </section>
 
-            <!-- ÅÇ 5: È¨ÆäÀÌÁö ¼³Á¤ -->
+            <!-- íƒ­ 5: í™ˆíŽ˜ì´ì§€ ì„¤ì • -->
             <section id="tabHomepage" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
-                        <h3 class="section-title">È¨ÆäÀÌÁö ¼³Á¤</h3>
-                        <button class="btn-primary" id="btnSaveHomepage">ÀúÀå</button>
+                        <h3 class="section-title">í™ˆíŽ˜ì´ì§€ ì„¤ì •</h3>
+                        <button class="btn-primary" id="btnSaveHomepage">ì €ìž¥</button>
                     </div>
 
                     <div class="homepage-upload-guide">
                         <div class="homepage-upload-guide-head">
                             <div>
-                                <h4>¾÷·Îµå ±âÁØ ÇÑ´«¿¡ º¸±â</h4>
-                                <p>ÀÌ¹ÌÁö´Â ¿øº» ºñÀ²À» À¯ÁöÇÑ Ã¤ ÀúÀåµË´Ï´Ù. ¾Æ·¡ ±Ô°ÝÀ» ¸ÂÃß¸é Àß¸² ¾øÀÌ °¡Àå ¼±¸íÇÏ°Ô ³ëÃâµË´Ï´Ù.</p>
+                                <h4>ì—…ë¡œë“œ ê¸°ì¤€ í•œëˆˆì— ë³´ê¸°</h4>
+                                <p>ì´ë¯¸ì§€ëŠ” ì›ë³¸ ë¹„ìœ¨ì„ ìœ ì§€í•œ ì±„ ì €ìž¥ë©ë‹ˆë‹¤. ì•„ëž˜ ê·œê²©ì„ ë§žì¶”ë©´ ìž˜ë¦¼ ì—†ì´ ê°€ìž¥ ì„ ëª…í•˜ê²Œ ë…¸ì¶œë©ë‹ˆë‹¤.</p>
                             </div>
-                            <div class="homepage-upload-guide-pill">¿øº» À¯Áö ¡¤ ÀÚµ¿ Å©·Ó ¾øÀ½</div>
+                            <div class="homepage-upload-guide-pill">ì›ë³¸ ìœ ì§€ Â· ìžë™ í¬ë¡­ ì—†ìŒ</div>
                         </div>
                         <div class="homepage-upload-guide-grid">
                             <div class="homepage-upload-guide-card">
-                                <span>·Î°í</span>
-                                <strong>480 ¡¿ 120px</strong>
-                                <p>Çì´õ ÁÂÃø »ó´Ü Ç¥½Ã. PNG/WebP, Åõ¸í ¹è°æ ±ÇÀå.</p>
+                                <span>ë¡œê³ </span>
+                                <strong>480 Ã— 120px</strong>
+                                <p>í—¤ë” ì¢Œì¸¡ ìƒë‹¨ í‘œì‹œ. PNG/WebP, íˆ¬ëª… ë°°ê²½ ê¶Œìž¥.</p>
                             </div>
                             <div class="homepage-upload-guide-card">
-                                <span>ÆÄºñÄÜ</span>
-                                <strong>512 ¡¿ 512px</strong>
-                                <p>ºê¶ó¿ìÀú ÅÇ / ºÏ¸¶Å©¿ë. Á¤»ç°¢Çü, PNG/ICO/WebP ±ÇÀå.</p>
+                                <span>íŒŒë¹„ì½˜</span>
+                                <strong>512 Ã— 512px</strong>
+                                <p>ë¸Œë¼ìš°ì € íƒ­ / ë¶ë§ˆí¬ìš©. ì •ì‚¬ê°í˜•, PNG/ICO/WebP ê¶Œìž¥.</p>
                             </div>
                             <div class="homepage-upload-guide-card">
-                                <span>¸ÞÀÎ ¹è³Ê</span>
-                                <strong>1600 ¡¿ 500px</strong>
-                                <p>»ó´Ü ½½¶óÀÌµå ¹è³Ê. 16:5 ºñÀ², Áß¾Ó ¾ÈÀü¿µ¿ª È®º¸.</p>
+                                <span>ë©”ì¸ ë°°ë„ˆ</span>
+                                <strong>1600 Ã— 500px</strong>
+                                <p>ìƒë‹¨ ìŠ¬ë¼ì´ë“œ ë°°ë„ˆ. 16:5 ë¹„ìœ¨, ì¤‘ì•™ ì•ˆì „ì˜ì—­ í™•ë³´.</p>
                             </div>
                             <div class="homepage-upload-guide-card">
-                                <span>ÇÏ´Ü ¹è³Ê</span>
-                                <strong>3200 ¡¿ 600px</strong>
-                                <p>ÇÏ´Ü ½½¶óÀÌµå ¹è³Ê. 16:3 ºñÀ², ÃÊ±¤Æø °¡·ÎÇü ÃßÃµ.</p>
+                                <span>í•˜ë‹¨ ë°°ë„ˆ</span>
+                                <strong>3200 Ã— 600px</strong>
+                                <p>í•˜ë‹¨ ìŠ¬ë¼ì´ë“œ ë°°ë„ˆ. 16:3 ë¹„ìœ¨, ì´ˆê´‘í­ ê°€ë¡œí˜• ì¶”ì²œ.</p>
                             </div>
                         </div>
                     </div>
@@ -240,61 +240,61 @@
                     <div class="admin-grid-layout"
                         style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem; padding-top:1.5rem;">
                         <div class="settings-desc">
-                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">ºê·£µå ·Î°í / ÆÄºñÄÜ</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">Çì´õ ÁÂÃø ·Î°í¿Í ºê¶ó¿ìÀú ÅÇ ÆÄºñÄÜÀ» °¢°¢ ¾÷·ÎµåÇÒ ¼ö
-                                ÀÖ½À´Ï´Ù. ¾÷·Îµå ÈÄ ¿øº» ºñÀ²À» À¯ÁöÇØ Ç¥½ÃµË´Ï´Ù.</p>
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">ë¸Œëžœë“œ ë¡œê³  / íŒŒë¹„ì½˜</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">í—¤ë” ì¢Œì¸¡ ë¡œê³ ì™€ ë¸Œë¼ìš°ì € íƒ­ íŒŒë¹„ì½˜ì„ ê°ê° ì—…ë¡œë“œí•  ìˆ˜
+                                ìžˆìŠµë‹ˆë‹¤. ì—…ë¡œë“œ í›„ ì›ë³¸ ë¹„ìœ¨ì„ ìœ ì§€í•´ í‘œì‹œë©ë‹ˆë‹¤.</p>
                         </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">·Î°í
-                                        ÀÌ¹ÌÁö ¾÷·Îµå</label>
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ë¡œê³ 
+                                        ì´ë¯¸ì§€ ì—…ë¡œë“œ</label>
                                     <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem; flex-wrap:wrap;">
                                         <input type="file" id="settingLogoFile" accept="image/*" style="display:none;">
                                         <button class="btn-small outline" type="button"
-                                            onclick="document.getElementById('settingLogoFile').click()">ÀÌ¹ÌÁö ¼±ÅÃ</button>
+                                            onclick="document.getElementById('settingLogoFile').click()">ì´ë¯¸ì§€ ì„ íƒ</button>
                                         <button class="btn-small outline" type="button" id="btnRemoveLogo"
-                                            style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">»èÁ¦</button>
+                                            style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">ì‚­ì œ</button>
                                     </div>
                                     <input type="hidden" id="settingLogoURL">
                                     <div
                                         style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:12px; padding:14px; display:flex; justify-content:center; align-items:center; min-height:120px;">
-                                        <img id="previewLogo" src="" alt="·Î°í ¹Ì¸®º¸±â"
+                                        <img id="previewLogo" src="" alt="ë¡œê³  ë¯¸ë¦¬ë³´ê¸°"
                                             style="max-width:260px; max-height:72px; display:none; object-fit:contain;">
                                         <span id="logoPlaceholderTxt"
-                                            style="color:var(--mac-text-muted); font-size:0.85rem;">·Î°í ÀÌ¹ÌÁö¸¦
-                                            ¾÷·ÎµåÇØÁÖ¼¼¿ä.</span>
+                                            style="color:var(--mac-text-muted); font-size:0.85rem;">ë¡œê³  ì´ë¯¸ì§€ë¥¼
+                                            ì—…ë¡œë“œí•´ì£¼ì„¸ìš”.</span>
                                     </div>
                                     <p id="logoSizeHint"
-                                        style="margin:0.5rem 0 0; color:var(--mac-text-muted); font-size:0.8rem;">±ÇÀå 480
-                                        ¡¿ 120px ¡¤ PNG/WebP ¡¤ ¿øº» À¯Áö</p>
+                                        style="margin:0.5rem 0 0; color:var(--mac-text-muted); font-size:0.8rem;">ê¶Œìž¥ 480
+                                        Ã— 120px Â· PNG/WebP Â· ì›ë³¸ ìœ ì§€</p>
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ÆÄºñÄÜ
-                                        ¾÷·Îµå</label>
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">íŒŒë¹„ì½˜
+                                        ì—…ë¡œë“œ</label>
                                     <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem; flex-wrap:wrap;">
                                         <input type="file" id="settingFaviconFile" accept="image/*"
                                             style="display:none;">
                                         <button class="btn-small outline" type="button"
-                                            onclick="document.getElementById('settingFaviconFile').click()">ÀÌ¹ÌÁö
-                                            ¼±ÅÃ</button>
+                                            onclick="document.getElementById('settingFaviconFile').click()">ì´ë¯¸ì§€
+                                            ì„ íƒ</button>
                                         <button class="btn-small outline" type="button" id="btnRemoveFavicon"
-                                            style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">»èÁ¦</button>
+                                            style="color:var(--mac-danger); border-color:rgba(255, 59, 48, 0.3);">ì‚­ì œ</button>
                                     </div>
                                     <input type="hidden" id="settingFaviconURL">
                                     <div
                                         style="background:#f5f5f7; border:1px solid var(--mac-border-light); border-radius:12px; padding:14px; display:flex; justify-content:center; align-items:center; min-height:120px;">
-                                        <img id="previewFavicon" src="" alt="ÆÄºñÄÜ ¹Ì¸®º¸±â"
+                                        <img id="previewFavicon" src="" alt="íŒŒë¹„ì½˜ ë¯¸ë¦¬ë³´ê¸°"
                                             style="max-width:72px; max-height:72px; display:none; object-fit:contain; border-radius:10px;">
                                         <span id="faviconPlaceholderTxt"
-                                            style="color:var(--mac-text-muted); font-size:0.85rem;">ÆÄºñÄÜÀ» ¾÷·ÎµåÇØÁÖ¼¼¿ä.</span>
+                                            style="color:var(--mac-text-muted); font-size:0.85rem;">íŒŒë¹„ì½˜ì„ ì—…ë¡œë“œí•´ì£¼ì„¸ìš”.</span>
                                     </div>
                                     <p id="faviconSizeHint"
-                                        style="margin:0.5rem 0 0; color:var(--mac-text-muted); font-size:0.8rem;">±ÇÀå 512
-                                        ¡¿ 512px ¡¤ PNG/ICO/WebP ¡¤ Á¤»ç°¢Çü</p>
+                                        style="margin:0.5rem 0 0; color:var(--mac-text-muted); font-size:0.8rem;">ê¶Œìž¥ 512
+                                        Ã— 512px Â· PNG/ICO/WebP Â· ì •ì‚¬ê°í˜•</p>
                                 </div>
                             </div>
                         </div>
@@ -304,19 +304,19 @@
 
                     <div class="admin-grid-layout" style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
                         <div class="settings-desc">
-                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">¸ÞÀÎ ¹è³Ê ¼³Á¤</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">¸ÞÀÎ È¨ÆäÀÌÁö »ó´Ü¿¡ ·Ñ¸µµÇ´Â ±¤°í ¹è³ÊÀÔ´Ï´Ù. ÀÌ¹ÌÁö°¡
-                                Àß¸®Áö ¾Êµµ·Ï ±ÇÀå ºñÀ²À» ÁöÄÑ ¾÷·ÎµåÇÏ¼¼¿ä.</p>
-                            <p style="margin:0.75rem 0 0; color:var(--admin-text-muted); font-size:0.82rem;">±ÇÀå Å©±â: 1600
-                                ¡¿ 500px ¡¤ 16:5 ºñÀ² ¡¤ Áß¾Ó ¾ÈÀü¿µ¿ª È®º¸</p>
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">ë©”ì¸ ë°°ë„ˆ ì„¤ì •</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">ë©”ì¸ í™ˆíŽ˜ì´ì§€ ìƒë‹¨ì— ë¡¤ë§ë˜ëŠ” ê´‘ê³  ë°°ë„ˆìž…ë‹ˆë‹¤. ì´ë¯¸ì§€ê°€
+                                ìž˜ë¦¬ì§€ ì•Šë„ë¡ ê¶Œìž¥ ë¹„ìœ¨ì„ ì§€ì¼œ ì—…ë¡œë“œí•˜ì„¸ìš”.</p>
+                            <p style="margin:0.75rem 0 0; color:var(--admin-text-muted); font-size:0.82rem;">ê¶Œìž¥ í¬ê¸°: 1600
+                                Ã— 500px Â· 16:5 ë¹„ìœ¨ Â· ì¤‘ì•™ ì•ˆì „ì˜ì—­ í™•ë³´</p>
                             <button id="btnAddBanner" class="btn-primary" type="button"
-                                style="background:#4f46e5; margin-top:1rem; width:100%;">+ ¸ÞÀÎ ¹è³Ê Ãß°¡</button>
+                                style="background:#4f46e5; margin-top:1rem; width:100%;">+ ë©”ì¸ ë°°ë„ˆ ì¶”ê°€</button>
                         </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
                             <div id="bannerListContainer"
                                 style="display:flex; flex-direction:column; gap:1rem; min-height:120px;">
-                                <!-- ¸ÞÀÎ ¹è³Ê µ¿Àû ·Îµù -->
+                                <!-- ë©”ì¸ ë°°ë„ˆ ë™ì  ë¡œë”© -->
                             </div>
                         </div>
                     </div>
@@ -325,37 +325,37 @@
 
                     <div class="admin-grid-layout" style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
                         <div class="settings-desc">
-                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">ÇÏ´Ü ¹è³Ê ¼³Á¤</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">¸ÞÀÎ ÇÏ´ÜÀÇ °¡·ÎÇü ¹è³ÊÀÔ´Ï´Ù. ½½¶óÀÌµå ¹æ½ÄÀ¸·Î
-                                ³ëÃâµÇ¸ç, ÃßÃµ ºñÀ²À» ¸ÂÃß¸é Àß¸² ¾øÀÌ Ç¥½ÃµË´Ï´Ù.</p>
-                            <p style="margin:0.75rem 0 0; color:var(--admin-text-muted); font-size:0.82rem;">±ÇÀå Å©±â: 3200
-                                ¡¿ 600px ¡¤ 16:3 ºñÀ² ¡¤ °¡·ÎÇü ½½¶óÀÌµå</p>
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">í•˜ë‹¨ ë°°ë„ˆ ì„¤ì •</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">ë©”ì¸ í•˜ë‹¨ì˜ ê°€ë¡œí˜• ë°°ë„ˆìž…ë‹ˆë‹¤. ìŠ¬ë¼ì´ë“œ ë°©ì‹ìœ¼ë¡œ
+                                ë…¸ì¶œë˜ë©°, ì¶”ì²œ ë¹„ìœ¨ì„ ë§žì¶”ë©´ ìž˜ë¦¼ ì—†ì´ í‘œì‹œë©ë‹ˆë‹¤.</p>
+                            <p style="margin:0.75rem 0 0; color:var(--admin-text-muted); font-size:0.82rem;">ê¶Œìž¥ í¬ê¸°: 3200
+                                Ã— 600px Â· 16:3 ë¹„ìœ¨ Â· ê°€ë¡œí˜• ìŠ¬ë¼ì´ë“œ</p>
                             <button id="btnAddBottomBanner" class="btn-primary" type="button"
-                                style="background:#4f46e5; margin-top:1rem; width:100%;">+ ÇÏ´Ü ¹è³Ê Ãß°¡</button>
+                                style="background:#4f46e5; margin-top:1rem; width:100%;">+ í•˜ë‹¨ ë°°ë„ˆ ì¶”ê°€</button>
                         </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border);">
                             <div id="bottomBannerListContainer"
                                 style="display:flex; flex-direction:column; gap:1rem; min-height:120px;">
-                                <!-- ÇÏ´Ü ¹è³Ê µ¿Àû ·Îµù -->
+                                <!-- í•˜ë‹¨ ë°°ë„ˆ ë™ì  ë¡œë”© -->
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- ÅÇ 5-2: ÃßÃµ Å¬·¡½º °ü¸® -->
+            <!-- íƒ­ 5-2: ì¶”ì²œ í´ëž˜ìŠ¤ ê´€ë¦¬ -->
             <section id="tabRecommend" class="admin-tab-content">
                 <div class="admin-card" style="margin-bottom:1.5rem;">
                     <div class="card-header" style="justify-content: space-between;">
                         <div>
-                            <h3 class="section-title">ÀÎ±â Å¬·¡½º ¼³Á¤</h3>
-                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">¸ÞÀÎ È­¸é »ó´Ü¿¡ ³ëÃâµÉ ÀÎ±â Å¬·¡½º¸¦ °ü¸®ÇÕ´Ï´Ù.
+                            <h3 class="section-title">ì¸ê¸° í´ëž˜ìŠ¤ ì„¤ì •</h3>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">ë©”ì¸ í™”ë©´ ìƒë‹¨ì— ë…¸ì¶œë  ì¸ê¸° í´ëž˜ìŠ¤ë¥¼ ê´€ë¦¬í•©ë‹ˆë‹¤.
                             </p>
                         </div>
                         <div class="recommend-card-actions">
-                            <button class="btn-small outline" id="btnOpenPopularSearch" type="button">+ Å¬·¡½º Ãß°¡</button>
-                            <button class="btn-primary" id="btnSavePopular" type="button">ÀúÀå</button>
+                            <button class="btn-small outline" id="btnOpenPopularSearch" type="button">+ í´ëž˜ìŠ¤ ì¶”ê°€</button>
+                            <button class="btn-primary" id="btnSavePopular" type="button">ì €ìž¥</button>
                         </div>
                     </div>
                     <div style="padding:1.5rem;">
@@ -369,14 +369,14 @@
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
                         <div>
-                            <h3 class="section-title">ÃßÃµ Å¬·¡½º Æú´õ °ü¸®</h3>
-                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">¸ÞÀÎ È­¸é¿¡ ³ëÃâµÉ ÃßÃµ Å¬·¡½º ±×·ì(Æú´õ)À»
-                                °ü¸®ÇÕ´Ï´Ù. Æú´õ ³» Å¬·¡½º´Â ÁÂ¿ì ½½¶óÀÌ´õ·Î Ç¥½ÃµË´Ï´Ù.</p>
+                            <h3 class="section-title">ì¶”ì²œ í´ëž˜ìŠ¤ í´ë” ê´€ë¦¬</h3>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">ë©”ì¸ í™”ë©´ì— ë…¸ì¶œë  ì¶”ì²œ í´ëž˜ìŠ¤ ê·¸ë£¹(í´ë”)ì„
+                                ê´€ë¦¬í•©ë‹ˆë‹¤. í´ë” ë‚´ í´ëž˜ìŠ¤ëŠ” ì¢Œìš° ìŠ¬ë¼ì´ë”ë¡œ í‘œì‹œë©ë‹ˆë‹¤.</p>
                         </div>
                         <div class="recommend-card-actions">
-                            <button class="btn-small outline" id="btnAddRecommendFolder" type="button">+ »õ Æú´õ
-                                Ãß°¡</button>
-                            <button class="btn-primary" id="btnSaveRecommendations" type="button">ÀúÀå</button>
+                            <button class="btn-small outline" id="btnAddRecommendFolder" type="button">+ ìƒˆ í´ë”
+                                ì¶”ê°€</button>
+                            <button class="btn-primary" id="btnSaveRecommendations" type="button">ì €ìž¥</button>
                         </div>
                     </div>
                     <div id="recommendFolderList"
@@ -385,7 +385,7 @@
                     </div>
                 </div>
 
-                <!-- Å¬·¡½º ¼±ÅÃ ¸ð´Þ -->
+                <!-- í´ëž˜ìŠ¤ ì„ íƒ ëª¨ë‹¬ -->
                 <div id="classSearchModal"
                     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
                     <div
@@ -393,9 +393,9 @@
                         <div
                             style="padding:1rem 1.5rem; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; gap:1rem;">
                             <div>
-                                <h4 style="margin:0; font-size:1.1rem;">Ãß°¡ÇÒ Å¬·¡½º ¼±ÅÃ</h4>
+                                <h4 style="margin:0; font-size:1.1rem;">ì¶”ê°€í•  í´ëž˜ìŠ¤ ì„ íƒ</h4>
                                 <p id="modalResultCount"
-                                    style="margin:0.35rem 0 0; color:var(--admin-text-muted); font-size:0.85rem;">ÃÑ 0°³
+                                    style="margin:0.35rem 0 0; color:var(--admin-text-muted); font-size:0.85rem;">ì´ 0ê°œ
                                 </p>
                             </div>
                             <button id="btnCloseClassModal"
@@ -405,16 +405,16 @@
                             <div
                                 style="display:flex; gap:0.75rem; align-items:center; margin-bottom:1rem; flex-wrap:wrap;">
                                 <input type="text" id="classSearchInput" class="admin-form-input"
-                                    placeholder="Å¬·¡½º Á¦¸ñ, °­»ç, Å°¿öµå °Ë»ö..." style="margin:0; flex:1; min-width:240px;">
+                                    placeholder="í´ëž˜ìŠ¤ ì œëª©, ê°•ì‚¬, í‚¤ì›Œë“œ ê²€ìƒ‰..." style="margin:0; flex:1; min-width:240px;">
                                 <select id="modalCategorySelect" class="admin-form-input"
                                     style="margin:0; min-width:180px; width:auto;">
-                                    <option value="all">ÀüÃ¼ Ä«Å×°í¸®</option>
+                                    <option value="all">ì „ì²´ ì¹´í…Œê³ ë¦¬</option>
                                 </select>
                             </div>
                             <div id="classSearchResultList"
                                 style="overflow-y:auto; max-height:60vh; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; background:#fff; display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:1rem;">
                                 <!-- Search results -->
-                                <div style="grid-column:1/-1; padding:2rem; text-align:center; color:#888;">°Ë»ö¾î¸¦ ÀÔ·ÂÇÏ¼¼¿ä.
+                                <div style="grid-column:1/-1; padding:2rem; text-align:center; color:#888;">ê²€ìƒ‰ì–´ë¥¼ ìž…ë ¥í•˜ì„¸ìš”.
                                 </div>
                             </div>
                         </div>
@@ -422,109 +422,109 @@
                 </div>
             </section>
 
-            <!-- ÅÇ 6: ÇªÅÍ ¼³Á¤ -->
+            <!-- íƒ­ 6: í‘¸í„° ì„¤ì • -->
             <section id="tabFooter" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
-                        <h3 class="section-title">ÇªÅÍ ¼³Á¤</h3>
-                        <button class="btn-primary" id="btnSaveFooter">ÀúÀå</button>
+                        <h3 class="section-title">í‘¸í„° ì„¤ì •</h3>
+                        <button class="btn-primary" id="btnSaveFooter">ì €ìž¥</button>
                     </div>
                     <div class="admin-grid-layout"
                         style="display:grid; grid-template-columns: 1fr 2fr; gap: 2rem; padding-top:1.5rem;">
                         <div class="settings-desc">
-                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">¾÷°è Ç¥ÁØ ÇªÅÍ Á¤º¸</h4>
-                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">È¸»ç Á¤º¸, °í°´¼¾ÅÍ, ¿î¿µ½Ã°£, Á¤Ã¥ ¸µÅ©¸¦ ¼³Á¤ÇÏ¸é
-                                ¸ÞÀÎ È¨ÆäÀÌÁö ÇªÅÍ¿¡ Áï½Ã ¹Ý¿µµË´Ï´Ù. Ç¥ÁØ ³ëÃâ ¼ø¼­¿¡ ¸ÂÃç °ü¸®ÇÏ¸é ¸ÞÀÎ È­¸é¿¡¼­µµ ´õ ÀÐ±â ½¬¿öÁý´Ï´Ù.</p>
+                            <h4 style="margin-bottom:0.5rem; font-size:1.05rem;">ì—…ê³„ í‘œì¤€ í‘¸í„° ì •ë³´</h4>
+                            <p style="color:var(--admin-text-muted); font-size:0.9rem;">íšŒì‚¬ ì •ë³´, ê³ ê°ì„¼í„°, ìš´ì˜ì‹œê°„, ì •ì±… ë§í¬ë¥¼ ì„¤ì •í•˜ë©´
+                                ë©”ì¸ í™ˆíŽ˜ì´ì§€ í‘¸í„°ì— ì¦‰ì‹œ ë°˜ì˜ë©ë‹ˆë‹¤. í‘œì¤€ ë…¸ì¶œ ìˆœì„œì— ë§žì¶° ê´€ë¦¬í•˜ë©´ ë©”ì¸ í™”ë©´ì—ì„œë„ ë” ì½ê¸° ì‰¬ì›Œì§‘ë‹ˆë‹¤.</p>
                         </div>
                         <div class="settings-fields"
                             style="background:var(--admin-bg); padding:1.5rem; border-radius:12px; border:1px solid var(--admin-border); grid-column: span 2;">
                             <div class="footer-standard-note">
-                                <strong>¸ÞÀÎ ÇªÅÍ ¹Ý¿µ Ç×¸ñ</strong>
+                                <strong>ë©”ì¸ í‘¸í„° ë°˜ì˜ í•­ëª©</strong>
                                 <ul>
-                                    <li>»óÈ£, ´ëÇ¥ÀÚ, ÁÖ¼Ò, »ç¾÷ÀÚµî·Ï¹øÈ£</li>
-                                    <li>Åë½ÅÆÇ¸Å¾÷ ½Å°í¹øÈ£, °í°´¼¾ÅÍ ¿¬¶ôÃ³</li>
-                                    <li>¿î¿µ½Ã°£, ÀÌ¿ë¾à°ü, °³ÀÎÁ¤º¸Ã³¸®¹æÄ§</li>
+                                    <li>ìƒí˜¸, ëŒ€í‘œìž, ì£¼ì†Œ, ì‚¬ì—…ìžë“±ë¡ë²ˆí˜¸</li>
+                                    <li>í†µì‹ íŒë§¤ì—… ì‹ ê³ ë²ˆí˜¸, ê³ ê°ì„¼í„° ì—°ë½ì²˜</li>
+                                    <li>ìš´ì˜ì‹œê°„, ì´ìš©ì•½ê´€, ê°œì¸ì •ë³´ì²˜ë¦¬ë°©ì¹¨</li>
                                 </ul>
                             </div>
-                            <p style="margin-bottom:1.5rem; color:var(--admin-text-muted);">»çÀÌÆ® ÇÏ´Ü¿¡ Ç¥½ÃµÇ´Â »ç¾÷ÀÚ Á¤º¸¿Í Á¤Ã¥/¿¬¶ôÃ³
-                                Á¤º¸¸¦ ¼³Á¤ÇÕ´Ï´Ù.</p>
+                            <p style="margin-bottom:1.5rem; color:var(--admin-text-muted);">ì‚¬ì´íŠ¸ í•˜ë‹¨ì— í‘œì‹œë˜ëŠ” ì‚¬ì—…ìž ì •ë³´ì™€ ì •ì±…/ì—°ë½ì²˜
+                                ì •ë³´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.</p>
 
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">È¸»ç¸í(»óÈ£)</label>
-                                    <input type="text" id="setFooterCompany" placeholder="¿¹: (ÁÖ)ºñ½ºÄù¾î"
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">íšŒì‚¬ëª…(ìƒí˜¸)</label>
+                                    <input type="text" id="setFooterCompany" placeholder="ì˜ˆ: (ì£¼)ë¹„ìŠ¤í€˜ì–´"
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">´ëÇ¥ÀÚ
-                                        ¼º¸í</label>
-                                    <input type="text" id="setFooterCEO" placeholder="´ëÇ¥ÀÚ¸í" class="admin-form-input">
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ëŒ€í‘œìž
+                                        ì„±ëª…</label>
+                                    <input type="text" id="setFooterCEO" placeholder="ëŒ€í‘œìžëª…" class="admin-form-input">
                                 </div>
                                 <div class="field-group" style="grid-column: span 2;">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ÁÖ¼Ò</label>
-                                    <input type="text" id="setFooterAddress" placeholder="»ç¾÷Àå ¼ÒÀçÁö ÁÖ¼Ò"
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ì£¼ì†Œ</label>
+                                    <input type="text" id="setFooterAddress" placeholder="ì‚¬ì—…ìž¥ ì†Œìž¬ì§€ ì£¼ì†Œ"
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">»ç¾÷ÀÚµî·Ï¹øÈ£</label>
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ì‚¬ì—…ìžë“±ë¡ë²ˆí˜¸</label>
                                     <input type="text" id="setFooterBizNum" placeholder="000-00-00000"
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">Åë½ÅÆÇ¸Å¾÷
-                                        ½Å°í¹øÈ£</label>
-                                    <input type="text" id="setFooterMailNum" placeholder="Á¦ 0000-Áö¿ª-0000 È£"
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">í†µì‹ íŒë§¤ì—…
+                                        ì‹ ê³ ë²ˆí˜¸</label>
+                                    <input type="text" id="setFooterMailNum" placeholder="ì œ 0000-ì§€ì—­-0000 í˜¸"
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">°í°´¼¾ÅÍ
-                                        ÀüÈ­¹øÈ£</label>
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ê³ ê°ì„¼í„°
+                                        ì „í™”ë²ˆí˜¸</label>
                                     <input type="text" id="setFooterCS" placeholder="0000-0000"
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">°í°´¼¾ÅÍ
-                                        ÀÌ¸ÞÀÏ</label>
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ê³ ê°ì„¼í„°
+                                        ì´ë©”ì¼</label>
                                     <input type="text" id="setFooterEmail" placeholder="cs@domain.com"
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group" style="grid-column: span 2;">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">¿î¿µ½Ã°£</label>
-                                    <input type="text" id="setFooterHours" placeholder="ÆòÀÏ 10½Ã ~ ¿ÀÈÄ 6½Ã (ÁÖ¸», °øÈÞÀÏ Á¦¿Ü)"
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ìš´ì˜ì‹œê°„</label>
+                                    <input type="text" id="setFooterHours" placeholder="í‰ì¼ 10ì‹œ ~ ì˜¤í›„ 6ì‹œ (ì£¼ë§, ê³µíœ´ì¼ ì œì™¸)"
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ÀÌ¿ë¾à°ü
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ì´ìš©ì•½ê´€
                                         URL</label>
                                     <input type="text" id="setFooterTermsUrl" placeholder="https://..."
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">°³ÀÎÁ¤º¸Ã³¸®¹æÄ§
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ê°œì¸ì •ë³´ì²˜ë¦¬ë°©ì¹¨
                                         URL</label>
                                     <input type="text" id="setFooterPrivacyUrl" placeholder="https://..."
                                         class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ÀÎ½ºÅ¸±×·¥
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ì¸ìŠ¤íƒ€ê·¸ëž¨
                                         URL</label>
                                     <input type="text" id="setFooterInstagramUrl"
                                         placeholder="https://instagram.com/..." class="admin-form-input">
                                 </div>
                                 <div class="field-group">
                                     <label
-                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">À¯Æ©ºê
+                                        style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ìœ íŠœë¸Œ
                                         URL</label>
                                     <input type="text" id="setFooterYoutubeUrl" placeholder="https://youtube.com/..."
                                         class="admin-form-input">
@@ -537,60 +537,60 @@
 
             </section>
 
-            <!-- ÅÇ: 00_Placeholder (¹Ì±¸Çö ¸Þ´º °øÅë) -->
+            <!-- íƒ­: 00_Placeholder (ë¯¸êµ¬í˜„ ë©”ë‰´ ê³µí†µ) -->
             <section id="tabPlaceholder" class="admin-tab-content">
                 <div class="admin-card" style="text-align:center; padding:5rem 2rem;">
-                    <h2 style="color:var(--admin-text-muted); margin-bottom:1rem;">?? ÆäÀÌÁö¸¦ ÁØºñ ÁßÀÔ´Ï´Ù.</h2>
-                    <p style="color:#777;">ÇØ´ç ±â´ÉÀº ÃßÈÄ ¾÷µ¥ÀÌÆ®¸¦ ÅëÇØ Á¦°øµÉ ¿¹Á¤ÀÔ´Ï´Ù.</p>
+                    <h2 style="color:var(--admin-text-muted); margin-bottom:1rem;">?? íŽ˜ì´ì§€ë¥¼ ì¤€ë¹„ ì¤‘ìž…ë‹ˆë‹¤.</h2>
+                    <p style="color:#777;">í•´ë‹¹ ê¸°ëŠ¥ì€ ì¶”í›„ ì—…ë°ì´íŠ¸ë¥¼ í†µí•´ ì œê³µë  ì˜ˆì •ìž…ë‹ˆë‹¤.</p>
                 </div>
             </section>
 
-            <!-- ÅÇ: ¿î¿µÀÚ ¼³Á¤ (tabOperators) -->
+            <!-- íƒ­: ìš´ì˜ìž ì„¤ì • (tabOperators) -->
             <section id="tabOperators" class="admin-tab-content">
                 <div class="admin-card operator-card-clean">
                     <div class="card-header" style="justify-content: space-between;">
                         <div>
-                            <h3 class="section-title">¿î¿µÀÚ ¼³Á¤</h3>
-                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">¿î¿µÀÚ/°­»ç/ÃÑ°ý ¿î¿µÀÚ ±ÇÇÑÀ» ÇÑ È­¸é¿¡¼­ Á÷°üÀûÀ¸·Î
-                                °ü¸®ÇÕ´Ï´Ù.</p>
+                            <h3 class="section-title">ìš´ì˜ìž ì„¤ì •</h3>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">ìš´ì˜ìž/ê°•ì‚¬/ì´ê´„ ìš´ì˜ìž ê¶Œí•œì„ í•œ í™”ë©´ì—ì„œ ì§ê´€ì ìœ¼ë¡œ
+                                ê´€ë¦¬í•©ë‹ˆë‹¤.</p>
                         </div>
                         <div class="operator-header-actions" style="display:flex; gap:0.5rem;">
-                            <button class="btn-primary" style="background:#4f46e5;">¿î¿µÀÚ µî·Ï</button>
-                            <button class="btn-primary" style="background:#4f46e5;">°­»ç µî·Ï</button>
-                            <button class="btn-primary" style="background:#4f46e5;">ÃÑ°ý ¿î¿µÀÚ µî·Ï</button>
+                            <button class="btn-primary" style="background:#4f46e5;">ìš´ì˜ìž ë“±ë¡</button>
+                            <button class="btn-primary" style="background:#4f46e5;">ê°•ì‚¬ ë“±ë¡</button>
+                            <button class="btn-primary" style="background:#4f46e5;">ì´ê´„ ìš´ì˜ìž ë“±ë¡</button>
                         </div>
                     </div>
                     <div class="admin-overview-grid operator-overview-grid">
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">±ÇÇÑ ¼³°è ±âÁØ</span>
-                            <strong>ÃÑ°ý, ¿î¿µ, °­»ç, ÀÏ¹Ý È¸¿ø</strong>
-                            <p>±ÇÇÑ º¯°æÀº Áï½Ã ¹Ý¿µµÇ¸ç °­»ç ¿ªÇÒÀº Å¬·¡½º Á¤»ê°ú ¿¬°áµË´Ï´Ù.</p>
+                            <span class="admin-overview-label">ê¶Œí•œ ì„¤ê³„ ê¸°ì¤€</span>
+                            <strong>ì´ê´„, ìš´ì˜, ê°•ì‚¬, ì¼ë°˜ íšŒì›</strong>
+                            <p>ê¶Œí•œ ë³€ê²½ì€ ì¦‰ì‹œ ë°˜ì˜ë˜ë©° ê°•ì‚¬ ì—­í• ì€ í´ëž˜ìŠ¤ ì •ì‚°ê³¼ ì—°ê²°ë©ë‹ˆë‹¤.</p>
                         </article>
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">°ü¸® Æ÷ÀÎÆ®</span>
-                            <strong>°­»ç Á¤º¸¿Í ´ã´ç Å¬·¡½º µ¿½Ã È®ÀÎ</strong>
-                            <p>¿¬¶ôÃ³, °¡ÀÔÀÏ, ÁÖ°­»ç/¼­ºê°­»ç Âü¿© Á¤º¸¸¦ ÇÑ Ç¥¿¡¼­ È®ÀÎÇÕ´Ï´Ù.</p>
+                            <span class="admin-overview-label">ê´€ë¦¬ í¬ì¸íŠ¸</span>
+                            <strong>ê°•ì‚¬ ì •ë³´ì™€ ë‹´ë‹¹ í´ëž˜ìŠ¤ ë™ì‹œ í™•ì¸</strong>
+                            <p>ì—°ë½ì²˜, ê°€ìž…ì¼, ì£¼ê°•ì‚¬/ì„œë¸Œê°•ì‚¬ ì°¸ì—¬ ì •ë³´ë¥¼ í•œ í‘œì—ì„œ í™•ì¸í•©ë‹ˆë‹¤.</p>
                         </article>
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">¿î¿µ ¿øÄ¢</span>
-                            <strong>½Â°ÝÀº ½ÅÁßÇÏ°Ô, È¸¼ö´Â ºü¸£°Ô</strong>
-                            <p>¹Î°¨ÇÑ ÅÇ Á¢±Ù ±ÇÇÑÀº ÃÑ°ý ¿î¿µÀÚ¿¡°Ô¸¸ ¿­¸®µµ·Ï À¯ÁöÇÕ´Ï´Ù.</p>
+                            <span class="admin-overview-label">ìš´ì˜ ì›ì¹™</span>
+                            <strong>ìŠ¹ê²©ì€ ì‹ ì¤‘í•˜ê²Œ, íšŒìˆ˜ëŠ” ë¹ ë¥´ê²Œ</strong>
+                            <p>ë¯¼ê°í•œ íƒ­ ì ‘ê·¼ ê¶Œí•œì€ ì´ê´„ ìš´ì˜ìžì—ê²Œë§Œ ì—´ë¦¬ë„ë¡ ìœ ì§€í•©ë‹ˆë‹¤.</p>
                         </article>
                     </div>
                     <div class="operator-summary-row"
                         style="padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--admin-border);">
                         <div class="operator-summary-chips" style="display:flex; gap:0.5rem;">
-                            <div class="operator-chip operator-chip--dark" id="countAllOps">ÀüÃ¼ 0¸í</div>
-                            <div class="operator-chip" id="countAdmins">ÃÑ°ý¿î¿µÀÚ 0¸í</div>
-                            <div class="operator-chip" id="countInsts">°­»ç 0¸í</div>
+                            <div class="operator-chip operator-chip--dark" id="countAllOps">ì „ì²´ 0ëª…</div>
+                            <div class="operator-chip" id="countAdmins">ì´ê´„ìš´ì˜ìž 0ëª…</div>
+                            <div class="operator-chip" id="countInsts">ê°•ì‚¬ 0ëª…</div>
                         </div>
                         <div class="operator-filter-row" style="display:flex; gap:0.5rem;">
                             <select class="admin-form-input operator-page-size"
                                 style="padding:0.4rem; padding-right:2rem; margin:0;">
-                                <option>10°³¾¿</option>
+                                <option>10ê°œì”©</option>
                             </select>
                             <div style="position:relative;" class="operator-search-wrap">
-                                <input type="text" class="admin-form-input" placeholder="´Ð³×ÀÓ, ÀÌ¸§, ÀÌ¸ÞÀÏ, ¿¬¶ôÃ³ °Ë»ö"
+                                <input type="text" class="admin-form-input" placeholder="ë‹‰ë„¤ìž„, ì´ë¦„, ì´ë©”ì¼, ì—°ë½ì²˜ ê²€ìƒ‰"
                                     style="margin:0; width:200px;">
                                 <span
                                     style="position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#888;">??</span>
@@ -602,20 +602,20 @@
                             <thead>
                                 <tr>
                                     <th style="width:50px;"><input type="checkbox" id="operatorSelectAll"></th>
-                                    <th>´Ð³×ÀÓ / ÀÌ¸§</th>
-                                    <th>¿¬¶ôÃ³</th>
-                                    <th>ÀÌ¸ÞÀÏ</th>
-                                    <th>»ý³â¿ùÀÏ</th>
-                                    <th>°¡ÀÔÀÏÀÚ</th>
-                                    <th>°­»çÁ¤º¸</th>
-                                    <th>¿î¿µÀÚ »óÅÂ</th>
-                                    <th>°ü¸®</th>
+                                    <th>ë‹‰ë„¤ìž„ / ì´ë¦„</th>
+                                    <th>ì—°ë½ì²˜</th>
+                                    <th>ì´ë©”ì¼</th>
+                                    <th>ìƒë…„ì›”ì¼</th>
+                                    <th>ê°€ìž…ì¼ìž</th>
+                                    <th>ê°•ì‚¬ì •ë³´</th>
+                                    <th>ìš´ì˜ìž ìƒíƒœ</th>
+                                    <th>ê´€ë¦¬</th>
                                 </tr>
                             </thead>
                             <tbody id="operatorsTableBody">
                                 <!-- JS Injected -->
                                 <tr>
-                                    <td colspan="9" style="text-align:center;">µ¥ÀÌÅÍ¸¦ ºÒ·¯¿À´Â ÁßÀÔ´Ï´Ù...</td>
+                                    <td colspan="9" style="text-align:center;">ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -623,51 +623,51 @@
                 </div>
             </section>
 
-            <!-- ÅÇ: ÄíÆù °ü¸® (tabCoupons) -->
+            <!-- íƒ­: ì¿ í° ê´€ë¦¬ (tabCoupons) -->
             <section id="tabCoupons" class="admin-tab-content">
                 <div class="admin-card admin-surface-card">
                     <div class="card-header admin-flex-between">
                         <div>
-                            <h3 class="section-title">ÄíÆù °ü¸®</h3>
-                            <p class="section-subtitle">»çÀÌÆ® ÀüÃ¼ Å¬·¡½º¿¡ Àû¿ë °¡´ÉÇÑ ÀÌº¥Æ® ÄíÆùÀ» ¹ß±ÞÇÏ°í, ¹ßÇà ´ëºñ »ç¿ë ÇöÈ²À» ÃßÀûÇÕ´Ï´Ù.</p>
+                            <h3 class="section-title">ì¿ í° ê´€ë¦¬</h3>
+                            <p class="section-subtitle">ì‚¬ì´íŠ¸ ì „ì²´ í´ëž˜ìŠ¤ì— ì ìš© ê°€ëŠ¥í•œ ì´ë²¤íŠ¸ ì¿ í°ì„ ë°œê¸‰í•˜ê³ , ë°œí–‰ ëŒ€ë¹„ ì‚¬ìš© í˜„í™©ì„ ì¶”ì í•©ë‹ˆë‹¤.</p>
                         </div>
                         <div class="admin-inline-actions">
-                            <button class="btn-small outline" type="button" id="btnReloadEventCoupons">»õ·Î°íÄ§</button>
-                            <button class="btn-primary" type="button" id="btnOpenEventCouponModal">ÀÌº¥Æ® ÄíÆù ¹ß±Þ</button>
+                            <button class="btn-small outline" type="button" id="btnReloadEventCoupons">ìƒˆë¡œê³ ì¹¨</button>
+                            <button class="btn-primary" type="button" id="btnOpenEventCouponModal">ì´ë²¤íŠ¸ ì¿ í° ë°œê¸‰</button>
                         </div>
                     </div>
 
                     <div class="admin-overview-grid">
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">ÀüÃ¼ ÀÌº¥Æ® ÄíÆù</span>
-                            <strong id="couponMetricTotal">0°³</strong>
-                            <p>¿î¿µ ÁßÀÎ ±Û·Î¹ú ÄíÆù ±âÁØ</p>
+                            <span class="admin-overview-label">ì „ì²´ ì´ë²¤íŠ¸ ì¿ í°</span>
+                            <strong id="couponMetricTotal">0ê°œ</strong>
+                            <p>ìš´ì˜ ì¤‘ì¸ ê¸€ë¡œë²Œ ì¿ í° ê¸°ì¤€</p>
                         </article>
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">È°¼º ÄíÆù</span>
-                            <strong id="couponMetricActive">0°³</strong>
-                            <p>ÇöÀç »ç¿ë °¡´ÉÇÑ ÄíÆù</p>
+                            <span class="admin-overview-label">í™œì„± ì¿ í°</span>
+                            <strong id="couponMetricActive">0ê°œ</strong>
+                            <p>í˜„ìž¬ ì‚¬ìš© ê°€ëŠ¥í•œ ì¿ í°</p>
                         </article>
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">ÃÑ »ç¿ë·®</span>
-                            <strong id="couponMetricUsed">0È¸</strong>
-                            <p>È¸¿øÀÌ ½ÇÁ¦ »ç¿ëÇÑ ¼ö·®</p>
+                            <span class="admin-overview-label">ì´ ì‚¬ìš©ëŸ‰</span>
+                            <strong id="couponMetricUsed">0íšŒ</strong>
+                            <p>íšŒì›ì´ ì‹¤ì œ ì‚¬ìš©í•œ ìˆ˜ëŸ‰</p>
                         </article>
                     </div>
 
                     <div class="admin-toolbar">
                         <div class="admin-toolbar-group">
                             <input type="search" id="couponSearchInput" class="admin-form-input"
-                                placeholder="ÄíÆù ÄÚµå, ÄíÆù¸í, ¼³¸í °Ë»ö">
+                                placeholder="ì¿ í° ì½”ë“œ, ì¿ í°ëª…, ì„¤ëª… ê²€ìƒ‰">
                             <select id="couponStatusFilter" class="admin-form-input">
-                                <option value="all">ÀüÃ¼ »óÅÂ</option>
-                                <option value="active">È°¼º</option>
-                                <option value="inactive">ºñÈ°¼º</option>
-                                <option value="expired">¸¸·á</option>
+                                <option value="all">ì „ì²´ ìƒíƒœ</option>
+                                <option value="active">í™œì„±</option>
+                                <option value="inactive">ë¹„í™œì„±</option>
+                                <option value="expired">ë§Œë£Œ</option>
                             </select>
                         </div>
                         <div class="admin-toolbar-caption">
-                            Ä«Ä«¿À ¸Þ½ÃÁö ¹ß¼Û ½Ã¿¡´Â µî·ÏµÈ ÄíÆù ÀÌ¹ÌÁö°¡ ´ëÇ¥ ÀÌ¹ÌÁö·Î »ç¿ëµË´Ï´Ù.
+                            ì¹´ì¹´ì˜¤ ë©”ì‹œì§€ ë°œì†¡ ì‹œì—ëŠ” ë“±ë¡ëœ ì¿ í° ì´ë¯¸ì§€ê°€ ëŒ€í‘œ ì´ë¯¸ì§€ë¡œ ì‚¬ìš©ë©ë‹ˆë‹¤.
                         </div>
                     </div>
 
@@ -675,18 +675,18 @@
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>ÄíÆù</th>
-                                    <th>ÇýÅÃ</th>
-                                    <th>Àû¿ë ¹üÀ§</th>
-                                    <th>¹ßÇà / »ç¿ë</th>
-                                    <th>À¯È¿ ±â°£</th>
-                                    <th>»óÅÂ</th>
-                                    <th>°ü¸®</th>
+                                    <th>ì¿ í°</th>
+                                    <th>í˜œíƒ</th>
+                                    <th>ì ìš© ë²”ìœ„</th>
+                                    <th>ë°œí–‰ / ì‚¬ìš©</th>
+                                    <th>ìœ íš¨ ê¸°ê°„</th>
+                                    <th>ìƒíƒœ</th>
+                                    <th>ê´€ë¦¬</th>
                                 </tr>
                             </thead>
                             <tbody id="eventCouponsTableBody">
                                 <tr>
-                                    <td colspan="7" style="text-align:center;">µ¥ÀÌÅÍ¸¦ ºÒ·¯¿À´Â ÁßÀÔ´Ï´Ù...</td>
+                                    <td colspan="7" style="text-align:center;">ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -694,138 +694,138 @@
                 </div>
             </section>
 
-            <!-- ÅÇ: SEO °ü¸® (tabSEO) -->
+            <!-- íƒ­: SEO ê´€ë¦¬ (tabSEO) -->
             <section id="tabSEO" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
                         <div>
-                            <h3 class="section-title">SEO ¸ÞÅ¸ ÅÂ±× ÃÖÀûÈ­</h3>
-                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">°Ë»ö ¿£Áø(Google, Naver µî) ¹× ¼Ò¼È ¹Ìµð¾î
-                                °øÀ¯ ½Ã ³ëÃâµÉ Á¤º¸¸¦ ¼³Á¤ÇÕ´Ï´Ù.</p>
+                            <h3 class="section-title">SEO ë©”íƒ€ íƒœê·¸ ìµœì í™”</h3>
+                            <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">ê²€ìƒ‰ ì—”ì§„(Google, Naver ë“±) ë° ì†Œì…œ ë¯¸ë””ì–´
+                                ê³µìœ  ì‹œ ë…¸ì¶œë  ì •ë³´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.</p>
                         </div>
-                        <button class="btn-primary" id="btnSaveSEO" style="background:#4f46e5;">ÀúÀåÇÏ±â</button>
+                        <button class="btn-primary" id="btnSaveSEO" style="background:#4f46e5;">ì €ìž¥í•˜ê¸°</button>
                     </div>
                     <div style="padding:1.5rem;">
                         <div style="display:grid; grid-template-columns:1fr; gap:1.5rem;">
                             <div class="field-group">
                                 <label
-                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">»çÀÌÆ®
-                                    °Ë»ö Á¦¸ñ (Title Tag)</label>
+                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ì‚¬ì´íŠ¸
+                                    ê²€ìƒ‰ ì œëª© (Title Tag)</label>
                                 <input type="text" id="seoTitle" class="admin-form-input"
-                                    placeholder="B-Square | ÃÖ°íÀÇ Å¬·¡½º¸¦ ¸¸³ªº¸¼¼¿ä">
-                                <small style="display:block; margin-top:4px; color:#888;">ºê¶ó¿ìÀú ÅÇ°ú °Ë»ö °á°úÀÇ Á¦¸ñÀ¸·Î ³ªÅ¸³³´Ï´Ù.
-                                    (±ÇÀå: 60ÀÚ ÀÌ³»)</small>
+                                    placeholder="B-Square | ìµœê³ ì˜ í´ëž˜ìŠ¤ë¥¼ ë§Œë‚˜ë³´ì„¸ìš”">
+                                <small style="display:block; margin-top:4px; color:#888;">ë¸Œë¼ìš°ì € íƒ­ê³¼ ê²€ìƒ‰ ê²°ê³¼ì˜ ì œëª©ìœ¼ë¡œ ë‚˜íƒ€ë‚©ë‹ˆë‹¤.
+                                    (ê¶Œìž¥: 60ìž ì´ë‚´)</small>
                             </div>
                             <div class="field-group">
                                 <label
-                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">»çÀÌÆ®
-                                    ¼³¸í (Description)</label>
+                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ì‚¬ì´íŠ¸
+                                    ì„¤ëª… (Description)</label>
                                 <textarea id="seoDescription" class="admin-form-input" style="height:80px; resize:none;"
-                                    placeholder="B-Square´Â ´Ù¾çÇÑ ºÐ¾ßÀÇ Àü¹® °­»çµéÀÌ ¸ð¿© Áö½ÄÀ» ³ª´©´Â ÇÁ¸®¹Ì¾ö Å¬·¡½º ÇÃ·§ÆûÀÔ´Ï´Ù."></textarea>
-                                <small style="display:block; margin-top:4px; color:#888;">°Ë»ö °á°ú Á¦¸ñ ¾Æ·¡¿¡ Ç¥½ÃµÇ´Â »çÀÌÆ® ¼³¸íÀÔ´Ï´Ù.
-                                    (±ÇÀå: 155ÀÚ ÀÌ³»)</small>
+                                    placeholder="B-SquareëŠ” ë‹¤ì–‘í•œ ë¶„ì•¼ì˜ ì „ë¬¸ ê°•ì‚¬ë“¤ì´ ëª¨ì—¬ ì§€ì‹ì„ ë‚˜ëˆ„ëŠ” í”„ë¦¬ë¯¸ì—„ í´ëž˜ìŠ¤ í”Œëž«í¼ìž…ë‹ˆë‹¤."></textarea>
+                                <small style="display:block; margin-top:4px; color:#888;">ê²€ìƒ‰ ê²°ê³¼ ì œëª© ì•„ëž˜ì— í‘œì‹œë˜ëŠ” ì‚¬ì´íŠ¸ ì„¤ëª…ìž…ë‹ˆë‹¤.
+                                    (ê¶Œìž¥: 155ìž ì´ë‚´)</small>
                             </div>
                             <div class="field-group">
                                 <label
-                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">°Ë»ö
-                                    Å°¿öµå (Keywords)</label>
+                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ê²€ìƒ‰
+                                    í‚¤ì›Œë“œ (Keywords)</label>
                                 <input type="text" id="seoKeywords" class="admin-form-input"
-                                    placeholder="Å¬·¡½º, ¿Â¶óÀÎ°­ÀÇ, ¿øµ¥ÀÌÅ¬·¡½º, Ãë¹Ì">
-                                <small style="display:block; margin-top:4px; color:#888;">½°Ç¥(,)·Î ±¸ºÐÇÏ¿© ÀÔ·ÂÇØÁÖ¼¼¿ä.</small>
+                                    placeholder="í´ëž˜ìŠ¤, ì˜¨ë¼ì¸ê°•ì˜, ì›ë°ì´í´ëž˜ìŠ¤, ì·¨ë¯¸">
+                                <small style="display:block; margin-top:4px; color:#888;">ì‰¼í‘œ(,)ë¡œ êµ¬ë¶„í•˜ì—¬ ìž…ë ¥í•´ì£¼ì„¸ìš”.</small>
                             </div>
                             <div class="field-group">
                                 <label
-                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">´ëÇ¥
-                                    ½æ³×ÀÏ (og:image URL)</label>
+                                    style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem;">ëŒ€í‘œ
+                                    ì¸ë„¤ì¼ (og:image URL)</label>
                                 <input type="text" id="seoImage" class="admin-form-input"
                                     placeholder="https://domain.com/assets/og_image.jpg">
-                                <small style="display:block; margin-top:4px; color:#888;">Ä«Ä«¿ÀÅå, ÆäÀÌ½ººÏ µî¿¡ ¸µÅ©¸¦ °øÀ¯ÇÒ ¶§ ³ªÅ¸³¯ ´ëÇ¥
-                                    ÀÌ¹ÌÁö ÁÖ¼ÒÀÔ´Ï´Ù.</small>
+                                <small style="display:block; margin-top:4px; color:#888;">ì¹´ì¹´ì˜¤í†¡, íŽ˜ì´ìŠ¤ë¶ ë“±ì— ë§í¬ë¥¼ ê³µìœ í•  ë•Œ ë‚˜íƒ€ë‚  ëŒ€í‘œ
+                                    ì´ë¯¸ì§€ ì£¼ì†Œìž…ë‹ˆë‹¤.</small>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- ÅÇ: Å¬·¡½º ¸ñ·Ï (tabAllClasses) -->
+            <!-- íƒ­: í´ëž˜ìŠ¤ ëª©ë¡ (tabAllClasses) -->
             <section id="tabAllClasses" class="admin-tab-content">
                 <div class="admin-card class-admin-shell">
                     <div class="card-header class-admin-header">
                         <div>
-                            <h3 class="section-title">Å¬·¡½º °ü¸®</h3>
-                            <p class="section-subtitle">Ä«Å×°í¸®, °ø°³ »óÅÂ, Åë°è, »èÁ¦¸¦ ÇÑ °÷¿¡¼­ °ü¸®ÇÕ´Ï´Ù.</p>
+                            <h3 class="section-title">í´ëž˜ìŠ¤ ê´€ë¦¬</h3>
+                            <p class="section-subtitle">ì¹´í…Œê³ ë¦¬, ê³µê°œ ìƒíƒœ, í†µê³„, ì‚­ì œë¥¼ í•œ ê³³ì—ì„œ ê´€ë¦¬í•©ë‹ˆë‹¤.</p>
                         </div>
                         <div class="class-admin-actions">
-                            <button class="btn-small outline" id="btnClassCategoryManager" type="button">Ä«Å×°í¸®
-                                °ü¸®</button>
+                            <button class="btn-small outline" id="btnClassCategoryManager" type="button">ì¹´í…Œê³ ë¦¬
+                                ê´€ë¦¬</button>
                             <button class="btn-primary" id="btnOpenClassCreate" type="button"
-                                onclick="location.href='../create_class/create_class.html'">+ Å¬·¡½º »ý¼º</button>
+                                onclick="location.href='../create_class/create_class.html'">+ í´ëž˜ìŠ¤ ìƒì„±</button>
                         </div>
                     </div>
 
                     <div class="class-category-strip-wrap">
                         <div class="class-category-strip-head">
                             <div>
-                                <strong>ÀüÃ¼ Ä«Å×°í¸®</strong>
-                                <p>»çÀÌÆ® Àü¿ª¿¡¼­ »ç¿ëÇÏ´Â Ä«Å×°í¸® ¸ñ·ÏÀÔ´Ï´Ù. Ãß°¡/¼öÁ¤/»èÁ¦°¡ Áï½Ã ¹Ý¿µµË´Ï´Ù.</p>
+                                <strong>ì „ì²´ ì¹´í…Œê³ ë¦¬</strong>
+                                <p>ì‚¬ì´íŠ¸ ì „ì—­ì—ì„œ ì‚¬ìš©í•˜ëŠ” ì¹´í…Œê³ ë¦¬ ëª©ë¡ìž…ë‹ˆë‹¤. ì¶”ê°€/ìˆ˜ì •/ì‚­ì œê°€ ì¦‰ì‹œ ë°˜ì˜ë©ë‹ˆë‹¤.</p>
                             </div>
-                            <button type="button" class="btn-small outline" id="btnAddClassCategory">+ Ä«Å×°í¸® Ãß°¡</button>
+                            <button type="button" class="btn-small outline" id="btnAddClassCategory">+ ì¹´í…Œê³ ë¦¬ ì¶”ê°€</button>
                         </div>
                         <div id="classCategoryStrip" class="class-category-strip">
-                            <div class="class-category-strip-empty">Ä«Å×°í¸®¸¦ ºÒ·¯¿À´Â ÁßÀÔ´Ï´Ù...</div>
+                            <div class="class-category-strip-empty">ì¹´í…Œê³ ë¦¬ë¥¼ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤...</div>
                         </div>
                     </div>
 
                     <div class="class-control-row">
                         <div class="class-search-box">
                             <input type="search" id="adminClassSearchInput" class="admin-form-input"
-                                placeholder="Å¬·¡½º¸í, °­»ç, Ä«Å×°í¸® °Ë»ö">
+                                placeholder="í´ëž˜ìŠ¤ëª…, ê°•ì‚¬, ì¹´í…Œê³ ë¦¬ ê²€ìƒ‰">
                         </div>
                         <div class="class-control-group">
                             <select id="adminClassSortSelect" class="admin-form-input">
-                                <option value="popular">ÀÎ±â¼ø</option>
-                                <option value="newest" selected>ÃÖ½Å¼ø</option>
-                                <option value="price-high">°¡°Ý ³ôÀº¼ø</option>
-                                <option value="price-low">°¡°Ý ³·Àº¼ø</option>
+                                <option value="popular">ì¸ê¸°ìˆœ</option>
+                                <option value="newest" selected>ìµœì‹ ìˆœ</option>
+                                <option value="price-high">ê°€ê²© ë†’ì€ìˆœ</option>
+                                <option value="price-low">ê°€ê²© ë‚®ì€ìˆœ</option>
                             </select>
                             <select id="adminClassVisibilitySelect" class="admin-form-input">
-                                <option value="all" selected>ÀüÃ¼ °ø°³»óÅÂ</option>
-                                <option value="public">°ø°³</option>
-                                <option value="private">ºñ°ø°³</option>
+                                <option value="all" selected>ì „ì²´ ê³µê°œìƒíƒœ</option>
+                                <option value="public">ê³µê°œ</option>
+                                <option value="private">ë¹„ê³µê°œ</option>
                             </select>
-                            <button type="button" class="btn-small outline" id="btnRefreshClasses">»õ·Î°íÄ§</button>
+                            <button type="button" class="btn-small outline" id="btnRefreshClasses">ìƒˆë¡œê³ ì¹¨</button>
                         </div>
                     </div>
 
                     <div class="class-ranking-panel">
                         <div class="class-ranking-head">
                             <div>
-                                <h4>ÀÎ±â Å¬·¡½º TOP 10</h4>
-                                <p>ÁÁ¾Æ¿ä, ¸®ºä, Á¶È¸¼ö, º°Á¡À» °¡ÁßÄ¡·Î ÇÕ»êÇÑ ÇöÀç ÇÖÇÑ Å¬·¡½ºÀÔ´Ï´Ù.</p>
+                                <h4>ì¸ê¸° í´ëž˜ìŠ¤ TOP 10</h4>
+                                <p>ì¢‹ì•„ìš”, ë¦¬ë·°, ì¡°íšŒìˆ˜, ë³„ì ì„ ê°€ì¤‘ì¹˜ë¡œ í•©ì‚°í•œ í˜„ìž¬ í•«í•œ í´ëž˜ìŠ¤ìž…ë‹ˆë‹¤.</p>
                             </div>
                             <div style="display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
-                                <button type="button" class="btn-small outline" id="btnSyncPopularRecommendation">ÃßÃµ ¼³Á¤
-                                    ¹Ý¿µ</button>
-                                <button type="button" class="btn-small outline" id="btnRefreshRanking">·©Å· °»½Å</button>
+                                <button type="button" class="btn-small outline" id="btnSyncPopularRecommendation">ì¶”ì²œ ì„¤ì •
+                                    ë°˜ì˜</button>
+                                <button type="button" class="btn-small outline" id="btnRefreshRanking">ëž­í‚¹ ê°±ì‹ </button>
                             </div>
                         </div>
                         <div class="table-responsive">
                             <table class="admin-table class-ranking-table">
                                 <thead>
                                     <tr>
-                                        <th>¼øÀ§</th>
-                                        <th>Å¬·¡½º</th>
-                                        <th>Ä«Å×°í¸®</th>
-                                        <th>ÁÁ¾Æ¿ä</th>
-                                        <th>¸®ºä</th>
-                                        <th>Á¶È¸¼ö</th>
-                                        <th>ÆòÁ¡</th>
-                                        <th>Á¡¼ö</th>
+                                        <th>ìˆœìœ„</th>
+                                        <th>í´ëž˜ìŠ¤</th>
+                                        <th>ì¹´í…Œê³ ë¦¬</th>
+                                        <th>ì¢‹ì•„ìš”</th>
+                                        <th>ë¦¬ë·°</th>
+                                        <th>ì¡°íšŒìˆ˜</th>
+                                        <th>í‰ì </th>
+                                        <th>ì ìˆ˜</th>
                                     </tr>
                                 </thead>
                                 <tbody id="hotClassesTableBody">
                                     <tr>
-                                        <td colspan="8" style="text-align:center;">ÀÎ±â Åë°è¸¦ ºÒ·¯¿À´Â ÁßÀÔ´Ï´Ù...</td>
+                                        <td colspan="8" style="text-align:center;">ì¸ê¸° í†µê³„ë¥¼ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -836,19 +836,19 @@
                         <table class="admin-table class-list-table">
                             <thead>
                                 <tr>
-                                    <th>Å¬·¡½º ÀÌ¸§</th>
-                                    <th>Ä«Å×°í¸®</th>
-                                    <th>´ã´ç °­»ç</th>
-                                    <th>1È¸´ç °¡°Ý</th>
-                                    <th>ÃÑ ¼ö°­»ý¼ö</th>
-                                    <th>ÃÖ±Ù È°µ¿ÀÎ¿ø</th>
-                                    <th>°ø°³¿©ºÎ</th>
-                                    <th>°ü¸®</th>
+                                    <th>í´ëž˜ìŠ¤ ì´ë¦„</th>
+                                    <th>ì¹´í…Œê³ ë¦¬</th>
+                                    <th>ë‹´ë‹¹ ê°•ì‚¬</th>
+                                    <th>1íšŒë‹¹ ê°€ê²©</th>
+                                    <th>ì´ ìˆ˜ê°•ìƒìˆ˜</th>
+                                    <th>ìµœê·¼ í™œë™ì¸ì›</th>
+                                    <th>ê³µê°œì—¬ë¶€</th>
+                                    <th>ê´€ë¦¬</th>
                                 </tr>
                             </thead>
                             <tbody id="allClassesTableBody">
                                 <tr>
-                                    <td colspan="8" style="text-align:center;">µ¥ÀÌÅÍ¸¦ ºÒ·¯¿À´Â ÁßÀÔ´Ï´Ù...</td>
+                                    <td colspan="8" style="text-align:center;">ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -856,50 +856,50 @@
                 </div>
             </section>
 
-            <!-- ÅÇ: ¸®ºä °ü¸® (tabReviews) -->
+            <!-- íƒ­: ë¦¬ë·° ê´€ë¦¬ (tabReviews) -->
             <section id="tabReviews" class="admin-tab-content">
                 <div class="admin-card admin-surface-card">
                     <div class="card-header admin-flex-between">
                         <div>
-                            <h3 class="section-title">¸®ºä °ü¸®</h3>
-                            <p class="section-subtitle">º°Á¡ 3Á¡ ÀÌÇÏ ¸®ºä¸¸ ¸ð¾Æ Ç°Áú ÀÌ½´¸¦ ºü¸£°Ô È®ÀÎÇÏ°í Áï½Ã Á¶Ä¡ÇÕ´Ï´Ù.</p>
+                            <h3 class="section-title">ë¦¬ë·° ê´€ë¦¬</h3>
+                            <p class="section-subtitle">ë³„ì  3ì  ì´í•˜ ë¦¬ë·°ë§Œ ëª¨ì•„ í’ˆì§ˆ ì´ìŠˆë¥¼ ë¹ ë¥´ê²Œ í™•ì¸í•˜ê³  ì¦‰ì‹œ ì¡°ì¹˜í•©ë‹ˆë‹¤.</p>
                         </div>
                         <div class="admin-inline-actions">
-                            <button class="btn-small outline" type="button" id="btnReloadLowReviews">»õ·Î°íÄ§</button>
+                            <button class="btn-small outline" type="button" id="btnReloadLowReviews">ìƒˆë¡œê³ ì¹¨</button>
                         </div>
                     </div>
 
                     <div class="admin-overview-grid">
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">´ë»ó ¸®ºä</span>
-                            <strong id="lowReviewMetricTotal">0°Ç</strong>
-                            <p>3Á¡ ÀÌÇÏ ¸®ºä¸¸ Áý°è</p>
+                            <span class="admin-overview-label">ëŒ€ìƒ ë¦¬ë·°</span>
+                            <strong id="lowReviewMetricTotal">0ê±´</strong>
+                            <p>3ì  ì´í•˜ ë¦¬ë·°ë§Œ ì§‘ê³„</p>
                         </article>
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">1Á¡ ¸®ºä</span>
-                            <strong id="lowReviewMetricCritical">0°Ç</strong>
-                            <p>°¡Àå ¿ì¼± È®ÀÎÀÌ ÇÊ¿äÇÑ ¸®ºä</p>
+                            <span class="admin-overview-label">1ì  ë¦¬ë·°</span>
+                            <strong id="lowReviewMetricCritical">0ê±´</strong>
+                            <p>ê°€ìž¥ ìš°ì„  í™•ì¸ì´ í•„ìš”í•œ ë¦¬ë·°</p>
                         </article>
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">ÃÖ±Ù µî·Ï</span>
+                            <span class="admin-overview-label">ìµœê·¼ ë“±ë¡</span>
                             <strong id="lowReviewMetricLatest">-</strong>
-                            <p>°¡Àå ¸¶Áö¸·À¸·Î µé¾î¿Â ÀúÆòÁ¡ ¸®ºä</p>
+                            <p>ê°€ìž¥ ë§ˆì§€ë§‰ìœ¼ë¡œ ë“¤ì–´ì˜¨ ì €í‰ì  ë¦¬ë·°</p>
                         </article>
                     </div>
 
                     <div class="admin-toolbar">
                         <div class="admin-toolbar-group">
                             <input type="search" id="reviewSearchInput" class="admin-form-input"
-                                placeholder="Å¬·¡½º¸í, °­»ç¸í, ´Ð³×ÀÓ, ÀÌ¸§, ¿¬¶ôÃ³, ¸ÞÀÏ °Ë»ö">
+                                placeholder="í´ëž˜ìŠ¤ëª…, ê°•ì‚¬ëª…, ë‹‰ë„¤ìž„, ì´ë¦„, ì—°ë½ì²˜, ë©”ì¼ ê²€ìƒ‰">
                             <select id="reviewRatingFilter" class="admin-form-input">
-                                <option value="3">3Á¡ ÀÌÇÏ ÀüÃ¼</option>
-                                <option value="1">1Á¡¸¸</option>
-                                <option value="2">2Á¡ ÀÌÇÏ</option>
-                                <option value="3_exact">3Á¡¸¸</option>
+                                <option value="3">3ì  ì´í•˜ ì „ì²´</option>
+                                <option value="1">1ì ë§Œ</option>
+                                <option value="2">2ì  ì´í•˜</option>
+                                <option value="3_exact">3ì ë§Œ</option>
                             </select>
                         </div>
                         <div class="admin-toolbar-caption">
-                            Á¤·Ä ±âÁØ: 1Á¡ ¿ì¼±, °°Àº º°Á¡ ³»¿¡¼­´Â ÃÖ½Å ¸®ºä°¡ ¸ÕÀú º¸ÀÔ´Ï´Ù.
+                            ì •ë ¬ ê¸°ì¤€: 1ì  ìš°ì„ , ê°™ì€ ë³„ì  ë‚´ì—ì„œëŠ” ìµœì‹  ë¦¬ë·°ê°€ ë¨¼ì € ë³´ìž…ë‹ˆë‹¤.
                         </div>
                     </div>
 
@@ -907,20 +907,20 @@
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>º°Á¡</th>
-                                    <th>Å¬·¡½º¸í</th>
-                                    <th>¸ÞÀÎ °­»ç</th>
-                                    <th>´Ð³×ÀÓ</th>
-                                    <th>ÀÌ¸§</th>
-                                    <th>¿¬¶ôÃ³</th>
-                                    <th>¸ÞÀÏ</th>
-                                    <th>³»¿ë</th>
-                                    <th>°ü¸®</th>
+                                    <th>ë³„ì </th>
+                                    <th>í´ëž˜ìŠ¤ëª…</th>
+                                    <th>ë©”ì¸ ê°•ì‚¬</th>
+                                    <th>ë‹‰ë„¤ìž„</th>
+                                    <th>ì´ë¦„</th>
+                                    <th>ì—°ë½ì²˜</th>
+                                    <th>ë©”ì¼</th>
+                                    <th>ë‚´ìš©</th>
+                                    <th>ê´€ë¦¬</th>
                                 </tr>
                             </thead>
                             <tbody id="lowReviewsTableBody">
                                 <tr>
-                                    <td colspan="9" style="text-align:center;">µ¥ÀÌÅÍ¸¦ ºÒ·¯¿À´Â ÁßÀÔ´Ï´Ù...</td>
+                                    <td colspan="9" style="text-align:center;">ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -928,110 +928,110 @@
                 </div>
             </section>
 
-            <!-- ÅÇ: Á¤»ê Á¤º¸ µî·Ï (tabSettlementInfo) -->
+            <!-- íƒ­: ì •ì‚° ì •ë³´ ë“±ë¡ (tabSettlementInfo) -->
             <section id="tabSettlementInfo" class="admin-tab-content">
                 <div class="admin-card admin-surface-card">
                     <div class="card-header admin-flex-between">
                         <div>
-                            <h3 class="section-title">Á¤»ê Á¤º¸ °ü¸®</h3>
-                            <p class="section-subtitle">Å¬·¡½ºº° Á¤»ê ±Ý¾×°ú °­»çº° Á¤»ê ÇÕ°è¸¦ ¿ù ´ÜÀ§·Î °è»êÇÏ°í, ¼ö¼ö·áÀ²À» ¿î¿µÀÚ°¡ Á÷Á¢ Á¶Á¤ÇÕ´Ï´Ù.</p>
+                            <h3 class="section-title">ì •ì‚° ì •ë³´ ê´€ë¦¬</h3>
+                            <p class="section-subtitle">í´ëž˜ìŠ¤ë³„ ì •ì‚° ê¸ˆì•¡ê³¼ ê°•ì‚¬ë³„ ì •ì‚° í•©ê³„ë¥¼ ì›” ë‹¨ìœ„ë¡œ ê³„ì‚°í•˜ê³ , ìˆ˜ìˆ˜ë£Œìœ¨ì„ ìš´ì˜ìžê°€ ì§ì ‘ ì¡°ì •í•©ë‹ˆë‹¤.</p>
                         </div>
                         <div class="admin-inline-actions">
                             <button class="btn-small outline" type="button"
-                                id="btnReloadSettlementDashboard">»õ·Î°íÄ§</button>
-                            <button class="btn-primary" type="button" id="btnSaveSettlementDashboard">Á¤»ê ¼³Á¤ ÀúÀå</button>
+                                id="btnReloadSettlementDashboard">ìƒˆë¡œê³ ì¹¨</button>
+                            <button class="btn-primary" type="button" id="btnSaveSettlementDashboard">ì •ì‚° ì„¤ì • ì €ìž¥</button>
                             <button class="btn-primary" type="button" id="btnGenerateSettlementBatch"
-                                style="background:#0f766e;">Á¤»ê »ý¼º</button>
+                                style="background:#0f766e;">ì •ì‚° ìƒì„±</button>
                         </div>
                     </div>
 
                     <div class="admin-overview-grid">
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">±âÁØ ¿ù</span>
+                            <span class="admin-overview-label">ê¸°ì¤€ ì›”</span>
                             <strong id="settlementMetricPeriod">-</strong>
-                            <p>¸Å¿ù 15ÀÏ Áö±Þ ±âÁØ</p>
+                            <p>ë§¤ì›” 15ì¼ ì§€ê¸‰ ê¸°ì¤€</p>
                         </article>
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">Å¬·¡½º ±âÁØ Á¤»ê</span>
-                            <strong id="settlementMetricClassTotal">0¿ø</strong>
-                            <p>Å¬·¡½ºº° ÇÕ»ê Á¤»ê ¿¹Á¤¾×</p>
+                            <span class="admin-overview-label">í´ëž˜ìŠ¤ ê¸°ì¤€ ì •ì‚°</span>
+                            <strong id="settlementMetricClassTotal">0ì›</strong>
+                            <p>í´ëž˜ìŠ¤ë³„ í•©ì‚° ì •ì‚° ì˜ˆì •ì•¡</p>
                         </article>
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">°­»ç ±âÁØ Á¤»ê</span>
-                            <strong id="settlementMetricInstructorTotal">0¿ø</strong>
-                            <p>°­»çº° ÃÑ Á¤»ê ¿¹Á¤¾×</p>
+                            <span class="admin-overview-label">ê°•ì‚¬ ê¸°ì¤€ ì •ì‚°</span>
+                            <strong id="settlementMetricInstructorTotal">0ì›</strong>
+                            <p>ê°•ì‚¬ë³„ ì´ ì •ì‚° ì˜ˆì •ì•¡</p>
                         </article>
                     </div>
 
                     <div class="settlement-shell">
                         <div class="settlement-control-panel">
                             <div class="settlement-period-switch" id="settlementPeriodSwitch">
-                                <button type="button" class="period-chip active" data-period="month">¿ùº°</button>
-                                <button type="button" class="period-chip" data-period="year">¿¬µµº°</button>
+                                <button type="button" class="period-chip active" data-period="month">ì›”ë³„</button>
+                                <button type="button" class="period-chip" data-period="year">ì—°ë„ë³„</button>
                             </div>
                             <div class="settlement-period-fields">
                                 <input type="number" id="settlementYearInput" class="admin-form-input" min="2024"
-                                    step="1" placeholder="¿¬µµ">
+                                    step="1" placeholder="ì—°ë„">
                                 <input type="number" id="settlementMonthInput" class="admin-form-input" min="1" max="12"
-                                    step="1" placeholder="¿ù">
+                                    step="1" placeholder="ì›”">
                             </div>
                             <div class="settlement-fee-grid">
                                 <div class="field-group">
-                                    <label>Ä«µå ¼ö¼ö·á(%)</label>
+                                    <label>ì¹´ë“œ ìˆ˜ìˆ˜ë£Œ(%)</label>
                                     <input type="number" id="settlementRatePg" class="admin-form-input" step="0.1"
                                         min="0" placeholder="6">
                                 </div>
                                 <div class="field-group">
-                                    <label>¼¼±Ý(%)</label>
+                                    <label>ì„¸ê¸ˆ(%)</label>
                                     <input type="number" id="settlementRateTax" class="admin-form-input" step="0.1"
                                         min="0" placeholder="3.3">
                                 </div>
                                 <div class="field-group">
-                                    <label>ÇÃ·§Æû ¼ö¼ö·á(%)</label>
+                                    <label>í”Œëž«í¼ ìˆ˜ìˆ˜ë£Œ(%)</label>
                                     <input type="number" id="settlementRatePlatform" class="admin-form-input" step="0.1"
                                         min="0" placeholder="1.7">
                                 </div>
                             </div>
                             <div class="settlement-note-box">
-                                <strong>Á¤»ê °è»ê½Ä</strong>
-                                <p>¹ß»ý ¼öÀÍ¿¡¼­ Ä«µå¼ö¼ö·á, ¼¼±Ý, ÇÃ·§Æû ¼ö¼ö·á¸¦ Â÷°¨ÇÑ ±Ý¾×À» °­»ç Á¤»ê ¿¹Á¤¾×À¸·Î »ç¿ëÇÕ´Ï´Ù.</p>
+                                <strong>ì •ì‚° ê³„ì‚°ì‹</strong>
+                                <p>ë°œìƒ ìˆ˜ìµì—ì„œ ì¹´ë“œìˆ˜ìˆ˜ë£Œ, ì„¸ê¸ˆ, í”Œëž«í¼ ìˆ˜ìˆ˜ë£Œë¥¼ ì°¨ê°í•œ ê¸ˆì•¡ì„ ê°•ì‚¬ ì •ì‚° ì˜ˆì •ì•¡ìœ¼ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.</p>
                             </div>
                         </div>
 
                         <div class="settlement-form-grid">
                             <article class="admin-subcard">
                                 <div class="admin-subcard-head">
-                                    <h4>Á¤»ê »ç¾÷ÀÚ Á¤º¸</h4>
-                                    <p>¼¼±Ý°è»ê¼­¿Í Á¤»ê ±âÁØ Á¤º¸¸¦ ÀúÀåÇÕ´Ï´Ù.</p>
+                                    <h4>ì •ì‚° ì‚¬ì—…ìž ì •ë³´</h4>
+                                    <p>ì„¸ê¸ˆê³„ì‚°ì„œì™€ ì •ì‚° ê¸°ì¤€ ì •ë³´ë¥¼ ì €ìž¥í•©ë‹ˆë‹¤.</p>
                                 </div>
                                 <div class="admin-form-grid two-col">
                                     <div class="field-group">
-                                        <label>È¸»ç¸í</label>
+                                        <label>íšŒì‚¬ëª…</label>
                                         <input type="text" id="settlementCompanyName" class="admin-form-input"
-                                            placeholder="ÁÖ½ÄÈ¸»ç ºñ½ºÄù¾î">
+                                            placeholder="ì£¼ì‹íšŒì‚¬ ë¹„ìŠ¤í€˜ì–´">
                                     </div>
                                     <div class="field-group">
-                                        <label>´ëÇ¥ÀÚ¸í</label>
+                                        <label>ëŒ€í‘œìžëª…</label>
                                         <input type="text" id="settlementCeoName" class="admin-form-input"
-                                            placeholder="´ëÇ¥ÀÚ¸í">
+                                            placeholder="ëŒ€í‘œìžëª…">
                                     </div>
                                     <div class="field-group">
-                                        <label>»ç¾÷ÀÚ µî·Ï¹øÈ£</label>
+                                        <label>ì‚¬ì—…ìž ë“±ë¡ë²ˆí˜¸</label>
                                         <input type="text" id="settlementBizNumber" class="admin-form-input"
-                                            placeholder="'-' ¾øÀÌ ÀÔ·Â">
+                                            placeholder="'-' ì—†ì´ ìž…ë ¥">
                                     </div>
                                     <div class="field-group">
-                                        <label>¾÷ÅÂ</label>
+                                        <label>ì—…íƒœ</label>
                                         <input type="text" id="settlementBizType" class="admin-form-input"
-                                            placeholder="±³À°¼­ºñ½º¾÷">
+                                            placeholder="êµìœ¡ì„œë¹„ìŠ¤ì—…">
                                     </div>
                                     <div class="field-group full">
-                                        <label>ÁÖ¼Ò</label>
+                                        <label>ì£¼ì†Œ</label>
                                         <input type="text" id="settlementAddress" class="admin-form-input"
-                                            placeholder="»ç¾÷ÀÚµî·ÏÁõ »ó ÁÖ¼Ò">
+                                            placeholder="ì‚¬ì—…ìžë“±ë¡ì¦ ìƒ ì£¼ì†Œ">
                                     </div>
                                     <div class="field-group full">
-                                        <label>´ã´çÀÚ ÀÌ¸ÞÀÏ</label>
+                                        <label>ë‹´ë‹¹ìž ì´ë©”ì¼</label>
                                         <input type="email" id="settlementManagerEmail" class="admin-form-input"
                                             placeholder="settlement@b-square.co.kr">
                                     </div>
@@ -1040,24 +1040,24 @@
 
                             <article class="admin-subcard">
                                 <div class="admin-subcard-head">
-                                    <h4>Á¤»ê °èÁÂ Á¤º¸</h4>
-                                    <p>°­»ç Á¤»ê ½ÂÀÎ ½Ã ±âÁØÀ¸·Î »ï´Â ¿î¿µ °èÁÂÀÔ´Ï´Ù.</p>
+                                    <h4>ì •ì‚° ê³„ì¢Œ ì •ë³´</h4>
+                                    <p>ê°•ì‚¬ ì •ì‚° ìŠ¹ì¸ ì‹œ ê¸°ì¤€ìœ¼ë¡œ ì‚¼ëŠ” ìš´ì˜ ê³„ì¢Œìž…ë‹ˆë‹¤.</p>
                                 </div>
                                 <div class="admin-form-grid">
                                     <div class="field-group">
-                                        <label>ÀºÇà¸í</label>
+                                        <label>ì€í–‰ëª…</label>
                                         <input type="text" id="settlementBankName" class="admin-form-input"
-                                            placeholder="ÀºÇà¸í">
+                                            placeholder="ì€í–‰ëª…">
                                     </div>
                                     <div class="field-group">
-                                        <label>°èÁÂ¹øÈ£</label>
+                                        <label>ê³„ì¢Œë²ˆí˜¸</label>
                                         <input type="text" id="settlementBankAccount" class="admin-form-input"
-                                            placeholder="°èÁÂ¹øÈ£">
+                                            placeholder="ê³„ì¢Œë²ˆí˜¸">
                                     </div>
                                     <div class="field-group">
-                                        <label>¿¹±ÝÁÖ</label>
+                                        <label>ì˜ˆê¸ˆì£¼</label>
                                         <input type="text" id="settlementBankHolder" class="admin-form-input"
-                                            placeholder="¿¹±ÝÁÖ">
+                                            placeholder="ì˜ˆê¸ˆì£¼">
                                     </div>
                                 </div>
                             </article>
@@ -1066,24 +1066,24 @@
                         <div class="settlement-dual-grid">
                             <article class="admin-subcard">
                                 <div class="admin-subcard-head">
-                                    <h4>Å¬·¡½ºº° Á¤»ê ±Ý¾×</h4>
-                                    <p>¿ÞÂÊ Ç¥´Â Å¬·¡½º ±âÁØ Á¤»ê¾×, ¿À¸¥ÂÊ Ç¥´Â °­»çº° ÇÕ»ê Á¤»ê¾×ÀÔ´Ï´Ù.</p>
+                                    <h4>í´ëž˜ìŠ¤ë³„ ì •ì‚° ê¸ˆì•¡</h4>
+                                    <p>ì™¼ìª½ í‘œëŠ” í´ëž˜ìŠ¤ ê¸°ì¤€ ì •ì‚°ì•¡, ì˜¤ë¥¸ìª½ í‘œëŠ” ê°•ì‚¬ë³„ í•©ì‚° ì •ì‚°ì•¡ìž…ë‹ˆë‹¤.</p>
                                 </div>
                                 <div class="table-responsive">
                                     <table class="admin-table">
                                         <thead>
                                             <tr>
-                                                <th>Å¬·¡½º¸í</th>
-                                                <th>¸ÞÀÎ °­»ç</th>
-                                                <th>¸ÅÃâ</th>
-                                                <th>¼ö¼ö·á ÇÕ°è</th>
-                                                <th>Á¤»ê ¿¹Á¤¾×</th>
-                                                <th>»ó¼¼</th>
+                                                <th>í´ëž˜ìŠ¤ëª…</th>
+                                                <th>ë©”ì¸ ê°•ì‚¬</th>
+                                                <th>ë§¤ì¶œ</th>
+                                                <th>ìˆ˜ìˆ˜ë£Œ í•©ê³„</th>
+                                                <th>ì •ì‚° ì˜ˆì •ì•¡</th>
+                                                <th>ìƒì„¸</th>
                                             </tr>
                                         </thead>
                                         <tbody id="settlementClassTableBody">
                                             <tr>
-                                                <td colspan="6" style="text-align:center;">µ¥ÀÌÅÍ¸¦ ºÒ·¯¿À´Â ÁßÀÔ´Ï´Ù...</td>
+                                                <td colspan="6" style="text-align:center;">ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤...</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -1092,24 +1092,24 @@
 
                             <article class="admin-subcard">
                                 <div class="admin-subcard-head">
-                                    <h4>°­»çº° Á¤»ê ±Ý¾×</h4>
-                                    <p>°­»ç 1¸íÀÌ ¿©·¯ Å¬·¡½º¸¦ ¿î¿µÇÏ´Â °æ¿ì Á¤»ê¾×À» ÀÚµ¿ ÇÕ»êÇÕ´Ï´Ù.</p>
+                                    <h4>ê°•ì‚¬ë³„ ì •ì‚° ê¸ˆì•¡</h4>
+                                    <p>ê°•ì‚¬ 1ëª…ì´ ì—¬ëŸ¬ í´ëž˜ìŠ¤ë¥¼ ìš´ì˜í•˜ëŠ” ê²½ìš° ì •ì‚°ì•¡ì„ ìžë™ í•©ì‚°í•©ë‹ˆë‹¤.</p>
                                 </div>
                                 <div class="table-responsive">
                                     <table class="admin-table">
                                         <thead>
                                             <tr>
-                                                <th>°­»ç</th>
-                                                <th>´ã´ç Å¬·¡½º ¼ö</th>
-                                                <th>ÃÑ ¸ÅÃâ</th>
-                                                <th>¼ö¼ö·á ÇÕ°è</th>
-                                                <th>ÃÖÁ¾ Á¤»ê ¿¹Á¤¾×</th>
-                                                <th>»ó¼¼</th>
+                                                <th>ê°•ì‚¬</th>
+                                                <th>ë‹´ë‹¹ í´ëž˜ìŠ¤ ìˆ˜</th>
+                                                <th>ì´ ë§¤ì¶œ</th>
+                                                <th>ìˆ˜ìˆ˜ë£Œ í•©ê³„</th>
+                                                <th>ìµœì¢… ì •ì‚° ì˜ˆì •ì•¡</th>
+                                                <th>ìƒì„¸</th>
                                             </tr>
                                         </thead>
                                         <tbody id="settlementInstructorTableBody">
                                             <tr>
-                                                <td colspan="6" style="text-align:center;">µ¥ÀÌÅÍ¸¦ ºÒ·¯¿À´Â ÁßÀÔ´Ï´Ù...</td>
+                                                <td colspan="6" style="text-align:center;">ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤...</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -1120,55 +1120,55 @@
                 </div>
             </section>
 
-            <!-- ÅÇ: ¸Þ´º ¼³Á¤ (tabMenuSettings) -->
+            <!-- íƒ­: ë©”ë‰´ ì„¤ì • (tabMenuSettings) -->
             <section id="tabMenuSettings" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="flex-direction:column; align-items:flex-start;">
-                        <h3 class="section-title">¸Þ´º ¼³Á¤</h3>
-                        <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">»çÀÌÆ® ¸Þ´ºÀÇ ÀÌ¸§ º¯°æ, »ç¿ë ¿©ºÎ¸¦ °ü¸®ÇÏ°í ¸Þ´º¿¡ ¿ÜºÎ
-                            URLÀ» ¿¬°áÇÒ ¼ö ÀÖ½À´Ï´Ù.</p>
+                        <h3 class="section-title">ë©”ë‰´ ì„¤ì •</h3>
+                        <p style="font-size:0.85rem; color:#888; margin-top:0.3rem;">ì‚¬ì´íŠ¸ ë©”ë‰´ì˜ ì´ë¦„ ë³€ê²½, ì‚¬ìš© ì—¬ë¶€ë¥¼ ê´€ë¦¬í•˜ê³  ë©”ë‰´ì— ì™¸ë¶€
+                            URLì„ ì—°ê²°í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.</p>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>¸Þ´º¸í</th>
-                                    <th>ÀÌµ¿ÇÒ ¸µÅ©</th>
-                                    <th>Ç¥½Ã ´ë»ó</th>
-                                    <th>»õ Ã¢À¸·Î ¿­±â</th>
-                                    <th>¸Þ´º º¸ÀÌ±â</th>
-                                    <th>¼öÁ¤</th>
+                                    <th>ë©”ë‰´ëª…</th>
+                                    <th>ì´ë™í•  ë§í¬</th>
+                                    <th>í‘œì‹œ ëŒ€ìƒ</th>
+                                    <th>ìƒˆ ì°½ìœ¼ë¡œ ì—´ê¸°</th>
+                                    <th>ë©”ë‰´ ë³´ì´ê¸°</th>
+                                    <th>ìˆ˜ì •</th>
                                 </tr>
                             </thead>
                             <tbody id="menuSettingsTableBody">
                                 <tr>
-                                    <td style="font-weight:600;">È¨</td>
-                                    <td style="color:#888;">¸ÞÀÎ ÆäÀÌÁö ¢Ö</td>
-                                    <td>ÀüÃ¼</td>
-                                    <td>¾Æ´Ï¿À</td>
-                                    <td>³×</td>
+                                    <td style="font-weight:600;">í™ˆ</td>
+                                    <td style="color:#888;">ë©”ì¸ íŽ˜ì´ì§€ â†—</td>
+                                    <td>ì „ì²´</td>
+                                    <td>ì•„ë‹ˆì˜¤</td>
+                                    <td>ë„¤</td>
                                     <td><button
-                                            style="padding:0.3rem 0.6rem; border:1px solid #ddd; background:#fff; border-radius:4px; font-size:0.8rem; cursor:pointer;">¼öÁ¤</button>
+                                            style="padding:0.3rem 0.6rem; border:1px solid #ddd; background:#fff; border-radius:4px; font-size:0.8rem; cursor:pointer;">ìˆ˜ì •</button>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="font-weight:600;">Å¬·¡½º</td>
-                                    <td style="color:#888;">ÇÁ·Î±×·¥ ¢Ö</td>
-                                    <td>ÀüÃ¼</td>
-                                    <td>¾Æ´Ï¿À</td>
-                                    <td>³×</td>
+                                    <td style="font-weight:600;">í´ëž˜ìŠ¤</td>
+                                    <td style="color:#888;">í”„ë¡œê·¸ëž¨ â†—</td>
+                                    <td>ì „ì²´</td>
+                                    <td>ì•„ë‹ˆì˜¤</td>
+                                    <td>ë„¤</td>
                                     <td><button
-                                            style="padding:0.3rem 0.6rem; border:1px solid #ddd; background:#fff; border-radius:4px; font-size:0.8rem; cursor:pointer;">¼öÁ¤</button>
+                                            style="padding:0.3rem 0.6rem; border:1px solid #ddd; background:#fff; border-radius:4px; font-size:0.8rem; cursor:pointer;">ìˆ˜ì •</button>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="font-weight:600;">°øÁö»çÇ×/FAQ</td>
-                                    <td style="color:#888;">°øÁö»çÇ×/FAQ ¢Ö</td>
-                                    <td>ÀüÃ¼</td>
-                                    <td>¾Æ´Ï¿À</td>
-                                    <td>³×</td>
+                                    <td style="font-weight:600;">ê³µì§€ì‚¬í•­/FAQ</td>
+                                    <td style="color:#888;">ê³µì§€ì‚¬í•­/FAQ â†—</td>
+                                    <td>ì „ì²´</td>
+                                    <td>ì•„ë‹ˆì˜¤</td>
+                                    <td>ë„¤</td>
                                     <td><button
-                                            style="padding:0.3rem 0.6rem; border:1px solid #ddd; background:#fff; border-radius:4px; font-size:0.8rem; cursor:pointer;">¼öÁ¤</button>
+                                            style="padding:0.3rem 0.6rem; border:1px solid #ddd; background:#fff; border-radius:4px; font-size:0.8rem; cursor:pointer;">ìˆ˜ì •</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -1177,57 +1177,57 @@
                 </div>
             </section>
 
-            <!-- ÅÇ: °áÁ¦ Á¶È¸ (tabPaymentsView) -->
+            <!-- íƒ­: ê²°ì œ ì¡°íšŒ (tabPaymentsView) -->
             <section id="tabPaymentsView" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">°áÁ¦ Á¶È¸</h3>
-                        <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">°áÁ¦ ¹× ½ÅÃ» ³»¿ªÀ» Á¶°Ç¿¡
-                            µû¶ó °Ë»öÇÏ°í ¼¼ºÎ ³»¿ªÀ» È®ÀÎÇÒ ¼ö ÀÖ½À´Ï´Ù.</p>
+                        <h3 class="section-title">ê²°ì œ ì¡°íšŒ</h3>
+                        <p style="font-size:0.85rem; color:#888; margin-left:1rem; margin-top:0.3rem;">ê²°ì œ ë° ì‹ ì²­ ë‚´ì—­ì„ ì¡°ê±´ì—
+                            ë”°ë¼ ê²€ìƒ‰í•˜ê³  ì„¸ë¶€ ë‚´ì—­ì„ í™•ì¸í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.</p>
                     </div>
                     <div class="admin-toolbar">
                         <div class="admin-toolbar-group">
                             <input type="search" id="paymentSearchInput" class="admin-form-input"
-                                placeholder="ÁÖ¹®¹øÈ£, È¸¿ø¸í, Å¬·¡½º¸í °Ë»ö">
+                                placeholder="ì£¼ë¬¸ë²ˆí˜¸, íšŒì›ëª…, í´ëž˜ìŠ¤ëª… ê²€ìƒ‰">
                             <select id="paymentStatusFilter" class="admin-form-input">
-                                <option value="">ÀüÃ¼ »óÅÂ</option>
-                                <option value="paid">°áÁ¦ ¿Ï·á</option>
-                                <option value="completed">Ã³¸® ¿Ï·á</option>
-                                <option value="refunded">È¯ºÒ ¿Ï·á</option>
-                                <option value="partial_refunded">ºÎºÐ È¯ºÒ</option>
-                                <option value="pending">´ë±â</option>
+                                <option value="">ì „ì²´ ìƒíƒœ</option>
+                                <option value="paid">ê²°ì œ ì™„ë£Œ</option>
+                                <option value="completed">ì²˜ë¦¬ ì™„ë£Œ</option>
+                                <option value="refunded">í™˜ë¶ˆ ì™„ë£Œ</option>
+                                <option value="partial_refunded">ë¶€ë¶„ í™˜ë¶ˆ</option>
+                                <option value="pending">ëŒ€ê¸°</option>
                             </select>
                             <input type="date" id="paymentFromDate" class="admin-form-input">
                             <span style="color:#888;">~</span>
                             <input type="date" id="paymentToDate" class="admin-form-input">
                         </div>
                         <div class="admin-inline-actions">
-                            <button type="button" class="btn-small outline" id="btnPaymentToday">¿À´Ã</button>
-                            <button type="button" class="btn-small outline" id="btnPaymentThisMonth">ÀÌ¹ø ´Þ</button>
-                            <button type="button" class="btn-primary" id="btnSearchPayments">°Ë»ö</button>
+                            <button type="button" class="btn-small outline" id="btnPaymentToday">ì˜¤ëŠ˜</button>
+                            <button type="button" class="btn-small outline" id="btnPaymentThisMonth">ì´ë²ˆ ë‹¬</button>
+                            <button type="button" class="btn-primary" id="btnSearchPayments">ê²€ìƒ‰</button>
                         </div>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>ÁÖ¹®¹øÈ£</th>
-                                    <th>Å¬·¡½º</th>
-                                    <th>ÁÖ¹®ÀÚ</th>
-                                    <th>½ÅÃ»ÀÏ½Ã</th>
-                                    <th>°áÁ¦»óÅÂ</th>
-                                    <th>°áÁ¦¼ö´Ü</th>
-                                    <th>°áÁ¦±Ý¾×</th>
-                                    <th>ÇÒÀÎ/ÄíÆù</th>
-                                    <th>È¯ºÒ±Ý¾×</th>
-                                    <th>Á¤»ê»óÅÂ</th>
-                                    <th>»ó¼¼</th>
+                                    <th>ì£¼ë¬¸ë²ˆí˜¸</th>
+                                    <th>í´ëž˜ìŠ¤</th>
+                                    <th>ì£¼ë¬¸ìž</th>
+                                    <th>ì‹ ì²­ì¼ì‹œ</th>
+                                    <th>ê²°ì œìƒíƒœ</th>
+                                    <th>ê²°ì œìˆ˜ë‹¨</th>
+                                    <th>ê²°ì œê¸ˆì•¡</th>
+                                    <th>í• ì¸/ì¿ í°</th>
+                                    <th>í™˜ë¶ˆê¸ˆì•¡</th>
+                                    <th>ì •ì‚°ìƒíƒœ</th>
+                                    <th>ìƒì„¸</th>
                                 </tr>
                             </thead>
                             <tbody id="paymentsViewBody">
                                 <!-- JS Injected -->
                                 <tr>
-                                    <td colspan="11" style="text-align:center;">µ¥ÀÌÅÍ ¾øÀ½</td>
+                                    <td colspan="11" style="text-align:center;">ë°ì´í„° ì—†ìŒ</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1235,36 +1235,36 @@
                 </div>
             </section>
 
-            <!-- ÅÇ: Á¤»ê ³»¿ª (tabSettlementHistory) -->
+            <!-- íƒ­: ì •ì‚° ë‚´ì—­ (tabSettlementHistory) -->
             <section id="tabSettlementHistory" class="admin-tab-content">
                 <div class="admin-card admin-surface-card">
                     <div class="card-header admin-flex-between">
                         <div>
-                            <h3 class="section-title">Á¤»ê ³»¿ª</h3>
-                            <p class="section-subtitle">ÃÖÁ¾ Á¤»ê ½ÂÀÎ Àü »óÅÂ¸¦ ¿ùº°°ú ¿¬µµº° ÅÇÀ¸·Î °ü¸®ÇÏ°í, ½ÂÀÎ °á°ú¿Í °ü¸® ¾ÆÀÌµð¸¦ È®ÀÎÇÕ´Ï´Ù.</p>
+                            <h3 class="section-title">ì •ì‚° ë‚´ì—­</h3>
+                            <p class="section-subtitle">ìµœì¢… ì •ì‚° ìŠ¹ì¸ ì „ ìƒíƒœë¥¼ ì›”ë³„ê³¼ ì—°ë„ë³„ íƒ­ìœ¼ë¡œ ê´€ë¦¬í•˜ê³ , ìŠ¹ì¸ ê²°ê³¼ì™€ ê´€ë¦¬ ì•„ì´ë””ë¥¼ í™•ì¸í•©ë‹ˆë‹¤.</p>
                         </div>
                         <div class="admin-inline-actions">
                             <button class="btn-small outline" type="button"
-                                id="btnReloadSettlementHistory">»õ·Î°íÄ§</button>
+                                id="btnReloadSettlementHistory">ìƒˆë¡œê³ ì¹¨</button>
                         </div>
                     </div>
 
                     <div class="admin-toolbar">
                         <div class="admin-toolbar-group">
                             <div class="settlement-period-switch" id="settlementHistoryPeriodSwitch">
-                                <button type="button" class="period-chip active" data-period="month">¿ùº°</button>
-                                <button type="button" class="period-chip" data-period="year">¿¬µµº°</button>
+                                <button type="button" class="period-chip active" data-period="month">ì›”ë³„</button>
+                                <button type="button" class="period-chip" data-period="year">ì—°ë„ë³„</button>
                             </div>
                             <input type="number" id="settlementHistoryYearInput" class="admin-form-input" min="2024"
-                                step="1" placeholder="¿¬µµ">
+                                step="1" placeholder="ì—°ë„">
                             <input type="number" id="settlementHistoryMonthInput" class="admin-form-input" min="1"
-                                max="12" step="1" placeholder="¿ù">
+                                max="12" step="1" placeholder="ì›”">
                             <select id="settlementHistoryStatusFilter" class="admin-form-input">
-                                <option value="all">ÀüÃ¼ »óÅÂ</option>
-                                <option value="pending">½ÂÀÎ ´ë±â</option>
-                                <option value="approved">½ÂÀÎ ¿Ï·á</option>
-                                <option value="failed">½ÂÀÎ ½ÇÆÐ</option>
-                                <option value="completed">Á¤»ê ¿Ï·á</option>
+                                <option value="all">ì „ì²´ ìƒíƒœ</option>
+                                <option value="pending">ìŠ¹ì¸ ëŒ€ê¸°</option>
+                                <option value="approved">ìŠ¹ì¸ ì™„ë£Œ</option>
+                                <option value="failed">ìŠ¹ì¸ ì‹¤íŒ¨</option>
+                                <option value="completed">ì •ì‚° ì™„ë£Œ</option>
                             </select>
                         </div>
                     </div>
@@ -1273,50 +1273,50 @@
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>Á¤»ê ´ë»ó °­»ç</th>
-                                    <th>±Ý¾×</th>
-                                    <th>Á¤»ê»óÅÂ</th>
-                                    <th>Á¤»ê°Ç¼ö</th>
-                                    <th>Á¤»ê ÃÑ±Ý¾×</th>
-                                    <th>¼ö¼ö·á ±Ý¾×</th>
-                                    <th>ÃÖÁ¾ Á¤»ê±Ý¾×</th>
-                                    <th>½ÂÀÎ</th>
-                                    <th>½ÂÀÎ°á°ú</th>
-                                    <th>°ü¸® ID</th>
+                                    <th>ì •ì‚° ëŒ€ìƒ ê°•ì‚¬</th>
+                                    <th>ê¸ˆì•¡</th>
+                                    <th>ì •ì‚°ìƒíƒœ</th>
+                                    <th>ì •ì‚°ê±´ìˆ˜</th>
+                                    <th>ì •ì‚° ì´ê¸ˆì•¡</th>
+                                    <th>ìˆ˜ìˆ˜ë£Œ ê¸ˆì•¡</th>
+                                    <th>ìµœì¢… ì •ì‚°ê¸ˆì•¡</th>
+                                    <th>ìŠ¹ì¸</th>
+                                    <th>ìŠ¹ì¸ê²°ê³¼</th>
+                                    <th>ê´€ë¦¬ ID</th>
                                 </tr>
                             </thead>
                             <tbody id="settlementHistoryTableBody">
                                 <tr>
-                                    <td colspan="10" style="text-align:center;">Á¤»êµÈ µ¥ÀÌÅÍ°¡ ¾ø½À´Ï´Ù.</td>
+                                    <td colspan="10" style="text-align:center;">ì •ì‚°ëœ ë°ì´í„°ê°€ ì—†ìŠµë‹ˆë‹¤.</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </section>
-            <!-- ÅÇ: °¡ÀÔ È¸¿ø (tabUsers) -->
+            <!-- íƒ­: ê°€ìž… íšŒì› (tabUsers) -->
             <section id="tabUsers" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">°¡ÀÔ È¸¿ø</h3>
+                        <h3 class="section-title">ê°€ìž… íšŒì›</h3>
                         <p style="font-size:0.85rem; color:var(--mac-text-muted); margin-left:1rem; margin-top:0.3rem;">
-                            ÀüÃ¼ °¡ÀÔ È¸¿ø ¸ñ·ÏÀ» È®ÀÎÇÏ°í °ü¸®ÇÕ´Ï´Ù.</p>
+                            ì „ì²´ ê°€ìž… íšŒì› ëª©ë¡ì„ í™•ì¸í•˜ê³  ê´€ë¦¬í•©ë‹ˆë‹¤.</p>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>°¡ÀÔÀÏ</th>
-                                    <th>ÀÌ¸§</th>
-                                    <th>ÀÌ¸ÞÀÏ</th>
-                                    <th>¿¬¶ôÃ³</th>
-                                    <th>»óÅÂ</th>
-                                    <th>°ü¸®</th>
+                                    <th>ê°€ìž…ì¼</th>
+                                    <th>ì´ë¦„</th>
+                                    <th>ì´ë©”ì¼</th>
+                                    <th>ì—°ë½ì²˜</th>
+                                    <th>ìƒíƒœ</th>
+                                    <th>ê´€ë¦¬</th>
                                 </tr>
                             </thead>
                             <tbody id="allUsersTableBody">
                                 <tr>
-                                    <td colspan="6" style="text-align:center;">µ¥ÀÌÅÍ¸¦ ºÒ·¯¿À´Â ÁßÀÔ´Ï´Ù...</td>
+                                    <td colspan="6" style="text-align:center;">ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1324,43 +1324,43 @@
                 </div>
             </section>
 
-            <!-- ÅÇ: È¸¿ø Æ¯ÀÌ»çÇ×°ü¸® (tabRoles) -->
+            <!-- íƒ­: íšŒì› íŠ¹ì´ì‚¬í•­ê´€ë¦¬ (tabRoles) -->
             <section id="tabRoles" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">È¸¿ø Æ¯ÀÌ»çÇ×°ü¸®</h3>
+                        <h3 class="section-title">íšŒì› íŠ¹ì´ì‚¬í•­ê´€ë¦¬</h3>
                     </div>
                     <div style="padding: 2rem; text-align:center; color: var(--mac-text-muted);">
                         <div style="font-size: 3rem; margin-bottom: 1rem;">??</div>
-                        <h4>ºí·¢¸®½ºÆ®¿Í È¯ºÒ ³»¿ªÀ» È®ÀÎÇÏ´Â ¿µ¿ªÀÔ´Ï´Ù.</h4>
-                        <p>ÆäÀÌÁö°¡ ·ÎµåµÇ¸é ºí·¢¸®½ºÆ® / È¯ºÒ ³»¿ª Ä«µå°¡ ÀÚµ¿À¸·Î Ã¤¿öÁý´Ï´Ù.</p>
+                        <h4>ë¸”ëž™ë¦¬ìŠ¤íŠ¸ì™€ í™˜ë¶ˆ ë‚´ì—­ì„ í™•ì¸í•˜ëŠ” ì˜ì—­ìž…ë‹ˆë‹¤.</h4>
+                        <p>íŽ˜ì´ì§€ê°€ ë¡œë“œë˜ë©´ ë¸”ëž™ë¦¬ìŠ¤íŠ¸ / í™˜ë¶ˆ ë‚´ì—­ ì¹´ë“œê°€ ìžë™ìœ¼ë¡œ ì±„ì›Œì§‘ë‹ˆë‹¤.</p>
                     </div>
                 </div>
             </section>
 
-            <!-- ÅÇ: »çÀÌÆ® °Ô½ÃÆÇ (tabBoards) -->
+            <!-- íƒ­: ì‚¬ì´íŠ¸ ê²Œì‹œíŒ (tabBoards) -->
             <section id="tabBoards" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header" style="justify-content: space-between;">
-                        <h3 class="section-title">»çÀÌÆ® °Ô½ÃÆÇ (°øÁö»çÇ×/FAQ)</h3>
-                        <button class="btn-primary" id="btnWriteGlobalNotice">+ »õ ±Û ÀÛ¼º</button>
+                        <h3 class="section-title">ì‚¬ì´íŠ¸ ê²Œì‹œíŒ (ê³µì§€ì‚¬í•­/FAQ)</h3>
+                        <button class="btn-primary" id="btnWriteGlobalNotice">+ ìƒˆ ê¸€ ìž‘ì„±</button>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>ºÐ·ù</th>
-                                    <th>Á¦¸ñ</th>
-                                    <th>ÀÛ¼ºÀÚ</th>
-                                    <th>ÀÛ¼ºÀÏ</th>
-                                    <th>Á¶È¸¼ö</th>
-                                    <th>°ü¸®</th>
+                                    <th>ë¶„ë¥˜</th>
+                                    <th>ì œëª©</th>
+                                    <th>ìž‘ì„±ìž</th>
+                                    <th>ìž‘ì„±ì¼</th>
+                                    <th>ì¡°íšŒìˆ˜</th>
+                                    <th>ê´€ë¦¬</th>
                                 </tr>
                             </thead>
                             <tbody id="globalBoardsTableBody">
                                 <!-- JS Injected -->
                                 <tr>
-                                    <td colspan="6" style="text-align:center;">°Ô½Ã¹°À» ºÒ·¯¿À´Â ÁßÀÔ´Ï´Ù...</td>
+                                    <td colspan="6" style="text-align:center;">ê²Œì‹œë¬¼ì„ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1368,28 +1368,28 @@
                 </div>
             </section>
 
-            <!-- ÅÇ: Å¬·¡½º °Ô½ÃÆÇ (tabClassBoards) -->
+            <!-- íƒ­: í´ëž˜ìŠ¤ ê²Œì‹œíŒ (tabClassBoards) -->
             <section id="tabClassBoards" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">Å¬·¡½º °Ô½ÃÆÇ ¸ð¾Æº¸±â</h3>
+                        <h3 class="section-title">í´ëž˜ìŠ¤ ê²Œì‹œíŒ ëª¨ì•„ë³´ê¸°</h3>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>Å¬·¡½º¸í</th>
-                                    <th>ÀÛ¼ºÀÚ ±¸ºÐ</th>
-                                    <th>Á¦¸ñ</th>
-                                    <th>µî·ÏÀÏ</th>
-                                    <th>ÀÌµ¿</th>
-                                    <th>»èÁ¦</th>
+                                    <th>í´ëž˜ìŠ¤ëª…</th>
+                                    <th>ìž‘ì„±ìž êµ¬ë¶„</th>
+                                    <th>ì œëª©</th>
+                                    <th>ë“±ë¡ì¼</th>
+                                    <th>ì´ë™</th>
+                                    <th>ì‚­ì œ</th>
                                 </tr>
                             </thead>
                             <tbody id="classBoardsTableBody">
                                 <!-- JS Injected -->
                                 <tr>
-                                    <td colspan="6" style="text-align:center;">Å¬·¡½º °øÁö»çÇ×À» ºÒ·¯¿À´Â ÁßÀÔ´Ï´Ù...</td>
+                                    <td colspan="6" style="text-align:center;">í´ëž˜ìŠ¤ ê³µì§€ì‚¬í•­ì„ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1397,26 +1397,26 @@
                 </div>
             </section>
 
-            <!-- ÅÇ: ÂòÇÑ ¸ñ·Ï (tabBookmarks) -->
+            <!-- íƒ­: ì°œí•œ ëª©ë¡ (tabBookmarks) -->
             <section id="tabBookmarks" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">ÂòÇÑ ¸ñ·Ï (ÀÎ±â ·©Å·)</h3>
+                        <h3 class="section-title">ì°œí•œ ëª©ë¡ (ì¸ê¸° ëž­í‚¹)</h3>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>¼øÀ§</th>
-                                    <th>Å¬·¡½º¸í</th>
-                                    <th>°­»ç¸í</th>
-                                    <th>Âò(??) °³¼ö</th>
-                                    <th>»óÅÂ</th>
+                                    <th>ìˆœìœ„</th>
+                                    <th>í´ëž˜ìŠ¤ëª…</th>
+                                    <th>ê°•ì‚¬ëª…</th>
+                                    <th>ì°œ(??) ê°œìˆ˜</th>
+                                    <th>ìƒíƒœ</th>
                                 </tr>
                             </thead>
                             <tbody id="bookmarksTableBody">
                                 <tr>
-                                    <td colspan="5" style="text-align:center;">Åë°è µ¥ÀÌÅÍ¸¦ »êÃâÇÏ´Â ÁßÀÔ´Ï´Ù...</td>
+                                    <td colspan="5" style="text-align:center;">í†µê³„ ë°ì´í„°ë¥¼ ì‚°ì¶œí•˜ëŠ” ì¤‘ìž…ë‹ˆë‹¤...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1424,26 +1424,26 @@
                 </div>
             </section>
 
-            <!-- ÅÇ: °Ë»ö ¹× ÄÚµå ¼³Á¤ (tabSearchCode) -->
+            <!-- íƒ­: ê²€ìƒ‰ ë° ì½”ë“œ ì„¤ì • (tabSearchCode) -->
             <section id="tabSearchCode" class="admin-tab-content">
                 <div class="admin-card admin-surface-card">
                     <div class="card-header">
-                        <h3 class="section-title">°Ë»ö ¹× ¿ÜºÎ ½ºÅ©¸³Æ® ÄÚµå ¼³Á¤</h3>
+                        <h3 class="section-title">ê²€ìƒ‰ ë° ì™¸ë¶€ ìŠ¤í¬ë¦½íŠ¸ ì½”ë“œ ì„¤ì •</h3>
                     </div>
                     <div class="admin-form-grid search-code-grid">
                         <article class="admin-subcard">
                             <div class="admin-subcard-head">
-                                <h4>°Ë»ö ÃßÀû</h4>
-                                <p>½ÇÁ¦·Î ¹Ù·Î Àû¿ë °¡´ÉÇÑ ÃßÀû ÄÚµå¸¸ ¸ÕÀú ³ëÃâÇÕ´Ï´Ù.</p>
+                                <h4>ê²€ìƒ‰ ì¶”ì </h4>
+                                <p>ì‹¤ì œë¡œ ë°”ë¡œ ì ìš© ê°€ëŠ¥í•œ ì¶”ì  ì½”ë“œë§Œ ë¨¼ì € ë…¸ì¶œí•©ë‹ˆë‹¤.</p>
                             </div>
                             <div class="field-group" style="margin-bottom:1.5rem;">
                                 <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Google Analytics
                                     (GA4)
-                                    ÃøÁ¤ ID</label>
+                                    ì¸¡ì • ID</label>
                                 <input type="text" id="scriptGa4" placeholder="G-XXXXXXXXXX" class="admin-form-input">
-                                <small style="color:var(--mac-text-muted); display:block; margin-top:4px;">±¸±Û ¾Ö³Î¸®Æ½½º Æ®·¡Å·
-                                    ÄÚµå°¡
-                                    ÀÚµ¿À¸·Î »ðÀÔµË´Ï´Ù.</small>
+                                <small style="color:var(--mac-text-muted); display:block; margin-top:4px;">êµ¬ê¸€ ì• ë„ë¦¬í‹±ìŠ¤ íŠ¸ëž˜í‚¹
+                                    ì½”ë“œê°€
+                                    ìžë™ìœ¼ë¡œ ì‚½ìž…ë©ë‹ˆë‹¤.</small>
                             </div>
                             <div class="field-group">
                                 <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Meta Pixel
@@ -1454,89 +1454,89 @@
                         </article>
                         <article class="admin-subcard">
                             <div class="admin-subcard-head">
-                                <h4>»ç¿ëÀÚ Á¤ÀÇ ÄÚµå</h4>
-                                <p>ÇÊ¿äÇÑ °ËÁõ ÅÂ±×³ª ¿ÜºÎ À§Á¬Àº ÀÌ ¿µ¿ª¸¸ ¿ì¼± Áö¿øÇÕ´Ï´Ù.</p>
+                                <h4>ì‚¬ìš©ìž ì •ì˜ ì½”ë“œ</h4>
+                                <p>í•„ìš”í•œ ê²€ì¦ íƒœê·¸ë‚˜ ì™¸ë¶€ ìœ„ì ¯ì€ ì´ ì˜ì—­ë§Œ ìš°ì„  ì§€ì›í•©ë‹ˆë‹¤.</p>
                             </div>
                             <div class="field-group" style="margin-bottom:1rem;">
                                 <label style="display:block; margin-bottom:0.5rem; font-weight:600;">&lt;head&gt;
-                                    ½ºÅ©¸³Æ®</label>
+                                    ìŠ¤í¬ë¦½íŠ¸</label>
                                 <textarea id="scriptCustomHead" class="admin-form-input admin-code-area"
-                                    placeholder="<!-- ³×ÀÌ¹ö À¥¸¶½ºÅÍ, ¼ÒÀ¯È®ÀÎ, ÃßÀû ÄÚµå -->"></textarea>
+                                    placeholder="<!-- ë„¤ì´ë²„ ì›¹ë§ˆìŠ¤í„°, ì†Œìœ í™•ì¸, ì¶”ì  ì½”ë“œ -->"></textarea>
                             </div>
                             <div class="field-group">
-                                <label style="display:block; margin-bottom:0.5rem; font-weight:600;">¸Þ¸ð</label>
+                                <label style="display:block; margin-bottom:0.5rem; font-weight:600;">ë©”ëª¨</label>
                                 <textarea class="admin-form-input" rows="4"
-                                    placeholder="Àû¿ë ¸ñÀû°ú ´ã´çÀÚ¸¦ ³²°Ü µÎ¸é ¿î¿µ Áß ÃßÀûÀÌ ½¬¿öÁý´Ï´Ù." disabled></textarea>
+                                    placeholder="ì ìš© ëª©ì ê³¼ ë‹´ë‹¹ìžë¥¼ ë‚¨ê²¨ ë‘ë©´ ìš´ì˜ ì¤‘ ì¶”ì ì´ ì‰¬ì›Œì§‘ë‹ˆë‹¤." disabled></textarea>
                             </div>
                         </article>
                         <div class="admin-inline-actions admin-actions-right">
-                            <button class="btn-primary" id="btnSaveScripts">½ºÅ©¸³Æ® ÀúÀå</button>
+                            <button class="btn-primary" id="btnSaveScripts">ìŠ¤í¬ë¦½íŠ¸ ì €ìž¥</button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- ÅÇ: Æû °ü¸® (tabForms) -->
+            <!-- íƒ­: í¼ ê´€ë¦¬ (tabForms) -->
             <section id="tabForms" class="admin-tab-content">
                 <div class="admin-card">
                     <div class="card-header">
-                        <h3 class="section-title">Ä¿½ºÅÒ Æû °ü¸® <span class="admin-badge primary">Beta</span></h3>
+                        <h3 class="section-title">ì»¤ìŠ¤í…€ í¼ ê´€ë¦¬ <span class="admin-badge primary">Beta</span></h3>
                     </div>
                     <div style="padding: 2rem; text-align:center; color: var(--mac-text-muted);">
                         <div style="font-size: 3rem; margin-bottom: 1rem;">??</div>
-                        <h4>¼³¹®Á¶»ç ¹× ½ÅÃ»¼­ Æû ºô´õ´Â ÁØºñ ÁßÀÔ´Ï´Ù.</h4>
-                        <p>ÇöÀç´Â Google Forms³ª Tally µî ¿ÜºÎ Æû ¸µÅ©¸¦ ¸Þ´º¿¡ ¿¬°áÇÏ¿© »ç¿ëÇØÁÖ¼¼¿ä.</p>
+                        <h4>ì„¤ë¬¸ì¡°ì‚¬ ë° ì‹ ì²­ì„œ í¼ ë¹Œë”ëŠ” ì¤€ë¹„ ì¤‘ìž…ë‹ˆë‹¤.</h4>
+                        <p>í˜„ìž¬ëŠ” Google Formsë‚˜ Tally ë“± ì™¸ë¶€ í¼ ë§í¬ë¥¼ ë©”ë‰´ì— ì—°ê²°í•˜ì—¬ ì‚¬ìš©í•´ì£¼ì„¸ìš”.</p>
                     </div>
                 </div>
             </section>
 
-            <!-- ÅÇ: ¸¶ÄÉÆÃ Åø ¿¬µ¿ (tabMarketingTools) -->
+            <!-- íƒ­: ë§ˆì¼€íŒ… íˆ´ ì—°ë™ (tabMarketingTools) -->
             <section id="tabMarketingTools" class="admin-tab-content">
                 <div class="admin-card admin-surface-card">
                     <div class="card-header">
-                        <h3 class="section-title">Ä«Ä«¿ÀÃ¤³Î °ü¸®</h3>
+                        <h3 class="section-title">ì¹´ì¹´ì˜¤ì±„ë„ ê´€ë¦¬</h3>
                     </div>
                     <div class="marketing-kakao-shell">
                         <article class="marketing-kakao-hero">
                             <div>
                                 <p class="marketing-kakao-eyebrow">External Messaging Placeholder</p>
-                                <h4>Ä«Ä«¿ÀÃ¤³Î Áß½É ¿î¿µ ±¸Á¶</h4>
-                                <p>¿ÜºÎ ¸Þ½ÃÁö¿Í ±¤°í ¸Þ½ÃÁö´Â Ä«Ä«¿ÀÃ¤³Î ±âÁØÀ¸·Î¸¸ °ü¸®ÇÕ´Ï´Ù. ½ÇÁ¦ Àü¼Û ¿¬µ¿ Àü±îÁö´Â Ã¤³Î Á¤º¸, ÅÛÇÃ¸´ Á¤Ã¥, ¿î¿µ ¸Þ¸ð¸¦ Á¤¸®ÇÏ´Â Æ²¸¸ Á¦°øÇÕ´Ï´Ù.
+                                <h4>ì¹´ì¹´ì˜¤ì±„ë„ ì¤‘ì‹¬ ìš´ì˜ êµ¬ì¡°</h4>
+                                <p>ì™¸ë¶€ ë©”ì‹œì§€ì™€ ê´‘ê³  ë©”ì‹œì§€ëŠ” ì¹´ì¹´ì˜¤ì±„ë„ ê¸°ì¤€ìœ¼ë¡œë§Œ ê´€ë¦¬í•©ë‹ˆë‹¤. ì‹¤ì œ ì „ì†¡ ì—°ë™ ì „ê¹Œì§€ëŠ” ì±„ë„ ì •ë³´, í…œí”Œë¦¿ ì •ì±…, ìš´ì˜ ë©”ëª¨ë¥¼ ì •ë¦¬í•˜ëŠ” í‹€ë§Œ ì œê³µí•©ë‹ˆë‹¤.
                                 </p>
                             </div>
-                            <span class="admin-badge muted">ÁØºñ Áß</span>
+                            <span class="admin-badge muted">ì¤€ë¹„ ì¤‘</span>
                         </article>
                         <div class="marketing-kakao-grid">
                             <article class="admin-subcard">
                                 <div class="admin-subcard-head">
-                                    <h4>Ã¤³Î ±âº» Á¤º¸</h4>
-                                    <p>Ã¤³Î¸í, °Ë»ö¿ë ID, °ü¸®ÀÚ ¸Þ¸ð¸¦ ±â·ÏÇÕ´Ï´Ù.</p>
+                                    <h4>ì±„ë„ ê¸°ë³¸ ì •ë³´</h4>
+                                    <p>ì±„ë„ëª…, ê²€ìƒ‰ìš© ID, ê´€ë¦¬ìž ë©”ëª¨ë¥¼ ê¸°ë¡í•©ë‹ˆë‹¤.</p>
                                 </div>
                                 <div class="admin-form-grid">
                                     <div class="field-group">
-                                        <label>Ä«Ä«¿ÀÃ¤³Î¸í</label>
+                                        <label>ì¹´ì¹´ì˜¤ì±„ë„ëª…</label>
                                         <input type="text" class="admin-form-input" placeholder="B-Square">
                                     </div>
                                     <div class="field-group">
-                                        <label>Ã¤³Î °Ë»ö ID</label>
+                                        <label>ì±„ë„ ê²€ìƒ‰ ID</label>
                                         <input type="text" class="admin-form-input" placeholder="@bsquare">
                                     </div>
                                     <div class="field-group full">
-                                        <label>¿î¿µ ¸Þ¸ð</label>
+                                        <label>ìš´ì˜ ë©”ëª¨</label>
                                         <textarea class="admin-form-input" rows="4"
-                                            placeholder="¾Ë¸²Åå/Ä£±¸Åå ¿î¿µ Á¤Ã¥ ¸Þ¸ð"></textarea>
+                                            placeholder="ì•Œë¦¼í†¡/ì¹œêµ¬í†¡ ìš´ì˜ ì •ì±… ë©”ëª¨"></textarea>
                                     </div>
                                 </div>
                             </article>
                             <article class="admin-subcard">
                                 <div class="admin-subcard-head">
-                                    <h4>¿î¿µ ¾È³»</h4>
-                                    <p>Ä«Ä«¿À Ã¤³Î ¿¬µ¿ÀÌ ¿Ï·áµÇ¸é Ä·ÆäÀÎ ºÐ·ù¿Í ¹ß¼Û »óÅÂ¸¸ °ü¸®ÇÕ´Ï´Ù.</p>
+                                    <h4>ìš´ì˜ ì•ˆë‚´</h4>
+                                    <p>ì¹´ì¹´ì˜¤ ì±„ë„ ì—°ë™ì´ ì™„ë£Œë˜ë©´ ìº íŽ˜ì¸ ë¶„ë¥˜ì™€ ë°œì†¡ ìƒíƒœë§Œ ê´€ë¦¬í•©ë‹ˆë‹¤.</p>
                                 </div>
                                 <div class="admin-empty-state" style="padding:1rem 1.1rem; text-align:left;">
-                                    <strong style="display:block; margin-bottom:0.35rem;">¸Þ½ÃÁö °ü¸® Á¦¿Ü</strong>
-                                    <p style="margin:0; color:#64748b;">¿î¿µÀÚ ¸Þ½ÃÁö ¹ß¼ÛÀº µû·Î ³ëÃâÇÏÁö ¾Ê°í, Ä«Ä«¿À Ã¤³Î Áß½ÉÀÇ Ä·ÆäÀÎ ½ºÄ³Æúµå¸¸
-                                        À¯ÁöÇÕ´Ï´Ù.</p>
+                                    <strong style="display:block; margin-bottom:0.35rem;">ë©”ì‹œì§€ ê´€ë¦¬ ì œì™¸</strong>
+                                    <p style="margin:0; color:#64748b;">ìš´ì˜ìž ë©”ì‹œì§€ ë°œì†¡ì€ ë”°ë¡œ ë…¸ì¶œí•˜ì§€ ì•Šê³ , ì¹´ì¹´ì˜¤ ì±„ë„ ì¤‘ì‹¬ì˜ ìº íŽ˜ì¸ ìŠ¤ìºí´ë“œë§Œ
+                                        ìœ ì§€í•©ë‹ˆë‹¤.</p>
                                 </div>
                             </article>
                         </div>
@@ -1544,20 +1544,20 @@
                 </div>
             </section>
 
-            <!-- ÅÇ: Ä·ÆäÀÎ °ü¸® (tabCampaigns) -->
+            <!-- íƒ­: ìº íŽ˜ì¸ ê´€ë¦¬ (tabCampaigns) -->
             <section id="tabCampaigns" class="admin-tab-content" style="display:none;"></section>
 
-            <!-- ÅÇ: ºÎ°¡¼¼ ½Å°í ÀÚ·á (tabTax) -->
+            <!-- íƒ­: ë¶€ê°€ì„¸ ì‹ ê³  ìžë£Œ (tabTax) -->
             <section id="tabTax" class="admin-tab-content">
                 <div class="admin-card admin-surface-card">
                     <div class="card-header admin-flex-between">
                         <div>
-                            <h3 class="section-title">ºÎ°¡¼¼ ½Å°í ÀÚ·á</h3>
-                            <p class="section-subtitle">°ú¼¼ ¸ÅÃâ, È¯ºÒ, °ø±Þ°¡¾×, ºÎ°¡¼¼¸¦ ½Å°í ±â°£ ±âÁØÀ¸·Î ¹­¾î °ËÅäÇÏ°í CSV·Î ³»·Á¹Þ½À´Ï´Ù.</p>
+                            <h3 class="section-title">ë¶€ê°€ì„¸ ì‹ ê³  ìžë£Œ</h3>
+                            <p class="section-subtitle">ê³¼ì„¸ ë§¤ì¶œ, í™˜ë¶ˆ, ê³µê¸‰ê°€ì•¡, ë¶€ê°€ì„¸ë¥¼ ì‹ ê³  ê¸°ê°„ ê¸°ì¤€ìœ¼ë¡œ ë¬¶ì–´ ê²€í† í•˜ê³  CSVë¡œ ë‚´ë ¤ë°›ìŠµë‹ˆë‹¤.</p>
                         </div>
                         <div class="admin-inline-actions">
-                            <button class="btn-small outline" type="button" id="btnRefreshTaxReport">»õ·Î°íÄ§</button>
-                            <button class="btn-primary" id="btnDownloadTaxReport" type="button">CSV ´Ù¿î·Îµå</button>
+                            <button class="btn-small outline" type="button" id="btnRefreshTaxReport">ìƒˆë¡œê³ ì¹¨</button>
+                            <button class="btn-primary" id="btnDownloadTaxReport" type="button">CSV ë‹¤ìš´ë¡œë“œ</button>
                         </div>
                     </div>
                     <div class="admin-toolbar">
@@ -1566,43 +1566,43 @@
                             <input type="month" id="taxEndMonth" class="admin-form-input">
                         </div>
                         <div class="admin-toolbar-caption">
-                            ÁÖ¹® µ¥ÀÌÅÍ ±âÁØÀ¸·Î ¿ä¾àÇÏ¸ç, È¯ºÒ °ÇÀº º°µµ Â÷°¨ Ç×¸ñÀ¸·Î Ç¥½ÃÇÕ´Ï´Ù.
+                            ì£¼ë¬¸ ë°ì´í„° ê¸°ì¤€ìœ¼ë¡œ ìš”ì•½í•˜ë©°, í™˜ë¶ˆ ê±´ì€ ë³„ë„ ì°¨ê° í•­ëª©ìœ¼ë¡œ í‘œì‹œí•©ë‹ˆë‹¤.
                         </div>
                     </div>
                     <div class="admin-overview-grid">
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">ÃÑ °ú¼¼ ¸ÅÃâ</span>
-                            <strong id="taxMetricRevenue">0¿ø</strong>
-                            <p>½Å°í ´ë»ó °áÁ¦ ÇÕ°è</p>
+                            <span class="admin-overview-label">ì´ ê³¼ì„¸ ë§¤ì¶œ</span>
+                            <strong id="taxMetricRevenue">0ì›</strong>
+                            <p>ì‹ ê³  ëŒ€ìƒ ê²°ì œ í•©ê³„</p>
                         </article>
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">ÃÑ È¯ºÒ¾×</span>
-                            <strong id="taxMetricRefund">0¿ø</strong>
-                            <p>Â÷°¨ ´ë»ó È¯ºÒ ÇÕ°è</p>
+                            <span class="admin-overview-label">ì´ í™˜ë¶ˆì•¡</span>
+                            <strong id="taxMetricRefund">0ì›</strong>
+                            <p>ì°¨ê° ëŒ€ìƒ í™˜ë¶ˆ í•©ê³„</p>
                         </article>
                         <article class="admin-overview-card">
-                            <span class="admin-overview-label">¿¹»ó ºÎ°¡¼¼</span>
-                            <strong id="taxMetricVat">0¿ø</strong>
-                            <p>°ø±Þ°¡¾× ±âÁØ 10% °è»ê</p>
+                            <span class="admin-overview-label">ì˜ˆìƒ ë¶€ê°€ì„¸</span>
+                            <strong id="taxMetricVat">0ì›</strong>
+                            <p>ê³µê¸‰ê°€ì•¡ ê¸°ì¤€ 10% ê³„ì‚°</p>
                         </article>
                     </div>
                     <div class="table-responsive">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>ÁÖ¹®¹øÈ£</th>
-                                    <th>È¸¿ø</th>
-                                    <th>Å¬·¡½º</th>
-                                    <th>°áÁ¦ÀÏ</th>
-                                    <th>°áÁ¦±Ý¾×</th>
-                                    <th>È¯ºÒ±Ý¾×</th>
-                                    <th>°ø±Þ°¡¾×</th>
-                                    <th>ºÎ°¡¼¼</th>
+                                    <th>ì£¼ë¬¸ë²ˆí˜¸</th>
+                                    <th>íšŒì›</th>
+                                    <th>í´ëž˜ìŠ¤</th>
+                                    <th>ê²°ì œì¼</th>
+                                    <th>ê²°ì œê¸ˆì•¡</th>
+                                    <th>í™˜ë¶ˆê¸ˆì•¡</th>
+                                    <th>ê³µê¸‰ê°€ì•¡</th>
+                                    <th>ë¶€ê°€ì„¸</th>
                                 </tr>
                             </thead>
                             <tbody id="taxReportTableBody">
                                 <tr>
-                                    <td colspan="8" style="text-align:center;">µ¥ÀÌÅÍ¸¦ ºÒ·¯¿À´Â ÁßÀÔ´Ï´Ù...</td>
+                                    <td colspan="8" style="text-align:center;">ë°ì´í„°ë¥¼ ë¶ˆëŸ¬ì˜¤ëŠ” ì¤‘ìž…ë‹ˆë‹¤...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1617,10 +1617,10 @@
         <div class="admin-sheet-panel admin-sheet-panel--medium">
             <div class="admin-sheet-header">
                 <div>
-                    <p class="admin-sheet-eyebrow">¸®ºä »ó¼¼</p>
-                    <h3 id="reviewDetailTitle">ÀúÆòÁ¡ ¸®ºä</h3>
+                    <p class="admin-sheet-eyebrow">ë¦¬ë·° ìƒì„¸</p>
+                    <h3 id="reviewDetailTitle">ì €í‰ì  ë¦¬ë·°</h3>
                 </div>
-                <button type="button" class="admin-sheet-close" data-close-modal="reviewDetailModal">¡¿</button>
+                <button type="button" class="admin-sheet-close" data-close-modal="reviewDetailModal">Ã—</button>
             </div>
             <div class="admin-sheet-body">
                 <div id="reviewDetailBody"></div>
@@ -1633,83 +1633,83 @@
         <div class="admin-sheet-panel admin-sheet-panel--wide">
             <div class="admin-sheet-header">
                 <div>
-                    <p class="admin-sheet-eyebrow">ÀÌº¥Æ® ÄíÆù ¹ß±Þ</p>
-                    <h3>»çÀÌÆ® °ø¿ë ÄíÆù »ý¼º</h3>
+                    <p class="admin-sheet-eyebrow">ì´ë²¤íŠ¸ ì¿ í° ë°œê¸‰</p>
+                    <h3>ì‚¬ì´íŠ¸ ê³µìš© ì¿ í° ìƒì„±</h3>
                 </div>
-                <button type="button" class="admin-sheet-close" data-close-modal="eventCouponModal">¡¿</button>
+                <button type="button" class="admin-sheet-close" data-close-modal="eventCouponModal">Ã—</button>
             </div>
             <div class="admin-sheet-body">
                 <div class="coupon-modal-grid">
                     <div class="admin-form-grid two-col">
                         <div class="field-group">
-                            <label>ÄíÆù ÄÚµå</label>
+                            <label>ì¿ í° ì½”ë“œ</label>
                             <input type="text" id="eventCouponCode" class="admin-form-input"
-                                placeholder="¿¹: SPRINGOPEN">
+                                placeholder="ì˜ˆ: SPRINGOPEN">
                         </div>
                         <div class="field-group">
-                            <label>ÄíÆù¸í</label>
-                            <input type="text" id="eventCouponName" class="admin-form-input" placeholder="º½ ½ÃÁð ¿ÀÇÂ ÄíÆù">
+                            <label>ì¿ í°ëª…</label>
+                            <input type="text" id="eventCouponName" class="admin-form-input" placeholder="ë´„ ì‹œì¦Œ ì˜¤í”ˆ ì¿ í°">
                         </div>
                         <div class="field-group">
-                            <label>ÇÒÀÎ Å¸ÀÔ</label>
+                            <label>í• ì¸ íƒ€ìž…</label>
                             <select id="eventCouponType" class="admin-form-input">
-                                <option value="percent">ÆÛ¼¾Æ® ÇÒÀÎ</option>
-                                <option value="fixed">Á¤¾× ÇÒÀÎ</option>
+                                <option value="percent">í¼ì„¼íŠ¸ í• ì¸</option>
+                                <option value="fixed">ì •ì•¡ í• ì¸</option>
                             </select>
                         </div>
                         <div class="field-group">
-                            <label>ÇÒÀÎ°ª</label>
+                            <label>í• ì¸ê°’</label>
                             <input type="number" id="eventCouponAmount" class="admin-form-input" min="0"
-                                placeholder="20 ¶Ç´Â 5000">
+                                placeholder="20 ë˜ëŠ” 5000">
                         </div>
                         <div class="field-group">
-                            <label>ÃÖ¼Ò ÁÖ¹® ±Ý¾×</label>
+                            <label>ìµœì†Œ ì£¼ë¬¸ ê¸ˆì•¡</label>
                             <input type="number" id="eventCouponMinOrder" class="admin-form-input" min="0"
                                 placeholder="0">
                         </div>
                         <div class="field-group">
-                            <label>ÃÖ´ë ¹ßÇà ¼ö·®</label>
+                            <label>ìµœëŒ€ ë°œí–‰ ìˆ˜ëŸ‰</label>
                             <input type="number" id="eventCouponMaxIssue" class="admin-form-input" min="0"
-                                placeholder="0ÀÌ¸é ¹«Á¦ÇÑ">
+                                placeholder="0ì´ë©´ ë¬´ì œí•œ">
                         </div>
                         <div class="field-group">
-                            <label>½ÃÀÛÀÏ</label>
+                            <label>ì‹œìž‘ì¼</label>
                             <input type="date" id="eventCouponStartsAt" class="admin-form-input">
                         </div>
                         <div class="field-group">
-                            <label>Á¾·áÀÏ</label>
+                            <label>ì¢…ë£Œì¼</label>
                             <input type="date" id="eventCouponExpiresAt" class="admin-form-input">
                         </div>
                         <div class="field-group full">
-                            <label>ÄíÆù ¼³¸í</label>
+                            <label>ì¿ í° ì„¤ëª…</label>
                             <textarea id="eventCouponDescription" class="admin-form-input" rows="4"
-                                placeholder="³ëÃâ ¹®±¸, ¹ß±Þ ¸ñÀû, »ç¿ë Á¶°ÇÀ» Àû¾î ÁÖ¼¼¿ä."></textarea>
+                                placeholder="ë…¸ì¶œ ë¬¸êµ¬, ë°œê¸‰ ëª©ì , ì‚¬ìš© ì¡°ê±´ì„ ì ì–´ ì£¼ì„¸ìš”."></textarea>
                         </div>
                         <div class="field-group full">
-                            <label>ÄíÆù ÀÌ¹ÌÁö URL</label>
+                            <label>ì¿ í° ì´ë¯¸ì§€ URL</label>
                             <input type="url" id="eventCouponImageUrl" class="admin-form-input"
                                 placeholder="https://...">
                         </div>
                         <div class="field-group full">
-                            <label>ÄíÆù ÀÌ¹ÌÁö ¾÷·Îµå</label>
+                            <label>ì¿ í° ì´ë¯¸ì§€ ì—…ë¡œë“œ</label>
                             <input type="file" id="eventCouponImageFile" class="admin-form-input" accept="image/*">
                         </div>
                     </div>
                     <aside class="coupon-preview-panel">
                         <div class="coupon-preview-card">
-                            <div class="coupon-preview-image" id="eventCouponImagePreview">ÀÌ¹ÌÁö ¹Ì¸®º¸±â</div>
+                            <div class="coupon-preview-image" id="eventCouponImagePreview">ì´ë¯¸ì§€ ë¯¸ë¦¬ë³´ê¸°</div>
                             <div class="coupon-preview-content">
-                                <strong id="eventCouponPreviewName">ÄíÆù¸í</strong>
-                                <p id="eventCouponPreviewDesc">ÄíÆù ¼³¸íÀÌ ¿©±â¿¡ Ç¥½ÃµË´Ï´Ù.</p>
-                                <span id="eventCouponPreviewBadge">ÀüÃ¼ Å¬·¡½º Àû¿ë</span>
+                                <strong id="eventCouponPreviewName">ì¿ í°ëª…</strong>
+                                <p id="eventCouponPreviewDesc">ì¿ í° ì„¤ëª…ì´ ì—¬ê¸°ì— í‘œì‹œë©ë‹ˆë‹¤.</p>
+                                <span id="eventCouponPreviewBadge">ì „ì²´ í´ëž˜ìŠ¤ ì ìš©</span>
                             </div>
                         </div>
                     </aside>
                 </div>
             </div>
             <div class="admin-sheet-footer">
-                <button type="button" class="btn-small outline" data-close-modal="eventCouponModal">Ãë¼Ò</button>
-                <button type="button" class="btn-primary" id="btnSaveEventCoupon">ÄíÆù ¹ß±Þ</button>
+                <button type="button" class="btn-small outline" data-close-modal="eventCouponModal">ì·¨ì†Œ</button>
+                <button type="button" class="btn-primary" id="btnSaveEventCoupon">ì¿ í° ë°œê¸‰</button>
             </div>
         </div>
     </div>
@@ -1719,10 +1719,10 @@
         <div class="admin-sheet-panel admin-sheet-panel--medium">
             <div class="admin-sheet-header">
                 <div>
-                    <p class="admin-sheet-eyebrow">ÄíÆù »ó¼¼</p>
-                    <h3 id="couponDetailTitle">ÀÌº¥Æ® ÄíÆù</h3>
+                    <p class="admin-sheet-eyebrow">ì¿ í° ìƒì„¸</p>
+                    <h3 id="couponDetailTitle">ì´ë²¤íŠ¸ ì¿ í°</h3>
                 </div>
-                <button type="button" class="admin-sheet-close" data-close-modal="couponDetailModal">¡¿</button>
+                <button type="button" class="admin-sheet-close" data-close-modal="couponDetailModal">Ã—</button>
             </div>
             <div class="admin-sheet-body">
                 <div id="couponDetailBody"></div>
@@ -1735,17 +1735,17 @@
         <div class="admin-sheet-panel admin-sheet-panel--wide">
             <div class="admin-sheet-header">
                 <div>
-                    <p class="admin-sheet-eyebrow">Á¤»ê »ó¼¼</p>
-                    <h3 id="settlementDetailTitle">Á¤»ê »ó¼¼ Á¤º¸</h3>
+                    <p class="admin-sheet-eyebrow">ì •ì‚° ìƒì„¸</p>
+                    <h3 id="settlementDetailTitle">ì •ì‚° ìƒì„¸ ì •ë³´</h3>
                 </div>
-                <button type="button" class="admin-sheet-close" data-close-modal="settlementDetailModal">¡¿</button>
+                <button type="button" class="admin-sheet-close" data-close-modal="settlementDetailModal">Ã—</button>
             </div>
             <div class="admin-sheet-body">
                 <div id="settlementDetailBody"></div>
             </div>
             <div class="admin-sheet-footer">
-                <button type="button" class="btn-small outline" data-close-modal="settlementDetailModal">´Ý±â</button>
-                <button type="button" class="btn-primary" id="btnDownloadSettlementExcel">¼¼ºÎ³»¿ë ¿¢¼¿¹Þ±â</button>
+                <button type="button" class="btn-small outline" data-close-modal="settlementDetailModal">ë‹«ê¸°</button>
+                <button type="button" class="btn-primary" id="btnDownloadSettlementExcel">ì„¸ë¶€ë‚´ìš© ì—‘ì…€ë°›ê¸°</button>
             </div>
         </div>
     </div>
@@ -1755,10 +1755,10 @@
         <div class="admin-sheet-panel admin-sheet-panel--wide">
             <div class="admin-sheet-header">
                 <div>
-                    <p class="admin-sheet-eyebrow">°áÁ¦ »ó¼¼</p>
-                    <h3 id="paymentDetailTitle">°áÁ¦ »ó¼¼ Á¤º¸</h3>
+                    <p class="admin-sheet-eyebrow">ê²°ì œ ìƒì„¸</p>
+                    <h3 id="paymentDetailTitle">ê²°ì œ ìƒì„¸ ì •ë³´</h3>
                 </div>
-                <button type="button" class="admin-sheet-close" data-close-modal="paymentDetailModal">¡¿</button>
+                <button type="button" class="admin-sheet-close" data-close-modal="paymentDetailModal">Ã—</button>
             </div>
             <div class="admin-sheet-body">
                 <div id="paymentDetailBody"></div>
@@ -1771,34 +1771,34 @@
         <div class="board-modal-panel board-modal-panel--viewer">
             <div class="board-modal-header">
                 <div>
-                    <p class="board-modal-eyebrow">»çÀÌÆ® °Ô½ÃÆÇ</p>
-                    <h3 id="globalNoticeViewerTitle">°øÁö »ó¼¼</h3>
+                    <p class="board-modal-eyebrow">ì‚¬ì´íŠ¸ ê²Œì‹œíŒ</p>
+                    <h3 id="globalNoticeViewerTitle">ê³µì§€ ìƒì„¸</h3>
                 </div>
-                <button type="button" class="board-modal-close" data-action="close-global-notice-viewer">¡¿</button>
+                <button type="button" class="board-modal-close" data-action="close-global-notice-viewer">Ã—</button>
             </div>
             <div class="board-modal-body">
                 <div class="board-view-meta" id="globalNoticeViewerMeta">
-                    <span class="board-view-badge" id="globalNoticeViewerType">ÀÏ¹Ý</span>
-                    <span class="board-view-stat" id="globalNoticeViewerAuthor">ÀÛ¼ºÀÚ</span>
-                    <span class="board-view-stat" id="globalNoticeViewerDate">ÀÛ¼ºÀÏ</span>
-                    <span class="board-view-stat" id="globalNoticeViewerViews">Á¶È¸¼ö</span>
-                    <span class="board-view-stat" id="globalNoticeViewerLikeCount">ÁÁ¾Æ¿ä</span>
-                    <span class="board-view-stat" id="globalNoticeViewerCommentCount">´ñ±Û</span>
-                    <span class="board-view-stat" id="globalNoticeViewerHidden">³ëÃâ »óÅÂ</span>
+                    <span class="board-view-badge" id="globalNoticeViewerType">ì¼ë°˜</span>
+                    <span class="board-view-stat" id="globalNoticeViewerAuthor">ìž‘ì„±ìž</span>
+                    <span class="board-view-stat" id="globalNoticeViewerDate">ìž‘ì„±ì¼</span>
+                    <span class="board-view-stat" id="globalNoticeViewerViews">ì¡°íšŒìˆ˜</span>
+                    <span class="board-view-stat" id="globalNoticeViewerLikeCount">ì¢‹ì•„ìš”</span>
+                    <span class="board-view-stat" id="globalNoticeViewerCommentCount">ëŒ“ê¸€</span>
+                    <span class="board-view-stat" id="globalNoticeViewerHidden">ë…¸ì¶œ ìƒíƒœ</span>
                 </div>
                 <div class="board-view-content" id="globalNoticeViewerContent"></div>
                 <div class="board-view-comments">
                     <div class="board-view-comments-head">
-                        <strong>°ü·Ã ³»¿ª</strong>
-                        <span>´ñ±Û°ú ¹ÝÀÀ ³»¿ªÀ» ÇÔ²² È®ÀÎÇÕ´Ï´Ù.</span>
+                        <strong>ê´€ë ¨ ë‚´ì—­</strong>
+                        <span>ëŒ“ê¸€ê³¼ ë°˜ì‘ ë‚´ì—­ì„ í•¨ê»˜ í™•ì¸í•©ë‹ˆë‹¤.</span>
                     </div>
                     <div id="globalNoticeViewerComments" class="board-view-comments-list"></div>
                 </div>
             </div>
             <div class="board-modal-footer">
-                <button type="button" class="btn-small outline" id="btnGlobalNoticeEdit">¼öÁ¤</button>
-                <button type="button" class="btn-small danger" id="btnGlobalNoticeDelete">»èÁ¦</button>
-                <button type="button" class="btn-primary" data-action="close-global-notice-viewer">´Ý±â</button>
+                <button type="button" class="btn-small outline" id="btnGlobalNoticeEdit">ìˆ˜ì •</button>
+                <button type="button" class="btn-small danger" id="btnGlobalNoticeDelete">ì‚­ì œ</button>
+                <button type="button" class="btn-primary" data-action="close-global-notice-viewer">ë‹«ê¸°</button>
             </div>
         </div>
     </div>
@@ -1808,42 +1808,42 @@
         <div class="board-modal-panel board-modal-panel--editor">
             <div class="board-modal-header">
                 <div>
-                    <p class="board-modal-eyebrow">°øÁö ÀÛ¼º</p>
-                    <h3 id="globalNoticeEditorTitle">»õ °øÁö»çÇ× ÀÛ¼º</h3>
+                    <p class="board-modal-eyebrow">ê³µì§€ ìž‘ì„±</p>
+                    <h3 id="globalNoticeEditorTitle">ìƒˆ ê³µì§€ì‚¬í•­ ìž‘ì„±</h3>
                 </div>
-                <button type="button" class="board-modal-close" data-action="close-global-notice-editor">¡¿</button>
+                <button type="button" class="board-modal-close" data-action="close-global-notice-editor">Ã—</button>
             </div>
             <div class="board-modal-body">
                 <input type="hidden" id="globalNoticeEditorId">
                 <div class="board-form-group">
-                    <label>±¸ºÐ</label>
+                    <label>êµ¬ë¶„</label>
                     <div class="board-radio-group">
                         <label class="board-radio-chip">
                             <input type="radio" name="globalNoticeType" id="globalNoticeTypeNormal" value="normal"
                                 checked>
                             <div>
-                                <strong>ÀÏ¹Ý °øÁö</strong>
-                                <span>ÀÏ¹Ý ¾È³»¿Í º¯°æ »çÇ×À» µî·ÏÇÕ´Ï´Ù.</span>
+                                <strong>ì¼ë°˜ ê³µì§€</strong>
+                                <span>ì¼ë°˜ ì•ˆë‚´ì™€ ë³€ê²½ ì‚¬í•­ì„ ë“±ë¡í•©ë‹ˆë‹¤.</span>
                             </div>
                         </label>
                         <label class="board-radio-chip">
                             <input type="radio" name="globalNoticeType" id="globalNoticeTypeImportant"
                                 value="important">
                             <div>
-                                <strong>ÇÊµ¶ / Áß¿ä</strong>
-                                <span>»ó´Ü ³ëÃâÀÌ ÇÊ¿äÇÑ Áß¿äÇÑ °øÁöÀÔ´Ï´Ù.</span>
+                                <strong>í•„ë… / ì¤‘ìš”</strong>
+                                <span>ìƒë‹¨ ë…¸ì¶œì´ í•„ìš”í•œ ì¤‘ìš”í•œ ê³µì§€ìž…ë‹ˆë‹¤.</span>
                             </div>
                         </label>
                     </div>
                 </div>
 
                 <div class="board-form-group">
-                    <label for="globalNoticeTitle">Á¦¸ñ/Áú¹®</label>
-                    <input type="text" id="globalNoticeTitle" class="board-form-input" placeholder="Á¦¸ñÀ» ÀÔ·ÂÇÏ¼¼¿ä">
+                    <label for="globalNoticeTitle">ì œëª©/ì§ˆë¬¸</label>
+                    <input type="text" id="globalNoticeTitle" class="board-form-input" placeholder="ì œëª©ì„ ìž…ë ¥í•˜ì„¸ìš”">
                 </div>
 
                 <div class="board-form-group">
-                    <label for="globalNoticeEditor">º»¹®</label>
+                    <label for="globalNoticeEditor">ë³¸ë¬¸</label>
                     <div class="board-editor-shell">
                         <div id="globalNoticeEditor"></div>
                     </div>
@@ -1851,16 +1851,16 @@
                 </div>
 
                 <div class="board-form-row">
-                    <label for="globalNoticeHidden">¼û±è Ã³¸®</label>
+                    <label for="globalNoticeHidden">ìˆ¨ê¹€ ì²˜ë¦¬</label>
                     <label class="board-switch">
                         <input type="checkbox" id="globalNoticeHidden">
-                        <span>ºñ°ø°³·Î ÀúÀå</span>
+                        <span>ë¹„ê³µê°œë¡œ ì €ìž¥</span>
                     </label>
                 </div>
             </div>
             <div class="board-modal-footer">
-                <button type="button" class="btn-small outline" data-action="close-global-notice-editor">Ãë¼Ò</button>
-                <button type="button" class="btn-primary" id="btnGlobalNoticeSave">ÀúÀå</button>
+                <button type="button" class="btn-small outline" data-action="close-global-notice-editor">ì·¨ì†Œ</button>
+                <button type="button" class="btn-primary" id="btnGlobalNoticeSave">ì €ìž¥</button>
             </div>
         </div>
     </div>

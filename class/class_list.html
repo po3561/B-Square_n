@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>?�래??모음 | B-Square</title>
+    <title>?대옒??紐⑥쓬 | B-Square</title>
     <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap"
@@ -20,53 +20,53 @@
 </head>
 
 <body>
-    <!-- header.js가 ?�더/?�터/Drawer/BottomNav�??�적 ?�입 -->
+    <!-- header.js媛 ?ㅻ뜑/?명꽣/Drawer/BottomNav瑜??숈쟻 ?쎌엯 -->
 
     <main class="class-list-main">
         <div class="section-inner">
             <div class="index-layout">
-                <!-- 좌측 ?�이?�바 ?�메??-->
+                <!-- 醫뚯륫 ?ъ씠?쒕컮 ?듬찓??-->
                 <aside class="sidebar-nav">
                     <nav class="category-sidebar" id="categoryFilter">
-                        <h3 class="sidebar-title">?�래??카테고리</h3>
+                        <h3 class="sidebar-title">?대옒??移댄뀒怨좊━</h3>
                         <ul>
-                            <li class="active"><a href="#" data-cat="all"><span class="icon">?��</span>?�체</a></li>
-                            <li><a href="#" data-cat="?�자??><span class="icon">?��</span>?�자??/a></li>
-                            <li><a href="#" data-cat="?�산??><span class="icon">?��</span>?�산??/a></li>
-                            <li><a href="#" data-cat="?�포�?><span class="icon">??/span>?�포�?/a></li>
-                            <li><a href="#" data-cat="?��????�로??><span class="icon">?��</span>?��????�로??/a></li>
-                            <li><a href="#" data-cat="?�공 마인??><span class="icon">?��</span>?�공 마인??/a></li>
-                            <li><a href="#" data-cat="?�악"><span class="icon">?��</span>?�악</a></li>
-                            <li><a href="#" data-cat="베이??><span class="icon">?��</span>베이??/a></li>
-                            <li><a href="#" data-cat="?�진"><span class="icon">?��</span>?�진</a></li>
-                            <li><a href="#" data-cat="?�상"><span class="icon">?��</span>?�상</a></li>
-                            <li><a href="#" data-cat="공예"><span class="icon">?��</span>공예</a></li>
+                            <li class="active"><a href="#" data-cat="all"><span class="icon">?뙋</span>?꾩껜</a></li>
+                            <li><a href="#" data-cat="?붿옄??><span class="icon">?뮲</span>?붿옄??/a></li>
+                            <li><a href="#" data-cat="?앹궛??><span class="icon">?뱢</span>?앹궛??/a></li>
+                            <li><a href="#" data-cat="?ㅽ룷痢?><span class="icon">??/span>?ㅽ룷痢?/a></li>
+                            <li><a href="#" data-cat="?붿????쒕줈??><span class="icon">?렓</span>?붿????쒕줈??/a></li>
+                            <li><a href="#" data-cat="?깃났 留덉씤??><span class="icon">?뮕</span>?깃났 留덉씤??/a></li>
+                            <li><a href="#" data-cat="?뚯븙"><span class="icon">?렦</span>?뚯븙</a></li>
+                            <li><a href="#" data-cat="踰좎씠??><span class="icon">?쪖</span>踰좎씠??/a></li>
+                            <li><a href="#" data-cat="?ъ쭊"><span class="icon">?벝</span>?ъ쭊</a></li>
+                            <li><a href="#" data-cat="?곸긽"><span class="icon">?렗</span>?곸긽</a></li>
+                            <li><a href="#" data-cat="怨듭삁"><span class="icon">?㎍</span>怨듭삁</a></li>
                         </ul>
                     </nav>
                 </aside>
 
-                <!-- 메인 콘텐�??�역 -->
+                <!-- 硫붿씤 肄섑뀗痢??곸뿭 -->
                 <div class="content-area">
                     <section class="class-lists-section class-page-overrides">
                         <div class="class-grid-header">
-                            <h3 class="group-title">?�체 ?�래??목록</h3>
+                            <h3 class="group-title">?꾩껜 ?대옒??紐⑸줉</h3>
                             <div class="list-controls">
                                 <div class="search-filter">
-                                    <input type="text" id="classSearchInput" placeholder="?�래??검??.." class="class-search-input">
+                                    <input type="text" id="classSearchInput" placeholder="?대옒??寃??.." class="class-search-input">
                                 </div>
                                 <select id="sortSelect" class="sort-select">
-                                    <option value="newest">최신??/option>
-                                    <option value="popular">?�기??/option>
-                                    <option value="price-low">가�??????/option>
-                                    <option value="price-high">가�??��???/option>
+                                    <option value="newest">理쒖떊??/option>
+                                    <option value="popular">?멸린??/option>
+                                    <option value="price-low">媛寃??????/option>
+                                    <option value="price-high">媛寃??믪???/option>
                                 </select>
-                                <span id="totalClassCount" class="total-count">�?0�?/span>
+                                <span id="totalClassCount" class="total-count">珥?0媛?/span>
                             </div>
                         </div>
                         <div class="card-grid" id="allClassGrid">
-                            <!-- JS?�서 ?�적 ?�더�?-->
+                            <!-- JS?먯꽌 ?숈쟻 ?뚮뜑留?-->
                             <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 4rem; color:#888;">
-                                ?�이?��? 불러?�는 중입?�다...</div>
+                                ?곗씠?곕? 遺덈윭?ㅻ뒗 以묒엯?덈떎...</div>
                         </div>
                     </section>
                 </div>
