@@ -3,9 +3,21 @@
   'use strict';
 
   const currentPath = window.location.pathname || '';
+
+  // Get the directory where header.js is located
+  const scriptTag = document.currentScript;
+  const scriptDir = scriptTag ? scriptTag.src.substring(0, scriptTag.src.lastIndexOf('/') + 1) : '';
+  
   const isSharedBundle = currentPath.includes('/bsnnnnnnnnnnnnnnnnnn/') || currentPath.includes('bsnnnnnnnnnnnnnnnnnn');
-  const prefix = '../';
-  const homePrefix = isSharedBundle ? '' : '../bsnnnnnnnnnnnnnnnnnn/';
+  
+  // Use scriptDir for absolute-like relative paths for CSS dynamic injection
+  const shellCSSPath = scriptDir + 'shell_overrides.css';
+  const mobileOptimizePath = scriptDir + 'mobile_210px_optimize.css';
+
+  const homePrefix = currentPath.split('/').length > 2 ? '../' : './';
+  const prefix = homePrefix;
+
+
   const OP_MODE_KEY = 'bsq_operator_view_mode';
 
   const NAV_ITEMS = [
@@ -314,7 +326,7 @@
       const linkCSS = document.createElement('link');
       linkCSS.id = 'bsqMobileOptimizeCSS';
       linkCSS.rel = 'stylesheet';
-      linkCSS.href = prefix + 'mobile_210px_optimize.css';
+      linkCSS.href = mobileOptimizePath;
       document.head.appendChild(linkCSS);
     }
 
@@ -322,7 +334,7 @@
       const shellCSS = document.createElement('link');
       shellCSS.id = 'bsqShellOverridesCSS';
       shellCSS.rel = 'stylesheet';
-      shellCSS.href = homePrefix + 'shell_overrides.css';
+      shellCSS.href = shellCSSPath;
       document.head.appendChild(shellCSS);
     }
 

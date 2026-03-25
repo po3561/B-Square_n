@@ -1,0 +1,374 @@
+/* ==========================================
+   190px~480px 모바일 최적화 (White Theme)
+   B-Square 클린 화이트 모바일 UI
+=========================================== */
+
+/* -- 모바일 공통 보정 (≤ 480px) -- */
+@media (max-width: 480px) {
+    .category-grid ul {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 0.5rem !important;
+    }
+
+    .card-grid,
+    .recommend-columns {
+        grid-template-columns: 1fr !important;
+    }
+
+    .main-ad-banner {
+        height: 180px !important;
+    }
+
+    .main-ad-banner h2 {
+        font-size: 1.8rem !important;
+    }
+}
+
+/* -- 320px 이하 -- */
+@media (max-width: 320px) {
+    .category-grid ul {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+
+    .header-inner {
+        padding: 0.7rem 0.8rem !important;
+    }
+
+    .btn-login-main {
+        padding: 0.4rem 1rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    .main-promo-banner {
+        padding: 1.2rem !important;
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 0.8rem !important;
+    }
+}
+
+/* -- 280px 이하 -- */
+@media (max-width: 280px) {
+    .category-grid ul {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .card-grid {
+        gap: 0.8rem !important;
+    }
+
+    .btn-contact {
+        padding: 0.6rem 1rem !important;
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    .bottom-nav .nav-item .icon {
+        font-size: 1rem !important;
+    }
+
+    .bottom-nav .nav-item {
+        font-size: 0.6rem !important;
+    }
+}
+
+/* ── 190px~210px 초소형 최적화 ── */
+@media (max-width: 210px) {
+
+    html, body {
+        font-size: 13px !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
+        background: #ffffff !important;
+        color: #1a1a1a !important;
+    }
+
+    .site-header {
+        position: relative !important;
+        background: #fff !important;
+        border-bottom: 1px solid #eee !important;
+    }
+
+    .main-content,
+    .section-inner,
+    .banner-inner {
+        padding: 0.8rem 0.4rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .header-inner {
+        flex-direction: row !important;
+        gap: 0.3rem !important;
+        padding: 0.4rem 0.5rem !important;
+        align-items: center !important;
+    }
+
+    .header-right,
+    .header-utils {
+        display: none !important;
+    }
+
+    .header-left {
+        width: 100% !important;
+        justify-content: space-between !important;
+        gap: 0.2rem !important;
+    }
+
+    .logo a {
+        font-size: 0.85rem !important;
+        color: #1a1a1a !important;
+        gap: 0.2rem !important;
+    }
+
+    .btn-hamburger {
+        width: 18px !important;
+        height: 12px !important;
+        min-width: 18px !important;
+        min-height: 12px !important;
+    }
+
+    .category-grid ul {
+        grid-template-columns: 1fr !important;
+    }
+
+    .main-ad-banner {
+        height: 90px !important;
+        border-radius: 8px !important;
+        margin-bottom: 0.6rem !important;
+        background: #f0f4ff !important;
+    }
+
+    .main-ad-banner h2 {
+        font-size: 1rem !important;
+        color: rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .class-card {
+        border-radius: 8px !important;
+    }
+
+    .card-thumbnail {
+        height: 80px !important;
+    }
+
+    .hero-section {
+        margin-bottom: 1rem !important;
+    }
+
+    .group-title {
+        font-size: 0.9rem !important;
+        margin-bottom: 0.5rem !important;
+        color: #333 !important;
+    }
+
+    .card-grid,
+    .large-grid {
+        grid-template-columns: 1fr !important;
+        gap: 6px !important;
+    }
+
+    .card-info {
+        padding: 0.3rem 0.4rem 0.5rem !important;
+    }
+
+    .card-info .title {
+        font-size: 0.7rem !important;
+        height: auto !important;
+    }
+
+    .card-info .category {
+        font-size: 0.55rem !important;
+    }
+
+    .card-info .creator {
+        font-size: 0.55rem !important;
+    }
+
+    .card-info .meta {
+        font-size: 0.55rem !important;
+        gap: 3px !important;
+    }
+
+    .card-info .current-price {
+        font-size: 0.75rem !important;
+    }
+
+    .card-info .original-price {
+        font-size: 0.55rem !important;
+    }
+
+    .card-info .price-area {
+        margin-top: 0.3rem !important;
+        padding-top: 0.3rem !important;
+        gap: 3px !important;
+    }
+
+    .card-badges {
+        top: 3px;
+        left: 3px;
+    }
+
+    .badge-coupon,
+    .badge-discount {
+        font-size: 0.5rem !important;
+        padding: 2px 3px !important;
+    }
+
+    .btn-bookmark {
+        width: 20px !important;
+        height: 20px !important;
+        font-size: 0.6rem !important;
+        top: 3px;
+        right: 3px;
+    }
+
+    .bottom-nav .nav-item .label {
+        display: none !important;
+    }
+
+    .bottom-nav .nav-item {
+        padding: 0.4rem 0 !important;
+    }
+
+    .bottom-nav .nav-item .icon {
+        font-size: 0.85rem !important;
+    }
+
+    .bottom-nav {
+        background: #ffffff !important;
+        border-top: 1px solid #eee !important;
+    }
+
+    .drawer-menu {
+        width: 100% !important;
+        max-width: 100% !important;
+        background: #fff !important;
+    }
+
+    .drawer-main-categories {
+        width: 55px !important;
+    }
+
+    .drawer-main-categories li {
+        padding: 0.5rem 0.2rem !important;
+        font-size: 0.55rem !important;
+    }
+
+    .drawer-sub-categories {
+        padding: 0.4rem !important;
+    }
+
+    .column {
+        padding: 0.5rem !important;
+        border-radius: 8px !important;
+    }
+
+    .column-header h4 {
+        font-size: 0.75rem !important;
+    }
+
+    .list-item {
+        gap: 0.4rem !important;
+        padding: 0.3rem !important;
+    }
+
+    .item-thumbnail {
+        width: 40px !important;
+        height: 32px !important;
+        border-radius: 4px !important;
+    }
+
+    .bottom-banner-section {
+        padding: 0 !important;
+        margin-top: 0.8rem !important;
+    }
+
+    .bottom-banner-section .banner-bottom-shell {
+        padding: 0.4rem !important;
+        border-radius: 10px !important;
+    }
+
+    .site-footer {
+        padding: 1.5rem 0.4rem 4rem !important;
+        font-size: 0.6rem !important;
+        background: #f8f8f8 !important;
+    }
+
+    .footer-top {
+        margin-bottom: 0.8rem !important;
+    }
+
+    .social-links {
+        gap: 0.6rem !important;
+    }
+
+    .social-icon .icon {
+        font-size: 0.9rem !important;
+    }
+
+    .social-icon p {
+        font-size: 0.55rem !important;
+    }
+
+    .cs-center h4 {
+        font-size: 0.75rem !important;
+    }
+
+    .cs-center p {
+        font-size: 0.55rem !important;
+    }
+
+    .btn-contact {
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.6rem !important;
+    }
+
+    .footer-nav {
+        gap: 0.4rem !important;
+    }
+
+    .footer-nav a {
+        font-size: 0.55rem !important;
+    }
+
+    .company-info strong {
+        font-size: 0.7rem !important;
+    }
+
+    .company-info p {
+        font-size: 0.5rem !important;
+    }
+
+    .copyright {
+        margin-top: 0.5rem !important;
+        font-size: 0.5rem !important;
+    }
+
+    /* Input & Button 보정 */
+    input,
+    button,
+    select {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        min-width: unset !important;
+        min-height: unset !important;
+    }
+
+    .contact-container,
+    .form-group,
+    .board-container {
+        padding: 0.4rem !important;
+        width: 100% !important;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        padding: 0.4rem !important;
+    }
+
+    .status-badge {
+        font-size: 0.6rem !important;
+        padding: 0.15rem 0.4rem !important;
+    }
+}

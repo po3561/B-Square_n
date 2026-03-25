@@ -1,10 +1,10 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>B-Square ê³µì§€ì‚¬í•­</title>
+    <title>B-Square °øÁö»çÇ×</title>
 
     <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,11 +12,11 @@
         rel="stylesheet">
 
     <!-- Core CSS -->
-    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_mobile.css" media="(max-width: 768px)">
-    <link rel="stylesheet" href="../bsnnnnnnnnnnnnnnnnnn/style_pc.css" media="(min-width: 769px)">
+    <link rel="stylesheet" href="../style_mobile.css" media="(max-width: 768px)">
+    <link rel="stylesheet" href="../style_pc.css" media="(min-width: 769px)">
     <link rel="stylesheet" href="notice.css">
 
-    <!-- Quill.js ë¦¬ì¹˜ í…ìŠ¤íŠ¸ ì—ë””í„° -->
+    <!-- Quill.js ¸®Ä¡ ÅØ½ºÆ® ¿¡µðÅÍ -->
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 
@@ -25,15 +25,15 @@
 </head>
 
 <body>
-    <!-- header.jsê°€ í—¤ë”/í‘¸í„°/Drawer/BottomNavë¥¼ ë™ì  ì‚½ìž… -->
+    <!-- header.js°¡ Çì´õ/ÇªÅÍ/Drawer/BottomNav¸¦ µ¿Àû »ðÀÔ -->
 
     <main class="notice-main">
         <!-- Hero Banner -->
         <section class="notice-hero">
             <div class="hero-overlay"></div>
             <div class="hero-content">
-                <h1>ê³µì§€ì‚¬í•­ & FAQ</h1>
-                <p>B-Squareì˜ ìƒˆë¡œìš´ ì†Œì‹ê³¼ ìžì£¼ ë¬»ëŠ” ì§ˆë¬¸ì„ í™•ì¸í•˜ì„¸ìš”.</p>
+                <h1>°øÁö»çÇ× & FAQ</h1>
+                <p>B-SquareÀÇ »õ·Î¿î ¼Ò½Ä°ú ÀÚÁÖ ¹¯´Â Áú¹®À» È®ÀÎÇÏ¼¼¿ä.</p>
             </div>
         </section>
 
@@ -42,28 +42,28 @@
             <!-- Left: Notices (2/3) -->
             <div class="notice-left-panel">
                 <div class="panel-header">
-                    <h2>ê³µì§€ì‚¬í•­</h2>
+                    <h2>°øÁö»çÇ×</h2>
                     <div class="header-actions">
-                        <input type="text" id="noticeSearchIP" placeholder="ê²€ìƒ‰ì–´ë¥¼ ìž…ë ¥í•˜ì„¸ìš”..." class="search-input">
-                        <button id="btnSearchNotice" class="btn-search">ðŸ”</button>
+                        <input type="text" id="noticeSearchIP" placeholder="°Ë»ö¾î¸¦ ÀÔ·ÂÇÏ¼¼¿ä..." class="search-input">
+                        <button id="btnSearchNotice" class="btn-search">??</button>
                         <!-- Admin Only -->
-                        <button id="btnWriteNotice" class="btn-admin primary" style="display:none;">ìƒˆ ê³µì§€ì‚¬í•­</button>
+                        <button id="btnWriteNotice" class="btn-admin primary" style="display:none;">»õ °øÁö»çÇ×</button>
                     </div>
                 </div>
 
 
 
                 <div class="notice-list-header">
-                    <span class="col-type">êµ¬ë¶„</span>
-                    <span class="col-title">ì œëª©</span>
-                    <span class="col-author">ìž‘ì„±ìž</span>
-                    <span class="col-date">ê³µì§€ì¼ìž</span>
-                    <span class="col-views">ì¡°íšŒìˆ˜</span>
+                    <span class="col-type">±¸ºÐ</span>
+                    <span class="col-title">Á¦¸ñ</span>
+                    <span class="col-author">ÀÛ¼ºÀÚ</span>
+                    <span class="col-date">°øÁöÀÏÀÚ</span>
+                    <span class="col-views">Á¶È¸¼ö</span>
                 </div>
 
                 <div id="noticeList" class="notice-list">
                     <!-- Notices will be rendered here -->
-                    <div class="empty-state">ë¡œë”© ì¤‘...</div>
+                    <div class="empty-state">·Îµù Áß...</div>
                 </div>
 
                 <!-- Pagination (Optional) -->
@@ -73,14 +73,14 @@
             <!-- Right: FAQs (1/3) -->
             <div class="notice-right-panel">
                 <div class="panel-header">
-                    <h2>ìžì£¼ ë¬»ëŠ” ì§ˆë¬¸</h2>
+                    <h2>ÀÚÁÖ ¹¯´Â Áú¹®</h2>
                     <!-- Admin Only -->
-                    <button id="btnWriteFaq" class="btn-admin secondary" style="display:none;">+ FAQ ë“±ë¡</button>
+                    <button id="btnWriteFaq" class="btn-admin secondary" style="display:none;">+ FAQ µî·Ï</button>
                 </div>
 
                 <div id="faqList" class="faq-list">
                     <!-- FAQs will be rendered here -->
-                    <div class="empty-state">ë¡œë”© ì¤‘...</div>
+                    <div class="empty-state">·Îµù Áß...</div>
                 </div>
             </div>
         </section>
@@ -88,17 +88,17 @@
         <!-- Class Notice Board Layout -->
         <section class="class-notice-container" style="margin: 2rem auto; max-width: 1300px; padding: 0 2rem;">
             <div class="panel-header">
-                <h2>í´ëž˜ìŠ¤ë³„ ê³µì§€ì‚¬í•­</h2>
+                <h2>Å¬·¡½ºº° °øÁö»çÇ×</h2>
             </div>
             <div class="notice-list-header">
-                <span class="col-type">í´ëž˜ìŠ¤ëª…</span>
-                <span class="col-title">ì œëª©</span>
-                <span class="col-author">ìž‘ì„± ê°•ì‚¬</span>
-                <span class="col-date">ê³µì§€ì¼ìž</span>
-                <span class="col-views">ì¡°íšŒìˆ˜</span>
+                <span class="col-type">Å¬·¡½º¸í</span>
+                <span class="col-title">Á¦¸ñ</span>
+                <span class="col-author">ÀÛ¼º °­»ç</span>
+                <span class="col-date">°øÁöÀÏÀÚ</span>
+                <span class="col-views">Á¶È¸¼ö</span>
             </div>
             <div id="classNoticeList" class="notice-list">
-                <div class="empty-state">ë¡œë”© ì¤‘...</div>
+                <div class="empty-state">·Îµù Áß...</div>
             </div>
             <div class="pagination" id="classNoticePagination"></div>
         </section>
@@ -108,43 +108,43 @@
     <div id="editorModal" class="modal-overlay" style="display:none;">
         <div class="modal-content large">
             <div class="modal-header">
-                <h3 id="editorModalTitle">ìƒˆ ê³µì§€ì‚¬í•­ ìž‘ì„±</h3>
-                <button class="btn-close" id="btnEditorClose">âœ•</button>
+                <h3 id="editorModalTitle">»õ °øÁö»çÇ× ÀÛ¼º</h3>
+                <button class="btn-close" id="btnEditorClose">?</button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="editTargetId">
                 <input type="hidden" id="editDataType"> <!-- 'notice' or 'faq' -->
 
                 <div class="form-group" id="groupType">
-                    <label>êµ¬ë¶„</label>
+                    <label>±¸ºÐ</label>
                     <div class="radio-group">
                         <input type="radio" id="typeNormal" name="noticeType" value="normal" checked> <label
-                            for="typeNormal">ì¼ë°˜ ì½”ë©˜íŠ¸</label>
+                            for="typeNormal">ÀÏ¹Ý ÄÚ¸àÆ®</label>
                         <input type="radio" id="typeImportant" name="noticeType" value="important"> <label
-                            for="typeImportant">í•„ë…/ì¤‘ìš”</label>
+                            for="typeImportant">ÇÊµ¶/Áß¿ä</label>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="editTitle">ì œëª©/ì§ˆë¬¸</label>
-                    <input type="text" id="editTitle" placeholder="ì œëª©ì„ ìž…ë ¥í•˜ì„¸ìš”">
+                    <label for="editTitle">Á¦¸ñ/Áú¹®</label>
+                    <input type="text" id="editTitle" placeholder="Á¦¸ñÀ» ÀÔ·ÂÇÏ¼¼¿ä">
                 </div>
 
                 <div class="form-group">
-                    <label for="editorContainer" id="editContentLabel">ë³¸ë¬¸/ë‹µë³€</label>
+                    <label for="editorContainer" id="editContentLabel">º»¹®/´äº¯</label>
                     <div id="editorContainer" style="height: 300px; background: #fff; color: #000;"></div>
                     <textarea id="editContent" style="display: none;"></textarea>
                     <!-- Hidden field for saving/loading -->
                 </div>
 
                 <div class="form-group row-align" id="groupHidden">
-                    <label for="editIsHidden">ìˆ¨ê¹€ ì²˜ë¦¬</label>
+                    <label for="editIsHidden">¼û±è Ã³¸®</label>
                     <input type="checkbox" id="editIsHidden">
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-cancel" id="btnEditorCancel">ì·¨ì†Œ</button>
-                <button class="btn-submit" id="btnEditorSubmit">ì €ìž¥</button>
+                <button class="btn-cancel" id="btnEditorCancel">Ãë¼Ò</button>
+                <button class="btn-submit" id="btnEditorSubmit">ÀúÀå</button>
             </div>
         </div>
     </div>
@@ -154,33 +154,33 @@
         <div class="modal-content large">
             <div class="modal-header-viewer">
                 <div class="viewer-meta-top">
-                    <span id="viewerTypeBadge" class="badge-normal">ì¼ë°˜</span>
-                    <h3 id="viewerTitle">ê³µì§€ì‚¬í•­ ì œëª©</h3>
+                    <span id="viewerTypeBadge" class="badge-normal">ÀÏ¹Ý</span>
+                    <h3 id="viewerTitle">°øÁö»çÇ× Á¦¸ñ</h3>
                 </div>
-                <button class="btn-close" id="btnViewerClose">âœ•</button>
+                <button class="btn-close" id="btnViewerClose">?</button>
             </div>
             <div class="viewer-meta-info">
-                <span id="viewerAuthor">ìž‘ì„±ìž: ìš´ì˜ìž</span>
-                <span id="viewerDate">ë‚ ì§œ: 2024.01.01</span>
-                <span id="viewerViews">ì¡°íšŒìˆ˜: 0</span>
+                <span id="viewerAuthor">ÀÛ¼ºÀÚ: ¿î¿µÀÚ</span>
+                <span id="viewerDate">³¯Â¥: 2024.01.01</span>
+                <span id="viewerViews">Á¶È¸¼ö: 0</span>
             </div>
             <div class="modal-body viewer-body">
                 <div id="viewerContent" class="viewer-content"></div>
 
                 <div class="viewer-actions">
-                    <button id="btnLikeNotice" class="btn-like">ðŸ‘ ì¢‹ì•„ìš” <span id="likeCount">0</span></button>
+                    <button id="btnLikeNotice" class="btn-like">?? ÁÁ¾Æ¿ä <span id="likeCount">0</span></button>
                     <!-- Admin Only Actions inside Viewer -->
                     <div id="adminViewerActions" style="display:none;">
-                        <button id="btnEditNoticeItem" class="btn-admin secondary">ìˆ˜ì •</button>
-                        <button id="btnDeleteNoticeItem" class="btn-admin danger">ì‚­ì œ</button>
+                        <button id="btnEditNoticeItem" class="btn-admin secondary">¼öÁ¤</button>
+                        <button id="btnDeleteNoticeItem" class="btn-admin danger">»èÁ¦</button>
                     </div>
                 </div>
 
                 <div class="comments-section">
-                    <h4>ëŒ“ê¸€ <span id="commentCount">0</span></h4>
+                    <h4>´ñ±Û <span id="commentCount">0</span></h4>
                     <div class="comment-input-area">
-                        <textarea id="commentInput" placeholder="ëŒ“ê¸€ì„ ìž…ë ¥í•˜ì„¸ìš”..."></textarea>
-                        <button id="btnSubmitComment" class="btn-submit">ë“±ë¡</button>
+                        <textarea id="commentInput" placeholder="´ñ±ÛÀ» ÀÔ·ÂÇÏ¼¼¿ä..."></textarea>
+                        <button id="btnSubmitComment" class="btn-submit">µî·Ï</button>
                     </div>
                     <div id="commentsList" class="comments-list"></div>
                 </div>
@@ -188,8 +188,8 @@
         </div>
     </div>
 
-    <!-- Scripts: header.js(ì´ˆê¸°í™”) â†’ dev_mode â†’ notice â†’ notice_admin ìˆœì„œ ì¤‘ìš” -->
-    <script src="../bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03"></script>
+    <!-- Scripts: header.js(ÃÊ±âÈ­) ¡æ dev_mode ¡æ notice ¡æ notice_admin ¼ø¼­ Áß¿ä -->
+    <script src="../header.js?v=20260324_03"></script>
     <script src="../kakao_quick.js"></script>
     <script src="../dev_mode.js"></script>
     <script src="notice.js"></script>
