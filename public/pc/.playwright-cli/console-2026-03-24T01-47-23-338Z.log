@@ -1,9 +1,0 @@
-Total messages: 7 (Errors: 0, Warnings: 0)
-
-[LOG] %c[BSQ Admin] admin_recommend.js LOADED (Ver 2026.03.23-05) background:navy; color:yellow; padding:5px; @ http://127.0.0.1:8788/admin_dashboard/admin_recommend.js?v=20260323_05:13
-[LOG] [BSQ API] GET http://127.0.0.1:8788/api/auth/session?t=1774316837489 @ http://127.0.0.1:8788/bsq_server.js?v=20260324_01:112
-[LOG] [Admin Dashboard] Core initializing... @ http://127.0.0.1:8788/admin_dashboard/admin_core.js?v=20260323_03:27
-[LOG] [BSQ API] GET http://127.0.0.1:8788/api/admin/stats?range=7&t=1774316837491 @ http://127.0.0.1:8788/bsq_server.js?v=20260324_01:112
-[LOG] [BSQ Server] ??嚥≪뮄????類ㅼ뵥: ej210651392@gmail.com @ http://127.0.0.1:8788/bsq_server.js?v=20260324_01:259
-[LOG] [BSQ Server] ????뺤쒔 ?怨뚭퍙 ?λ뜃由???袁⑥┷ (D1 API 筌뤴뫀諭? {loggedIn: true, userId: user_b7a935e26112} @ http://127.0.0.1:8788/bsq_server.js?v=20260324_01:336
-[LOG] [Admin Dashboard] Mobile sidebar toggle initialized @ http://127.0.0.1:8788/admin_dashboard/admin_core.js?v=20260323_03:185

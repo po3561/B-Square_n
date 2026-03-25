@@ -16,29 +16,30 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Specific Next.js routes that should NOT be rewritten to PC (available on both)
   const isNextRoute = 
     pathname === '/debug' || 
     pathname === '/login' || 
     pathname === '/signup' ||
-    pathname.startsWith('/classes');
+    pathname.startsWith('/classes') ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/_next');
 
   if (isNextRoute) {
     return NextResponse.next();
   }
 
   // Routing Strategy:
-  // Mobile/Tablet -> Next.js App Router (already handling /)
-  // Desktop -> Legacy PC Web (served from public/pc)
+  // Mobile/Tablet -> Next.js App Router (handles / by default)
+  // Desktop -> Legacy PC Web (served from public/ as root)
   if (!isMobile) {
     // If accessing root, rewrite to the legacy entry point
-    if (pathname === '/') {
-      return NextResponse.rewrite(new URL('/pc/index.html', request.url));
+    if (pathname === '/' || pathname === '/index.html') {
+      return NextResponse.rewrite(new URL('/pc_index.html', request.url));
     }
     
-    // For other paths, try to find them in /pc
-    // This is a catch-all for legacy files
-    return NextResponse.rewrite(new URL(`/pc${pathname}`, request.url));
+    // For other paths, Next.js will automatically serve from public/
+    // Since we moved legacy files to public/, /main.js will work.
+    return NextResponse.next();
   }
 
   return NextResponse.next();

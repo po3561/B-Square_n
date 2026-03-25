@@ -1,9 +1,0 @@
-[GET] http://127.0.0.1:8788/api/auth/session?t=1774347874405 => [200] OK
-[GET] http://127.0.0.1:8788/api/friends?user_id=user_04d8b2d89340&pending=1&t=1774347874432 => [200] OK
-[GET] http://127.0.0.1:8788/api/friends?user_id=user_04d8b2d89340&t=1774347874433 => [200] OK
-[GET] http://127.0.0.1:8788/api/enrollments?user_id=user_04d8b2d89340&t=1774347874433 => [200] OK
-[GET] http://127.0.0.1:8788/api/site-settings => [200] OK
-[GET] http://127.0.0.1:8788/api/user-chats?user_id=user_04d8b2d89340&t=1774347874510 => [200] OK
-[GET] http://127.0.0.1:8788/api/user-chats?user_id=user_04d8b2d89340&t=1774347879533 => [200] OK
-[GET] http://127.0.0.1:8788/api/user-chats?user_id=user_04d8b2d89340&t=1774347884582 => [200] OK
-[GET] http://127.0.0.1:8788/api/user-chats?user_id=user_04d8b2d89340&t=1774347889621 => [200] OK

@@ -1,3 +1,0 @@
-[     300ms] TypeError: window.BSQ?.getUser is not a function
-    at applyAdminUI (http://127.0.0.1:8788/notice/notice_admin.js:27:34)
-    at HTMLDocument.<anonymous> (http://127.0.0.1:8788/notice/notice_admin.js:46:25)

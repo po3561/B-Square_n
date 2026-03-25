@@ -1,1 +1,0 @@
-- generic [ref=e2]: "{\"success\":false,\"error\":\"Failed to load admin stats\",\"detail\":\"D1_ERROR: no such column: created_at at offset 92: SQLITE_ERROR\"}"

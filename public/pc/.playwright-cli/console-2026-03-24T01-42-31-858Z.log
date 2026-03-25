@@ -1,4 +1,0 @@
-[     528ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:8788/api/admin/stats?range=7&t=1774316552011:0
-[     531ms] [ERROR] [BSQ API] /api/admin/stats?range=7 fetch error: Error: Failed to load admin stats / D1_ERROR: no such column: created_at at offset 92: SQLITE_ERROR
-    at Object.apiCall [as api] (http://127.0.0.1:8788/bsq_server.js?v=20260324_01:159:27)
-    at async initDashboard (http://127.0.0.1:8788/admin_dashboard/admin_dashboard.js?v=20260323_02:11:20) @ http://127.0.0.1:8788/bsq_server.js?v=20260324_01:188

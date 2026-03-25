@@ -1,4 +1,0 @@
-[     891ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:8788/api/admin/stats?range=7&t=1774316502732:0
-[   37593ms] [ERROR] [BSQ API] /api/admin/stats?range=7 fetch error: Error: 로그인이 필요합니다.
-    at Object.apiCall [as api] (http://127.0.0.1:8788/bsq_server.js?v=20260324_01:159:27)
-    at async initDashboard (http://127.0.0.1:8788/admin_dashboard/admin_dashboard.js?v=20260323_02:11:20) @ http://127.0.0.1:8788/bsq_server.js?v=20260324_01:188

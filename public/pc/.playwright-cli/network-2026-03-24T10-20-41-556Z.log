@@ -1,3 +1,0 @@
-[GET] http://127.0.0.1:8788/api/auth/session?t=1774347633561 => [200] OK
-[GET] http://127.0.0.1:8788/api/site-settings => [200] OK
-[GET] http://127.0.0.1:8788/api/site-settings => [200] OK
