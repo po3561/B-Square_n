@@ -1,1 +1,10 @@
-node_modules
+node_modules/
+.next/
+.wrangler/
+.env
+.env.local
+*.sql
+*.log
+.codex_tmp/
+.playwright-cli/
+client_secret_*.json

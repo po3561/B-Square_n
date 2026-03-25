@@ -1,6 +1,6 @@
 name = "b-square-web"
 compatibility_date = "2024-03-19"
-pages_build_output_dir = ".vercel/output/static"
+pages_build_output_dir = "."
 
 [[d1_databases]]
 binding = "DB" 
