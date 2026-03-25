@@ -149,7 +149,12 @@ function renderUserRow(user) {
 
   return `
     <tr data-user-row="1" data-user-id="${escapeHtml(user.id)}" style="cursor:pointer;">
-      <td><strong>${escapeHtml(nickname)}</strong></td>
+      <td>
+        <div style="display:flex; align-items:center; gap:0.4rem;">
+          <strong style="white-space:nowrap;">${escapeHtml(nickname)}</strong>
+          ${user.referrer_code ? '<span style="font-size:0.65rem; padding:0.1rem 0.35rem; background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; border-radius:4px; font-weight:600; white-space:nowrap;">스페셜</span>' : ''}
+        </div>
+      </td>
       <td>${escapeHtml(name)}</td>
       <td>${escapeHtml(phone)}</td>
       <td>${escapeHtml(email)}</td>

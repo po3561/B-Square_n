@@ -243,7 +243,10 @@
           <div style="display:flex; align-items:center; gap:0.75rem;">
             <img src="${escapeHtml(avatarUrl(user))}" alt="" style="width:36px; height:36px; border-radius:999px; object-fit:cover; border:1px solid #e5e7eb; background:#f8fafc;">
             <div>
-              <div style="font-weight:700; line-height:1.25;">${escapeHtml(nickname)}</div>
+              <div style="display:flex; align-items:center; gap:0.4rem;">
+                <div style="font-weight:700; line-height:1.25;">${escapeHtml(nickname)}</div>
+                ${user.referrer_code ? '<span style="font-size:0.65rem; padding:0.1rem 0.35rem; background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; border-radius:4px; font-weight:600;">스페셜</span>' : ''}
+              </div>
               <div style="font-size:0.75rem; color:#64748b;">${escapeHtml(user.username || user.nickname || user.id || '')}</div>
             </div>
           </div>

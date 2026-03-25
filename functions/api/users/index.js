@@ -94,6 +94,7 @@ export async function onRequestGet(context) {
         u.blacklist_reason,
         u.role_updated_by,
         u.role_updated_at,
+        u.referrer_code,
         u.created_at,
         u.updated_at,
         c.title AS recent_class_title,

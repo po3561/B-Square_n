@@ -101,7 +101,7 @@ async function loadMemberDetail(db, userId) {
       birth_year, birth_month, birth_day, gender, nationality, sns_link,
       preferred_category, operator_seq, role_updated_by, role_updated_at,
       is_blacklisted, blacklisted_at, blacklisted_by, blacklist_reason,
-      created_at, updated_at
+      referrer_code, created_at, updated_at
     FROM users
     WHERE id = ?
   `, [userId]));
