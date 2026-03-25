@@ -210,7 +210,7 @@
                 <h4>정책</h4>
                 <a id="footerPrivacyLink" href="${homePrefix}terms_privacy.html">개인정보처리방침</a>
                 <a id="footerTermsLink" href="${homePrefix}terms_use.html">이용약관</a>
-                <a href="#">환불 정책</a
+                <a href="#">환불 정책</a>
               </section>
 
               <section class="footer-link-column">
