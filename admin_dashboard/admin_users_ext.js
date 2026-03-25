@@ -1281,6 +1281,7 @@
             <div style="min-width:0; display:grid; gap:0.28rem;">
               <div style="display:flex; align-items:center; gap:0.45rem; min-width:0; flex-wrap:wrap;">
                 <div style="font-weight:700; line-height:1.25; min-width:0; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(nickname)}">${escapeHtml(nickname)}</div>
+                ${user.referrer_code ? '<span style="font-size:0.65rem; padding:0.1rem 0.35rem; background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; border-radius:4px; font-weight:600; white-space:nowrap; flex:0 0 auto;">스페셜</span>' : ''}
                 <span class="admin-badge ${role.badge}" style="white-space:nowrap; flex:0 0 auto;">${escapeHtml(role.label)}</span>
               </div>
               <div style="font-size:0.75rem; color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(accountLabel)}">@${escapeHtml(accountLabel)}</div>
