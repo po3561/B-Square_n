@@ -66,6 +66,18 @@
     return ROLE_META[normalizeRole(role)] || ROLE_META.user;
   }
 
+  function getReferrerLabel(code) {
+    if (!code) return '-';
+    const mapping = {
+      aj001: '중부1', aj002: '중부2', aj003: '중부3', aj004: '중부4', aj005: '중부5',
+      ab001: '북부1', ab002: '북부2', ab003: '북부3', ab004: '북부4', ab005: '북부5',
+      ac001: '동부1', ac002: '동부2', ac003: '동부3', ac004: '동부4', ac005: '동부5',
+      as001: '대학1', as002: '대학2', as003: '대학3', as004: '대학4',
+      cs020: '행정',
+    };
+    return mapping[code] || code;
+  }
+
   function formatDate(value) {
     if (!value) return '-';
     const date = new Date(value);
@@ -707,6 +719,7 @@
         <div><div style="color:#64748b; font-size:0.75rem;">회원등급</div><div style="font-weight:600;">${escapeHtml(user.membership_level || '-')}</div></div>
         <div><div style="color:#64748b; font-size:0.75rem;">운영자 번호</div><div style="font-weight:600;">${escapeHtml(user.operator_seq ? `#${user.operator_seq}` : '-')}</div></div>
         <div><div style="color:#64748b; font-size:0.75rem;">최근 수강</div><div style="font-weight:600;">${escapeHtml(recentClass)}</div></div>
+        <div><div style="color:#64748b; font-size:0.75rem;">추천인 상세</div><div style="font-weight:600; color:var(--admin-primary);">${escapeHtml(getReferrerLabel(user.referrer_code))}</div></div>
         <div><div style="color:#64748b; font-size:0.75rem;">블랙리스트 상태</div><div style="font-weight:600;">${blacklisted ? '<span class="admin-badge danger">블랙리스트</span>' : '<span class="admin-badge muted">정상</span>'}</div></div>
       </div>
     `;
@@ -782,6 +795,7 @@
           <div style="display:grid; gap:0.85rem;">
             <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;">
               <span class="admin-badge ${role.badge}">${escapeHtml(role.label)}</span>
+              ${user.referrer_code ? '<span class="admin-badge success" style="background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd;">스페셜 회원</span>' : ''}
               <span class="admin-badge muted">${escapeHtml(user.membership_level || '일반')}</span>
               <span class="admin-badge ${blacklisted ? 'danger' : 'muted'}">${blacklisted ? '블랙리스트' : '정상'}</span>
             </div>
@@ -789,6 +803,7 @@
               <div><div style="font-size:0.75rem; color:#64748b;">닉네임</div><div style="font-weight:600;">${escapeHtml(user.username || '-')}</div></div>
               <div><div style="font-size:0.75rem; color:#64748b;">이름</div><div style="font-weight:600;">${escapeHtml(user.name || '-')}</div></div>
               <div><div style="font-size:0.75rem; color:#64748b;">연락처</div><div style="font-weight:600;">${escapeHtml(user.phone || '-')}</div></div>
+              <div><div style="font-size:0.75rem; color:#64748b;">청년회 소속 지역</div><div style="font-weight:600; color:#0369a1;">${escapeHtml(getReferrerLabel(user.referrer_code))}</div></div>
               <div><div style="font-size:0.75rem; color:#64748b;">이메일</div><div style="font-weight:600;">${escapeHtml(user.email || '-')}</div></div>
               <div><div style="font-size:0.75rem; color:#64748b;">생년월일</div><div style="font-weight:600;">${escapeHtml(user.birthdate || '-')}</div></div>
               <div><div style="font-size:0.75rem; color:#64748b;">가입일</div><div style="font-weight:600;">${escapeHtml(formatDate(user.signup_date || user.created_at))}</div></div>
