@@ -1,0 +1,200 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - heading "B-Square 홈으로 이동" [level=1] [ref=e5]:
+        - link "B-Square 홈으로 이동" [ref=e6] [cursor=pointer]:
+          - /url: index.html
+          - img "B-Square 로고" [ref=e7]
+      - navigation "주요 메뉴" [ref=e8]:
+        - list [ref=e9]:
+          - listitem [ref=e10]:
+            - link "클래스" [ref=e11] [cursor=pointer]:
+              - /url: ../class/class_list.html
+          - listitem [ref=e12]:
+            - link "등록" [ref=e13] [cursor=pointer]:
+              - /url: ../create_class/create_class.html
+          - listitem [ref=e14]:
+            - link "공지사항" [ref=e15] [cursor=pointer]:
+              - /url: ../notice/notice.html
+          - listitem [ref=e16]:
+            - link "문의" [ref=e17] [cursor=pointer]:
+              - /url: ../contact/contact.html
+          - listitem [ref=e18]:
+            - link "커뮤니티" [ref=e19] [cursor=pointer]:
+              - /url: ../community/community.html
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - textbox "검색어를 입력하세요" [ref=e22]
+          - button "검색" [ref=e23] [cursor=pointer]
+        - generic [ref=e24]:
+          - link "👤 Codex Test" [ref=e25] [cursor=pointer]:
+            - /url: ../mi_pesg/mypage.html
+            - generic [ref=e26]: 👤
+            - generic [ref=e27]: Codex Test
+          - button "로그아웃" [ref=e28] [cursor=pointer]
+  - main [ref=e29]:
+    - generic [ref=e31]:
+      - article [ref=e32]:
+        - generic [ref=e33]:
+          - img "배너 1" [ref=e35]
+          - img "배너 2" [ref=e37]
+          - generic:
+            - button "banner navigation" [ref=e38] [cursor=pointer]:
+              - img [ref=e39]
+            - generic:
+              - button "배너 1"
+              - button "배너 2"
+            - button "banner navigation" [ref=e41] [cursor=pointer]:
+              - img [ref=e42]
+      - navigation "메인 카테고리" [ref=e44]:
+        - generic [ref=e46]:
+          - link "소모임/동아리" [ref=e47] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e49]
+            - generic [ref=e51]: 소모임/동아리
+          - link "맛있는 클래스" [ref=e52] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e54]
+            - generic [ref=e56]: 맛있는 클래스
+          - link "운동 클래스" [ref=e57] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e59]
+            - generic [ref=e60]: 운동 클래스
+          - link "디자인" [ref=e61] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e63]
+            - generic [ref=e66]: 디자인
+          - link "생산성" [ref=e67] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e69]
+            - generic [ref=e71]: 생산성
+          - link "스포츠" [ref=e72] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e74]
+            - generic [ref=e75]: 스포츠
+          - link "디지털 드로잉" [ref=e76] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e78]
+            - generic [ref=e81]: 디지털 드로잉
+          - link "성공 마인드" [ref=e82] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e84]
+            - generic [ref=e86]: 성공 마인드
+          - link "음악" [ref=e87] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e89]
+            - generic [ref=e93]: 음악
+          - link "요리" [ref=e94] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e96]
+            - generic [ref=e99]: 요리
+          - link "베이킹" [ref=e100] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e102]
+            - generic [ref=e105]: 베이킹
+          - link "사진" [ref=e106] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e108]
+            - generic [ref=e112]: 사진
+          - link "영상" [ref=e113] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e115]
+            - generic [ref=e119]: 영상
+          - link "공예" [ref=e120] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e122]
+            - generic [ref=e125]: 공예
+          - link "여행" [ref=e126] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e128]
+            - generic [ref=e130]: 여행
+    - article [ref=e134]:
+      - heading "전체 클래스 살펴보기" [level=3] [ref=e135]
+    - generic [ref=e137]: 배너
+  - contentinfo [ref=e138]:
+    - generic [ref=e139]:
+      - generic [ref=e140]:
+        - generic [ref=e141]:
+          - heading "고객센터" [level=3] [ref=e142]
+          - paragraph [ref=e143]: 오전 10시 ~ 오후 6시 (주말, 공휴일 제외)
+          - button "문의하기" [ref=e144] [cursor=pointer]
+          - generic "앱 다운로드" [ref=e145]:
+            - link "App Store에서 다운로드" [ref=e146] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e147]: 
+              - generic [ref=e148]:
+                - strong [ref=e149]: App Store에서
+                - generic [ref=e150]: 다운로드 하기
+            - link "Google Play에서 다운로드" [ref=e151] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e152]: ▶
+              - generic [ref=e153]:
+                - strong [ref=e154]: Google Play에서
+                - generic [ref=e155]: 다운로드
+          - generic "소셜 링크" [ref=e156]:
+            - link "IG 인스타그램" [ref=e157] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e158]: IG
+              - generic [ref=e159]: 인스타그램
+            - link "YT 유튜브" [ref=e160] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e161]: YT
+              - generic [ref=e162]: 유튜브
+        - generic [ref=e163]:
+          - generic [ref=e164]:
+            - heading "공지사항" [level=4] [ref=e165]
+            - link "전체 카테고리" [ref=e166] [cursor=pointer]:
+              - /url: ../notice/notice.html
+            - link "헬프센터" [ref=e167] [cursor=pointer]:
+              - /url: ../notice/notice.html
+            - link "지원 기기 및 이용환경" [ref=e168] [cursor=pointer]:
+              - /url: ../contact/contact.html
+          - generic [ref=e169]:
+            - heading "크리에이터 지원" [level=4] [ref=e170]
+            - link "지식재산권 침해 신고 센터" [ref=e171] [cursor=pointer]:
+              - /url: ../notice/notice.html
+            - link "국비 지원" [ref=e172] [cursor=pointer]:
+              - /url: ../contact/contact.html
+            - link "기업고객 문의" [ref=e173] [cursor=pointer]:
+              - /url: ../contact/contact.html
+            - link "클래스 개설 구매" [ref=e174] [cursor=pointer]:
+              - /url: ../create_class/create_class.html
+          - generic [ref=e175]:
+            - heading "정책" [level=4] [ref=e176]
+            - link "개인정보 처리방침" [ref=e177] [cursor=pointer]:
+              - /url: ../terms_privacy.html
+              - strong [ref=e178]: 개인정보 처리방침
+            - link "이용약관" [ref=e179] [cursor=pointer]:
+              - /url: ../terms_use.html
+            - link "기프트카드 및 캐시 이용약관" [ref=e180] [cursor=pointer]:
+              - /url: ../terms_use.html#giftcard
+            - link "환불 정책" [ref=e181] [cursor=pointer]:
+              - /url: "#"
+            - link "청소년 보호 정책" [ref=e182] [cursor=pointer]:
+              - /url: "#"
+          - generic [ref=e183]:
+            - heading "사업자 정보 확인" [level=4] [ref=e184]
+            - link "제휴 및 대외협력" [ref=e185] [cursor=pointer]:
+              - /url: "#"
+            - link "채용" [ref=e186] [cursor=pointer]:
+              - /url: "#"
+            - link "고객센터" [ref=e187] [cursor=pointer]:
+              - /url: ../contact/contact.html
+      - generic [ref=e188]:
+        - generic "바로가기" [ref=e189]:
+          - link "이용약관" [ref=e190] [cursor=pointer]:
+            - /url: ../terms_use.html
+          - link "개인정보처리방침" [ref=e191] [cursor=pointer]:
+            - /url: ../terms_privacy.html
+            - strong [ref=e192]: 개인정보처리방침
+          - link "고객센터" [ref=e193] [cursor=pointer]:
+            - /url: ../contact/contact.html
+        - paragraph [ref=e194]: 대표 dkssud
+        - paragraph [ref=e195]:
+          - link "사업자 정보 자세히 보기 >" [ref=e196] [cursor=pointer]:
+            - /url: ../contact/contact.html
+        - paragraph [ref=e197]: © B-Square. All rights reserved.
+  - generic [ref=e198] [cursor=pointer]:
+    - generic [ref=e201]: BSQ NETWORK
+    - generic [ref=e202]: "DB: LOCAL (Wrangler)"
+    - generic [ref=e203]: "User: Codex Test"

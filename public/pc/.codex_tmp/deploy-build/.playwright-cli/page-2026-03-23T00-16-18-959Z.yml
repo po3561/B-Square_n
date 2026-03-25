@@ -1,0 +1,182 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - heading "💠 클래스" [level=1] [ref=e5]:
+        - link "💠 클래스" [ref=e6] [cursor=pointer]:
+          - /url: ../bsnnnnnnnnnnnnnnnnnn/index.html
+          - generic [ref=e7]: 💠
+          - text: 클래스
+      - navigation [ref=e8]:
+        - list [ref=e9]:
+          - listitem [ref=e10]:
+            - link "클래스" [ref=e11] [cursor=pointer]:
+              - /url: ../class/class_list.html
+          - listitem [ref=e12]:
+            - link "등록" [ref=e13] [cursor=pointer]:
+              - /url: ../create_class/create_class.html
+          - listitem [ref=e14]:
+            - link "공지사항" [ref=e15] [cursor=pointer]:
+              - /url: ../notice/notice.html
+          - listitem [ref=e16]:
+            - link "문의" [ref=e17] [cursor=pointer]:
+              - /url: ../contact/contact.html
+          - listitem [ref=e18]:
+            - link "커뮤니티" [ref=e19] [cursor=pointer]:
+              - /url: ../community/community.html
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - textbox "검색어를 입력하세요" [ref=e22]
+          - button "🔍" [ref=e23] [cursor=pointer]
+        - generic [ref=e24]:
+          - link "권오영" [ref=e25] [cursor=pointer]:
+            - /url: ../mi_pesg/mypage.html
+            - generic [ref=e27]: 권오영
+          - button "로그아웃" [ref=e28] [cursor=pointer]
+  - main [ref=e29]:
+    - generic [ref=e34]:
+      - img "클래스 이미지 1" [ref=e37]
+      - button "❮" [ref=e38] [cursor=pointer]
+      - button "❯" [ref=e39] [cursor=pointer]
+      - generic [ref=e40]: 1 / 3
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - button "소개" [ref=e44] [cursor=pointer]
+          - button "공지사항" [ref=e45] [cursor=pointer]
+          - button "커리큘럼" [ref=e46] [cursor=pointer]
+          - button "수강 후기" [ref=e47] [cursor=pointer]
+          - button "클래스 채널" [ref=e48] [cursor=pointer]
+        - generic [ref=e50]:
+          - paragraph [ref=e52]: 영상을 배우고 싶은데 너무 비싸다구요? 배움의 벽이 너무 높으신가요? 현직 초중고 놀이마루 영상제작 강사가 알려주는 영상제작의 기초부터 알아가보세요!
+          - generic [ref=e54]:
+            - heading "📝 클래스 소개" [level=3] [ref=e55]
+            - generic [ref=e56]:
+              - paragraph [ref=e57]:
+                - img [ref=e58]
+              - paragraph [ref=e59]: 🎥초보자를 위한 영상 제작 기초 클레스 - '영작클레스'🎥
+              - paragraph [ref=e60]
+              - paragraph [ref=e61]: 영상을 배우고 싶은데 너무 비싸다구요? 배움의 벽이 너무 높으신가요?
+              - paragraph [ref=e62]: 현직 초중고 놀이마루 영상제작 강사가 알려주는 영상제작의 기초부터 알아가보세요!
+              - paragraph [ref=e63]
+              - paragraph [ref=e64]: 🎞어렵기만 했던 영상제작을 누구나 쉽게 알려드립니다!
+              - paragraph [ref=e65]: 이론부터 차근차근 쌓아가는 기초와 단일 체험 촬영과 편집까지!
+              - paragraph [ref=e66]
+              - paragraph [ref=e67]: ✅ 클래스 소개
+              - paragraph [ref=e68]: 1. 초보자를 위한 영상제작의 기초와 미디어 콘텐츠 제작의 이해 이론 (10~20분)
+              - paragraph [ref=e69]: 2. 영상 기획 스토리 보드 작성
+              - paragraph [ref=e70]: 3. 촬영장비 설정법과 편집툴 설정
+              - paragraph [ref=e71]: 4. 촬영 및 편집
+              - paragraph [ref=e72]: 5. 제작 영상 시사회후 영상 피드백
+              - paragraph [ref=e73]
+              - paragraph [ref=e74]: ✅ 클래스 운영 코스
+              - paragraph [ref=e75]: 1. [2시간 단기 코스]
+              - paragraph [ref=e76]: "- 이론과 스토리 보드 제작후 결과물은 개별 단체방 공유"
+              - paragraph [ref=e77]: 2. [2회 초초보자 코스(선택적 팀 운영)]
+              - paragraph [ref=e78]: "- 1회 : 스토리보드와 촬영 및 편집 계획 수립"
+              - paragraph [ref=e79]: "- 2회 : 촬영과 편집후 단체 시사회"
+              - paragraph [ref=e80]
+              - paragraph [ref=e81]: ✅ 일시
+              - paragraph [ref=e82]: ※평일 오후 16시 이후 자율 조율 가능
+              - paragraph [ref=e83]
+              - paragraph [ref=e84]
+              - paragraph [ref=e85]: ⚠️‼️기본 규칙‼️⚠️
+              - paragraph [ref=e86]
+              - paragraph [ref=e87]: 1️⃣ 영상 배우면서 친목 가능
+              - paragraph [ref=e88]: "- 영상에 관심있는 사람 누구나 가능!"
+              - paragraph [ref=e89]: 2️⃣ 일일참석은 계좌 바로 입금!
+              - paragraph [ref=e90]: "- 당일 취소 불가능,양도가능"
+              - paragraph [ref=e91]: 3️⃣ 당일 노쇼는 절대금지❗️
+              - paragraph [ref=e92]: 4️⃣ 이성 목적❌, 다단계❌, 사이비❌ 절대 불가
+              - paragraph [ref=e93]
+              - paragraph [ref=e94]: 💵교육비💵
+              - paragraph [ref=e95]: "스터디 카페비용 : N/1"
+              - paragraph [ref=e96]
+              - paragraph [ref=e97]: ⚠️해당 교육 및 클레스는 교육저작권의 보호를 받고 있습니다.⚠️
+              - paragraph [ref=e98]
+              - paragraph [ref=e99]: "☎️문의 :"
+              - paragraph [ref=e100]: 영상제작 강사 권오영/010-7285-0134
+          - generic [ref=e102]:
+            - heading "🎯 이런 분들을 위한 클래스입니다" [level=3] [ref=e103]
+            - list [ref=e104]:
+              - listitem [ref=e105]:
+                - generic [ref=e106]: ✓
+                - text: ⚠️‼️기본 규칙‼️⚠️
+              - listitem [ref=e107]:
+                - generic [ref=e108]: ✓
+                - text: 1️⃣ 영상 배우면서 친목 가능
+              - listitem [ref=e109]:
+                - generic [ref=e110]: ✓
+                - text: "- 영상에 관심있는 사람 누구나 가능!"
+              - listitem [ref=e111]:
+                - generic [ref=e112]: ✓
+                - text: 2️⃣ 일일참석은 계좌 바로 입금!
+              - listitem [ref=e113]:
+                - generic [ref=e114]: ✓
+                - text: "- 당일 취소 불가능,양도가능"
+              - listitem [ref=e115]:
+                - generic [ref=e116]: ✓
+                - text: 3️⃣ 당일 노쇼는 절대금지❗️
+              - listitem [ref=e117]:
+                - generic [ref=e118]: ✓
+                - text: 4️⃣ 이성 목적❌, 다단계❌, 사이비❌ 절대 불가
+          - heading "🎓 이 클래스에서 배우는 것" [level=3] [ref=e121]
+        - text:           
+      - complementary [ref=e122]:
+        - generic [ref=e123]:
+          - heading "🎥초보자를 위한 영상 제작 기초 클레스 - '영작클레스'🎥" [level=2] [ref=e124]
+          - generic [ref=e125]:
+            - generic [ref=e126]: 영상
+            - generic [ref=e127]: "|"
+            - generic [ref=e128]: 입문자
+          - generic [ref=e129]:
+            - generic [ref=e130]: ⭐
+            - generic [ref=e131]: "0.0"
+            - generic [ref=e132]: (후기 0개)
+          - generic [ref=e133]:
+            - generic [ref=e134]: 5,000원 12% 4,400원
+            - paragraph [ref=e135]: 월 880원 (5개월 할부 시)
+          - generic [ref=e136]:
+            - generic [ref=e137]: ⏰ 7일 후 얼리버드 마감
+            - generic [ref=e138] [cursor=pointer]: 🎫 신규 가입 1만원 쿠폰 적용 가능
+          - button "지금 바로 시작하기" [ref=e140] [cursor=pointer]
+  - text:  
+  - contentinfo [ref=e141]:
+    - generic [ref=e142]:
+      - generic [ref=e143]:
+        - link "📷 인스타그램" [ref=e144] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e145]: 📷
+          - paragraph [ref=e146]: 인스타그램
+        - link "▶️ 유튜브" [ref=e147] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e148]: ▶️
+          - paragraph [ref=e149]: 유튜브
+      - generic [ref=e150]:
+        - heading "고객센터" [level=4] [ref=e151]
+        - paragraph [ref=e152]: 오전 10시 ~ 오후 6시 (주말, 공휴일 제외)
+        - button "문의하기" [ref=e153] [cursor=pointer]
+    - generic [ref=e154]:
+      - list [ref=e155]:
+        - listitem [ref=e156]:
+          - link "회사소개" [ref=e157] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=e158]:
+          - link "이용약관" [ref=e159] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=e160]:
+          - link "개인정보처리방침" [ref=e161] [cursor=pointer]:
+            - /url: "#"
+            - strong [ref=e162]: 개인정보처리방침
+        - listitem [ref=e163]:
+          - link "고객센터" [ref=e164] [cursor=pointer]:
+            - /url: "#"
+      - generic [ref=e165]:
+        - strong [ref=e166]: 비스퀘어
+        - paragraph [ref=e167]: "대표 : OOO | 사업자등록번호 : OOO-OO-OOOOO"
+        - paragraph [ref=e168]: "통신판매업신고 : 2024-부산-0000 | 이메일 : help@example.com"
+        - paragraph [ref=e169]: "주소 : 부산광역시 OOO OOO"
+      - paragraph [ref=e170]: © Bisquare. All rights reserved.
+  - generic [ref=e171] [cursor=pointer]:
+    - generic [ref=e174]: BSQ NETWORK
+    - generic [ref=e175]: "DB: PRODUCTION (Remote)"
+    - generic [ref=e176]: "User: 권오영"

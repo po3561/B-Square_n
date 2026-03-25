@@ -1,0 +1,7 @@
+[GET] http://127.0.0.1:8788/api/auth/session?t=1774347737140 => [200] OK
+[GET] http://127.0.0.1:8788/api/classes/cls_fa13cf0e318b4483?t=1774347737164 => [200] OK
+[GET] http://127.0.0.1:8788/api/site-settings => [200] OK
+[GET] http://127.0.0.1:8788/api/enrollments?user_id=user_04d8b2d89340&class_id=cls_fa13cf0e318b4483&t=1774347737204 => [200] OK
+[GET] http://127.0.0.1:8788/api/user-passes?user_id=user_04d8b2d89340&t=1774347737205 => [200] OK
+[GET] http://127.0.0.1:8788/api/reviews?class_id=cls_fa13cf0e318b4483&t=1774347737259 => [200] OK
+[GET] http://127.0.0.1:8788/api/class-notices?class_id=cls_fa13cf0e318b4483 => [200] OK

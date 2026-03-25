@@ -1,0 +1,249 @@
+/* class_list.css */
+
+.class-list-main {
+    padding-top: 3rem;
+    min-height: 80vh;
+}
+
+.section-inner {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+/* Category grid styles are now handled by .category-sidebar in style_pc.css */
+
+.class-page-overrides .class-grid-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.class-page-overrides .group-title {
+    font-size: 1.5rem;
+    color: #fff;
+}
+
+.class-page-overrides .list-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* 검색 입력 */
+.class-search-input {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 8px 16px;
+    color: #fff;
+    font-size: 0.9rem;
+    outline: none;
+    width: 200px;
+    transition: all 0.3s ease;
+}
+
+.class-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.class-search-input:focus {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.12);
+    width: 260px;
+}
+
+/* 정렬 드롭다운 */
+.sort-select {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 8px 16px;
+    color: #fff;
+    font-size: 0.85rem;
+    cursor: pointer;
+    outline: none;
+    min-width: auto;
+    min-height: auto;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23aaa' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+.sort-select option {
+    background: #1a1a1a;
+    color: #fff;
+}
+
+/* 총 개수 뱃지 */
+.total-count {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #a0a0a0);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 6px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* New Badge Styling */
+.badge-new {
+    position: absolute;
+    top: -12px;
+    left: -12px;
+    background: linear-gradient(135deg, #ff4757, #ff6b81);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+    z-index: 10;
+    letter-spacing: 0.5px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(255, 71, 87, 0.6);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+    }
+}
+
+/* Ensure the card has relative positioning for the absolute badge */
+.class-page-overrides .class-card {
+    position: relative;
+    overflow: visible;
+    /* so badge can spill outside slightly */
+}
+
+.class-page-overrides .card-thumbnail {
+    border-radius: 16px;
+    height: 180px;
+    margin-bottom: 1rem;
+    background-color: #2a2a2a;
+    background-position: center;
+    background-size: cover;
+}
+
+/* =========================================
+   Responsive & Mobile Optimization
+========================================= */
+@media (max-width: 1024px) {
+    .section-inner {
+        padding: 0 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .class-list-main {
+        padding-top: 1.5rem;
+    }
+
+    /* Mobile category styles are now handled by @media in style_pc.css */
+
+    .class-page-overrides .class-grid-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 1.5rem;
+    }
+
+    .class-page-overrides .group-title {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .class-page-overrides .card-thumbnail {
+        height: 140px;
+    }
+
+    .class-page-overrides .group-title {
+        font-size: 1.15rem;
+    }
+}
+
+@media (max-width: 320px) {
+    .section-inner {
+        padding: 0 1rem;
+    }
+
+    .class-page-overrides .card-thumbnail {
+        height: 120px;
+    }
+
+    .category-grid li a {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 210px) {
+    .section-inner {
+        padding: 0 0.4rem;
+    }
+
+    .class-list-main {
+        padding-top: 0.8rem;
+    }
+
+    .category-header-section {
+        margin-bottom: 0.8rem;
+    }
+
+    .category-grid li a {
+        padding: 4px 8px;
+        font-size: 0.65rem;
+        gap: 4px;
+    }
+
+    .class-page-overrides .card-thumbnail {
+        height: 80px;
+    }
+
+    .class-page-overrides .group-title {
+        font-size: 0.9rem;
+    }
+
+    .class-page-overrides .list-controls {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
+}
+
+/* =========================================
+   Card Fade-In Animation
+========================================= */
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-animate {
+    animation: cardFadeIn 0.4s ease forwards;
+    opacity: 0;
+}

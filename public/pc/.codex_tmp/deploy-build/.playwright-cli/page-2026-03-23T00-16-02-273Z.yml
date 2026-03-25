@@ -1,0 +1,147 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - heading "💠 클래스" [level=1] [ref=e5]:
+        - link "💠 클래스" [ref=e6] [cursor=pointer]:
+          - /url: index.html
+          - generic [ref=e7]: 💠
+          - text: 클래스
+      - navigation [ref=e8]:
+        - list [ref=e9]:
+          - listitem [ref=e10]:
+            - link "클래스" [ref=e11] [cursor=pointer]:
+              - /url: ../class/class_list.html
+          - listitem [ref=e12]:
+            - link "등록" [ref=e13] [cursor=pointer]:
+              - /url: ../create_class/create_class.html
+          - listitem [ref=e14]:
+            - link "공지사항" [ref=e15] [cursor=pointer]:
+              - /url: ../notice/notice.html
+          - listitem [ref=e16]:
+            - link "문의" [ref=e17] [cursor=pointer]:
+              - /url: ../contact/contact.html
+          - listitem [ref=e18]:
+            - link "커뮤니티" [ref=e19] [cursor=pointer]:
+              - /url: ../community/community.html
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - textbox "검색어를 입력하세요" [ref=e22]
+          - button "🔍" [ref=e23] [cursor=pointer]
+        - generic [ref=e24]:
+          - link "권오영" [ref=e25] [cursor=pointer]:
+            - /url: ../mi_pesg/mypage.html
+            - generic [ref=e27]: 권오영
+          - button "로그아웃" [ref=e28] [cursor=pointer]
+  - main [ref=e29]:
+    - generic [ref=e31]:
+      - article [ref=e32]:
+        - heading "광고" [level=2] [ref=e34]
+      - navigation [ref=e35]:
+        - list [ref=e36]:
+          - listitem [ref=e37]:
+            - link "디자인" [ref=e38] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e40]
+              - text: 디자인
+          - listitem [ref=e45]:
+            - link "생산성" [ref=e46] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e48]
+              - text: 생산성
+          - listitem [ref=e51]:
+            - link "스포츠" [ref=e52] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e54]
+              - text: 스포츠
+          - listitem [ref=e58]:
+            - link "디지털 드로잉" [ref=e59] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e61]
+              - text: 디지털 드로잉
+          - listitem [ref=e63]:
+            - link "성공 마인드" [ref=e64] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e66]
+              - text: 성공 마인드
+          - listitem [ref=e69]:
+            - link "음악" [ref=e70] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e72]
+              - text: 음악
+          - listitem [ref=e76]:
+            - link "베이킹" [ref=e77] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e79]
+              - text: 베이킹
+          - listitem [ref=e83]:
+            - link "사진" [ref=e84] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e86]
+              - text: 사진
+          - listitem [ref=e89]:
+            - link "영상" [ref=e90] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e92]
+              - text: 영상
+          - listitem [ref=e94]:
+            - link "공예" [ref=e95] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e97]
+              - text: 공예
+    - article [ref=e102]:
+      - heading "전체 클래스 살펴보기" [level=3] [ref=e103]
+      - generic [ref=e105] [cursor=pointer]:
+        - generic [ref=e106]:
+          - img "🎥초보자를 위한 영상 제작 기초 클레스 - '영작클레스'🎥" [ref=e107]
+          - generic [ref=e109]: 12% 할인
+          - button "🤍" [ref=e110]
+        - generic [ref=e111]:
+          - generic [ref=e112]: 영상
+          - heading "🎥초보자를 위한 영상 제작 기초 클레스 - '영작클레스'🎥" [level=4] [ref=e113]
+          - generic [ref=e114]: 강사
+          - generic [ref=e115]: ⭐ 2.0 (2)
+          - generic [ref=e116]: 12% 4,400원
+    - generic [ref=e118]:
+      - button "⬅️" [ref=e119] [cursor=pointer]
+      - paragraph [ref=e121]: 배너
+      - button "➡️" [ref=e122] [cursor=pointer]
+  - contentinfo [ref=e123]:
+    - generic [ref=e124]:
+      - generic [ref=e125]:
+        - link "📷 인스타그램" [ref=e126] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e127]: 📷
+          - paragraph [ref=e128]: 인스타그램
+        - link "▶️ 유튜브" [ref=e129] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e130]: ▶️
+          - paragraph [ref=e131]: 유튜브
+      - generic [ref=e132]:
+        - heading "고객센터" [level=4] [ref=e133]
+        - paragraph [ref=e134]: 오전 10시 ~ 오후 6시 (주말, 공휴일 제외)
+        - button "문의하기" [ref=e135] [cursor=pointer]
+    - generic [ref=e136]:
+      - list [ref=e137]:
+        - listitem [ref=e138]:
+          - link "회사소개" [ref=e139] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=e140]:
+          - link "이용약관" [ref=e141] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=e142]:
+          - link "개인정보처리방침" [ref=e143] [cursor=pointer]:
+            - /url: "#"
+            - strong [ref=e144]: 개인정보처리방침
+        - listitem [ref=e145]:
+          - link "고객센터" [ref=e146] [cursor=pointer]:
+            - /url: "#"
+      - generic [ref=e147]:
+        - strong [ref=e148]: 비스퀘어
+        - paragraph [ref=e149]: "대표 : OOO | 사업자등록번호 : OOO-OO-OOOOO"
+        - paragraph [ref=e150]: "통신판매업신고 : 2024-부산-0000 | 이메일 : help@example.com"
+        - paragraph [ref=e151]: "주소 : 부산광역시 OOO OOO"
+      - paragraph [ref=e152]: © Bisquare. All rights reserved.
+  - generic [ref=e153] [cursor=pointer]:
+    - generic [ref=e156]: BSQ NETWORK
+    - generic [ref=e157]: "DB: PRODUCTION (Remote)"
+    - generic [ref=e158]: "User: 권오영"

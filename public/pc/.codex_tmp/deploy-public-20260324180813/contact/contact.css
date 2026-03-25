@@ -1,0 +1,432 @@
+/* contact.css - B-Square 문의 페이지 스타일 */
+
+/* Hero */
+.contact-hero {
+    position: relative;
+    padding: 5rem 2rem 3rem;
+    text-align: center;
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a1040 50%, #0a0a1a 100%);
+    overflow: hidden;
+}
+
+.contact-hero .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 50%, rgba(110, 142, 251, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 70% 50%, rgba(167, 119, 227, 0.08) 0%, transparent 50%);
+}
+
+.contact-hero .hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.contact-hero h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.8rem;
+}
+
+.contact-hero p {
+    font-size: 1.05rem;
+    color: #a0a0b8;
+    line-height: 1.7;
+}
+
+/* Container */
+.contact-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3rem 2rem 4rem;
+}
+
+/* Methods Grid */
+.contact-methods {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.method-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.method-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.method-card.kakao::before {
+    background: linear-gradient(135deg, rgba(254, 229, 0, 0.05), rgba(254, 229, 0, 0.02));
+}
+
+.method-card.email::before {
+    background: linear-gradient(135deg, rgba(110, 142, 251, 0.05), rgba(110, 142, 251, 0.02));
+}
+
+.method-card.phone::before {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(76, 175, 80, 0.02));
+}
+
+.method-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+}
+
+.method-card:hover::before {
+    opacity: 1;
+}
+
+.method-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.method-card h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.6rem;
+}
+
+.method-card p {
+    font-size: 0.9rem;
+    color: #888;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.method-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.method-card.kakao .method-badge {
+    background: rgba(254, 229, 0, 0.12);
+    color: #FEE500;
+}
+
+.method-card.email .method-badge {
+    background: rgba(110, 142, 251, 0.12);
+    color: #6e8efb;
+}
+
+.method-card.phone .method-badge {
+    background: rgba(76, 175, 80, 0.12);
+    color: #4CAF50;
+}
+
+/* Form Section */
+.contact-form-section {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+.contact-form-section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 2rem;
+}
+
+.inquiry-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.inquiry-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.inquiry-form label {
+    display: block;
+    font-size: 0.9rem;
+    color: #a0a0b8;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.inquiry-form .required {
+    color: #ff4d4d;
+}
+
+.inquiry-form input[type="text"],
+.inquiry-form input[type="email"],
+.inquiry-form select,
+.inquiry-form textarea {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: #fff;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.inquiry-form input:focus,
+.inquiry-form select:focus,
+.inquiry-form textarea:focus {
+    border-color: #6e8efb;
+    box-shadow: 0 0 12px rgba(110, 142, 251, 0.15);
+}
+
+.inquiry-form select {
+    appearance: none;
+    cursor: pointer;
+}
+
+.inquiry-form textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.form-actions {
+    text-align: right;
+}
+
+.btn-submit-inquiry {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    border: none;
+    color: #fff;
+    padding: 14px 36px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(110, 142, 251, 0.3);
+}
+
+.btn-submit-inquiry:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(110, 142, 251, 0.4);
+}
+
+.btn-submit-inquiry:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Admin Inquiries */
+.admin-inquiries {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(110, 142, 251, 0.15);
+    border-radius: 20px;
+    padding: 2rem;
+}
+
+.admin-inquiries h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #6e8efb;
+    margin-bottom: 1.5rem;
+}
+
+.inquiry-list .inquiry-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.inquiry-list .inquiry-item:hover {
+    border-color: rgba(110, 142, 251, 0.3);
+    background: rgba(110, 142, 251, 0.04);
+}
+
+.inquiry-item .inq-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.inquiry-item .inq-title {
+    font-weight: 600;
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.inquiry-item .inq-date {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.inquiry-item .inq-meta {
+    font-size: 0.82rem;
+    color: #888;
+}
+
+.inquiry-item .inq-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.inq-badge.pending {
+    background: rgba(255, 193, 7, 0.12);
+    color: #FFC107;
+}
+
+.inq-badge.replied {
+    background: rgba(76, 175, 80, 0.12);
+    color: #4CAF50;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* ==========================================
+   반응형 — iPhone UX 기반 모바일 최적화
+=========================================== */
+@media (max-width: 768px) {
+    .contact-hero {
+        padding: 3rem 1.5rem 2rem;
+    }
+
+    .contact-hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .contact-container {
+        padding: 2rem 1rem 3rem;
+    }
+
+    .contact-methods {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .method-card {
+        padding: 1.5rem;
+    }
+
+    .method-card:hover {
+        transform: none;
+    }
+
+    .inquiry-form .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-form-section {
+        padding: 1.5rem;
+    }
+
+    .admin-inquiries {
+        padding: 1.5rem;
+    }
+
+    .btn-submit-inquiry {
+        width: 100%;
+        padding: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-hero {
+        padding: 2.5rem 1rem 1.5rem;
+    }
+
+    .contact-hero h1 {
+        font-size: 1.5rem;
+    }
+
+    .contact-hero p {
+        font-size: 0.9rem;
+    }
+
+    .contact-container {
+        padding: 1.5rem 0.8rem 2rem;
+    }
+
+    .contact-form-section {
+        padding: 1.2rem;
+    }
+
+    .contact-form-section h2 {
+        font-size: 1.2rem;
+    }
+
+    .method-card {
+        padding: 1.2rem;
+        border-radius: 14px;
+    }
+
+    .method-icon {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 375px) {
+    .contact-hero h1 {
+        font-size: 1.3rem;
+    }
+
+    .contact-container {
+        padding: 1rem 0.6rem 2rem;
+    }
+
+    .contact-form-section {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 320px) {
+    .contact-hero {
+        padding: 2rem 0.8rem 1.2rem;
+    }
+
+    .contact-hero h1 {
+        font-size: 1.2rem;
+    }
+
+    .method-card h3 {
+        font-size: 1rem;
+    }
+
+    .inquiry-form input[type="text"],
+    .inquiry-form input[type="email"],
+    .inquiry-form select,
+    .inquiry-form textarea {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+}

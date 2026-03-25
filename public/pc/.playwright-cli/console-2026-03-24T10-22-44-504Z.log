@@ -1,0 +1,22 @@
+[     179ms] RangeError: Maximum call stack size exceeded.
+    at renderUserMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:405:12)
+    at renderAuthenticatedMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:409:5)
+    at http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:427:7
+    at renderUserMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:405:12)
+    at renderAuthenticatedMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:409:5)
+    at http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:427:7
+    at renderUserMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:405:12)
+    at renderAuthenticatedMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:409:5)
+    at http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:427:7
+    at renderUserMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:405:12)
+[     180ms] RangeError: Maximum call stack size exceeded.
+    at renderUserMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:405:12)
+    at renderAuthenticatedMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:409:5)
+    at http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:427:7
+    at renderUserMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:405:12)
+    at renderAuthenticatedMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:409:5)
+    at http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:427:7
+    at renderUserMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:405:12)
+    at renderAuthenticatedMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:409:5)
+    at http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:427:7
+    at renderUserMenu (http://127.0.0.1:8788/bsnnnnnnnnnnnnnnnnnn/header.js?v=20260324_03:405:12)

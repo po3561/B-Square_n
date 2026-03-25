@@ -1,0 +1,9 @@
+Total messages: 7 (Errors: 0, Warnings: 0)
+
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/auth/session?t=1774309465458 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] 📢 B-Square Notice Page Initializing (D1 API)... @ http://127.0.0.1:8788/notice/notice.js:2
+[LOG] [BSQ Server] ????뺤쒔 ?怨뚭퍙 ?λ뜃由???袁⑥┷ (D1 API 筌뤴뫀諭? {loggedIn: false, userId: none} @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:336
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/notices @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/class-notices @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/faqs @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/site-settings @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112

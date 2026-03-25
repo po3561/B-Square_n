@@ -1,0 +1,243 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - heading "B-Square 로고" [level=1] [ref=e5]:
+        - link "B-Square 로고" [ref=e6] [cursor=pointer]:
+          - /url: ../bsnnnnnnnnnnnnnnnnnn/index.html
+          - img "B-Square 로고" [ref=e7]
+      - navigation [ref=e8]:
+        - list [ref=e9]:
+          - listitem [ref=e10]:
+            - link "클래스" [ref=e11] [cursor=pointer]:
+              - /url: ../class/class_list.html
+          - listitem [ref=e12]:
+            - link "등록" [ref=e13] [cursor=pointer]:
+              - /url: ../create_class/create_class.html
+          - listitem [ref=e14]:
+            - link "공지사항" [ref=e15] [cursor=pointer]:
+              - /url: ../notice/notice.html
+          - listitem [ref=e16]:
+            - link "문의" [ref=e17] [cursor=pointer]:
+              - /url: ../contact/contact.html
+          - listitem [ref=e18]:
+            - link "커뮤니티" [ref=e19] [cursor=pointer]:
+              - /url: ../community/community.html
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - textbox "검색어를 입력하세요" [ref=e22]
+          - button "검색" [ref=e23] [cursor=pointer]
+        - generic [ref=e24]:
+          - link "👤 권오영" [ref=e25] [cursor=pointer]:
+            - /url: ../mi_pesg/mypage.html
+            - generic [ref=e26]: 👤
+            - generic [ref=e27]: 권오영
+          - button "운영자 모드" [ref=e28] [cursor=pointer]
+          - button "로그아웃" [ref=e29] [cursor=pointer]
+  - main [ref=e30]:
+    - generic [ref=e35]:
+      - img "클래스 이미지 1" [ref=e117]
+      - button "❮" [ref=e39] [cursor=pointer]
+      - button "❯" [ref=e40] [cursor=pointer]
+      - generic [ref=e41]: 1 / 3
+    - generic [ref=e43]:
+      - generic [ref=e44]:
+        - button "소개" [ref=e45] [cursor=pointer]
+        - button "공지사항" [ref=e46] [cursor=pointer]
+        - button "커리큘럼" [ref=e47] [cursor=pointer]
+        - button "수강 후기" [ref=e48] [cursor=pointer]
+        - button "클래스 채널" [active] [ref=e49] [cursor=pointer]
+        - button "⚙️ 페이지 수정" [ref=e118] [cursor=pointer]
+      - generic [ref=e132]:
+        - text: 
+        - generic [ref=e133]:
+          - generic [ref=e135]:
+            - generic [ref=e136]:
+              - generic [ref=e138]: 아자아자 힘내보재 채팅채널
+              - generic [ref=e139]:
+                - button "" [ref=e140] [cursor=pointer]:
+                  - generic [ref=e141]: 
+                - button "" [ref=e142] [cursor=pointer]:
+                  - generic [ref=e143]: 
+                - button "" [ref=e144] [cursor=pointer]:
+                  - generic [ref=e145]: 
+            - generic [ref=e146]:
+              - generic [ref=e147]: 
+              - generic [ref=e148]: "공지사항 console.log([...document.querySelectorAll('.chat-msg')].map(m => ({ text: m.innerText, classes: m.className, isMine: m.classList.contains('mine') })))"
+              - button "" [ref=e149] [cursor=pointer]:
+                - generic [ref=e150]: 
+            - text: 
+            - generic [ref=e151]:
+              - generic [ref=e153]:
+                - generic [ref=e154]: ddd
+                - generic [ref=e155]: 오전 06:21
+              - generic [ref=e157]:
+                - generic [ref=e158]: fffff
+                - generic [ref=e159]: 오전 06:21
+              - generic [ref=e161]:
+                - generic [ref=e162]: c
+                - generic [ref=e163]: 오전 06:58
+              - generic [ref=e165]:
+                - generic [ref=e166]: 권오영
+                - generic [ref=e167]: ddddd
+                - generic [ref=e168]: 오전 07:12
+              - generic [ref=e170]:
+                - generic [ref=e171]: ccccc
+                - generic [ref=e172]: 오전 07:55
+              - generic [ref=e174]:
+                - generic [ref=e175]: "[파일: 대지 1 사본ㅁㅁㄴㅁ.jpg]"
+                - generic [ref=e176]: 오전 07:56
+              - generic [ref=e178]:
+                - generic [ref=e179]: gggg
+                - generic [ref=e180]: 오전 08:01
+              - generic [ref=e182]:
+                - generic [ref=e183]: ggggg
+                - generic [ref=e184]: 오전 08:01
+              - generic [ref=e186]:
+                - generic [ref=e187]: xxx
+                - generic [ref=e188]: 오전 08:24
+              - generic [ref=e190]:
+                - generic [ref=e191]: dddd
+                - generic [ref=e192]: 오전 08:25
+              - generic [ref=e194]:
+                - generic [ref=e195]: zzz
+                - generic [ref=e196]: 오전 08:58
+              - generic [ref=e198]:
+                - generic [ref=e199]: ssss
+                - generic [ref=e200]: 오전 08:59
+              - generic [ref=e202]:
+                - generic [ref=e203]: 👍
+                - generic [ref=e204]: 오전 09:00
+              - generic [ref=e206]:
+                - generic [ref=e207]: Test Message
+                - generic [ref=e208]: 오전 09:21
+              - generic [ref=e210]:
+                - generic [ref=e211]: "console.log([...document.querySelectorAll('.chat-msg')].map(m => ({ text: m.innerText, classes: m.className, isMine: m.classList.contains('mine') })))"
+                - generic [ref=e212]: 오전 09:21
+              - generic [ref=e214]:
+                - generic [ref=e215]: ddddd
+                - generic [ref=e216]: 오전 09:25
+              - generic [ref=e218]:
+                - generic [ref=e219]: ffff
+                - generic [ref=e220]: 오전 09:40
+              - generic [ref=e222]:
+                - generic [ref=e223]: xxxxx
+                - generic [ref=e224]: 오전 09:54
+              - generic [ref=e226]:
+                - generic [ref=e227]: ssss
+                - generic [ref=e228]: 오전 09:54
+              - generic [ref=e230]:
+                - generic [ref=e231]: "console.log([...document.querySelectorAll('.chat-msg')].map(m => ({ text: m.innerText, classes: m.className, isMine: m.classList.contains('mine') })))"
+                - generic [ref=e232]: 오전 09:57
+              - generic [ref=e234]:
+                - generic [ref=e235]: ddddd
+                - generic [ref=e236]: 오전 10:00
+              - generic [ref=e238]:
+                - generic [ref=e240]:
+                  - generic [ref=e241]:
+                    - generic [ref=e243]: 
+                    - generic [ref=e244]: sdasda
+                  - generic [ref=e245]:
+                    - generic [ref=e246]:
+                      - generic [ref=e247]: 
+                      - generic [ref=e248]: 장소 미지정
+                    - generic [ref=e249]:
+                      - generic [ref=e250]: 
+                      - generic [ref=e251]: 3월 26일 (목) 오후 02:00
+                  - link " 지도 바로가기" [ref=e252] [cursor=pointer]:
+                    - /url: https://map.naver.com/v5/search/
+                    - generic [ref=e253]: 
+                    - text: 지도 바로가기
+                  - generic [ref=e254]:
+                    - generic [ref=e255]: 모집 마감 카운트다운
+                    - generic [ref=e256]: 1일 3:02:35
+                  - generic [ref=e258]:
+                    - generic [ref=e259]: 신청 현황
+                    - generic [ref=e260]: 0 / 50명
+                  - button "모집이 마감된 모임입니다" [disabled] [ref=e263] [cursor=pointer]
+                - generic [ref=e264]: 오전 11:23
+              - generic [ref=e266]:
+                - generic [ref=e268]:
+                  - generic [ref=e269]:
+                    - generic [ref=e271]: 
+                    - generic [ref=e272]: s
+                  - generic [ref=e273]:
+                    - generic [ref=e274]:
+                      - generic [ref=e275]: 
+                      - generic [ref=e276]: s
+                    - generic [ref=e277]:
+                      - generic [ref=e278]: 
+                      - generic [ref=e279]: 3월 25일 (수) 오후 02:00
+                  - link " 지도 바로가기" [ref=e280] [cursor=pointer]:
+                    - /url: https://map.naver.com/v5/search/s
+                    - generic [ref=e281]: 
+                    - text: 지도 바로가기
+                  - generic [ref=e282]:
+                    - generic [ref=e283]: 모집 마감 카운트다운
+                    - generic [ref=e284]: 3:02:35
+                  - generic [ref=e286]:
+                    - generic [ref=e287]: 신청 현황
+                    - generic [ref=e288]: 1 / 10명
+                  - generic [ref=e291]:
+                    - button " 모집 조기 마감하기" [ref=e292] [cursor=pointer]:
+                      - generic [ref=e293]: 
+                      - text: 모집 조기 마감하기
+                    - button " 불참" [ref=e294] [cursor=pointer]:
+                      - generic [ref=e295]: 
+                      - text: 불참
+                - generic [ref=e296]: 오후 12:41
+            - generic [ref=e297]:
+              - generic [ref=e298]:
+                - button "" [ref=e299] [cursor=pointer]:
+                  - generic [ref=e300]: 
+                - button "" [ref=e301] [cursor=pointer]:
+                  - generic [ref=e302]: 
+                - textbox "메시지 작성..." [ref=e303]
+                - button "" [ref=e304] [cursor=pointer]:
+                  - generic [ref=e305]: 
+              - button "" [ref=e306] [cursor=pointer]:
+                - generic [ref=e307]: 
+          - complementary:
+            - generic [ref=e310]:
+              - heading "채널 정보" [level=3] [ref=e311]
+              - button "✕" [ref=e312] [cursor=pointer]
+      - text: "Normal Heading 1 Heading 2 Heading 3 Normal Visit URL: EditRemove      + "
+  - text:  
+  - contentinfo [ref=e80]:
+    - generic [ref=e81]:
+      - generic [ref=e82]:
+        - link "B-Square 로고" [ref=e83] [cursor=pointer]:
+          - /url: ../bsnnnnnnnnnnnnnnnnnn/index.html
+          - img "B-Square 로고" [ref=e84]
+        - paragraph [ref=e85]: 배움을 연결하는 클래스 플랫폼
+        - paragraph [ref=e86]: "대표: dkssud"
+      - generic [ref=e87]:
+        - heading "바로가기" [level=4] [ref=e88]
+        - list [ref=e89]:
+          - listitem [ref=e90]:
+            - link "이용약관" [ref=e91] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e92]:
+            - link "개인정보처리방침" [ref=e93] [cursor=pointer]:
+              - /url: "#"
+              - strong [ref=e94]: 개인정보처리방침
+          - listitem [ref=e95]:
+            - link "고객센터" [ref=e96] [cursor=pointer]:
+              - /url: ../contact/contact.html
+      - generic [ref=e97]:
+        - link "📷 인스타그램" [ref=e98] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e99]: 📷
+          - paragraph [ref=e100]: 인스타그램
+        - link "▶ 유튜브" [ref=e101] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e102]: ▶
+          - paragraph [ref=e103]: 유튜브
+      - generic [ref=e104]:
+        - heading "고객센터" [level=4] [ref=e105]
+        - paragraph [ref=e106]: 평일 10시 ~ 오후 6시 (주말, 공휴일 제외)
+        - button "문의하기" [ref=e107] [cursor=pointer]
+    - paragraph [ref=e109]: © B-Square. All rights reserved.
+  - generic [ref=e110] [cursor=pointer]:
+    - generic [ref=e113]: BSQ NETWORK
+    - generic [ref=e114]: "DB: LOCAL (Wrangler)"
+    - generic [ref=e115]: "User: 권오영"

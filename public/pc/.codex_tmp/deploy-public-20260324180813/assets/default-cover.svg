@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title>Default Cover</title>
+  <desc>Neutral fallback cover image for classes without a thumbnail.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#1d4ed8" />
+      <stop offset="100%" stop-color="#0891b2" />
+    </linearGradient>
+    <radialGradient id="glowA" cx="0.23" cy="0.22" r="0.8">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glowB" cx="0.82" cy="0.78" r="0.9">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)" />
+  <circle cx="240" cy="170" r="240" fill="url(#glowA)" />
+  <circle cx="1360" cy="760" r="300" fill="url(#glowB)" />
+  <rect x="160" y="150" width="1280" height="600" rx="72" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.14" />
+  <rect x="240" y="238" width="560" height="46" rx="23" fill="#ffffff" fill-opacity="0.2" />
+  <rect x="240" y="314" width="820" height="28" rx="14" fill="#ffffff" fill-opacity="0.14" />
+  <rect x="240" y="364" width="680" height="28" rx="14" fill="#ffffff" fill-opacity="0.12" />
+  <rect x="240" y="468" width="260" height="168" rx="40" fill="#ffffff" fill-opacity="0.1" />
+  <rect x="528" y="468" width="260" height="168" rx="40" fill="#ffffff" fill-opacity="0.1" />
+  <rect x="816" y="468" width="260" height="168" rx="40" fill="#ffffff" fill-opacity="0.1" />
+  <circle cx="1210" cy="340" r="118" fill="#ffffff" fill-opacity="0.16" />
+  <path d="M1168 286l104 54-104 54z" fill="#ffffff" />
+</svg>

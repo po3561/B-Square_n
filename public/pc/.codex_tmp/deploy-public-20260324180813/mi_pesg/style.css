@@ -1,0 +1,455 @@
+/* ==========================================
+   기본 설정 (Reset & Typography)
+=========================================== */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+}
+
+body {
+    /* 너무 답답하지 않은 깊은 다크 그레이 베이스 */
+    background-color: #121212;
+    color: #f5f5f5;
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+ul,
+li {
+    list-style: none;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+}
+
+/* ==========================================
+   1. HEADER
+=========================================== */
+.site-header {
+    background-color: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    /* glass-border */
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo a {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.main-nav ul {
+    display: flex;
+    gap: 2rem;
+    font-weight: 500;
+}
+
+.main-nav a:hover {
+    color: #aaaaaa;
+    transition: color 0.2s ease;
+}
+
+.header-utils {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    /* glass-bg */
+    border-radius: 24px;
+    padding: 0.4rem 1rem;
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* glass-border */
+}
+
+.search-bar input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    outline: none;
+    width: 150px;
+}
+
+.search-bar input::placeholder {
+    color: #888;
+}
+
+.btn-my-class {
+    background-color: #ffffff;
+    color: #000000;
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.btn-my-class:hover {
+    background-color: #cccccc;
+}
+
+/* ==========================================
+   2. MAIN CONTENT
+=========================================== */
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* 2-1. Hero Section (광고 및 카테고리) */
+.hero-section {
+    margin-bottom: 4rem;
+}
+
+.main-ad-banner {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    border: 1px solid #333;
+    border-radius: 16px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.main-ad-banner h2 {
+    font-size: 3rem;
+    color: #555;
+    /* 플레이스홀더 느낌의 텍스트 색상 */
+    letter-spacing: 0.2em;
+}
+
+.category-grid ul {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 1rem;
+    text-align: center;
+}
+
+.category-grid li a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #aaaaaa;
+    padding: 1rem 0;
+    border-radius: 12px;
+    transition: all 0.2s;
+}
+
+.category-grid li a:hover {
+    background-color: #2a2a2a;
+    color: #ffffff;
+}
+
+.category-grid .icon {
+    font-size: 1.8rem;
+    background-color: #1e1e1e;
+    padding: 0.8rem;
+    border-radius: 12px;
+    border: 1px solid #333;
+}
+
+/* 2-2. Class Lists Section */
+.class-group {
+    margin-bottom: 4rem;
+}
+
+.group-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #ffffff;
+}
+
+/* 공통 카드 그리드 */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.5rem;
+}
+
+.class-card {
+    background-color: rgba(30, 30, 30, 0.4);
+    /* card-bg */
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* glass-border */
+}
+
+.class-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    border-color: #444;
+}
+
+.card-thumbnail {
+    width: 100%;
+    height: 160px;
+    background-color: #333;
+    /* 이미지 들어갈 자리 */
+}
+
+/* 추천 클래스 (3단 컬럼) */
+.recommend-columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+.column {
+    background-color: #1e1e1e;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid #2a2a2a;
+}
+
+.column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 1rem;
+}
+
+.list-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.item-thumbnail {
+    width: 80px;
+    height: 60px;
+    border-radius: 8px;
+    background-color: #333;
+}
+
+/* 카드 텍스트 정보 */
+.card-info {
+    padding: 1rem;
+}
+
+.card-info .category {
+    font-size: 0.75rem;
+    color: #888;
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.card-info .title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    line-height: 1.4;
+    color: #e0e0e0;
+}
+
+.card-info .stats {
+    font-size: 0.8rem;
+    color: #aaa;
+    display: flex;
+    gap: 0.8rem;
+}
+
+/* 2-3. 하단 배너 */
+.bottom-banner-section {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    margin-top: 2rem;
+}
+
+.banner-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ==========================================
+   3. FOOTER
+=========================================== */
+.site-footer {
+    background-color: #0a0a0a;
+    border-top: 1px solid #222;
+    padding: 4rem 2rem 2rem;
+    color: #888;
+    font-size: 0.85rem;
+}
+
+.footer-top {
+    max-width: 1200px;
+    margin: 0 auto 3rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.social-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.social-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.social-icon .icon {
+    font-size: 1.5rem;
+    color: #fff;
+}
+
+.cs-center h4 {
+    color: #fff;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.btn-contact {
+    margin-top: 1rem;
+    background-color: #333;
+    color: #fff;
+    padding: 0.5rem 1.5rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.btn-contact:hover {
+    background-color: #555;
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 0 auto;
+    border-top: 1px solid #222;
+    padding-top: 2rem;
+}
+
+.footer-nav {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.footer-nav a:hover {
+    color: #fff;
+}
+
+.company-info p {
+    margin-bottom: 0.3rem;
+    line-height: 1.5;
+}
+
+.company-info strong {
+    color: #aaa;
+    display: block;
+    margin-bottom: 0.8rem;
+    font-size: 1rem;
+}
+
+.copyright {
+    margin-top: 1.5rem;
+    color: #555;
+}
+
+/* ==========================================
+   반응형 (Responsive) 및 Apple UX 최적화
+=========================================== */
+@media (max-width: 1024px) {
+    .category-grid ul {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    .card-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .recommend-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-inner {
+        padding: 1rem;
+    }
+
+    .main-nav,
+    .search-bar {
+        display: none;
+    }
+
+    .card-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .category-grid ul {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+
+    .footer-top {
+        flex-direction: column;
+        gap: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .category-grid ul {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .main-ad-banner h2 {
+        font-size: 2rem;
+    }
+}

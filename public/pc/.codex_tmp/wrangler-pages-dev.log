@@ -1,0 +1,50 @@
+
+ ⛅️ wrangler 4.75.0 (update available 4.76.0)
+─────────────────────────────────────────────
+✨ Compiled Worker successfully
+Your Worker has access to the following bindings:
+Binding                                                                   Resource                  Mode
+env.DB (b-square-db)                                                      D1 Database               local
+env.CF_PAGES ("1")                                                        Environment Variable      local
+env.CF_PAGES_BRANCH ("main")                                              Environment Variable      local
+env.CF_PAGES_COMMIT_SHA ("bd1d9139c9d1f7a14e00a8bbf9d0e8f462b3a...")      Environment Variable      local
+env.CF_PAGES_URL ("https://bd1d913.b-square-web.pages.dev")               Environment Variable      local
+
+⎔ Starting local server...
+[wrangler:info] Ready on http://127.0.0.1:8788
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+⎔ Local server updated and ready
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+⎔ Local server updated and ready
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+⎔ Local server updated and ready
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+⎔ Local server updated and ready
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+⎔ Local server updated and ready
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+⎔ Local server updated and ready
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+⎔ Local server updated and ready
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+⎔ Local server updated and ready
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+⎔ Local server updated and ready
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+⎔ Local server updated and ready
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+⎔ Local server updated and ready
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+⎔ Local server updated and ready

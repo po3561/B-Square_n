@@ -1,0 +1,6 @@
+Total messages: 4 (Errors: 0, Warnings: 0)
+
+[LOG] [BSQ Server] ????癒?봄 API 筌뤴뫀諭???뽮쉐: https://b-square-web.pages.dev @ https://b-square-web.pages.dev/bsq_server.js?v=20260323_05:323
+[LOG] [BSQ API] GET https://b-square-web.pages.dev/api/auth/session?t=1774340941167 @ https://b-square-web.pages.dev/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ Server] ????뺤쒔 ?怨뚭퍙 ?λ뜃由???袁⑥┷ (D1 API 筌뤴뫀諭? {loggedIn: false, userId: none} @ https://b-square-web.pages.dev/bsq_server.js?v=20260323_05:336
+[LOG] [BSQ API] GET https://b-square-web.pages.dev/api/site-settings @ https://b-square-web.pages.dev/bsq_server.js?v=20260323_05:112

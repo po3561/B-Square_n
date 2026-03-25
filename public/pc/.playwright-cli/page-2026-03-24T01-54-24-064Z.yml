@@ -1,0 +1,278 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - heading "B-Square 로고" [level=1] [ref=e5]:
+        - link "B-Square 로고" [ref=e6] [cursor=pointer]:
+          - /url: ../bsnnnnnnnnnnnnnnnnnn/index.html
+          - img "B-Square 로고" [ref=e7]
+      - navigation [ref=e8]:
+        - list [ref=e9]:
+          - listitem [ref=e10]:
+            - link "클래스" [ref=e11] [cursor=pointer]:
+              - /url: ../class/class_list.html
+          - listitem [ref=e12]:
+            - link "등록" [ref=e13] [cursor=pointer]:
+              - /url: ../create_class/create_class.html
+          - listitem [ref=e14]:
+            - link "공지사항" [ref=e15] [cursor=pointer]:
+              - /url: ../notice/notice.html
+          - listitem [ref=e16]:
+            - link "문의" [ref=e17] [cursor=pointer]:
+              - /url: ../contact/contact.html
+          - listitem [ref=e18]:
+            - link "커뮤니티" [ref=e19] [cursor=pointer]:
+              - /url: ../community/community.html
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - textbox "검색어를 입력하세요" [ref=e22]
+          - button "검색" [ref=e23] [cursor=pointer]
+        - generic [ref=e24]:
+          - link "👤 권오영" [ref=e25] [cursor=pointer]:
+            - /url: ../mi_pesg/mypage.html
+            - generic [ref=e26]: 👤
+            - generic [ref=e27]: 권오영
+          - button "운영자 모드" [ref=e28] [cursor=pointer]
+          - button "로그아웃" [ref=e29] [cursor=pointer]
+  - main [ref=e30]:
+    - generic [ref=e35]:
+      - img "클래스 이미지 1" [ref=e117]
+      - button "❮" [ref=e39] [cursor=pointer]
+      - button "❯" [ref=e40] [cursor=pointer]
+      - generic [ref=e41]: 1 / 3
+    - generic [ref=e42]:
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - button "소개" [ref=e45] [cursor=pointer]
+          - button "공지사항" [ref=e46] [cursor=pointer]
+          - button "커리큘럼" [ref=e47] [cursor=pointer]
+          - button "수강 후기" [ref=e48] [cursor=pointer]
+          - button "클래스 채널" [ref=e49] [cursor=pointer]
+          - button "⚙️ 페이지 수정" [active] [ref=e118] [cursor=pointer]
+        - text:                     
+        - generic [ref=e317]:
+          - generic [ref=e318]:
+            - generic [ref=e319]:
+              - generic [ref=e320]: 👨‍🏫
+              - generic [ref=e321]:
+                - generic [ref=e322]: 권오영
+                - generic [ref=e323]: ej210651392@gmail.com
+            - generic [ref=e324]:
+              - generic [ref=e325]:
+                - generic [ref=e326]: "1"
+                - generic [ref=e327]: 수강생
+              - generic [ref=e328]:
+                - generic [ref=e329]: "0.0"
+                - generic [ref=e330]: 평점
+              - generic [ref=e331]:
+                - generic [ref=e332]: "0"
+                - generic [ref=e333]: 후기
+              - generic [ref=e334]:
+                - generic [ref=e335]: "3.8"
+                - generic [ref=e336]: 일평균 채팅
+          - generic [ref=e337]:
+            - generic [ref=e338]: ⚙️ 강사 대시보드
+            - paragraph [ref=e339]:
+              - text: "클래스 ID:"
+              - code [ref=e340]: cls_ea1422702fb94892
+              - text: "· 등록일: 2026. 3. 19."
+          - generic [ref=e341]:
+            - button "📝 정보 수정" [ref=e342] [cursor=pointer]
+            - button "👥 서브 강사" [ref=e343] [cursor=pointer]
+            - button "🎓 수강생 및 결제" [ref=e344] [cursor=pointer]
+            - button "🎟️ 쿠폰 관리" [ref=e345] [cursor=pointer]
+            - button "🗑️ 클래스 삭제" [ref=e346] [cursor=pointer]
+          - generic [ref=e348]:
+            - generic [ref=e349]:
+              - heading "📋 기본 정보" [level=4] [ref=e350]
+              - generic [ref=e351]:
+                - generic [ref=e352]: 클래스명
+                - textbox "클래스 제목" [ref=e353]: 아자아자 힘내보재
+              - generic [ref=e354]:
+                - generic [ref=e355]:
+                  - generic [ref=e356]: 카테고리
+                  - combobox [ref=e357]:
+                    - option "👥 소모임/동아리"
+                    - option "🍽️ 맛있는 클래스"
+                    - option "🏋️ 운동 클래스"
+                    - option "🎨 디자인"
+                    - option "⚡ 생산성"
+                    - option "🏅 스포츠" [selected]
+                    - option "✏️ 디지털 드로잉"
+                    - option "🧠 성공 마인드"
+                    - option "🎵 음악"
+                    - option "🍳 요리"
+                    - option "🧁 베이킹"
+                    - option "📷 사진"
+                    - option "🎬 영상"
+                    - option "🧵 공예"
+                    - option "🧭 여행"
+                - generic [ref=e358]:
+                  - generic [ref=e359]: 클래스 유형
+                  - combobox [ref=e360]:
+                    - option "온라인 (Online)" [selected]
+                    - option "오프라인 (Offline)"
+              - generic [ref=e361]:
+                - generic [ref=e362]: 키워드 (쉼표로 구분)
+                - textbox "디자인, 포토샵, 기초" [ref=e363]: "["
+            - generic [ref=e364]:
+              - heading "🖼️ 클래스 이미지" [level=4] [ref=e365]
+              - generic [ref=e366]:
+                - generic [ref=e367]:
+                  - img "이미지 1" [ref=e368]
+                  - generic [ref=e369]: 대표
+                  - button "✕" [ref=e370] [cursor=pointer]
+                - generic [ref=e371]:
+                  - img "이미지 2" [ref=e372]
+                  - generic [ref=e373]: "2"
+                  - button "✕" [ref=e374] [cursor=pointer]
+                - generic [ref=e375]:
+                  - img "이미지 3" [ref=e376]
+                  - generic [ref=e377]: "3"
+                  - button "✕" [ref=e378] [cursor=pointer]
+              - generic [ref=e379] [cursor=pointer]:
+                - generic:
+                  - generic: 📂
+                  - paragraph: 이미지를 드래그하거나 클릭하여 업로드
+                  - text: 최대 6장 · JPG, PNG, WEBP
+            - generic [ref=e380]:
+              - heading "🎯 대상 수강생" [level=4] [ref=e381]
+              - generic [ref=e382]:
+                - generic [ref=e383]: 이런 분들을 위한 클래스입니다 (줄바꿈으로 구분)
+                - textbox "관련 분야 기초를 다지고 싶은 분 실무 기술을 배우고 싶은 분" [ref=e384]:
+                  - /placeholder: "관련 분야 기초를 다지고 싶은 분\n실무 기술을 배우고 싶은 분"
+                  - text: sss
+            - generic [ref=e385]:
+              - heading "🎓 학습 목표" [level=4] [ref=e386]
+              - paragraph [ref=e387]: 각 목표를 아이콘|제목|설명 형식으로 입력 (줄바꿈으로 구분)
+              - textbox "💡|기초 개념 이해|복잡한 개념도 쉽게 설명합니다 🛠️|실전 프로젝트|직접 결과물을 만들어봅니다" [ref=e389]:
+                - /placeholder: "💡|기초 개념 이해|복잡한 개념도 쉽게 설명합니다\n🛠️|실전 프로젝트|직접 결과물을 만들어봅니다"
+            - generic [ref=e390]:
+              - heading "📝 클래스 소개" [level=4] [ref=e391]
+              - generic [ref=e392]:
+                - generic [ref=e393]: 요약 (한 줄 설명)
+                - textbox "클래스를 한 줄로 설명하세요" [ref=e394]: s
+              - generic [ref=e395]:
+                - generic [ref=e396]: 상세 설명 (Rich Text 지원)
+                - generic [ref=e397]:
+                  - generic [ref=e399]:
+                    - button "Normal" [ref=e400] [cursor=pointer]:
+                      - text: Normal
+                      - img [ref=e401]
+                    - text: Heading 1 Heading 2 Heading 3 Normal
+                  - generic [ref=e404]:
+                    - button [ref=e405] [cursor=pointer]:
+                      - img [ref=e406]
+                    - button [ref=e409] [cursor=pointer]:
+                      - img [ref=e410]
+                    - button [ref=e412] [cursor=pointer]:
+                      - img [ref=e413]
+                    - button [ref=e416] [cursor=pointer]:
+                      - img [ref=e417]
+                  - generic [ref=e421]:
+                    - button [ref=e423] [cursor=pointer]:
+                      - img [ref=e424]
+                    - button [ref=e427] [cursor=pointer]:
+                      - img [ref=e428]
+                  - generic [ref=e477]:
+                    - button [ref=e478] [cursor=pointer]:
+                      - img [ref=e479]
+                    - button [ref=e483] [cursor=pointer]:
+                      - img [ref=e484]
+                  - generic [ref=e485]:
+                    - button [ref=e486] [cursor=pointer]:
+                      - img [ref=e487]
+                    - button [ref=e491] [cursor=pointer]:
+                      - img [ref=e492]
+                    - button [ref=e496] [cursor=pointer]:
+                      - img [ref=e497]
+                  - button [ref=e511] [cursor=pointer]:
+                    - img [ref=e512]
+                - generic [ref=e517]:
+                  - paragraph [ref=e519]:
+                    - img [ref=e520]
+                    - text: ssss
+                  - text: "Visit URL: EditRemove"
+            - generic [ref=e521]:
+              - heading "💰 가격 설정" [level=4] [ref=e522]
+              - generic [ref=e523]:
+                - generic [ref=e524]:
+                  - generic [ref=e525]: 가격 (원)
+                  - spinbutton [ref=e526]: "0"
+                - generic [ref=e527]:
+                  - generic [ref=e528]: 할인율 (%)
+                  - spinbutton [ref=e529]: "100"
+              - generic [ref=e530]: ✅ 무료 클래스
+            - generic [ref=e531]:
+              - heading "📚 커리큘럼" [level=4] [ref=e532]
+              - generic [ref=e533]:
+                - generic [ref=e535]:
+                  - generic [ref=e536]: 챕터 1
+                  - textbox "챕터 제목" [ref=e537]: s
+                  - button "✕" [ref=e538] [cursor=pointer]
+                - generic [ref=e540]:
+                  - generic [ref=e541]: 챕터 2
+                  - textbox "챕터 제목" [ref=e542]: kkk
+                  - button "✕" [ref=e543] [cursor=pointer]
+              - button "+ 챕터 추가" [ref=e544] [cursor=pointer]
+            - generic [ref=e545]:
+              - button "💾 변경 사항 저장" [ref=e546] [cursor=pointer]
+              - paragraph [ref=e547]: 저장 시 D1 데이터베이스에 실시간 반영되어 즉시 노출됩니다.
+          - text:      + 
+      - complementary [ref=e61]:
+        - generic [ref=e62]:
+          - heading "아자아자 힘내보재" [level=2] [ref=e127]
+          - generic [ref=e64]:
+            - generic [ref=e65]: 스포츠
+            - generic [ref=e66]: "|"
+            - generic [ref=e67]: 입문자
+          - generic [ref=e68]:
+            - generic [ref=e69]: ⭐
+            - generic [ref=e70]: "1.0"
+            - generic [ref=e71]: (후기 2개)
+          - generic [ref=e72]:
+            - generic [ref=e128]: 무료 수강
+            - paragraph
+          - generic [ref=e75]:
+            - generic [ref=e76]: ⏰ 7일 후 얼리버드 마감
+            - generic [ref=e77] [cursor=pointer]: 🎫 신규 가입 1만원 쿠폰 적용 가능
+          - button "✓ 수강 중인 클래스" [disabled] [ref=e129]
+  - text:  
+  - contentinfo [ref=e80]:
+    - generic [ref=e81]:
+      - generic [ref=e82]:
+        - link "B-Square 로고" [ref=e83] [cursor=pointer]:
+          - /url: ../bsnnnnnnnnnnnnnnnnnn/index.html
+          - img "B-Square 로고" [ref=e84]
+        - paragraph [ref=e85]: 배움을 연결하는 클래스 플랫폼
+        - paragraph [ref=e86]: "대표: dkssud"
+      - generic [ref=e87]:
+        - heading "바로가기" [level=4] [ref=e88]
+        - list [ref=e89]:
+          - listitem [ref=e90]:
+            - link "이용약관" [ref=e91] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e92]:
+            - link "개인정보처리방침" [ref=e93] [cursor=pointer]:
+              - /url: "#"
+              - strong [ref=e94]: 개인정보처리방침
+          - listitem [ref=e95]:
+            - link "고객센터" [ref=e96] [cursor=pointer]:
+              - /url: ../contact/contact.html
+      - generic [ref=e97]:
+        - link "📷 인스타그램" [ref=e98] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e99]: 📷
+          - paragraph [ref=e100]: 인스타그램
+        - link "▶ 유튜브" [ref=e101] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e102]: ▶
+          - paragraph [ref=e103]: 유튜브
+      - generic [ref=e104]:
+        - heading "고객센터" [level=4] [ref=e105]
+        - paragraph [ref=e106]: 평일 10시 ~ 오후 6시 (주말, 공휴일 제외)
+        - button "문의하기" [ref=e107] [cursor=pointer]
+    - paragraph [ref=e109]: © B-Square. All rights reserved.
+  - generic [ref=e110] [cursor=pointer]:
+    - generic [ref=e113]: BSQ NETWORK
+    - generic [ref=e114]: "DB: LOCAL (Wrangler)"
+    - generic [ref=e115]: "User: 권오영"

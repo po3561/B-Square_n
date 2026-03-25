@@ -1,0 +1,5 @@
+[GET] http://127.0.0.1:8788/api/auth/session?t=1774347612166 => [200] OK
+[GET] http://127.0.0.1:8788/api/classes/cls_fa13cf0e318b4483?t=1774347612197 => [200] OK
+[GET] http://127.0.0.1:8788/api/site-settings => [200] OK
+[GET] http://127.0.0.1:8788/api/reviews?class_id=cls_fa13cf0e318b4483&t=1774347612296 => [200] OK
+[GET] http://127.0.0.1:8788/api/class-notices?class_id=cls_fa13cf0e318b4483 => [200] OK

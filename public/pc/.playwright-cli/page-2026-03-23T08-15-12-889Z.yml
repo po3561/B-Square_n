@@ -1,0 +1,127 @@
+- generic [ref=e1]:
+  - complementary [ref=e2]:
+    - heading "⌘ B-Square ADMINISTRATION" [level=1] [ref=e4]:
+      - text: ⌘ B-Square
+      - generic [ref=e5]: ADMINISTRATION
+    - navigation [ref=e6]:
+      - link "↗ 사이트 바로가기" [ref=e7] [cursor=pointer]:
+        - /url: "#"
+        - generic [ref=e8]: ↗
+        - text: 사이트 바로가기
+      - link "📊 대시보드" [ref=e9] [cursor=pointer]:
+        - /url: "#dashboard"
+        - generic [ref=e10]: 📊
+        - text: 대시보드
+      - generic [ref=e11]:
+        - button "🎨 사이트 디자인 ▼" [expanded] [ref=e12] [cursor=pointer]:
+          - generic [ref=e13]: 🎨 사이트 디자인
+          - generic [ref=e14]: ▼
+        - generic [ref=e15]:
+          - link "메뉴 설정" [ref=e16] [cursor=pointer]:
+            - /url: "#menu_settings"
+          - link "홈페이지 설정" [ref=e17] [cursor=pointer]:
+            - /url: "#homepage_settings"
+          - link "추천 클래스 관리" [active] [ref=e18] [cursor=pointer]:
+            - /url: "#recommend_settings"
+          - link "페이지 관리" [ref=e19] [cursor=pointer]:
+            - /url: "#page_settings"
+          - link "푸터 설정" [ref=e20] [cursor=pointer]:
+            - /url: "#footer_settings"
+      - generic [ref=e21]:
+        - button "👥 회원 관리 ▼" [expanded] [ref=e22] [cursor=pointer]:
+          - generic [ref=e23]: 👥 회원 관리
+          - generic [ref=e24]: ▼
+        - generic [ref=e25]:
+          - link "가입 회원" [ref=e26] [cursor=pointer]:
+            - /url: "#users"
+          - link "회원 그룹 관리 Beta" [ref=e27] [cursor=pointer]:
+            - /url: "#roles"
+            - text: 회원 그룹 관리
+            - generic [ref=e28]: Beta
+      - generic [ref=e29]:
+        - button "📚 클래스 관리 ▼" [expanded] [ref=e30] [cursor=pointer]:
+          - generic [ref=e31]: 📚 클래스 관리
+          - generic [ref=e32]: ▼
+        - link "클래스" [ref=e34] [cursor=pointer]:
+          - /url: "#classes"
+      - button "📝 게시판 관리 ▼" [ref=e36] [cursor=pointer]:
+        - generic [ref=e37]: 📝 게시판 관리
+        - generic [ref=e38]: ▼
+      - link "💬 리뷰 관리" [ref=e39] [cursor=pointer]:
+        - /url: "#reviews"
+        - generic [ref=e40]: 💬
+        - text: 리뷰 관리
+      - link "❤️ 찜한 목록" [ref=e41] [cursor=pointer]:
+        - /url: "#bookmarks"
+        - generic [ref=e42]: ❤️
+        - text: 찜한 목록
+      - link "🎫 쿠폰 관리" [ref=e43] [cursor=pointer]:
+        - /url: "#coupons"
+        - generic [ref=e44]: 🎫
+        - text: 쿠폰 관리
+      - link "🧑‍💻 운영자 설정" [ref=e45] [cursor=pointer]:
+        - /url: "#operators"
+        - generic [ref=e46]: 🧑‍💻
+        - text: 운영자 설정
+      - link "🔍 검색 및 코드 설정" [ref=e47] [cursor=pointer]:
+        - /url: "#search_code"
+        - generic [ref=e48]: 🔍
+        - text: 검색 및 코드 설정
+      - link "🌍 SEO 관리 Beta" [ref=e49] [cursor=pointer]:
+        - /url: "#seo"
+        - generic [ref=e50]: 🌍
+        - text: SEO 관리
+        - generic [ref=e51]: Beta
+      - button "💡 마케팅 관리 ▼" [ref=e53] [cursor=pointer]:
+        - generic [ref=e54]: 💡 마케팅 관리
+        - generic [ref=e55]: ▼
+      - button "✉️ 마케팅 메시지 ▼" [ref=e57] [cursor=pointer]:
+        - generic [ref=e58]: ✉️ 마케팅 메시지
+        - generic [ref=e59]: ▼
+      - generic [ref=e60]:
+        - button "💰 매출 및 정산 관리 ▼" [expanded] [ref=e61] [cursor=pointer]:
+          - generic [ref=e62]: 💰 매출 및 정산 관리
+          - generic [ref=e63]: ▼
+        - generic [ref=e64]:
+          - link "결제 조회" [ref=e65] [cursor=pointer]:
+            - /url: "#payments"
+          - link "정산 정보 관리" [ref=e66] [cursor=pointer]:
+            - /url: "#settlement_info"
+          - link "정산 내역" [ref=e67] [cursor=pointer]:
+            - /url: "#settlement_history"
+          - link "부가세 신고 자료" [ref=e68] [cursor=pointer]:
+            - /url: "#tax"
+    - generic [ref=e70]:
+      - generic [ref=e71]: 👨‍💻
+      - generic [ref=e72]:
+        - generic [ref=e73]: 총괄 관리자
+        - generic [ref=e74]: promise
+  - main [ref=e75]:
+    - generic [ref=e76]:
+      - heading "🎨 사이트 디자인 > 추천 클래스 관리" [level=2] [ref=e109]
+      - button "🔄 데이터 새로고침" [ref=e79] [cursor=pointer]
+    - generic [ref=e110]:
+      - generic [ref=e111]:
+        - generic [ref=e112]:
+          - generic [ref=e113]:
+            - heading "인기 클래스 설정" [level=3] [ref=e114]
+            - paragraph [ref=e115]: 메인 화면 상단에 노출될 인기 클래스를 관리합니다.
+          - generic [ref=e116]:
+            - button "+ 클래스 추가" [ref=e117] [cursor=pointer]
+            - button "저장" [ref=e118] [cursor=pointer]
+        - generic [ref=e121]: "데이터를 불러오지 못했습니다: 로그인이 필요합니다."
+      - generic [ref=e122]:
+        - generic [ref=e123]:
+          - generic [ref=e124]:
+            - heading "추천 클래스 폴더 관리" [level=3] [ref=e125]
+            - paragraph [ref=e126]: 메인 화면에 노출될 추천 클래스 그룹(폴더)을 관리합니다. 폴더 내 클래스는 좌우 슬라이더로 표시됩니다.
+          - generic [ref=e127]:
+            - button "+ 새 폴더 추가" [ref=e128] [cursor=pointer]
+            - button "저장" [ref=e129] [cursor=pointer]
+        - generic [ref=e131]: "데이터를 불러오지 못했습니다: 로그인이 필요합니다."
+  - generic [ref=e102] [cursor=pointer]:
+    - generic [ref=e105]: BSQ NETWORK
+    - generic [ref=e106]: "DB: LOCAL (Wrangler)"
+    - generic [ref=e107]: "User: promise"
+  - generic [ref=e132]: "[BSQ API] 로그인이 필요합니다."
+  - generic [ref=e133]: "[BSQ API] 로그인이 필요합니다."

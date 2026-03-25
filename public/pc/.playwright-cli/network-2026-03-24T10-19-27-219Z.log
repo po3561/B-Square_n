@@ -1,0 +1,6 @@
+[GET] http://127.0.0.1:8788/api/auth/session?t=1774347556449 => [200] OK
+[GET] http://127.0.0.1:8788/api/class-categories => [200] OK
+[GET] http://127.0.0.1:8788/api/classes?limit=100 => [200] OK
+[GET] http://127.0.0.1:8788/api/recommendations => [200] OK
+[GET] http://127.0.0.1:8788/api/site-settings => [200] OK
+[GET] http://127.0.0.1:8788/api/site-settings => [200] OK

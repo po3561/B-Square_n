@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #1d1d1f;
+  
+  --primary: #6e8efb;
+  --primary-foreground: #ffffff;
+  
+  --secondary: #a777e3;
+  --secondary-foreground: #ffffff;
+  
+  --muted: #f5f5f7;
+  --muted-foreground: #86868b;
+  
+  --accent: #0071e3;
+  --accent-foreground: #ffffff;
+  
+  --border: rgba(0, 0, 0, 0.1);
+  --radius: 16px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --header-height: 56px;
+  --tabbar-height: 72px;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, inherit;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  
+  .safe-padding {
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+  }
+
+  .nano-flex {
+    @apply flex flex-col items-center gap-2;
+    @screen min-[400px] {
+      @apply flex-row justify-between;
+    }
+  }
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+#root, main {
+  width: 100%;
+}

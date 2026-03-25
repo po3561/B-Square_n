@@ -1,0 +1,435 @@
+- generic [ref=e1]:
+  - complementary [ref=e2]:
+    - heading "⌘ B-Square ADMINISTRATION" [level=1] [ref=e4]:
+      - text: ⌘ B-Square
+      - generic [ref=e5]: ADMINISTRATION
+    - navigation [ref=e6]:
+      - link "↗ 사이트 바로가기" [ref=e7] [cursor=pointer]:
+        - /url: "#"
+        - generic [ref=e8]: ↗
+        - text: 사이트 바로가기
+      - link "📊 대시보드" [ref=e9] [cursor=pointer]:
+        - /url: "#dashboard"
+        - generic [ref=e10]: 📊
+        - text: 대시보드
+      - generic [ref=e11]:
+        - button "🎨 사이트 디자인 ▼" [expanded] [ref=e12] [cursor=pointer]:
+          - generic [ref=e13]: 🎨 사이트 디자인
+          - generic [ref=e14]: ▼
+        - generic [ref=e15]:
+          - link "메뉴 설정" [ref=e16] [cursor=pointer]:
+            - /url: "#menu_settings"
+          - link "홈페이지 설정" [ref=e17] [cursor=pointer]:
+            - /url: "#homepage_settings"
+          - link "추천 클래스 관리" [ref=e18] [cursor=pointer]:
+            - /url: "#recommend_settings"
+          - link "페이지 관리" [ref=e19] [cursor=pointer]:
+            - /url: "#page_settings"
+          - link "푸터 설정" [ref=e20] [cursor=pointer]:
+            - /url: "#footer_settings"
+      - generic [ref=e21]:
+        - button "👥 회원 관리 ▼" [expanded] [ref=e22] [cursor=pointer]:
+          - generic [ref=e23]: 👥 회원 관리
+          - generic [ref=e24]: ▼
+        - generic [ref=e25]:
+          - link "가입 회원" [ref=e26] [cursor=pointer]:
+            - /url: "#users"
+          - link "회원 특이사항관리" [ref=e27] [cursor=pointer]:
+            - /url: "#roles"
+      - generic [ref=e28]:
+        - button "📚 클래스 관리 ▼" [expanded] [ref=e29] [cursor=pointer]:
+          - generic [ref=e30]: 📚 클래스 관리
+          - generic [ref=e31]: ▼
+        - link "클래스" [ref=e33] [cursor=pointer]:
+          - /url: "#classes"
+      - button "📝 게시판 관리 ▼" [ref=e35] [cursor=pointer]:
+        - generic [ref=e36]: 📝 게시판 관리
+        - generic [ref=e37]: ▼
+      - link "💬 리뷰 관리" [ref=e38] [cursor=pointer]:
+        - /url: "#reviews"
+        - generic [ref=e39]: 💬
+        - text: 리뷰 관리
+      - link "❤️ 찜한 목록" [ref=e40] [cursor=pointer]:
+        - /url: "#bookmarks"
+        - generic [ref=e41]: ❤️
+        - text: 찜한 목록
+      - link "🎫 쿠폰 관리" [ref=e42] [cursor=pointer]:
+        - /url: "#coupons"
+        - generic [ref=e43]: 🎫
+        - text: 쿠폰 관리
+      - link "🧑‍💻 운영자 설정" [ref=e44] [cursor=pointer]:
+        - /url: "#operators"
+        - generic [ref=e45]: 🧑‍💻
+        - text: 운영자 설정
+      - link "🔍 검색 및 코드 설정" [ref=e46] [cursor=pointer]:
+        - /url: "#search_code"
+        - generic [ref=e47]: 🔍
+        - text: 검색 및 코드 설정
+      - link "🌍 SEO 관리 Beta" [ref=e48] [cursor=pointer]:
+        - /url: "#seo"
+        - generic [ref=e49]: 🌍
+        - text: SEO 관리
+        - generic [ref=e50]: Beta
+      - button "💡 마케팅 관리 ▼" [ref=e52] [cursor=pointer]:
+        - generic [ref=e53]: 💡 마케팅 관리
+        - generic [ref=e54]: ▼
+      - button "✉️ 마케팅 메시지 ▼" [ref=e56] [cursor=pointer]:
+        - generic [ref=e57]: ✉️ 마케팅 메시지
+        - generic [ref=e58]: ▼
+      - generic [ref=e59]:
+        - button "💰 매출 및 정산 관리 ▼" [expanded] [ref=e60] [cursor=pointer]:
+          - generic [ref=e61]: 💰 매출 및 정산 관리
+          - generic [ref=e62]: ▼
+        - generic [ref=e63]:
+          - link "결제 조회" [ref=e64] [cursor=pointer]:
+            - /url: "#payments"
+          - link "정산 정보 관리" [ref=e65] [cursor=pointer]:
+            - /url: "#settlement_info"
+          - link "정산 내역" [ref=e66] [cursor=pointer]:
+            - /url: "#settlement_history"
+          - link "부가세 신고 자료" [ref=e67] [cursor=pointer]:
+            - /url: "#tax"
+    - generic [ref=e69]:
+      - generic [ref=e70]: 👨‍💻
+      - generic [ref=e71]:
+        - generic [ref=e72]: 총괄 관리자
+        - generic [ref=e73]: 권오영
+  - main [ref=e74]:
+    - generic [ref=e75]:
+      - heading "📚 클래스 관리 > 클래스" [level=2] [ref=e107]
+      - button "🔄 데이터 새로고침" [ref=e78] [cursor=pointer]
+    - generic [ref=e109]:
+      - generic [ref=e110]:
+        - generic [ref=e111]:
+          - heading "클래스 관리" [level=3] [ref=e112]
+          - paragraph [ref=e113]: 카테고리, 공개 상태, 통계, 삭제를 한 곳에서 관리합니다.
+        - generic [ref=e114]:
+          - button "카테고리 관리" [ref=e115] [cursor=pointer]
+          - button "+ 클래스 생성" [ref=e116] [cursor=pointer]
+      - generic [ref=e117]:
+        - generic [ref=e118]:
+          - generic [ref=e119]:
+            - strong [ref=e120]: 전체 카테고리
+            - paragraph [ref=e121]: 사이트 전역에서 사용하는 카테고리 목록입니다. 추가/수정/삭제가 즉시 반영됩니다.
+          - button "+ 카테고리 추가" [ref=e122] [cursor=pointer]
+        - generic [ref=e123]:
+          - button "🌐 전체 2" [ref=e124] [cursor=pointer]:
+            - generic [ref=e125]: 🌐
+            - generic [ref=e126]: 전체
+            - generic [ref=e127]: "2"
+          - button "👥 소모임/동아리 0" [ref=e128] [cursor=pointer]:
+            - generic [ref=e129]: 👥
+            - generic [ref=e130]: 소모임/동아리
+            - generic [ref=e131]: "0"
+          - button "🍽️ 맛있는 클래스 0" [ref=e132] [cursor=pointer]:
+            - generic [ref=e133]: 🍽️
+            - generic [ref=e134]: 맛있는 클래스
+            - generic [ref=e135]: "0"
+          - button "🏋️ 운동 클래스 0" [ref=e136] [cursor=pointer]:
+            - generic [ref=e137]: 🏋️
+            - generic [ref=e138]: 운동 클래스
+            - generic [ref=e139]: "0"
+          - button "🎨 디자인 0" [ref=e140] [cursor=pointer]:
+            - generic [ref=e141]: 🎨
+            - generic [ref=e142]: 디자인
+            - generic [ref=e143]: "0"
+          - button "⚡ 생산성 1" [ref=e144] [cursor=pointer]:
+            - generic [ref=e145]: ⚡
+            - generic [ref=e146]: 생산성
+            - generic [ref=e147]: "1"
+          - button "🏅 스포츠 1" [ref=e148] [cursor=pointer]:
+            - generic [ref=e149]: 🏅
+            - generic [ref=e150]: 스포츠
+            - generic [ref=e151]: "1"
+          - button "✏️ 디지털 드로잉 0" [ref=e152] [cursor=pointer]:
+            - generic [ref=e153]: ✏️
+            - generic [ref=e154]: 디지털 드로잉
+            - generic [ref=e155]: "0"
+          - button "🧠 성공 마인드 0" [ref=e156] [cursor=pointer]:
+            - generic [ref=e157]: 🧠
+            - generic [ref=e158]: 성공 마인드
+            - generic [ref=e159]: "0"
+          - button "🎵 음악 0" [ref=e160] [cursor=pointer]:
+            - generic [ref=e161]: 🎵
+            - generic [ref=e162]: 음악
+            - generic [ref=e163]: "0"
+          - button "🍳 요리 0" [ref=e164] [cursor=pointer]:
+            - generic [ref=e165]: 🍳
+            - generic [ref=e166]: 요리
+            - generic [ref=e167]: "0"
+          - button "🧁 베이킹 0" [ref=e168] [cursor=pointer]:
+            - generic [ref=e169]: 🧁
+            - generic [ref=e170]: 베이킹
+            - generic [ref=e171]: "0"
+          - button "📷 사진 0" [ref=e172] [cursor=pointer]:
+            - generic [ref=e173]: 📷
+            - generic [ref=e174]: 사진
+            - generic [ref=e175]: "0"
+          - button "🎬 영상 0" [ref=e176] [cursor=pointer]:
+            - generic [ref=e177]: 🎬
+            - generic [ref=e178]: 영상
+            - generic [ref=e179]: "0"
+          - button "🧵 공예 0" [ref=e180] [cursor=pointer]:
+            - generic [ref=e181]: 🧵
+            - generic [ref=e182]: 공예
+            - generic [ref=e183]: "0"
+          - button "🧭 여행 0" [ref=e184] [cursor=pointer]:
+            - generic [ref=e185]: 🧭
+            - generic [ref=e186]: 여행
+            - generic [ref=e187]: "0"
+      - generic [ref=e188]:
+        - searchbox "클래스명, 강사, 카테고리 검색" [ref=e190]
+        - generic [ref=e191]:
+          - combobox [ref=e192]:
+            - option "인기순"
+            - option "최신순" [selected]
+            - option "가격 높은순"
+            - option "가격 낮은순"
+          - combobox [ref=e193]:
+            - option "전체 공개상태" [selected]
+            - option "공개"
+            - option "비공개"
+          - button "새로고침" [ref=e194] [cursor=pointer]
+      - generic [ref=e195]:
+        - generic [ref=e196]:
+          - generic [ref=e197]:
+            - heading "인기 클래스 TOP 10" [level=4] [ref=e198]
+            - paragraph [ref=e199]: 좋아요, 리뷰, 조회수, 별점을 가중치로 합산한 현재 핫한 클래스입니다.
+          - generic [ref=e200]:
+            - button "추천 설정 반영" [ref=e201] [cursor=pointer]
+            - button "랭킹 갱신" [ref=e202] [cursor=pointer]
+        - table [ref=e204]:
+          - rowgroup [ref=e205]:
+            - row "순위 클래스 카테고리 좋아요 리뷰 조회수 평점 점수" [ref=e206]:
+              - columnheader "순위" [ref=e207]
+              - columnheader "클래스" [ref=e208]
+              - columnheader "카테고리" [ref=e209]
+              - columnheader "좋아요" [ref=e210]
+              - columnheader "리뷰" [ref=e211]
+              - columnheader "조회수" [ref=e212]
+              - columnheader "평점" [ref=e213]
+              - columnheader "점수" [ref=e214]
+          - rowgroup [ref=e215]:
+            - row "#1 아자아자 힘내보재 아자아자 힘내보재 user_b7a935e26112 🏅 스포츠 0 0 0 0.0 18" [ref=e216] [cursor=pointer]:
+              - cell "#1" [ref=e217]:
+                - generic [ref=e218]: "#1"
+              - cell "아자아자 힘내보재 아자아자 힘내보재 user_b7a935e26112" [ref=e219]:
+                - generic [ref=e220]:
+                  - img "아자아자 힘내보재" [ref=e222]
+                  - generic [ref=e223]:
+                    - strong [ref=e224]: 아자아자 힘내보재
+                    - generic [ref=e225]: user_b7a935e26112
+              - cell "🏅 스포츠" [ref=e226]:
+                - generic [ref=e227]: 🏅 스포츠
+              - cell "0" [ref=e228]
+              - cell "0" [ref=e229]
+              - cell "0" [ref=e230]
+              - cell "0.0" [ref=e231]
+              - cell "18" [ref=e232]:
+                - strong [ref=e233]: "18"
+            - row "#2 ㄴㄴ ㄴㄴ user_b7a935e26112 ⚡ 생산성 0 0 1 0.0 0.5" [ref=e234] [cursor=pointer]:
+              - cell "#2" [ref=e235]:
+                - generic [ref=e236]: "#2"
+              - cell "ㄴㄴ ㄴㄴ user_b7a935e26112" [ref=e237]:
+                - generic [ref=e238]:
+                  - img "ㄴㄴ" [ref=e240]
+                  - generic [ref=e241]:
+                    - strong [ref=e242]: ㄴㄴ
+                    - generic [ref=e243]: user_b7a935e26112
+              - cell "⚡ 생산성" [ref=e244]:
+                - generic [ref=e245]: ⚡ 생산성
+              - cell "0" [ref=e246]
+              - cell "0" [ref=e247]
+              - cell "1" [ref=e248]
+              - cell "0.0" [ref=e249]
+              - cell "0.5" [ref=e250]:
+                - strong [ref=e251]: "0.5"
+      - table [ref=e253]:
+        - rowgroup [ref=e254]:
+          - row "클래스 이름 카테고리 담당 강사 1회당 가격 총 수강생수 최근 활동인원 공개여부 관리" [ref=e255]:
+            - columnheader "클래스 이름" [ref=e256]
+            - columnheader "카테고리" [ref=e257]
+            - columnheader "담당 강사" [ref=e258]
+            - columnheader "1회당 가격" [ref=e259]
+            - columnheader "총 수강생수" [ref=e260]
+            - columnheader "최근 활동인원" [ref=e261]
+            - columnheader "공개여부" [ref=e262]
+            - columnheader "관리" [ref=e263]
+        - rowgroup [ref=e264]:
+          - 'row "ㄴㄴ ㄴㄴ 공개 ID: cls_fa13cf0e… ⚡ 생산성 권 권오영 user_b7a935e26112 0원 기본 가격 0 총 수강생 0 최근 30일 공개 보기 삭제" [ref=e265] [cursor=pointer]':
+            - 'cell "ㄴㄴ ㄴㄴ 공개 ID: cls_fa13cf0e…" [ref=e266]':
+              - generic [ref=e267]:
+                - img "ㄴㄴ" [ref=e269]
+                - generic [ref=e270]:
+                  - generic [ref=e271]:
+                    - strong [ref=e272]: ㄴㄴ
+                    - generic [ref=e273]: 공개
+                  - generic [ref=e274]: "ID: cls_fa13cf0e…"
+            - cell "⚡ 생산성" [ref=e275]:
+              - generic [ref=e276]: ⚡ 생산성
+            - cell "권 권오영 user_b7a935e26112" [ref=e277]:
+              - generic [ref=e278]:
+                - generic [ref=e279]: 권
+                - generic [ref=e280]:
+                  - strong [ref=e281]: 권오영
+                  - generic [ref=e282]: user_b7a935e26112
+            - cell "0원 기본 가격" [ref=e283]:
+              - generic [ref=e284]:
+                - strong [ref=e285]: 0원
+                - generic [ref=e286]: 기본 가격
+            - cell "0 총 수강생" [ref=e287]:
+              - generic [ref=e288]:
+                - strong [ref=e289]: "0"
+                - generic [ref=e290]: 총 수강생
+            - cell "0 최근 30일" [ref=e291]:
+              - generic [ref=e292]:
+                - strong [ref=e293]: "0"
+                - generic [ref=e294]: 최근 30일
+            - cell "공개" [ref=e295]:
+              - generic:
+                - generic "공개" [ref=e296]:
+                  - checkbox [checked] [ref=e297]
+                - generic: 공개
+            - cell "보기 삭제" [ref=e299]:
+              - generic [ref=e300]:
+                - button "보기" [ref=e301]
+                - button "삭제" [ref=e302]
+          - 'row "아자아자 힘내보재 아자아자 힘내보재 공개 ID: cls_ea142270… 🏅 스포츠 권 권오영 user_b7a935e26112 0원 0원 · 100% 할인 1 총 수강생 2 최근 30일 공개 보기 삭제" [ref=e303] [cursor=pointer]':
+            - 'cell "아자아자 힘내보재 아자아자 힘내보재 공개 ID: cls_ea142270…" [ref=e304]':
+              - generic [ref=e305]:
+                - img "아자아자 힘내보재" [ref=e307]
+                - generic [ref=e308]:
+                  - generic [ref=e309]:
+                    - strong [ref=e310]: 아자아자 힘내보재
+                    - generic [ref=e311]: 공개
+                  - generic [ref=e312]: "ID: cls_ea142270…"
+            - cell "🏅 스포츠" [ref=e313]:
+              - generic [ref=e314]: 🏅 스포츠
+            - cell "권 권오영 user_b7a935e26112" [ref=e315]:
+              - generic [ref=e316]:
+                - generic [ref=e317]: 권
+                - generic [ref=e318]:
+                  - strong [ref=e319]: 권오영
+                  - generic [ref=e320]: user_b7a935e26112
+            - cell "0원 0원 · 100% 할인" [ref=e321]:
+              - generic [ref=e322]:
+                - strong [ref=e323]: 0원
+                - generic [ref=e324]: 0원 · 100% 할인
+            - cell "1 총 수강생" [ref=e325]:
+              - generic [ref=e326]:
+                - strong [ref=e327]: "1"
+                - generic [ref=e328]: 총 수강생
+            - cell "2 최근 30일" [ref=e329]:
+              - generic [ref=e330]:
+                - strong [ref=e331]: "2"
+                - generic [ref=e332]: 최근 30일
+            - cell "공개" [ref=e333]:
+              - generic:
+                - generic "공개" [ref=e334]:
+                  - checkbox [checked] [ref=e335]
+                - generic: 공개
+            - cell "보기 삭제" [ref=e337]:
+              - generic [ref=e338]:
+                - button "보기" [active] [ref=e339]
+                - button "삭제" [ref=e340]
+  - generic [ref=e343]:
+    - generic [ref=e344]:
+      - generic [ref=e345]:
+        - heading [level=3] [ref=e346]: 클래스 상세
+        - paragraph [ref=e347]: 매출, 수강생, 리뷰, 환불 내역을 한 곳에서 확인합니다.
+      - button [ref=e348] [cursor=pointer]: ×
+    - generic [ref=e350]:
+      - generic [ref=e351]:
+        - generic [ref=e352]:
+          - generic [ref=e353]: 클래스 상세 정보
+          - heading [level=3] [ref=e354]: 아자아자 힘내보재
+          - generic [ref=e355]:
+            - generic [ref=e356]: 스포츠
+            - generic [ref=e357]: 공개
+            - generic [ref=e358]: 생성일 2026. 3. 19. 오전 6:04:16
+        - button [ref=e360] [cursor=pointer]: 닫기
+      - generic [ref=e361]:
+        - generic [ref=e362]:
+          - generic [ref=e363]: 메인 강사상세정보
+          - generic [ref=e364]:
+            - generic [ref=e365]: 권
+            - generic [ref=e366]:
+              - strong [ref=e367]: 권오영
+              - generic [ref=e368]: ID user_b7a935e26112
+              - generic [ref=e369]: ej210651392@gmail.com
+              - generic [ref=e370]: "01072850134"
+          - generic [ref=e371]:
+            - generic [ref=e372]:
+              - text: 서브 강사 정보
+              - generic [ref=e373]: 0명
+            - generic [ref=e374]: 등록된 서브 강사가 없습니다.
+        - generic [ref=e375]:
+          - generic [ref=e376]: 매출 범위 선택
+          - generic [ref=e377]:
+            - button [ref=e378] [cursor=pointer]: 일일 매출
+            - button [ref=e379] [cursor=pointer]: 주간 매출
+            - button [ref=e380] [cursor=pointer]: 월간 매출
+            - button [ref=e381] [cursor=pointer]: 연간 매출
+          - generic [ref=e382]:
+            - generic [ref=e383]: 선택 매출
+            - strong [ref=e384]: 0원
+          - generic [ref=e385]:
+            - generic [ref=e386]:
+              - generic [ref=e387]: 일일
+              - strong [ref=e388]: 0원
+            - generic [ref=e389]:
+              - generic [ref=e390]: 주간
+              - strong [ref=e391]: 0원
+            - generic [ref=e392]:
+              - generic [ref=e393]: 월간
+              - strong [ref=e394]: 0원
+            - generic [ref=e395]:
+              - generic [ref=e396]: 연간
+              - strong [ref=e397]: 0원
+      - generic [ref=e398]:
+        - generic [ref=e399]:
+          - generic [ref=e400]: 총 수강생수
+          - strong [ref=e401]: "1"
+        - generic [ref=e402]:
+          - generic [ref=e403]: 최근 활동인원
+          - strong [ref=e404]: "1"
+        - generic [ref=e405]:
+          - generic [ref=e406]: 최근 모임참석 수강생
+          - strong [ref=e407]: "1"
+        - generic [ref=e408]:
+          - generic [ref=e409]: 수강권 총 발행
+          - strong [ref=e410]: "0"
+        - generic [ref=e411]:
+          - generic [ref=e412]: 수강권 사용
+          - strong [ref=e413]: "0"
+        - generic [ref=e414]:
+          - generic [ref=e415]: 총 모임 수
+          - strong [ref=e416]: "2"
+        - generic [ref=e417]:
+          - generic [ref=e418]: 모임 1회 평균 매출
+          - strong [ref=e419]: 0원
+        - generic [ref=e420]:
+          - generic [ref=e421]: 좋아요 수
+          - strong [ref=e422]: "0"
+        - generic [ref=e423]:
+          - generic [ref=e424]: 조회수
+          - strong [ref=e425]: "0"
+        - generic [ref=e426]:
+          - generic [ref=e427]: 리뷰 수
+          - strong [ref=e428]: "0"
+        - generic [ref=e429]:
+          - generic [ref=e430]: 별점
+          - strong [ref=e431]: "0.0"
+        - generic [ref=e432]:
+          - generic [ref=e433]: 환불 누적
+          - strong [ref=e434]: 0원
+        - generic [ref=e435]:
+          - generic [ref=e436]: 공개 상태
+          - strong [ref=e437]: 공개
+      - generic [ref=e438]:
+        - generic [ref=e439]: 환불 내역
+        - generic [ref=e441]: 등록된 환불 내역이 없습니다.
+  - generic [ref=e101] [cursor=pointer]:
+    - generic [ref=e104]: BSQ NETWORK
+    - generic [ref=e105]: "DB: LOCAL (Wrangler)"
+    - generic [ref=e106]: "User: 권오영"

@@ -1,0 +1,71 @@
+Total messages: 69 (Errors: 0, Warnings: 0)
+
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/auth/session?t=1774317211377 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ Server] ??嚥≪뮄????類ㅼ뵥: ej210651392@gmail.com @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:259
+[LOG] [BSQ Server] ????뺤쒔 ?怨뚭퍙 ?λ뜃由???袁⑥┷ (D1 API 筌뤴뫀諭? {loggedIn: true, userId: user_b7a935e26112} @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:336
+[LOG] 🔑 로그인 확인 — userId: user_b7a935e26112 @ http://127.0.0.1:8788/class_view/class_view.js:102
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/classes/cls_ea1422702fb94892?t=1774317211389 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/site-settings @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] 👨‍🏫 강사 판별: {userId: user_b7a935e26112, instructor_id: user_b7a935e26112, isInstructor: true, devMode: false} @ http://127.0.0.1:8788/class_view/class_view.js:145
+[LOG] 📖 Intro Module Initializing... @ http://127.0.0.1:8788/class_view/view_intro.js:3
+[LOG] 📚 Curriculum Module Initializing... @ http://127.0.0.1:8788/class_view/view_curriculum.js:3
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/enrollments?user_id=user_b7a935e26112&class_id=cls_ea1422702fb94892&t=1774317211526 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/user-passes?user_id=user_b7a935e26112&t=1774317211527 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] 🔑 권한 상태: {isEnrolled: true, isInstructor: true, hasAccess: true} @ http://127.0.0.1:8788/class_view/class_view.js:187
+[LOG] ⭐ Reviews Module Initializing (D1)... | Access: true | Instructor: true @ http://127.0.0.1:8788/class_view/view_reviews.js:3
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/reviews?class_id=cls_ea1422702fb94892&t=1774317211547 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/class-notices?class_id=cls_ea1422702fb94892 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&pinned_only=true&t=1774317211549 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=50&t=1774317211549 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] ✏️ Edit Module Initializing... | ClassId: cls_ea1422702fb94892 @ http://127.0.0.1:8788/class_view/view_edit.js?v=20260323_04:4
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/class-categories @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/gatherings?action=detail&gathering_id=gather_fe08edf5085b42a8&t=1774317212058 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/gatherings?action=detail&gathering_id=gather_2705cf4b4ab74112&t=1774317212059 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317214062 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317216074 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317218069 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317220066 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317222073 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317224059 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317226066 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317228061 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317230064 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317232068 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317234060 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317236070 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317238073 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317240075 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317242070 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317244066 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] 👆 탭 클릭 - 권한 확인: {isEnrolled: true, isInstructor: true, hasAccess: true} @ http://127.0.0.1:8788/class_view/class_view.js:252
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317246071 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317248062 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317250067 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317252065 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317254073 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317256071 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317258063 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317260074 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317262070 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317264061 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317266071 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317268062 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317270066 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317272060 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317274074 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317276063 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317278071 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317280073 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317282063 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317284071 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317286068 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317288073 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317290069 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317292064 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317294069 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317296070 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317298073 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317300069 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317302061 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317304063 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112
+[LOG] [BSQ API] GET http://127.0.0.1:8788/api/chat?class_id=cls_ea1422702fb94892&limit=20&after=msg_490f2ead1e5b47a8&t=1774317306071 @ http://127.0.0.1:8788/bsq_server.js?v=20260323_05:112

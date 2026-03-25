@@ -1,0 +1,173 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - heading "B-Square 홈으로 이동" [level=1] [ref=e5]:
+        - link "B-Square 홈으로 이동" [ref=e6] [cursor=pointer]:
+          - /url: ../bsnnnnnnnnnnnnnnnnnn/index.html
+          - generic [ref=e7]: B-Square
+      - navigation "주요 메뉴" [ref=e8]:
+        - list [ref=e9]:
+          - listitem [ref=e10]:
+            - link "클래스" [ref=e11] [cursor=pointer]:
+              - /url: ../class/class_list.html
+          - listitem [ref=e12]:
+            - link "등록" [ref=e13] [cursor=pointer]:
+              - /url: ../create_class/create_class.html
+          - listitem [ref=e14]:
+            - link "공지사항" [ref=e15] [cursor=pointer]:
+              - /url: ../notice/notice.html
+          - listitem [ref=e16]:
+            - link "문의" [ref=e17] [cursor=pointer]:
+              - /url: ../contact/contact.html
+          - listitem [ref=e18]:
+            - link "커뮤니티" [ref=e19] [cursor=pointer]:
+              - /url: ../community/community.html
+      - generic [ref=e21]:
+        - textbox "검색어를 입력하세요" [ref=e22]
+        - button "검색" [ref=e23] [cursor=pointer]
+  - main [ref=e24]:
+    - navigation [ref=e25]:
+      - button "" [ref=e27] [cursor=pointer]:
+        - generic [ref=e28]: 
+      - generic [ref=e29]:
+        - button "" [ref=e30] [cursor=pointer]:
+          - generic [ref=e32]: 
+        - button "" [ref=e33] [cursor=pointer]:
+          - generic [ref=e35]: 
+        - button "" [ref=e36] [cursor=pointer]:
+          - generic [ref=e38]: 
+        - button "" [ref=e39] [cursor=pointer]:
+          - generic [ref=e41]: 
+    - complementary [ref=e42]:
+      - generic [ref=e44]:
+        - generic [ref=e45]: 
+        - textbox "채팅 검색" [ref=e46]
+      - generic [ref=e48]:
+        - generic [ref=e49]: 
+        - paragraph [ref=e50]: 채팅방이 없습니다
+    - generic [ref=e51]:
+      - generic [ref=e53]:
+        - generic [ref=e54]: 
+        - heading "B-Square 커뮤니티" [level=3] [ref=e55]
+        - paragraph [ref=e56]: 대화를 선택하거나 새 대화를 시작하세요.
+      - generic [ref=e57]:
+        - generic [ref=e58]:
+          - text: 
+          - generic [ref=e60]:
+            - generic [ref=e61]: 채팅방
+            - generic [ref=e62]: 오프라인
+          - text: 
+          - generic [ref=e63]:
+            - button "" [ref=e64] [cursor=pointer]:
+              - generic [ref=e65]: 
+            - button "" [ref=e66] [cursor=pointer]:
+              - generic [ref=e67]: 
+            - button "" [ref=e68] [cursor=pointer]:
+              - generic [ref=e69]: 
+            - button "" [ref=e70] [cursor=pointer]:
+              - generic [ref=e71]: 
+        - text:   
+        - text:    
+        - generic [ref=e73]:
+          - generic [ref=e74]:
+            - button "" [ref=e75] [cursor=pointer]:
+              - generic [ref=e76]: 
+            - button "" [ref=e77] [cursor=pointer]:
+              - generic [ref=e78]: 
+            - textbox "메시지 작성..." [ref=e79]
+            - button "" [ref=e80] [cursor=pointer]:
+              - generic [ref=e81]: 
+          - button "" [ref=e82] [cursor=pointer]:
+            - generic [ref=e83]: 
+    - complementary:
+      - generic [ref=e84]:
+        - heading "프로필" [level=3] [ref=e85]
+        - button "" [ref=e86] [cursor=pointer]:
+          - generic [ref=e87]: 
+    - text:                      +
+  - contentinfo [ref=e89]:
+    - generic [ref=e90]:
+      - generic [ref=e91]:
+        - generic [ref=e92]:
+          - heading "고객센터" [level=3] [ref=e93]
+          - paragraph [ref=e94]: 오전 10시 ~ 오후 6시 (주말, 공휴일 제외)
+          - button "문의하기" [ref=e95] [cursor=pointer]
+          - generic "앱 다운로드" [ref=e96]:
+            - link "App Store에서 다운로드" [ref=e97] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e98]: 
+              - generic [ref=e99]:
+                - strong [ref=e100]: App Store에서
+                - generic [ref=e101]: 다운로드 하기
+            - link "Google Play에서 다운로드" [ref=e102] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e103]: ▶
+              - generic [ref=e104]:
+                - strong [ref=e105]: Google Play에서
+                - generic [ref=e106]: 다운로드
+          - generic "소셜 링크" [ref=e107]:
+            - link "IG 인스타그램" [ref=e108] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e109]: IG
+              - generic [ref=e110]: 인스타그램
+            - link "YT 유튜브" [ref=e111] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e112]: YT
+              - generic [ref=e113]: 유튜브
+        - generic [ref=e114]:
+          - generic [ref=e115]:
+            - heading "공지사항" [level=4] [ref=e116]
+            - link "전체 카테고리" [ref=e117] [cursor=pointer]:
+              - /url: ../notice/notice.html
+            - link "헬프센터" [ref=e118] [cursor=pointer]:
+              - /url: ../notice/notice.html
+            - link "지원 기기 및 이용환경" [ref=e119] [cursor=pointer]:
+              - /url: ../contact/contact.html
+          - generic [ref=e120]:
+            - heading "크리에이터 지원" [level=4] [ref=e121]
+            - link "지식재산권 침해 신고 센터" [ref=e122] [cursor=pointer]:
+              - /url: ../notice/notice.html
+            - link "국비 지원" [ref=e123] [cursor=pointer]:
+              - /url: ../contact/contact.html
+            - link "기업고객 문의" [ref=e124] [cursor=pointer]:
+              - /url: ../contact/contact.html
+            - link "클래스 개설 구매" [ref=e125] [cursor=pointer]:
+              - /url: ../create_class/create_class.html
+          - generic [ref=e126]:
+            - heading "정책" [level=4] [ref=e127]
+            - link "개인정보 처리방침" [ref=e128] [cursor=pointer]:
+              - /url: ../terms_privacy.html
+              - strong [ref=e129]: 개인정보 처리방침
+            - link "이용약관" [ref=e130] [cursor=pointer]:
+              - /url: ../terms_use.html
+            - link "기프트카드 및 캐시 이용약관" [ref=e131] [cursor=pointer]:
+              - /url: ../terms_use.html#giftcard
+            - link "환불 정책" [ref=e132] [cursor=pointer]:
+              - /url: "#"
+            - link "청소년 보호 정책" [ref=e133] [cursor=pointer]:
+              - /url: "#"
+          - generic [ref=e134]:
+            - heading "사업자 정보 확인" [level=4] [ref=e135]
+            - link "제휴 및 대외협력" [ref=e136] [cursor=pointer]:
+              - /url: "#"
+            - link "채용" [ref=e137] [cursor=pointer]:
+              - /url: "#"
+            - link "고객센터" [ref=e138] [cursor=pointer]:
+              - /url: ../contact/contact.html
+      - generic [ref=e139]:
+        - generic "바로가기" [ref=e140]:
+          - link "이용약관" [ref=e141] [cursor=pointer]:
+            - /url: ../terms_use.html
+          - link "개인정보처리방침" [ref=e142] [cursor=pointer]:
+            - /url: ../terms_privacy.html
+            - strong [ref=e143]: 개인정보처리방침
+          - link "고객센터" [ref=e144] [cursor=pointer]:
+            - /url: ../contact/contact.html
+        - paragraph
+        - paragraph [ref=e145]:
+          - link "사업자 정보 자세히 보기 >" [ref=e146] [cursor=pointer]:
+            - /url: ../contact/contact.html
+        - paragraph [ref=e147]: © B-Square. All rights reserved.
+  - button "카카오톡 상담" [ref=e148] [cursor=pointer]:
+    - img [ref=e149]
+  - generic: 💬 카카오톡 상담

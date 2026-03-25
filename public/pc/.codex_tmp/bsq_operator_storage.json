@@ -1,0 +1,12 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "https://b-square-web.pages.dev",
+      "localStorage": [
+        { "name": "bsq_operator_view_mode", "value": "1" },
+        { "name": "bsq_theme", "value": "dark" }
+      ]
+    }
+  ]
+}
