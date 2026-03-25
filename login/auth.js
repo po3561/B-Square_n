@@ -116,7 +116,8 @@
                     birth_day: document.getElementById('birthDay').value.trim(),
                     gender,
                     nationality,
-                    signup_path: document.getElementById('joinRoute').value
+                    signup_path: document.getElementById('joinRoute').value,
+                    referrer_code: document.getElementById('referrerCode')?.value || null
                 })
             });
 

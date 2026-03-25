@@ -15,6 +15,7 @@ CREATE TABLE users (
   gender TEXT,
   nationality TEXT DEFAULT 'local',
   signup_path TEXT,
+  referrer_code TEXT,
   role TEXT DEFAULT 'user',
   membership_level TEXT DEFAULT 'Free',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

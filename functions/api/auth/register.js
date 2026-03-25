@@ -18,6 +18,7 @@ export async function onRequestPost(context) {
     const gender = body?.gender || null;
     const nationality = body?.nationality || 'local';
     const signup_path = body?.signup_path || null;
+    const referrer_code = body?.referrer_code || null;
 
     if (!email || !password) {
       return json(request, env, { success: false, error: 'Email and password are required.' }, { status: 400 });
@@ -46,13 +47,13 @@ export async function onRequestPost(context) {
     await env.DB.prepare(`
       INSERT INTO users (
         id, email, password_hash, name, phone, username,
-        birth_year, birth_month, birth_day, gender, nationality, signup_path, role
+        birth_year, birth_month, birth_day, gender, nationality, signup_path, referrer_code, role
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'user')
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'user')
     `).bind(
       userId, email, password_hash, name, phone, username,
       birth_year, birth_month, birth_day,
-      gender, nationality, signup_path
+      gender, nationality, signup_path, referrer_code
     ).run();
 
     const token = crypto.randomUUID() + '-' + crypto.randomUUID();

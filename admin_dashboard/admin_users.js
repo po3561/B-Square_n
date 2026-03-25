@@ -36,6 +36,18 @@ function formatMoney(value) {
   return `${num.toLocaleString('ko-KR')}원`;
 }
 
+function getReferrerLabel(code) {
+  if (!code) return '-';
+  const mapping = {
+    'aj001': '중부1', 'aj002': '중부2', 'aj003': '중부3', 'aj004': '중부4', 'aj005': '중부5',
+    'ab001': '북부1', 'ab002': '북부2', 'ab003': '북부3', 'ab004': '북부4', 'ab005': '북부5',
+    'ac001': '동부1', 'ac002': '동부2', 'ac003': '동부3', 'ac004': '동부4', 'ac005': '동부5',
+    'as001': '대학1', 'as002': '대학2', 'as003': '대학3', 'as004': '대학4',
+    'cs020': '행정'
+  };
+  return mapping[code] ? `${mapping[code]} (${code})` : code;
+}
+
 function ensureUsersToolbar() {
   const usersHeader = document.querySelector('#tabUsers .card-header');
   if (usersHeader && !document.getElementById('searchInputUsers')) {
@@ -320,6 +332,7 @@ async function openUserDetail(userId) {
             <div><div style="color:#64748b; font-size:0.75rem;">SNS 링크</div><div>${escapeHtml(user.sns_link || '-')}</div></div>
             <div><div style="color:#64748b; font-size:0.75rem;">역할 수정자</div><div>${escapeHtml(user.role_updated_by || '-')}</div></div>
             <div><div style="color:#64748b; font-size:0.75rem;">역할 수정일</div><div>${escapeHtml(formatDate(user.role_updated_at || '-'))}</div></div>
+            <div><div style="color:#64748b; font-size:0.75rem;">추천인 상세</div><div style="font-weight:600; color:var(--admin-primary);">${escapeHtml(getReferrerLabel(user.referrer_code))}</div></div>
             <div><div style="color:#64748b; font-size:0.75rem;">블랙리스트 처리일</div><div>${escapeHtml(formatDate(user.blacklisted_at || '-'))}</div></div>
             <div><div style="color:#64748b; font-size:0.75rem;">블랙리스트 처리자</div><div>${escapeHtml(user.blacklisted_by || '-')}</div></div>
             <div><div style="color:#64748b; font-size:0.75rem;">블랙리스트 사유</div><div>${escapeHtml(user.blacklist_reason || '-')}</div></div>
@@ -726,6 +739,7 @@ if (!window.__BSQ_ADMIN_USERS_CLEAN__) {
               <div><div style="color:#64748b; font-size:0.75rem;">SNS 링크</div><div>${escapeHtml(user.sns_link || '-')}</div></div>
               <div><div style="color:#64748b; font-size:0.75rem;">역할 수정자</div><div>${escapeHtml(user.role_updated_by || '-')}</div></div>
               <div><div style="color:#64748b; font-size:0.75rem;">역할 수정일</div><div>${escapeHtml(formatDateClean(user.role_updated_at || '-'))}</div></div>
+              <div><div style="color:#64748b; font-size:0.75rem;">추천인 상세</div><div style="font-weight:600; color:var(--admin-primary);">${escapeHtml(getReferrerLabel(user.referrer_code))}</div></div>
               <div><div style="color:#64748b; font-size:0.75rem;">블랙리스트 처리일</div><div>${escapeHtml(formatDateClean(user.blacklisted_at || '-'))}</div></div>
               <div><div style="color:#64748b; font-size:0.75rem;">블랙리스트 처리자</div><div>${escapeHtml(user.blacklisted_by || '-')}</div></div>
               <div><div style="color:#64748b; font-size:0.75rem;">블랙리스트 사유</div><div>${escapeHtml(user.blacklist_reason || '-')}</div></div>
