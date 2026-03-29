@@ -135,7 +135,7 @@
               >
               <button type="button" onclick="const el=document.getElementById('bsqSearchInput');const q=el ? el.value.trim() : '';if(q)location.href='${prefix}class/class_list.html?q='+encodeURIComponent(q);">검색</button>
             </div>
-            <div class="user-menu" id="userMenu" style="display:flex;gap:10px;align-items:center;"></div>
+            <div class="user-menu" id="userMenu"></div>
           </div>
         </div>
       </header>`;
@@ -382,14 +382,14 @@
       const modeLabel = operatorEligible ? (operatorMode ? '운영자 모드' : '일반 모드') : '';
 
       menuEl.innerHTML = `
-        <a href="${profileHref}" class="user-profile-btn" style="text-decoration:none;">
+        <a href="${profileHref}" class="user-profile-btn">
           <div class="user-avatar" style="background-image:url(${profile.profile_image_url || ''});">
             ${!profile.profile_image_url ? '👤' : ''}
           </div>
           <span class="user-name">${profile.name || user.name || '사용자'}</span>
         </a>
-        ${operatorEligible ? `<button type="button" id="btnOperatorModeToggle" class="btn-operator-mode" style="background:rgba(110,142,251,0.12); color:#6e8efb; border:1px solid rgba(110,142,251,0.25); padding:6px 12px; border-radius:999px; cursor:pointer; font-size:0.78rem; font-weight:700;">${modeLabel}</button>` : ''}
-        <button type="button" class="btn-logout" onclick="handleGlobalLogout()" style="color:var(--text-secondary);font-size:0.8rem;background:none;border:none;cursor:pointer;">로그아웃</button>
+        ${operatorEligible ? `<button type="button" id="btnOperatorModeToggle" class="btn-operator-mode">${modeLabel}</button>` : ''}
+        <button type="button" class="btn-logout" onclick="handleGlobalLogout()">로그아웃</button>
       `;
 
       if (operatorEligible) {

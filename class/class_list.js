@@ -16,7 +16,7 @@
   { name: '여행', emoji: '✈️' },
 ];
 
-const CLASS_LIST_FETCH_LIMIT = 80;
+const CLASS_LIST_FETCH_LIMIT = 60;
 let reloadTimer = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return String(value).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   }
 
-  function truncateText(value = '', maxLength = 88) {
+  function truncateText(value = '', maxLength = 84) {
     const text = stripHtml(value);
     if (!text) return '';
     return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}…` : text;
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function getClassSummary(cls) {
-    return truncateText(cls.summary || cls.short_description || cls.description || cls.intro || cls.content || '', 96);
+    return truncateText(cls.summary || cls.short_description || cls.description || cls.intro || cls.content || '', 84);
   }
 
   function updateListingHeroStats(activeCount = state.allClasses.length) {

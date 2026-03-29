@@ -365,6 +365,54 @@
     color: var(--text-primary);
 }
 
+body.class-view-page .intro-summary {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: clamp(0.96rem, 2vw, 1.08rem);
+    line-height: 1.72;
+    letter-spacing: -0.01em;
+}
+
+body.class-view-page .section-title-inline {
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    line-height: 1.15;
+}
+
+body.class-view-page .section-title-row {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+body.class-view-page .chap-count-inline {
+    color: var(--text-secondary);
+    font-size: clamp(0.84rem, 1.9vw, 1rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+body.class-view-page .review-section-title {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+    letter-spacing: -0.03em;
+}
+
+body.class-view-page .review-section-caption {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+body.class-view-page .review-subtitle {
+    margin: 0 0 1rem;
+    color: var(--text-primary);
+    font-size: clamp(1rem, 2.2vw, 1.2rem);
+    letter-spacing: -0.02em;
+}
+
 /* ========================
    INTRO TAB
    ======================== */
@@ -3056,5 +3104,244 @@ body.class-view-page .content-card {
 
     body.class-view-page .incentive-badges {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 430px) {
+    body.class-view-page .view-container {
+        max-width: calc(100vw - 0.75rem);
+        padding-bottom: 5.5rem;
+    }
+
+    body.class-view-page .premium-hero {
+        padding: 0.8rem 0 0.6rem;
+    }
+
+    body.class-view-page .hero-brief-panel,
+    body.class-view-page .content-card,
+    body.class-view-page .view-sidebar .sticky-card-premium {
+        border-radius: 20px;
+    }
+
+    body.class-view-page .hero-brief-panel {
+        padding: 0.95rem;
+        gap: 0.8rem;
+    }
+
+    body.class-view-page .hero-title {
+        font-size: clamp(1.65rem, 8vw, 2.1rem);
+        line-height: 1.04;
+    }
+
+    body.class-view-page .hero-summary {
+        font-size: 0.94rem;
+        line-height: 1.62;
+    }
+
+    body.class-view-page .hero-quick-stats {
+        grid-template-columns: 1fr;
+        gap: 0.55rem;
+    }
+
+    body.class-view-page .hero-stat-card,
+    body.class-view-page .hero-trust-row span,
+    body.class-view-page .section-inline-action,
+    body.class-view-page .btn-submit,
+    body.class-view-page .btn-submit-review {
+        min-height: 42px;
+    }
+
+    body.class-view-page .hero-cta-row {
+        grid-template-columns: 1fr;
+    }
+
+    body.class-view-page .hero-trust-row {
+        display: none;
+    }
+
+    body.class-view-page .view-tabs {
+        gap: 0.35rem;
+        padding: 0.55rem;
+        border-radius: 20px;
+    }
+
+    body.class-view-page .tab-btn {
+        min-height: 38px;
+        padding: 0.55rem 0.8rem;
+        font-size: 0.84rem;
+    }
+
+    body.class-view-page .content-card {
+        padding: 0.95rem;
+    }
+
+    body.class-view-page .section-title-inline {
+        font-size: 1.12rem;
+    }
+
+    body.class-view-page .review-subtitle {
+        margin-bottom: 0.75rem;
+    }
+}
+
+@media (max-width: 390px) {
+    body.class-view-page .view-container {
+        max-width: calc(100vw - 0.5rem);
+    }
+
+    body.class-view-page .hero-brief-panel,
+    body.class-view-page .content-card,
+    body.class-view-page .view-sidebar .sticky-card-premium {
+        padding: 0.85rem;
+    }
+
+    body.class-view-page .hero-title {
+        font-size: clamp(1.45rem, 8.2vw, 1.9rem);
+    }
+
+    body.class-view-page .hero-summary,
+    body.class-view-page .intro-summary,
+    body.class-view-page .review-section-caption {
+        font-size: 0.88rem;
+        line-height: 1.58;
+    }
+
+    body.class-view-page .hero-stat-card {
+        padding: 0.8rem 0.85rem;
+    }
+
+    body.class-view-page .hero-stat-card strong {
+        font-size: 0.92rem;
+    }
+
+    body.class-view-page .view-tabs {
+        top: 68px;
+    }
+
+    body.class-view-page .tab-btn {
+        padding: 0.5rem 0.72rem;
+        font-size: 0.8rem;
+    }
+
+    body.class-view-page .section-title-inline,
+    body.class-view-page .review-section-title {
+        font-size: 1.02rem;
+    }
+}
+
+@media (max-width: 320px) {
+    body.class-view-page .view-container {
+        max-width: calc(100vw - 0.4rem);
+    }
+
+    body.class-view-page .premium-hero {
+        padding: 0.55rem 0 0.45rem;
+    }
+
+    body.class-view-page .hero-brief-panel,
+    body.class-view-page .content-card,
+    body.class-view-page .view-sidebar .sticky-card-premium {
+        border-radius: 18px;
+    }
+
+    body.class-view-page .hero-title {
+        font-size: clamp(1.28rem, 9vw, 1.65rem);
+        letter-spacing: -0.05em;
+    }
+
+    body.class-view-page .hero-stat-card {
+        padding: 0.72rem 0.8rem;
+        gap: 0.25rem;
+    }
+
+    body.class-view-page .hero-stat-card strong {
+        font-size: 0.88rem;
+    }
+
+    body.class-view-page .hero-cta-row .btn-cta-start,
+    body.class-view-page .hero-cta-row .btn-cta-secondary,
+    body.class-view-page .sidebar-cta-area .btn-cta-start,
+    body.class-view-page .sidebar-cta-area .btn-cta-secondary,
+    body.class-view-page .btn-submit,
+    body.class-view-page .btn-submit-review {
+        min-height: 44px;
+        padding-inline: 0.9rem;
+        font-size: 0.93rem;
+    }
+
+    body.class-view-page .tab-btn {
+        min-height: 34px;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.76rem;
+    }
+
+    body.class-view-page .content-card {
+        padding: 0.8rem;
+    }
+
+    body.class-view-page .section-title-inline,
+    body.class-view-page .review-section-title {
+        font-size: 0.98rem;
+    }
+}
+
+@media (max-width: 220px) {
+    body.class-view-page .view-container {
+        max-width: calc(100vw - 0.25rem);
+        padding-bottom: 4.5rem;
+    }
+
+    body.class-view-page .premium-hero {
+        padding: 0.4rem 0 0.3rem;
+    }
+
+    body.class-view-page .hero-brief-panel,
+    body.class-view-page .content-card,
+    body.class-view-page .view-sidebar .sticky-card-premium {
+        padding: 0.68rem;
+        border-radius: 16px;
+    }
+
+    body.class-view-page .hero-summary,
+    body.class-view-page .intro-summary,
+    body.class-view-page .review-section-caption {
+        font-size: 0.8rem;
+        line-height: 1.5;
+    }
+
+    body.class-view-page .hero-quick-stats {
+        gap: 0.45rem;
+    }
+
+    body.class-view-page .hero-cta-row,
+    body.class-view-page .sidebar-cta-area {
+        gap: 0.45rem;
+    }
+
+    body.class-view-page .hero-trust-row {
+        display: none;
+    }
+
+    body.class-view-page .view-tabs {
+        top: 62px;
+        gap: 0.25rem;
+        padding: 0.45rem;
+        border-radius: 16px;
+    }
+
+    body.class-view-page .tab-btn {
+        min-height: 32px;
+        padding: 0.4rem 0.55rem;
+        font-size: 0.72rem;
+    }
+
+    body.class-view-page .hero-title {
+        font-size: clamp(1.16rem, 10vw, 1.45rem);
+    }
+
+    body.class-view-page .hero-stat-card strong,
+    body.class-view-page .review-section-title,
+    body.class-view-page .section-title-inline {
+        font-size: 0.92rem;
     }
 }

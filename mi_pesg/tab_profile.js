@@ -221,7 +221,7 @@
             });
 
             if (res && res.success) {
-                showMypageNotice?.('success', '프로필 정보가 안전하게 저장되었습니다.');
+                showMypageNotice?.('success', '프로필 저장 완료', '프로필 정보가 안전하게 저장되었습니다.');
                 updateSidebarUI(updates.name, document.getElementById('profileUsername')?.value);
                 selectedCategories = activeChips.map((value) => String(value || '').trim()).filter(Boolean);
             } else {
@@ -229,7 +229,7 @@
             }
         } catch (error) {
             console.error('[tab_profile] save error:', error);
-            showMypageNotice?.('error', `프로필 저장 실패: ${error.message || '알 수 없는 오류'}`);
+            showMypageNotice?.('error', '프로필 저장 실패', error.message || '알 수 없는 오류');
         } finally {
             if (submitBtn) {
                 submitBtn.disabled = false;

@@ -92,12 +92,12 @@
                 <!-- 상단 탭 메뉴 -->
                 <div class="view-tabs" id="viewTabs">
                     <button class="tab-btn active" data-target="tabIntro">소개</button>
-                    <button class="tab-btn" data-target="tabNotice">공지사항</button>
+                    <button class="tab-btn" data-target="tabNotice">공지</button>
                     <button class="tab-btn" data-target="tabCurriculum">커리큘럼</button>
-                    <button class="tab-btn" data-target="tabReview">수강 후기</button>
+                    <button class="tab-btn" data-target="tabReview">후기</button>
                     <button class="tab-btn" data-target="tabChat">채팅</button>
                     <button class="tab-btn" id="tabEditBtn" data-target="tabEdit"
-                        style="display:none; color: var(--accent-color);">강사 전용 수정</button>
+                        style="display:none; color: var(--accent-color);">수정</button>
                 </div>
 
                 <!-- TAB: Intro -->
@@ -105,9 +105,7 @@
                     <section class="content-card">
                         <!-- 소개 -->
                         <div class="intro-section">
-                            <p id="introSummary"
-                                style="font-size: 1.15rem; color: var(--text-secondary, #aaa); line-height: 1.7; margin-bottom: 0;">
-                            </p>
+                            <p id="introSummary" class="intro-summary"></p>
                         </div>
 
                         <!-- 상세 소개 (Rich HTML) -->
@@ -139,7 +137,7 @@
                         <div class="section-toolbar section-toolbar-between">
                             <div class="section-title-group">
                                 <p class="section-eyebrow">Latest updates</p>
-                                <h3 class="section-title" style="margin-bottom:0;">공지사항</h3>
+                                <h3 class="section-title section-title-inline" style="margin-bottom:0;">공지</h3>
                             </div>
                             <button id="btnCreateClassNotice" class="btn-submit section-inline-action"
                                 style="display:none;">공지 작성</button>
@@ -157,8 +155,9 @@
                         <div class="section-toolbar section-toolbar-between curriculum-header-row">
                             <div class="section-title-group">
                                 <p class="section-eyebrow">Course map</p>
-                                <h3 style="font-size: 1.5rem; margin-bottom:0;">커리큘럼 <span id="chapCount"
-                                        style="color:var(--text-secondary); font-size:1rem; margin-left:10px;">챕터 0개</span></h3>
+                                <h3 class="section-title section-title-inline section-title-row" style="margin-bottom:0;">
+                                    커리큘럼 <span id="chapCount" class="chap-count-inline">챕터 0개</span>
+                                </h3>
                             </div>
                             <button id="btnToggleAll" class="section-inline-action">전체 펼치기</button>
                         </div>
@@ -170,10 +169,10 @@
                 <div id="tabReview" class="tab-content">
                     <section class="content-card">
                         <div class="review-header-minimal section-toolbar section-toolbar-between">
-                            <h4>수강 후기 <span class="review-count-badge" id="reviewTotalCount">0</span></h4>
-                            <p class="section-eyebrow" style="margin:0;">실제 수강생의 경험을 확인해 보세요.</p>
+                            <h4 class="review-section-title">후기 <span class="review-count-badge" id="reviewTotalCount">0</span></h4>
+                            <p class="review-section-caption">실제 수강생의 경험을 확인해 보세요.</p>
                         </div>
-                        <h4 style="margin-bottom: 1.5rem;">수강생 포토 후기</h4>
+                        <h4 class="review-subtitle">수강생 포토 후기</h4>
                         <div class="photo-review-grid" id="photoReviewGrid"></div>
                         <div id="reviewsList" class="reviews-container"></div>
                         <div class="review-form-card" id="reviewFormCard">

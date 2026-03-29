@@ -2007,3 +2007,45 @@
 .chat-room-item.active {
     transform: translateY(-1px);
 }
+
+@media (max-width: 390px) {
+    .btn-go-class {
+        padding-inline: 0.6rem;
+        min-height: 38px;
+        font-size: 0.82rem;
+    }
+
+    .chat-top-header {
+        padding: 10px 12px;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+
+    .chat-header-actions {
+        gap: 5px;
+    }
+}
+
+@media (max-width: 220px) {
+    .btn-go-class {
+        width: 38px;
+        padding: 0;
+        font-size: 0;
+        gap: 0;
+        justify-content: center;
+    }
+
+    .btn-go-class i {
+        font-size: 1rem;
+    }
+
+    .chat-header-status {
+        display: none;
+    }
+
+    .chat-top-header,
+    .chat-input-area {
+        padding-inline: 8px;
+    }
+}

@@ -79,7 +79,7 @@
   }
 
   body {
-    overflow-x: hidden !important;
+    overflow-x: clip !important;
   }
 
   .site-header {
@@ -144,5 +144,50 @@
 
   .site-footer {
     padding: 1.25rem 0.35rem 3.5rem !important;
+  }
+}
+
+@media (max-width: 320px) {
+  .header-inner {
+    padding: 0.54rem 0.6rem !important;
+    gap: 0.3rem !important;
+  }
+
+  .header-left {
+    gap: 0.45rem !important;
+  }
+
+  .user-profile-btn {
+    padding: 0.28rem 0.45rem 0.28rem 0.28rem !important;
+  }
+
+  .user-name {
+    display: none !important;
+  }
+
+  .btn-login-main,
+  .btn-operator-mode,
+  .btn-logout {
+    padding: 0.38rem 0.52rem !important;
+    font-size: 0.66rem !important;
+  }
+
+  .main-ad-banner {
+    min-height: 168px !important;
+  }
+
+  .home-category-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .card-grid,
+  .large-grid,
+  .recommend-columns {
+    grid-template-columns: 1fr !important;
+  }
+
+  .tab-btn {
+    min-height: 38px !important;
+    padding: 0.56rem 0.72rem !important;
   }
 }

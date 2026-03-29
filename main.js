@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 let globalAllClasses = [];
 let globalHomeCategories = [];
 let homeRefreshTimer = null;
-const HOME_CLASS_FETCH_LIMIT = 60;
+const HOME_CLASS_FETCH_LIMIT = 48;
 
 function getCurrentHomeCategory() {
     return new URLSearchParams(window.location.search).get('cat') || 'all';
@@ -152,7 +152,7 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
     globalHomeCategories = categories;
 
     const expanded = getHomeCategoryExpandedState();
-    const limit = 10;
+    const limit = 8;
     const hasMore = categories.length > limit;
     const displayList = expanded ? categories : categories.slice(0, limit);
 

@@ -8,11 +8,11 @@
             const confirmPassword = document.getElementById('confirmPassword').value.trim();
 
             if (newPassword !== confirmPassword) {
-                showMypageNotice?.('error', '비밀번호가 일치하지 않습니다.');
+                showMypageNotice?.('error', '입력 확인', '비밀번호가 일치하지 않습니다.');
                 return;
             }
             if (newPassword.length < 6) {
-                showMypageNotice?.('error', '비밀번호는 6자리 이상이어야 합니다.');
+                showMypageNotice?.('error', '비밀번호 규칙', '비밀번호는 6자리 이상이어야 합니다.');
                 return;
             }
 
@@ -24,12 +24,12 @@
 
                 if (res && res.success) {
                     passwordForm.reset();
-                    showMypageNotice?.('success', '비밀번호가 변경되었습니다.');
+                    showMypageNotice?.('success', '비밀번호 변경 완료', '비밀번호가 변경되었습니다.');
                 } else {
                     throw new Error(res?.error || '변경에 실패했습니다.');
                 }
             } catch (error) {
-                showMypageNotice?.('error', `비밀번호 변경 실패: ${error.message}`);
+                showMypageNotice?.('error', '비밀번호 변경 실패', error.message);
             }
         };
     }
@@ -48,9 +48,13 @@
                     method: 'PUT',
                     body: JSON.stringify({ mfa_active: e.target.checked ? 1 : 0 }),
                 });
-                showMypageNotice?.('success', e.target.checked ? '2단계 인증이 활성화되었습니다.' : '2단계 인증이 해제되었습니다.');
+                showMypageNotice?.(
+                    'success',
+                    '보안 설정 저장 완료',
+                    e.target.checked ? '2단계 인증이 활성화되었습니다.' : '2단계 인증이 해제되었습니다.'
+                );
             } catch (error) {
-                showMypageNotice?.('error', `보안 설정 저장 실패: ${error.message}`);
+                showMypageNotice?.('error', '보안 설정 저장 실패', error.message);
                 mfaToggle.checked = !e.target.checked;
             }
         };

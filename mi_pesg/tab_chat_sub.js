@@ -119,13 +119,13 @@
                     body: JSON.stringify({ membership_level: newLevel }),
                 });
                 if (res?.success) {
-                    showMypageNotice?.('success', `${newLevel} 플랜으로 변경되었습니다.`);
+                    showMypageNotice?.('success', '구독 플랜 변경 완료', `${newLevel} 플랜으로 변경되었습니다.`);
                     location.reload();
                 } else {
                     throw new Error(res?.error || '변경에 실패했습니다.');
                 }
             } catch (e) {
-                showMypageNotice?.('error', `플랜 변경 실패: ${e.message}`);
+                showMypageNotice?.('error', '구독 플랜 변경 실패', e.message);
             }
         }
     };

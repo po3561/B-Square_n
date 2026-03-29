@@ -1928,3 +1928,671 @@ body {
         width: 100%;
     }
 }
+
+/* ==========================================================================
+   Final compact tuning for mypage/dashboard
+   - Scales down typography, icons, paddings, and card density on small screens
+   - Keeps tap targets readable while allowing the visual layer to shrink
+   ========================================================================== */
+
+.mypage-page {
+    --mypage-shell-gap: clamp(0.65rem, 1.1vw, 1rem);
+    --mypage-shell-pad: clamp(0.75rem, 1.5vw, 1.5rem);
+    --mypage-card-pad: clamp(0.8rem, 1.3vw, 1.15rem);
+    --mypage-title-xl: clamp(1.55rem, 2.8vw, 2.65rem);
+    --mypage-title-lg: clamp(1.05rem, 1.8vw, 1.5rem);
+    --mypage-title-md: clamp(0.92rem, 1.2vw, 1.08rem);
+    --mypage-copy: clamp(0.82rem, 1.1vw, 0.98rem);
+    --mypage-body: clamp(0.82rem, 1vw, 0.92rem);
+    --mypage-icon: clamp(1rem, 2.2vw, 1.6rem);
+}
+
+.mypage-page .mypage-layout {
+    width: min(calc(100% - clamp(0.75rem, 2vw, 1.5rem)), 1440px);
+    margin: clamp(0.9rem, 1.8vw, 2rem) auto clamp(2rem, 4vw, 4rem);
+    gap: var(--mypage-shell-gap);
+}
+
+.mypage-page .mypage-sidebar,
+.mypage-page .mypage-content,
+.mypage-page .mypage-panel-card,
+.mypage-page .commerce-shell,
+.mypage-page .commerce-hero,
+.mypage-page .mypage-form,
+.mypage-page .class-section,
+.mypage-page .tab-header-row,
+.mypage-page .security-card,
+.mypage-page .sub-card,
+.mypage-page .chat-manage-card,
+.mypage-page .friends-panel {
+    border-radius: 24px;
+}
+
+.mypage-page .profile-summary,
+.mypage-page .mypage-panel-card,
+.mypage-page .commerce-split-grid > section,
+.mypage-page .coupon-claim-card,
+.mypage-page .security-card,
+.mypage-page .sub-card,
+.mypage-page .chat-manage-card,
+.mypage-page .class-section,
+.mypage-page .tab-header-row,
+.mypage-page .friends-panel {
+    padding: var(--mypage-card-pad);
+}
+
+.mypage-page .friends-panel {
+    background:
+        radial-gradient(circle at top right, rgba(109, 143, 255, 0.12), transparent 38%),
+        linear-gradient(180deg, rgba(12, 16, 23, 0.94), rgba(10, 13, 18, 0.9));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.18);
+}
+
+.mypage-page .friends-panel-pending {
+    background:
+        radial-gradient(circle at top right, rgba(255, 149, 0, 0.12), transparent 38%),
+        linear-gradient(180deg, rgba(12, 16, 23, 0.94), rgba(10, 13, 18, 0.9));
+}
+
+.mypage-page .page-eyebrow,
+.mypage-page .mypage-panel-eyebrow,
+.mypage-page .commerce-eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+}
+
+.mypage-page .mypage-hero-title,
+.mypage-page .tab-title {
+    text-wrap: balance;
+    line-height: 1.06;
+    letter-spacing: -0.045em;
+}
+
+.mypage-page .mypage-hero-title {
+    font-size: var(--mypage-title-xl);
+    max-width: 11ch;
+}
+
+.mypage-page .tab-title {
+    font-size: var(--mypage-title-lg);
+    margin-bottom: 1rem;
+}
+
+.mypage-page .mypage-hero-text,
+.mypage-page .commerce-copy,
+.mypage-page .profile-summary p,
+.mypage-page .friend-info p,
+.mypage-page .class-info p,
+.mypage-page .wallet-coupon-body p,
+.mypage-page .cart-item-head p,
+.mypage-page .mypage-notice-message,
+.mypage-page .upload-tip {
+    font-size: var(--mypage-copy);
+    line-height: 1.55;
+}
+
+.mypage-page .hero-action-btn,
+.mypage-page .dashboard-action,
+.mypage-page .btn-primary,
+.mypage-page .btn-secondary,
+.mypage-page .btn-submit,
+.mypage-page .btn-chat-link,
+.mypage-page .btn-image-upload,
+.mypage-page .friend-action,
+.mypage-page .mypage-inline-link {
+    min-height: 44px;
+    padding: 0.72rem 0.95rem;
+    border-radius: 14px;
+    font-size: clamp(0.84rem, 1.05vw, 0.96rem);
+}
+
+.mypage-page .dashboard-stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left !important;
+    gap: 0.4rem;
+    min-height: 136px;
+}
+
+.mypage-page .dashboard-stat-icon {
+    font-size: var(--mypage-icon);
+    line-height: 1;
+}
+
+.mypage-page .dashboard-stat-title {
+    margin: 0;
+    font-size: clamp(0.82rem, 1.1vw, 0.95rem);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.mypage-page .dashboard-stat-value {
+    margin: 0;
+    font-size: clamp(1.35rem, 3vw, 1.75rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+}
+
+.mypage-page .dashboard-stats,
+.mypage-page .dashboard-quick-links {
+    gap: 0.75rem;
+}
+
+.mypage-page .mypage-panel-head,
+.mypage-page .tab-header-row,
+.mypage-page .commerce-hero {
+    gap: 0.85rem;
+}
+
+.mypage-page .friends-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.85rem;
+}
+
+.mypage-page .mypage-panel-head h3,
+.mypage-page .friends-panel-head h3 {
+    margin: 0;
+    font-size: var(--mypage-title-md);
+    line-height: 1.25;
+}
+
+.mypage-page .friends-panel h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.mypage-page .friends-panel h3 i {
+    font-size: 0.95em;
+}
+
+.mypage-page .friends-panel h3 span,
+.mypage-page .mypage-panel-head h3 span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.6rem;
+    min-width: 1.6rem;
+    padding: 0 0.45rem;
+    margin-left: 0.2rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.mypage-page .friends-panel-body,
+.mypage-page .mypage-list-stack,
+.mypage-page .my-class-list {
+    gap: 0.7rem;
+}
+
+.mypage-page .friends-panel-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.mypage-page .friends-placeholder,
+.mypage-page .empty-state.compact {
+    color: var(--text-secondary);
+    font-size: var(--mypage-body);
+}
+
+.mypage-page .friends-placeholder {
+    margin: 0;
+    padding: 1rem 0;
+    text-align: center;
+}
+
+.mypage-page .edit-inline-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    padding: 0.25rem 0;
+}
+
+.mypage-page .inline-choice {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 42px;
+    padding: 0.35rem 0.6rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.mypage-page .inline-choice input {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    accent-color: #9ebcff;
+}
+
+.mypage-page .edit-class-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.4rem;
+    flex-wrap: wrap;
+}
+
+.mypage-page .btn-secondary--soft {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+}
+
+.mypage-page .profile-summary {
+    gap: 0.8rem;
+}
+
+.mypage-page .profile-img-placeholder {
+    width: clamp(72px, 18vw, 92px);
+    height: clamp(72px, 18vw, 92px);
+    border-radius: 24px;
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+}
+
+.mypage-page .mypage-nav {
+    gap: 0.55rem;
+}
+
+.mypage-page .nav-btn {
+    min-height: 44px;
+    padding: 0.8rem 0.95rem;
+    font-size: clamp(0.84rem, 1vw, 0.95rem);
+    line-height: 1.2;
+}
+
+.mypage-page .nav-btn::after {
+    width: 6px;
+    height: 6px;
+}
+
+.mypage-page .wallet-coupon-card,
+.mypage-page .cart-item-card,
+.mypage-page .friend-card {
+    border-radius: 18px;
+}
+
+.mypage-page .wallet-coupon-media,
+.mypage-page .cart-item-thumb {
+    width: 84px;
+    min-width: 84px;
+    height: 84px;
+}
+
+.mypage-page .wallet-coupon-top strong,
+.mypage-page .cart-item-head strong,
+.mypage-page .friend-name-row strong,
+.mypage-page .class-info h4 {
+    font-size: clamp(0.95rem, 1.08vw, 1.05rem);
+    line-height: 1.25;
+}
+
+.mypage-page .wallet-coupon-code,
+.mypage-page .cart-item-price,
+.mypage-page .friend-meta-row,
+.mypage-page .wallet-coupon-meta {
+    font-size: clamp(0.72rem, 0.9vw, 0.82rem);
+}
+
+.mypage-page .friend-card {
+    gap: 0.85rem;
+}
+
+.mypage-page .friend-avatar {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    border-radius: 16px;
+    font-size: 1rem;
+}
+
+.mypage-page .friend-action {
+    min-height: 38px;
+    padding: 0 0.8rem;
+    font-size: 0.84rem;
+}
+
+.mypage-page .commerce-shell {
+    gap: 0.85rem;
+}
+
+.mypage-page .commerce-hero {
+    align-items: flex-start;
+}
+
+.mypage-page .commerce-title {
+    font-size: clamp(1.15rem, 2vw, 1.7rem);
+}
+
+.mypage-page .coupon-claim-row {
+    gap: 0.65rem;
+}
+
+.mypage-page .commerce-input,
+.mypage-page .mypage-form input,
+.mypage-page .mypage-form textarea,
+.mypage-page .mypage-form select,
+.mypage-page .input-group input,
+.mypage-page .input-group textarea {
+    min-height: 44px;
+    padding-inline: 0.9rem;
+    font-size: clamp(0.88rem, 1vw, 0.95rem);
+}
+
+.mypage-page .friends-panel-body {
+    max-height: none;
+    overflow: visible;
+}
+
+@media (max-width: 768px) {
+    .mypage-page .mypage-layout {
+        padding-inline: 0.9rem;
+    }
+
+    .mypage-page .mypage-sidebar {
+        width: 100%;
+    }
+
+    .mypage-page .profile-summary {
+        flex-direction: row;
+        align-items: center;
+        padding: 1rem;
+    }
+
+    .mypage-page .profile-summary .profile-img-placeholder {
+        flex-shrink: 0;
+    }
+
+    .mypage-page .mypage-nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mypage-page .dashboard-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mypage-page .dashboard-quick-links {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mypage-page .dashboard-action {
+        min-height: 44px;
+    }
+
+    .mypage-page .mypage-hero {
+        grid-template-columns: 1fr;
+        padding: 1.15rem;
+    }
+
+    .mypage-page .mypage-hero-title {
+        font-size: clamp(1.55rem, 6.5vw, 2.1rem);
+        max-width: 14ch;
+    }
+
+    .mypage-page .mypage-panel-grid,
+    .mypage-page .commerce-split-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mypage-page .class-thumb {
+        width: 100%;
+        height: 136px;
+    }
+
+    .mypage-page .my-class-card {
+        padding: 1rem;
+        gap: 0.9rem;
+    }
+
+    .mypage-page .wallet-coupon-card,
+    .mypage-page .cart-item-card {
+        display: grid;
+        grid-template-columns: 82px minmax(0, 1fr);
+        align-items: start;
+    }
+
+    .mypage-page .friend-card {
+        grid-template-columns: 1fr;
+    }
+
+    .mypage-page .friend-actions {
+        justify-content: flex-start;
+    }
+
+    .mypage-page .edit-class-actions {
+        flex-direction: column;
+    }
+
+    .mypage-page .edit-class-actions > * {
+        width: 100%;
+    }
+}
+
+@media (max-width: 430px) {
+    .mypage-page .mypage-layout {
+        margin-top: 0.8rem;
+        padding-inline: 0.75rem;
+    }
+
+    .mypage-page .profile-summary {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .mypage-page .dashboard-stats,
+    .mypage-page .dashboard-quick-links {
+        grid-template-columns: 1fr;
+    }
+
+    .mypage-page .tab-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .mypage-page .tab-header-cta,
+    .mypage-page .btn-primary,
+    .mypage-page .btn-secondary,
+    .mypage-page .btn-submit,
+    .mypage-page .hero-action-btn {
+        width: 100%;
+    }
+
+    .mypage-page .coupon-claim-row {
+        flex-direction: column;
+    }
+
+    .mypage-page .wallet-coupon-card,
+    .mypage-page .cart-item-card {
+        grid-template-columns: 68px minmax(0, 1fr);
+        gap: 0.75rem;
+        padding: 0.8rem;
+    }
+
+    .mypage-page .wallet-coupon-media,
+    .mypage-page .cart-item-thumb {
+        width: 68px;
+        min-width: 68px;
+        height: 68px;
+    }
+
+    .mypage-page .friend-card {
+        padding: 0.9rem;
+    }
+
+    .mypage-page .friend-actions {
+        width: 100%;
+    }
+
+    .mypage-page .friend-action {
+        flex: 1 1 0;
+        justify-content: center;
+    }
+
+    .mypage-page .mypage-panel-head,
+    .mypage-page .friends-panel-head {
+        align-items: flex-start;
+    }
+
+    .mypage-page .mypage-panel-head h3,
+    .mypage-page .friends-panel h3 {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 320px) {
+    .mypage-page .mypage-layout {
+        width: min(calc(100% - 0.6rem), 1440px);
+        padding-inline: 0.3rem;
+    }
+
+    .mypage-page .profile-summary,
+    .mypage-page .mypage-panel-card,
+    .mypage-page .commerce-shell,
+    .mypage-page .commerce-hero,
+    .mypage-page .class-section,
+    .mypage-page .tab-header-row,
+    .mypage-page .security-card,
+    .mypage-page .sub-card,
+    .mypage-page .chat-manage-card,
+    .mypage-page .friends-panel {
+        border-radius: 18px;
+    }
+
+    .mypage-page .profile-summary {
+        gap: 0.65rem;
+    }
+
+    .mypage-page .mypage-hero,
+    .mypage-page .mypage-panel-card,
+    .mypage-page .commerce-shell,
+    .mypage-page .commerce-hero,
+    .mypage-page .tab-header-row,
+    .mypage-page .coupon-claim-card,
+    .mypage-page .security-card,
+    .mypage-page .sub-card,
+    .mypage-page .chat-manage-card,
+    .mypage-page .friends-panel {
+        padding: 0.82rem;
+    }
+
+    .mypage-page .page-eyebrow,
+    .mypage-page .mypage-panel-eyebrow,
+    .mypage-page .commerce-eyebrow {
+        display: none;
+    }
+
+    .mypage-page .mypage-hero-title {
+        font-size: clamp(1.3rem, 8vw, 1.7rem);
+        max-width: 100%;
+    }
+
+    .mypage-page .tab-title {
+        font-size: clamp(1rem, 6vw, 1.3rem);
+    }
+
+    .mypage-page .dashboard-stat-card {
+        min-height: 118px;
+        padding: 1rem !important;
+    }
+
+    .mypage-page .dashboard-stat-value {
+        font-size: clamp(1.2rem, 6.5vw, 1.55rem);
+    }
+
+    .mypage-page .nav-btn {
+        min-height: 40px;
+        padding: 0.72rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .mypage-page .wallet-coupon-card,
+    .mypage-page .cart-item-card {
+        grid-template-columns: 1fr;
+    }
+
+    .mypage-page .wallet-coupon-media,
+    .mypage-page .cart-item-thumb {
+        width: 100%;
+        min-width: 100%;
+        height: 76px;
+    }
+
+    .mypage-page .friend-avatar {
+        width: 46px;
+        height: 46px;
+        min-width: 46px;
+    }
+
+    .mypage-page .friend-action {
+        min-height: 36px;
+        padding-inline: 0.7rem;
+        font-size: 0.78rem;
+    }
+
+    .mypage-page .dashboard-stats,
+    .mypage-page .dashboard-quick-links {
+        gap: 0.6rem;
+    }
+
+    .mypage-page .mypage-hero-actions {
+        gap: 0.55rem;
+    }
+}
+
+@media (max-width: 240px) {
+    .mypage-page .mypage-layout {
+        width: min(calc(100% - 0.4rem), 1440px);
+        padding-inline: 0.15rem;
+    }
+
+    .mypage-page .nav-btn,
+    .mypage-page .hero-action-btn,
+    .mypage-page .btn-primary,
+    .mypage-page .btn-secondary,
+    .mypage-page .btn-submit,
+    .mypage-page .btn-chat-link,
+    .mypage-page .friend-action {
+        min-height: 34px;
+        padding: 0.5rem 0.65rem;
+        font-size: 0.72rem;
+    }
+
+    .mypage-page .mypage-hero-text,
+    .mypage-page .commerce-copy,
+    .mypage-page .profile-summary p,
+    .mypage-page .friend-info p,
+    .mypage-page .class-info p,
+    .mypage-page .wallet-coupon-body p,
+    .mypage-page .cart-item-head p {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 220px) {
+    .mypage-page .profile-summary h3,
+    .mypage-page .mypage-panel-head h3,
+    .mypage-page .friends-panel h3 {
+        font-size: 0.88rem;
+    }
+
+    .mypage-page .dashboard-stat-title,
+    .mypage-page .dashboard-stat-value {
+        font-size: 0.82rem;
+    }
+
+    .mypage-page .tab-title {
+        font-size: 0.94rem;
+    }
+}

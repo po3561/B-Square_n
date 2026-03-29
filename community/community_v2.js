@@ -482,6 +482,14 @@ function setupGroupChatModal({ userId, shared, SyncBridge, ChatList, closeMenu }
 
     const groupNameInput = document.getElementById('groupNameInput');
 
+    const notify = (message) => {
+        if (typeof shared.toast === 'function') {
+            shared.toast(message);
+            return;
+        }
+        alert(message);
+    };
+
     if (!modal || !searchInput || !results || !selectedMembers || !createBtn) return;
 
 
@@ -550,8 +558,7 @@ function setupGroupChatModal({ userId, shared, SyncBridge, ChatList, closeMenu }
 
             if (query.length < 2) {
 
-                results.innerHTML = '';
-        shared.toast?.('현재 열려 있는 채팅방이 없습니다.');
+                results.innerHTML = '<p class="empty-inline">검색어를 입력해 주세요.</p>';
                 return;
 
             }
@@ -614,7 +621,7 @@ function setupGroupChatModal({ userId, shared, SyncBridge, ChatList, closeMenu }
 
         if (!name) {
 
-            alert('그룹 이름을 입력해 주세요.');
+            notify('그룹 이름을 입력해 주세요.');
 
             return;
 
@@ -652,7 +659,7 @@ function setupGroupChatModal({ userId, shared, SyncBridge, ChatList, closeMenu }
 
         } else {
 
-            alert(res?.error || '그룹 생성에 실패했습니다.');
+            notify(res?.error || '그룹 생성에 실패했습니다.');
 
         }
 
@@ -934,7 +941,22 @@ async function loadFriendsPanel(userId, SyncBridge) {
 
         btn.addEventListener('click', async () => {
 
-            if (!confirm('친구를 삭제하시겠습니까?')) return;
+            if (btn.dataset.confirmed !== '1') {
+                btn.dataset.confirmed = '1';
+                const label = btn.dataset.label || btn.textContent || '삭제';
+                btn.dataset.label = label;
+                btn.textContent = '한 번 더 누르면 삭제';
+                setTimeout(() => {
+                    if (btn.dataset.confirmed === '1') {
+                        btn.dataset.confirmed = '0';
+                        btn.textContent = btn.dataset.label || label;
+                    }
+                }, 1800);
+                return;
+            }
+
+            btn.dataset.confirmed = '0';
+            btn.textContent = btn.dataset.label || '삭제';
 
             await window.BSQ.api('/api/friends', {
 

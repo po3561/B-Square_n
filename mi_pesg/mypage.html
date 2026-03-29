@@ -51,24 +51,21 @@
             <section id="tabDashboard" class="mypage-tab active">
                 <h2 class="tab-title">나의 대시보드</h2>
                 <div id="dashboardStats" class="dashboard-stats">
-                    <div class="stat-card"
-                        style="background:var(--bg-card); padding:1.5rem; border-radius:12px; border:1px solid var(--border-color); text-align:center;">
-                        <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">🎫</span>
-                        <h4 style="color:var(--comm-text2); margin-bottom:0.5rem;">보유 수강권</h4>
-                        <p id="dashPassCount" style="font-size:1.5rem; font-weight:700; color:var(--text-color);">0개</p>
-                    </div>
-                    <div class="stat-card"
-                        style="background:var(--bg-card); padding:1.5rem; border-radius:12px; border:1px solid var(--border-color); text-align:center;">
-                        <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">🎓</span>
-                        <h4 style="color:var(--comm-text2); margin-bottom:0.5rem;">수강 중 클래스</h4>
-                        <p id="dashClassCount" style="font-size:1.5rem; font-weight:700; color:var(--text-color);">0개</p>
-                    </div>
-                    <div class="stat-card"
-                        style="background:var(--bg-card); padding:1.5rem; border-radius:12px; border:1px solid var(--border-color); text-align:center;">
-                        <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">💬</span>
-                        <h4 style="color:var(--comm-text2); margin-bottom:0.5rem;">참여 중 채팅</h4>
-                        <p id="dashChatCount" style="font-size:1.5rem; font-weight:700; color:var(--text-color);">0개</p>
-                    </div>
+                    <article class="stat-card dashboard-stat-card">
+                        <span class="dashboard-stat-icon">🎫</span>
+                        <h4 class="dashboard-stat-title">보유 수강권</h4>
+                        <p id="dashPassCount" class="dashboard-stat-value">0개</p>
+                    </article>
+                    <article class="stat-card dashboard-stat-card">
+                        <span class="dashboard-stat-icon">🎓</span>
+                        <h4 class="dashboard-stat-title">수강 중 클래스</h4>
+                        <p id="dashClassCount" class="dashboard-stat-value">0개</p>
+                    </article>
+                    <article class="stat-card dashboard-stat-card">
+                        <span class="dashboard-stat-icon">💬</span>
+                        <h4 class="dashboard-stat-title">참여 중 채팅</h4>
+                        <p id="dashChatCount" class="dashboard-stat-value">0개</p>
+                    </article>
                 </div>
 
                 <div class="dashboard-quick-links">
@@ -197,7 +194,7 @@
                     <div class="commerce-hero">
                         <div>
                             <p class="commerce-eyebrow">Wallet + Cart</p>
-                            <h2 class="tab-title commerce-title"> 장바구니</h2>
+                            <h2 class="tab-title commerce-title">장바구니</h2>
                             <p class="commerce-copy">보유 쿠폰, 장바구니, 그리고 저장된 콘텐츠를 한 곳에서 확인합니다.</p>
                         </div>
                     </div>
@@ -248,19 +245,19 @@
                     <div class="form-grid">
                         <div class="input-group">
                             <label>이름</label>
-                            <input type="text" id="profileName" placeholder="이름을 입력하세요" required>
+                            <input type="text" id="profileName" placeholder="이름을 입력하세요" autocomplete="name" required>
                         </div>
                         <div class="input-group">
-                            <label>아이디 수정(변경 불가)</label>
-                            <input type="text" id="profileUsername" readonly>
+                            <label>아이디 (변경 불가)</label>
+                            <input type="text" id="profileUsername" autocomplete="username" readonly>
                         </div>
                         <div class="input-group">
                             <label>휴대전화</label>
-                            <input type="tel" id="profilePhone" placeholder="010-0000-0000" required>
+                            <input type="tel" id="profilePhone" placeholder="010-0000-0000" autocomplete="tel" required>
                         </div>
                         <div class="input-group">
                             <label>SNS 링크 (인스타그램)</label>
-                            <input type="url" id="profileSns" placeholder="@your_id">
+                            <input type="url" id="profileSns" placeholder="@your_id" autocomplete="url">
                         </div>
                     </div>
 
@@ -292,11 +289,11 @@
                     <form id="passwordForm" class="mypage-form">
                         <div class="input-group">
                             <label>새 비밀번호</label>
-                            <input type="password" id="newPassword" placeholder="새 비밀번호 (6자리 이상)" required minlength="6">
+                            <input type="password" id="newPassword" placeholder="새 비밀번호 (6자리 이상)" autocomplete="new-password" required minlength="6">
                         </div>
                         <div class="input-group">
-                            <label> 비밀번호 확인</label>
-                            <input type="password" id="confirmPassword" placeholder="비밀번호를 다시 입력하세요" required minlength="6">
+                            <label>비밀번호 확인</label>
+                            <input type="password" id="confirmPassword" placeholder="비밀번호를 다시 입력하세요" autocomplete="new-password" required minlength="6">
                         </div>
                         <button type="submit" class="btn-submit" style="width: auto; padding: 0.8rem 2rem;">비밀번호 변경하기</button>
                     </form>
@@ -332,23 +329,21 @@
             <section id="tabFriends" class="mypage-tab">
                 <h2 class="tab-title">친구</h2>
 
-                <div style="background:linear-gradient(135deg,rgba(255,149,0,0.08),rgba(255,59,48,0.05)); border:1px solid rgba(255,149,0,0.15); border-radius:16px; padding:1.5rem; margin-bottom:1.5rem;">
-                    <h3 style="margin:0 0 1rem 0; display:flex; align-items:center; gap:8px; font-size:1rem;">
-                        <i class="fa-solid fa-bell" style="color:#FF9500;"></i> 받은 친구 요청
-                        <span id="pendingCount" style="background:#FF9500; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700;">0</span>
-                    </h3>
-                    <div id="pendingFriendList" style="max-height:300px; overflow-y:auto;">
-                        <p style="color:#888; font-size:0.9rem;">요청이 없습니다</p>
+                <div class="friends-panel friends-panel-pending">
+                    <div class="friends-panel-head">
+                        <h3><i class="fa-solid fa-bell"></i> 받은 친구 요청 <span id="pendingCount">0</span></h3>
+                    </div>
+                    <div id="pendingFriendList" class="friends-panel-body">
+                        <p class="friends-placeholder">요청이 없습니다.</p>
                     </div>
                 </div>
 
-                <div style="background:var(--bg-card,#1a1a2e); border:1px solid var(--border-color,#333); border-radius:16px; padding:1.5rem;">
-                    <h3 style="margin:0 0 1rem 0; display:flex; align-items:center; gap:8px; font-size:1rem;">
-                        <i class="fa-solid fa-user-group" style="color:var(--comm-accent,#6D8FFF);"></i> 내 친구
-                        <span id="friendCount" style="background:var(--comm-accent,#6D8FFF); color:#fff; padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700;">0</span>
-                    </h3>
-                    <div id="friendListArea" style="max-height:500px; overflow-y:auto;">
-                        <p style="color:#888; font-size:0.9rem;">친구 목록을 불러오는 중입니다.</p>
+                <div class="friends-panel">
+                    <div class="friends-panel-head">
+                        <h3><i class="fa-solid fa-user-group"></i> 내 친구 <span id="friendCount">0</span></h3>
+                    </div>
+                    <div id="friendListArea" class="friends-panel-body">
+                        <p class="friends-placeholder">친구 목록을 불러오는 중입니다.</p>
                     </div>
                 </div>
             </section>
@@ -402,36 +397,35 @@
                         <input type="number" id="editClassPrice" required>
                     </div>
                     <div class="input-group">
-                        <label>할인율%)</label>
+                        <label>할인율 (%)</label>
                         <input type="number" id="editClassDiscount" placeholder="0" min="0" max="100">
                     </div>
                     <div class="input-group">
                         <label>쿠폰 발행</label>
-                        <div style="display: flex; gap: 20px; align-items: center; padding: 10px 0;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" id="editClassCoupon" style="width: auto;"> 쿠폰을 발행하기
+                        <div class="edit-inline-options">
+                            <label class="inline-choice">
+                                <input type="checkbox" id="editClassCoupon"> 쿠폰을 발행하기
                             </label>
                         </div>
                     </div>
                     <div class="input-group">
                         <label>클래스 유형</label>
-                        <div style="display: flex; gap: 20px; align-items: center; padding: 10px 0;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="radio" name="editClassType" value="VOD" checked style="width: auto;"> VOD (녹화 강의)
+                        <div class="edit-inline-options">
+                            <label class="inline-choice">
+                                <input type="radio" name="editClassType" value="VOD" checked> VOD (녹화 강의)
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="radio" name="editClassType" value="LIVE" style="width: auto;"> LIVE (실시간 강의)
+                            <label class="inline-choice">
+                                <input type="radio" name="editClassType" value="LIVE"> LIVE (실시간 강의)
                             </label>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 10px; margin-top: 2rem;">
+                    <div class="edit-class-actions">
                         <button type="submit" class="btn-submit">정보 수정 완료</button>
-                        <button type="button" class="btn-secondary"
-                            onclick="document.querySelector('[data-target=tabDashboard]').click()"
-                            style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-secondary); padding: 0.8rem 2rem; border-radius: 8px;">취소</button>
+                        <button type="button" class="btn-secondary btn-secondary--soft"
+                            onclick="document.querySelector('[data-target=tabDashboard]').click()">취소</button>
                     </div>
-                </form>
-            </section>
+            </form>
+        </section>
         </main>
     </div>
 

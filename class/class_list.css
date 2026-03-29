@@ -405,9 +405,9 @@ body.class-list-page .section-inner {
 body.class-list-page .class-list-hero {
     display: grid;
     grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.75fr);
-    gap: 1rem;
-    padding: 1.4rem;
-    border-radius: 28px;
+    gap: 0.9rem;
+    padding: 1.25rem;
+    border-radius: 26px;
     background: linear-gradient(180deg, rgba(18, 22, 31, 0.96), rgba(10, 12, 18, 0.92));
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26);
@@ -416,7 +416,7 @@ body.class-list-page .class-list-hero {
 body.class-list-page .class-list-hero-copy {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.68rem;
 }
 
 body.class-list-page .page-eyebrow {
@@ -435,22 +435,24 @@ body.class-list-page .page-eyebrow {
 
 body.class-list-page .class-list-hero-copy h1 {
     margin: 0;
-    font-size: clamp(1.8rem, 3.2vw, 3.2rem);
+    font-size: clamp(1.55rem, 3vw, 3rem);
     line-height: 1.05;
     letter-spacing: -0.06em;
     color: #f7f9ff;
+    word-break: keep-all;
 }
 
 body.class-list-page .class-list-hero-copy p {
     margin: 0;
     max-width: 58ch;
     color: rgba(236, 242, 255, 0.72);
-    line-height: 1.8;
+    line-height: 1.72;
+    font-size: 0.96rem;
 }
 
 body.class-list-page .class-list-hero-stats {
     display: grid;
-    gap: 0.75rem;
+    gap: 0.65rem;
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
@@ -458,15 +460,15 @@ body.class-list-page .hero-metric {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 110px;
-    padding: 1rem;
-    border-radius: 22px;
+    min-height: 100px;
+    padding: 0.92rem;
+    border-radius: 20px;
     background: rgba(255, 255, 255, 0.045);
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 body.class-list-page .hero-metric strong {
-    font-size: 1.8rem;
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
     line-height: 1;
     color: #fff;
     letter-spacing: -0.05em;
@@ -474,8 +476,8 @@ body.class-list-page .hero-metric strong {
 
 body.class-list-page .hero-metric span {
     color: rgba(236, 242, 255, 0.7);
-    font-size: 0.88rem;
-    margin-top: 0.35rem;
+    font-size: 0.84rem;
+    margin-top: 0.3rem;
 }
 
 body.class-list-page .index-layout {
@@ -494,9 +496,9 @@ body.class-list-page .sidebar-nav {
 body.class-list-page .category-sidebar {
     display: flex;
     flex-direction: column;
-    gap: 0.9rem;
-    padding: 1.15rem;
-    border-radius: 28px;
+    gap: 0.8rem;
+    padding: 1rem;
+    border-radius: 24px;
     background: linear-gradient(180deg, rgba(18, 22, 31, 0.96), rgba(10, 12, 18, 0.92));
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
@@ -504,22 +506,23 @@ body.class-list-page .category-sidebar {
 
 body.class-list-page .sidebar-title {
     margin: 0;
-    font-size: 1rem;
+    font-size: 0.96rem;
     letter-spacing: -0.03em;
     color: #f7f9ff;
 }
 
 body.class-list-page .category-sidebar ul {
     display: grid;
-    gap: 0.55rem;
+    gap: 0.5rem;
 }
 
 body.class-list-page .category-sidebar li a {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
-    padding: 0.92rem 1rem;
-    border-radius: 18px;
+    gap: 0.55rem;
+    padding: 0.8rem 0.88rem;
+    min-height: 46px;
+    border-radius: 16px;
     background: rgba(255, 255, 255, 0.045);
     border: 1px solid transparent;
     color: rgba(236, 242, 255, 0.82);
@@ -547,9 +550,9 @@ body.class-list-page .category-sidebar .icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
-    border-radius: 12px;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
     background: rgba(255, 255, 255, 0.08);
     flex-shrink: 0;
 }
@@ -559,18 +562,19 @@ body.class-list-page .category-sidebar .cat-label {
     min-width: 0;
     font-weight: 700;
     letter-spacing: -0.01em;
+    line-height: 1.25;
 }
 
 body.class-list-page .category-sidebar .cat-count {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 2.2rem;
-    padding: 0.22rem 0.55rem;
+    min-width: 2rem;
+    padding: 0.2rem 0.48rem;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.08);
     color: rgba(255, 255, 255, 0.8);
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     font-weight: 700;
 }
 
@@ -579,21 +583,27 @@ body.class-list-page .content-area {
 }
 
 body.class-list-page .class-page-overrides {
-    padding: 1.25rem;
-    border-radius: 28px;
+    padding: 1.1rem;
+    border-radius: 24px;
     background: linear-gradient(180deg, rgba(18, 22, 31, 0.96), rgba(10, 12, 18, 0.92));
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
 }
 
 body.class-list-page .class-grid-header {
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.95rem;
+    padding-bottom: 0.95rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    gap: 1rem;
+    gap: 0.9rem 1rem;
 }
 
 body.class-list-page .header-copy {
+    flex: 1 1 320px;
+    min-width: 0;
     gap: 0.45rem;
 }
 
@@ -607,18 +617,20 @@ body.class-list-page .group-subtitle {
 
 body.class-list-page .list-controls {
     display: grid;
-    grid-template-columns: minmax(240px, 1fr) minmax(160px, 190px) auto;
-    gap: 0.75rem;
+    grid-template-columns: minmax(230px, 1fr) minmax(160px, 190px) auto;
+    gap: 0.65rem;
     align-items: center;
-    width: min(100%, 620px);
+    flex: 1 1 390px;
+    min-width: min(100%, 320px);
+    width: min(100%, 580px);
 }
 
 body.class-list-page .class-search-input,
 body.class-list-page .sort-select {
     width: 100%;
-    min-height: 48px;
+    min-height: 46px;
     border-radius: 16px;
-    padding: 0.82rem 1rem;
+    padding: 0.76rem 0.95rem;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: #f7f9ff;
@@ -646,7 +658,7 @@ body.class-list-page .total-count {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 48px;
+    min-height: 46px;
     padding: 0 1rem;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.05);
@@ -662,8 +674,8 @@ body.class-list-page .class-list-notice .notice-chip {
 
 body.class-list-page .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.9rem;
 }
 
 body.class-list-page .class-card {
@@ -671,7 +683,7 @@ body.class-list-page .class-card {
     display: flex;
     flex-direction: column;
     min-height: 100%;
-    border-radius: 24px;
+    border-radius: 22px;
     overflow: hidden;
     background: linear-gradient(180deg, rgba(18, 22, 31, 0.96), rgba(10, 12, 18, 0.94));
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -688,7 +700,7 @@ body.class-list-page .class-card:hover {
 body.class-list-page .class-card-link {
     display: flex;
     flex-direction: column;
-    gap: 0.95rem;
+    gap: 0.8rem;
     color: inherit;
     min-height: 100%;
 }
@@ -731,8 +743,8 @@ body.class-list-page .badge-discount,
 body.class-list-page .badge-new {
     display: inline-flex;
     align-items: center;
-    min-height: 28px;
-    padding: 0.28rem 0.62rem;
+    min-height: 26px;
+    padding: 0.24rem 0.58rem;
     border-radius: 999px;
     background: rgba(9, 12, 18, 0.72);
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -744,11 +756,11 @@ body.class-list-page .badge-new {
 
 body.class-list-page .btn-bookmark {
     position: absolute;
-    top: 0.9rem;
-    right: 0.9rem;
+    top: 0.85rem;
+    right: 0.85rem;
     z-index: 2;
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     border-radius: 999px;
     background: rgba(12, 15, 21, 0.72);
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -758,8 +770,8 @@ body.class-list-page .btn-bookmark {
 
 body.class-list-page .card-info {
     display: grid;
-    gap: 0.55rem;
-    padding: 0 1rem 1.05rem;
+    gap: 0.5rem;
+    padding: 0 0.98rem 1rem;
 }
 
 body.class-list-page .card-topline {
@@ -768,7 +780,7 @@ body.class-list-page .card-topline {
     justify-content: space-between;
     gap: 0.65rem;
     color: rgba(236, 242, 255, 0.72);
-    font-size: 0.8rem;
+    font-size: 0.76rem;
 }
 
 body.class-list-page .card-chip,
@@ -786,16 +798,20 @@ body.class-list-page .card-chip {
 
 body.class-list-page .title {
     margin: 0;
-    font-size: 1.05rem;
-    line-height: 1.4;
+    font-size: 0.98rem;
+    line-height: 1.3;
     letter-spacing: -0.03em;
     color: #f7f9ff;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 body.class-list-page .card-summary {
     margin: 0;
-    font-size: 0.92rem;
-    line-height: 1.6;
+    font-size: 0.88rem;
+    line-height: 1.52;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -807,7 +823,7 @@ body.class-list-page .meta {
     flex-wrap: wrap;
     gap: 0.4rem 0.75rem;
     color: rgba(236, 242, 255, 0.66);
-    font-size: 0.84rem;
+    font-size: 0.8rem;
 }
 
 body.class-list-page .price-info {
@@ -820,13 +836,13 @@ body.class-list-page .price-info {
 
 body.class-list-page .original-price {
     color: rgba(236, 242, 255, 0.45);
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     text-decoration: line-through;
 }
 
 body.class-list-page .current-price,
 body.class-list-page .price {
-    font-size: 1.08rem;
+    font-size: 1rem;
     font-weight: 800;
     color: #fff;
 }
@@ -891,6 +907,11 @@ body.class-list-page .card-animate {
         grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
     }
 
+    body.class-list-page .category-sidebar ul {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.45rem;
+    }
+
     body.class-list-page .class-page-overrides .class-grid-header {
         flex-direction: column;
         align-items: flex-start;
@@ -907,6 +928,407 @@ body.class-list-page .card-animate {
     }
 
     body.class-list-page .category-sidebar li a {
-        padding: 0.85rem 0.95rem;
+        padding: 0.72rem 0.8rem;
+    }
+}
+
+@media (max-width: 430px) {
+    body.class-list-page .section-inner {
+        padding: 0 0.75rem;
+    }
+
+    body.class-list-page .class-list-hero,
+    body.class-list-page .category-sidebar,
+    body.class-list-page .class-page-overrides {
+        border-radius: 22px;
+    }
+
+    body.class-list-page .class-list-hero {
+        padding: 1rem;
+    }
+
+    body.class-list-page .class-list-hero-copy h1 {
+        font-size: clamp(1.35rem, 7vw, 1.8rem);
+    }
+
+    body.class-list-page .class-list-hero-copy p {
+        font-size: 0.9rem;
+        line-height: 1.65;
+    }
+
+    body.class-list-page .class-list-hero-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.class-list-page .hero-metric {
+        min-height: 88px;
+        padding: 0.8rem;
+    }
+
+    body.class-list-page .hero-metric strong {
+        font-size: 1.3rem;
+    }
+
+    body.class-list-page .hero-metric span {
+        font-size: 0.78rem;
+    }
+
+    body.class-list-page .category-sidebar {
+        padding: 0.9rem;
+    }
+
+    body.class-list-page .category-sidebar ul {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.4rem;
+    }
+
+    body.class-list-page .category-sidebar li a {
+        min-height: 42px;
+        padding: 0.68rem 0.75rem;
+        border-radius: 14px;
+    }
+
+    body.class-list-page .category-sidebar .icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    body.class-list-page .class-page-overrides {
+        padding: 1rem;
+    }
+
+    body.class-list-page .group-title {
+        font-size: 1.05rem;
+    }
+
+    body.class-list-page .group-subtitle {
+        font-size: 0.82rem;
+        line-height: 1.5;
+    }
+
+    body.class-list-page .list-controls {
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    body.class-list-page .class-search-input,
+    body.class-list-page .sort-select,
+    body.class-list-page .total-count {
+        min-height: 42px;
+        border-radius: 14px;
+    }
+
+    body.class-list-page .class-search-input,
+    body.class-list-page .sort-select {
+        font-size: 0.9rem;
+    }
+
+    body.class-list-page .card-grid {
+        gap: 0.8rem;
+    }
+
+    body.class-list-page .class-card {
+        border-radius: 20px;
+    }
+
+    body.class-list-page .card-thumbnail {
+        aspect-ratio: 16 / 9;
+    }
+
+    body.class-list-page .card-info {
+        padding: 0 0.9rem 0.92rem;
+        gap: 0.45rem;
+    }
+
+    body.class-list-page .badge-coupon,
+    body.class-list-page .badge-discount,
+    body.class-list-page .badge-new {
+        min-height: 24px;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.7rem;
+    }
+
+    body.class-list-page .title {
+        font-size: 0.92rem;
+    }
+
+    body.class-list-page .card-summary {
+        font-size: 0.82rem;
+    }
+
+    body.class-list-page .meta {
+        font-size: 0.75rem;
+        gap: 0.35rem 0.6rem;
+    }
+
+    body.class-list-page .current-price {
+        font-size: 0.92rem;
+    }
+
+    body.class-list-page .btn-bookmark {
+        width: 34px;
+        height: 34px;
+        top: 0.75rem;
+        right: 0.75rem;
+    }
+}
+
+@media (max-width: 320px) {
+    body.class-list-page .section-inner {
+        padding: 0 0.55rem;
+    }
+
+    body.class-list-page .class-list-main {
+        padding-top: 0.85rem;
+    }
+
+    body.class-list-page .class-list-hero,
+    body.class-list-page .category-sidebar,
+    body.class-list-page .class-page-overrides {
+        border-radius: 20px;
+    }
+
+    body.class-list-page .class-list-hero {
+        padding: 0.88rem;
+    }
+
+    body.class-list-page .class-list-hero-copy h1 {
+        font-size: clamp(1.18rem, 8vw, 1.55rem);
+    }
+
+    body.class-list-page .class-list-hero-copy p {
+        font-size: 0.84rem;
+        line-height: 1.55;
+    }
+
+    body.class-list-page .class-list-hero-stats {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    body.class-list-page .hero-metric {
+        min-height: 82px;
+        padding: 0.72rem;
+    }
+
+    body.class-list-page .hero-metric strong {
+        font-size: 1.18rem;
+    }
+
+    body.class-list-page .category-sidebar {
+        padding: 0.82rem;
+        gap: 0.65rem;
+    }
+
+    body.class-list-page .category-sidebar ul {
+        grid-template-columns: 1fr;
+        gap: 0.35rem;
+    }
+
+    body.class-list-page .category-sidebar li a {
+        min-height: 40px;
+        padding: 0.62rem 0.72rem;
+        gap: 0.5rem;
+    }
+
+    body.class-list-page .category-sidebar .icon {
+        width: 26px;
+        height: 26px;
+    }
+
+    body.class-list-page .category-sidebar .cat-count {
+        min-width: 1.7rem;
+        font-size: 0.66rem;
+    }
+
+    body.class-list-page .class-page-overrides {
+        padding: 0.88rem;
+    }
+
+    body.class-list-page .group-title {
+        font-size: 0.98rem;
+    }
+
+    body.class-list-page .group-subtitle {
+        font-size: 0.78rem;
+    }
+
+    body.class-list-page .class-search-input,
+    body.class-list-page .sort-select,
+    body.class-list-page .total-count {
+        min-height: 40px;
+        padding: 0.66rem 0.8rem;
+        border-radius: 12px;
+        font-size: 0.84rem;
+    }
+
+    body.class-list-page .card-grid {
+        gap: 0.72rem;
+    }
+
+    body.class-list-page .class-card {
+        border-radius: 18px;
+    }
+
+    body.class-list-page .card-info {
+        padding: 0 0.78rem 0.82rem;
+    }
+
+    body.class-list-page .title {
+        font-size: 0.88rem;
+    }
+
+    body.class-list-page .card-summary,
+    body.class-list-page .meta {
+        font-size: 0.68rem;
+    }
+
+    body.class-list-page .current-price {
+        font-size: 0.84rem;
+    }
+
+    body.class-list-page .btn-bookmark {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+@media (max-width: 220px) {
+    body.class-list-page .section-inner {
+        padding: 0 0.4rem;
+    }
+
+    body.class-list-page .class-list-main {
+        padding-top: 0.7rem;
+    }
+
+    body.class-list-page .class-list-hero,
+    body.class-list-page .category-sidebar,
+    body.class-list-page .class-page-overrides {
+        border-radius: 16px;
+    }
+
+    body.class-list-page .class-list-hero,
+    body.class-list-page .class-page-overrides {
+        padding: 0.72rem;
+    }
+
+    body.class-list-page .class-list-hero-copy h1 {
+        font-size: 1.08rem;
+        line-height: 1.1;
+    }
+
+    body.class-list-page .class-list-hero-copy p,
+    body.class-list-page .group-subtitle {
+        font-size: 0.74rem;
+        line-height: 1.45;
+    }
+
+    body.class-list-page .hero-metric {
+        min-height: 76px;
+        padding: 0.62rem;
+        border-radius: 14px;
+    }
+
+    body.class-list-page .hero-metric strong {
+        font-size: 1.05rem;
+    }
+
+    body.class-list-page .hero-metric span {
+        font-size: 0.68rem;
+    }
+
+    body.class-list-page .category-sidebar {
+        padding: 0.68rem;
+        gap: 0.5rem;
+    }
+
+    body.class-list-page .category-sidebar li a {
+        min-height: 36px;
+        padding: 0.54rem 0.6rem;
+        border-radius: 12px;
+    }
+
+    body.class-list-page .category-sidebar .icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 8px;
+    }
+
+    body.class-list-page .category-sidebar .cat-label {
+        font-size: 0.72rem;
+    }
+
+    body.class-list-page .category-sidebar .cat-count {
+        min-width: 1.45rem;
+        padding-inline: 0.28rem;
+        font-size: 0.62rem;
+    }
+
+    body.class-list-page .class-page-overrides {
+        padding: 0.72rem;
+    }
+
+    body.class-list-page .class-grid-header {
+        gap: 0.7rem;
+        padding-bottom: 0.7rem;
+    }
+
+    body.class-list-page .group-title {
+        font-size: 0.9rem;
+    }
+
+    body.class-list-page .list-controls {
+        gap: 0.45rem;
+    }
+
+    body.class-list-page .class-search-input,
+    body.class-list-page .sort-select,
+    body.class-list-page .total-count {
+        min-height: 36px;
+        padding: 0.5rem 0.65rem;
+        font-size: 0.78rem;
+        border-radius: 10px;
+    }
+
+    body.class-list-page .card-grid {
+        gap: 0.62rem;
+    }
+
+    body.class-list-page .class-card {
+        border-radius: 16px;
+    }
+
+    body.class-list-page .card-thumbnail {
+        aspect-ratio: 4 / 3;
+    }
+
+    body.class-list-page .badge-coupon,
+    body.class-list-page .badge-discount,
+    body.class-list-page .badge-new {
+        min-height: 22px;
+        padding: 0.16rem 0.42rem;
+        font-size: 0.62rem;
+    }
+
+    body.class-list-page .title {
+        font-size: 0.82rem;
+        line-height: 1.25;
+    }
+
+    body.class-list-page .card-summary,
+    body.class-list-page .meta {
+        font-size: 0.68rem;
+    }
+
+    body.class-list-page .current-price {
+        font-size: 0.84rem;
+    }
+
+    body.class-list-page .btn-bookmark {
+        width: 30px;
+        height: 30px;
+        top: 0.55rem;
+        right: 0.55rem;
     }
 }
