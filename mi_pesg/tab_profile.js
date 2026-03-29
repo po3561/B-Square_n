@@ -7,24 +7,36 @@ window.initProfileTab = function (userId, user) {
     if (!profileForm) return;
 
     const FALLBACK_PROFILE_CATEGORIES = [
-        { name: '소모임/동아리', emoji: '👥' },
-        { name: '맛있는 클래스', emoji: '🍽️' },
-        { name: '운동 클래스', emoji: '🏋️' },
-        { name: '디자인', emoji: '🎨' },
-        { name: '생산성', emoji: '⚡' },
-        { name: '스포츠', emoji: '🏅' },
-        { name: '디지털 드로잉', emoji: '✏️' },
-        { name: '성공 마인드', emoji: '🧠' },
-        { name: '음악', emoji: '🎵' },
-        { name: '요리', emoji: '🍳' },
-        { name: '베이킹', emoji: '🧁' },
+        { name: '댄스', emoji: '💃' },
         { name: '사진', emoji: '📷' },
+        { name: '요리', emoji: '🍳' },
+        { name: '디자인', emoji: '🎨' },
+        { name: '개발', emoji: '💻' },
         { name: '영상', emoji: '🎬' },
+        { name: '마케팅', emoji: '📣' },
+        { name: '비즈니스', emoji: '💼' },
+        { name: '음악', emoji: '🎵' },
         { name: '공예', emoji: '🧵' },
-        { name: '여행', emoji: '🧭' },
+        { name: '운동', emoji: '🏃' },
+        { name: '언어', emoji: '🗣️' },
+        { name: '글쓰기', emoji: '✍️' },
+        { name: '교육', emoji: '📚' },
+        { name: '기타', emoji: '✨' },
     ];
 
     let selectedCategories = [];
+
+    function cacheSharedCategories(categories) {
+        const normalized = Array.isArray(categories) && categories.length
+            ? categories.map((item) => ({ ...item }))
+            : FALLBACK_PROFILE_CATEGORIES.map((item) => ({ ...item }));
+        window.__BSQ_MYPAGE_CACHE__ = {
+            ...(window.__BSQ_MYPAGE_CACHE__ || {}),
+            categories: normalized,
+            categoriesUpdatedAt: Date.now(),
+        };
+        return normalized;
+    }
 
     function normalizeCategories(rows) {
         return (Array.isArray(rows) ? rows : [])
@@ -45,16 +57,32 @@ window.initProfileTab = function (userId, user) {
     }
 
     async function loadCategories() {
-        try {
-            const res = await window.BSQ.api('/api/class-categories', { cacheBust: false });
-            if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
-                return normalizeCategories(res.data);
-            }
-        } catch (error) {
-            console.warn('[tab_profile] category load failed, using fallback:', error);
+        const bootCache = window.__BSQ_MYPAGE_CACHE__ || {};
+        if (Array.isArray(bootCache.categories) && bootCache.categories.length) {
+            return bootCache.categories.map((item) => ({ ...item }));
         }
 
-        return FALLBACK_PROFILE_CATEGORIES.map((item) => ({ ...item }));
+        if (!window.__BSQ_MYPAGE_CATEGORY_PROMISE__) {
+            window.__BSQ_MYPAGE_CATEGORY_PROMISE__ = (async () => {
+                try {
+                    const res = await window.BSQ.api('/api/class-categories', { cacheBust: false });
+                    if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+                        return normalizeCategories(res.data);
+                    }
+                } catch (error) {
+                    console.warn('[tab_profile] category load failed, using fallback:', error);
+                }
+
+                return FALLBACK_PROFILE_CATEGORIES.map((item) => ({ ...item }));
+            })();
+        }
+
+        try {
+            return cacheSharedCategories(await window.__BSQ_MYPAGE_CATEGORY_PROMISE__);
+        } catch (error) {
+            console.warn('[tab_profile] category load failed, using fallback:', error);
+            return cacheSharedCategories(FALLBACK_PROFILE_CATEGORIES.map((item) => ({ ...item })));
+        }
     }
 
     function mergeSelectedCategories(categories, selected) {
@@ -88,7 +116,6 @@ window.initProfileTab = function (userId, user) {
         `).join('');
     }
 
-    // 1. 카테고리 칩 토글 로직
     if (categoryChips) {
         categoryChips.addEventListener('click', (e) => {
             const chip = e.target.closest('.category-chip');
@@ -99,7 +126,6 @@ window.initProfileTab = function (userId, user) {
         });
     }
 
-    // 2. 이미지 프리뷰 로직
     if (profileImageInput) {
         profileImageInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -113,7 +139,6 @@ window.initProfileTab = function (userId, user) {
         });
     }
 
-    // 3. 프로필 정보 로드 (D1 API)
     async function loadProfile() {
         try {
             const res = await window.BSQ.api(`/api/users/${userId}`);
@@ -135,14 +160,12 @@ window.initProfileTab = function (userId, user) {
                     .filter(Boolean);
                 await refreshCategoryChips(selectedCategories);
 
-                // 프로필 이미지
                 if (data.profile_image_url && profileImagePreview) {
                     profileImagePreview.innerHTML = `<img src="${data.profile_image_url}" alt="Profile">`;
                 }
 
                 updateSidebarUI(data.name, data.username);
             } else {
-                // 신규 사용자
                 const defaultName = user?.email?.split('@')[0] || '사용자';
                 const nameEl = document.getElementById('profileName');
                 const usernameEl = document.getElementById('profileUsername');
@@ -152,7 +175,7 @@ window.initProfileTab = function (userId, user) {
                 await refreshCategoryChips([]);
             }
         } catch (error) {
-            console.warn('프로필 로드 오류:', error);
+            console.warn('[tab_profile] profile load error:', error);
         }
     }
 
@@ -167,15 +190,15 @@ window.initProfileTab = function (userId, user) {
         });
     }
 
-    // 4. 프로필 저장 (D1 API)
     profileForm.onsubmit = async (e) => {
         e.preventDefault();
         const submitBtn = profileForm.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.textContent = '저장 중...';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '저장 중...';
+        }
 
         try {
-            // 선택된 카테고리 수집
             const activeChips = categoryChips
                 ? Array.from(categoryChips.querySelectorAll('.category-chip.active')).map((c) => c.dataset.category)
                 : selectedCategories;
@@ -187,7 +210,6 @@ window.initProfileTab = function (userId, user) {
                 preferred_category: activeChips.join(', '),
             };
 
-            // 이미지 URL (Base64인 경우 그대로 저장)
             const imgEl = profileImagePreview?.querySelector('img');
             if (imgEl && imgEl.src) {
                 updates.profile_image_url = imgEl.src;
@@ -199,18 +221,20 @@ window.initProfileTab = function (userId, user) {
             });
 
             if (res && res.success) {
-                alert('프로필 정보가 안전하게 저장되었습니다.');
+                showMypageNotice?.('success', '프로필 정보가 안전하게 저장되었습니다.');
                 updateSidebarUI(updates.name, document.getElementById('profileUsername')?.value);
                 selectedCategories = activeChips.map((value) => String(value || '').trim()).filter(Boolean);
             } else {
-                throw new Error(res?.error || '저장 실패');
+                throw new Error(res?.error || '저장에 실패했습니다.');
             }
         } catch (error) {
-            console.error('저장 오류:', error);
-            alert('저장 실패: ' + (error.message || '알 수 없는 오류'));
+            console.error('[tab_profile] save error:', error);
+            showMypageNotice?.('error', `프로필 저장 실패: ${error.message || '알 수 없는 오류'}`);
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = '기본 정보 저장';
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '기본 정보 저장';
+            }
         }
     };
 

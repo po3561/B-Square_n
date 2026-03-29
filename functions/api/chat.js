@@ -1,6 +1,5 @@
 import { requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
-import { ensureChatMessagesSchema, ensureClassesSchema } from './_lib/schema.js';
 
 function parseMaybeJson(value, fallback = null) {
   if (value == null || value === '') return fallback;
@@ -23,6 +22,7 @@ function normalizeChatMessage(row) {
     content,
     message: row.message || content,
     text: row.text || content,
+    file_data: row.file_data || row.image_url || null,
     reply_data: replyData || null,
     reactions: reactions && typeof reactions === 'object' ? reactions : {},
     edited: row.edited || row.is_edited === 1 || row.is_edited === true,
@@ -59,7 +59,7 @@ function buildSinceClause(since, after) {
     const numeric = Number(since);
     if (Number.isFinite(numeric)) {
       return {
-        sql: " AND (strftime('%s', created_at) * 1000) > ?",
+        sql: " AND (strftime('%s', COALESCE(updated_at, created_at)) * 1000) > ?",
         bind: numeric,
       };
     }
@@ -76,8 +76,34 @@ function buildSinceClause(since, after) {
   return { sql: '', bind: null };
 }
 
-function buildStreamResponse(controller, encoder, message, kind = 'message') {
-  controller.enqueue(encoder.encode(`event: ${kind}\ndata: ${JSON.stringify(message)}\n\n`));
+const CHAT_MESSAGE_COLUMNS = `
+  id,
+  class_id,
+  user_id,
+  user_name,
+  user_avatar,
+  message,
+  reply_to,
+  reply_data,
+  type,
+  image_url,
+  file_name,
+  file_size,
+  is_pinned,
+  is_edited,
+  reactions,
+  created_at,
+  updated_at
+`;
+
+function buildChatMessageSelect(whereSql = '', orderSql = '', limitSql = '') {
+  return `
+    SELECT ${CHAT_MESSAGE_COLUMNS}
+    FROM chat_messages
+    WHERE class_id = ?${whereSql}
+    ${orderSql}
+    ${limitSql}
+  `;
 }
 
 async function streamMessages(context, classId, since) {
@@ -91,31 +117,24 @@ async function streamMessages(context, classId, since) {
 
       while (true) {
         const clause = buildSinceClause(lastSince, null);
-        let query = `
-          SELECT *
-          FROM chat_messages
-          WHERE class_id = ?
-        `;
+        let query = buildChatMessageSelect(clause.sql, 'ORDER BY created_at ASC, id ASC', 'LIMIT 100');
         const binds = [classId];
 
         if (clause.sql) {
-          query += clause.sql;
           binds.push(clause.bind);
         }
-
-        query += ' ORDER BY created_at ASC, id ASC LIMIT 100';
 
         try {
           const { results } = await env.DB.prepare(query).bind(...binds).all();
           for (const row of results || []) {
             const normalized = normalizeChatMessage(row);
-            const ts = new Date(normalized.created_at || Date.now()).getTime();
+            const ts = new Date(normalized.updated_at || normalized.created_at || Date.now()).getTime();
             if (ts > lastSince) lastSince = ts;
-            buildStreamResponse(controller, encoder, normalized, 'message');
+            controller.enqueue(encoder.encode(`event: message\ndata: ${JSON.stringify(normalized)}\n\n`));
           }
-          buildStreamResponse(controller, encoder, { ts: Date.now() }, 'ping');
+          controller.enqueue(encoder.encode(`event: ping\ndata: {"ts":${Date.now()}}\n\n`));
         } catch (error) {
-          buildStreamResponse(controller, encoder, { error: error.message }, 'error');
+          controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`));
         }
 
         await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -139,51 +158,41 @@ export async function onRequestGet(context) {
 
   const url = new URL(request.url);
   const classId = url.searchParams.get('class_id');
-  const limit = Math.min(parseInt(url.searchParams.get('limit')) || 100, 200);
+  const limit = Math.min(parseInt(url.searchParams.get('limit'), 10) || 100, 200);
   const after = url.searchParams.get('after');
   const since = url.searchParams.get('since');
   const pinnedOnly = ['1', 'true', 'yes'].includes((url.searchParams.get('pinned_only') || '').toLowerCase());
   const stream = ['1', 'true', 'yes'].includes((url.searchParams.get('stream') || '').toLowerCase());
 
   if (!classId) {
-    return json(request, env, { success: false, error: 'class_id 필요' }, { status: 400 });
+    return json(request, env, { success: false, error: 'class_id is required' }, { status: 400 });
   }
 
   try {
-    await ensureChatMessagesSchema(env.DB);
-
     if (stream) {
       return streamMessages(context, classId, since);
     }
 
     let results;
     if (pinnedOnly) {
-      ({ results } = await env.DB.prepare(
-        'SELECT * FROM chat_messages WHERE class_id = ? AND is_pinned = 1 ORDER BY created_at DESC LIMIT ?'
-      ).bind(classId, limit).all());
+      const query = buildChatMessageSelect(' AND is_pinned = 1', 'ORDER BY COALESCE(updated_at, created_at) DESC, id DESC', 'LIMIT ?');
+      ({ results } = await env.DB.prepare(query).bind(classId, limit).all());
     } else {
       const clause = buildSinceClause(since, after);
-      let query = `
-        SELECT *
-        FROM chat_messages
-        WHERE class_id = ?
-      `;
+      const query = buildChatMessageSelect(clause.sql, 'ORDER BY created_at ASC, id ASC', 'LIMIT ?');
       const binds = [classId];
 
       if (clause.sql) {
-        query += clause.sql;
         binds.push(clause.bind);
       }
 
-      query += ' ORDER BY created_at ASC, id ASC LIMIT ?';
       binds.push(limit);
-
       ({ results } = await env.DB.prepare(query).bind(...binds).all());
     }
 
     return json(request, env, { success: true, data: (results || []).map(normalizeChatMessage) });
-  } catch (err) {
-    return json(request, env, { success: false, error: '채팅 조회 오류', detail: err.message }, { status: 500 });
+  } catch (error) {
+    return json(request, env, { success: false, error: 'Failed to load chat messages', detail: error.message }, { status: 500 });
   }
 }
 
@@ -193,14 +202,13 @@ export async function onRequestPost(context) {
   if (!auth.ok) return auth.response;
 
   try {
-    await ensureChatMessagesSchema(env.DB);
-
     const body = await request.json();
     const classId = body.class_id;
     const message = body.message || body.content || body.text || body.file_name || '';
+    const attachmentUrl = body.image_url || body.file_data || null;
 
-    if (!classId || (!message && !body.file_data && !body.image_url)) {
-      return json(request, env, { success: false, error: '필수 항목 누락' }, { status: 400 });
+    if (!classId || (!message && !attachmentUrl)) {
+      return json(request, env, { success: false, error: 'message or attachment is required' }, { status: 400 });
     }
 
     const id = 'msg_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16);
@@ -208,33 +216,35 @@ export async function onRequestPost(context) {
     const reactions = body.reactions ? JSON.stringify(body.reactions) : '{}';
 
     await env.DB.prepare(
-      'INSERT INTO chat_messages (id, class_id, user_id, user_name, user_avatar, message, reply_to, reply_data, type, image_url, file_name, file_size, file_data, is_pinned, reactions, is_edited) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO chat_messages (id, class_id, user_id, user_name, user_avatar, message, reply_to, reply_data, type, image_url, file_name, file_size, is_pinned, reactions, is_edited) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     ).bind(
       id,
       classId,
       auth.user.id,
-      body.user_name || auth.user.name || auth.user.username || '사용자',
+      body.user_name || auth.user.name || auth.user.username || 'User',
       body.user_avatar || auth.user.profile_image_url || '',
       message,
       body.reply_to || null,
       replyData,
       body.type || 'text',
-      body.image_url || null,
+      attachmentUrl,
       body.file_name || null,
       body.file_size || null,
-      body.file_data || null,
       body.is_pinned ? 1 : 0,
       reactions,
-      0
+      0,
     ).run();
 
     const inserted = await env.DB.prepare(
-      'SELECT * FROM chat_messages WHERE class_id = ? AND user_id = ? ORDER BY created_at DESC, id DESC LIMIT 1'
-    ).bind(classId, auth.user.id).first();
+      `SELECT ${CHAT_MESSAGE_COLUMNS} FROM chat_messages WHERE id = ?`
+    ).bind(id).first();
 
-    return json(request, env, { success: true, data: normalizeChatMessage(inserted) }, { status: 201 });
-  } catch (err) {
-    return json(request, env, { success: false, error: '메시지 전송 오류', detail: err.message }, { status: 500 });
+    const responseData = normalizeChatMessage(inserted);
+    if (body.client_id) responseData.client_id = String(body.client_id);
+
+    return json(request, env, { success: true, data: responseData }, { status: 201 });
+  } catch (error) {
+    return json(request, env, { success: false, error: 'Failed to send message', detail: error.message }, { status: 500 });
   }
 }
 
@@ -244,22 +254,24 @@ export async function onRequestPatch(context) {
   if (!auth.ok) return auth.response;
 
   try {
-    await ensureChatMessagesSchema(env.DB);
-
     const body = await request.json();
     const { id, is_pinned } = body;
 
     if (!id) {
-      return json(request, env, { success: false, error: '메시지 ID 필요' }, { status: 400 });
+      return json(request, env, { success: false, error: 'message id is required' }, { status: 400 });
     }
 
     await env.DB.prepare('UPDATE chat_messages SET is_pinned = ?, updated_at = datetime(\'now\') WHERE id = ?')
       .bind(is_pinned ? 1 : 0, id)
       .run();
 
-    return json(request, env, { success: true });
-  } catch (err) {
-    return json(request, env, { success: false, error: '핀 상태 변경 오류', detail: err.message }, { status: 500 });
+    const updated = await env.DB.prepare(`SELECT ${CHAT_MESSAGE_COLUMNS} FROM chat_messages WHERE id = ?`)
+      .bind(id)
+      .first();
+
+    return json(request, env, { success: true, data: normalizeChatMessage(updated) });
+  } catch (error) {
+    return json(request, env, { success: false, error: 'Failed to update message', detail: error.message }, { status: 500 });
   }
 }
 

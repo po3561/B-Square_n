@@ -127,6 +127,8 @@ function showToast(type, title, message, duration = 3500) {
     }, duration);
 }
 
+window.BSQClassViewToast = showToast;
+
 // ===== Payment Overlay Control =====
 function showPaymentOverlay() {
     const overlay = document.getElementById('paymentOverlay');
@@ -184,13 +186,12 @@ function ensureCommerceControls() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (!classId) {
-        alert("잘못된 접근입니다.");
-        location.href = '../bsnnnnnnnnnnnnnnnnnn/index.html';
+        showToast('error', '잘못된 접근입니다', '홈으로 이동합니다.');
+        location.href = '../index.html';
         return;
     }
 
     // 1. BSQ 초기화 대기 (D1 API 기반)
-    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
     ensureCommerceControls();
 
     // 2. 세션 확인 (D1 API 쿠키 기반)
@@ -291,9 +292,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (window.BSquareModules.initNotice) window.BSquareModules.initNotice(null, classId, userId, null, hasAccess, isInstructor, getNoticeAuthorContext());
                 
                 // ★ 채팅은 파이어베이스 잔재인 BSquareModules 대신, 순수 D1으로 작성된 SimpleClassChat 호출 (크래시 방어)
-                if (window.SimpleClassChat) {
+                if (false && window.SimpleClassChat) {
                     window.SimpleClassChat.init(null, classId, userId, hasAccess, isInstructor);
-                } else {
+                } else if (false) {
                     console.warn('SimpleClassChat 모듈이 로드되지 않았습니다.');
                 }
 
@@ -303,19 +304,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (isInstructor || window.__BSQ_DEV_MODE__) {
                     const editTabBtn = document.getElementById('tabEditBtn');
                     if (editTabBtn) editTabBtn.style.display = 'inline-block';
-                    if (window.BSquareModules.initEdit) window.BSquareModules.initEdit(null, classId, classData, null, userId);
+                    if (false && window.BSquareModules.initEdit) window.BSquareModules.initEdit(null, classId, classData, null, userId);
                 }
 
                 window.addEventListener('bsq_dev_mode_activated', () => {
                     const editTabBtn = document.getElementById('tabEditBtn');
                     if (editTabBtn) editTabBtn.style.display = 'inline-block';
-                    if (window.BSquareModules.initEdit && classData) {
+                    if (false && window.BSquareModules.initEdit && classData) {
                         window.BSquareModules.initEdit(null, classId, classData, null, userId);
                     }
                 });
             }
         } else {
-            alert("클래스 정보를 찾을 수 없습니다.");
+            showToast('error', '클래스 정보를 찾을 수 없습니다', '홈으로 이동합니다.');
+            setTimeout(() => {
+                location.href = '../index.html';
+            }, 1200);
         }
     } catch (err) {
         console.error("Initialization Error:", err);
@@ -366,12 +370,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                             locked.style.setProperty('display', 'flex', 'important');
                         }
                     }
+
+                    if (hasAccess && window.SimpleClassChat && !window.__BSQ_CLASS_CHAT_INITIALIZED__) {
+                        window.SimpleClassChat.init(null, classId, userId, hasAccess, isInstructor);
+                        window.__BSQ_CLASS_CHAT_INITIALIZED__ = true;
+                    }
                 } else {
                     grid.style.gridTemplateColumns = '1fr 380px';
                     sidebar.style.display = 'block';
                     if (unlocked) unlocked.style.display = 'none';
                     if (locked) locked.style.display = 'none';
                     if (activeArea) activeArea.style.display = 'none';
+                }
+            }
+
+            if (targetId === 'tabEdit' && (isInstructor || window.__BSQ_DEV_MODE__)) {
+                if (window.BSquareModules.initEdit && classData && !window.__BSQ_CLASS_EDIT_INITIALIZED__) {
+                    window.BSquareModules.initEdit(null, classId, classData, null, userId);
+                    window.__BSQ_CLASS_EDIT_INITIALIZED__ = true;
                 }
             }
         });
@@ -420,7 +436,14 @@ async function usePass() {
         return;
     }
 
-    if (!confirm('수강권 1회를 사용하시겠습니까?')) return;
+    const armedAt = Number(window.__BSQ_PASS_USE_ARMED_AT || 0);
+    const now = Date.now();
+    if (!armedAt || now - armedAt > 5000) {
+        window.__BSQ_PASS_USE_ARMED_AT = now;
+        showToast('info', '수강권 사용 확인', '5초 안에 다시 누르면 수강권 1회가 사용됩니다.');
+        return;
+    }
+    window.__BSQ_PASS_USE_ARMED_AT = 0;
 
     const btn = document.getElementById('btnUsePass');
     btn.disabled = true;

@@ -1,68 +1,72 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>留덉씠?섏씠吏 | B-Square</title>
+    <title>마이페이지 | B-Square</title>
     <link rel="stylesheet" href="../style_mobile.css" media="(max-width: 768px)">
     <link rel="stylesheet" href="../style_pc.css" media="(min-width: 769px)">
     <link rel="stylesheet" href="mypage.css?v=20260324_02">
-    <script src="../bsq_server.js?v=20260324_02"></script>
+    <script src="../bsq_server.js?v=20260324_02" defer></script>
 </head>
 
 <body>
     <div class="mypage-layout">
         <aside class="mypage-sidebar">
             <div class="profile-summary">
-                <div class="profile-img-placeholder" id="profileImg">?셽</div>
-                <h3 id="displayNickname">?ъ슜?먮떂</h3>
-                <p id="displayEmail" style="font-size: 0.85rem; opacity: 0.7;">?대찓??濡쒕뵫 以?..</p>
+                <div class="profile-img-placeholder" id="profileImg">👤</div>
+                <h3 id="displayNickname">사용자님</h3>
+                <p id="displayEmail" style="font-size: 0.85rem; opacity: 0.7;">이메일을 불러오는 중...</p>
                 <p id="displayUsername" style="font-size: 0.85rem; opacity: 0.5; margin-top: 4px;">ID: -</p>
             </div>
+
             <nav class="mypage-nav">
-                <button class="nav-btn active" data-target="tabDashboard">??쒕낫??& ?대옒??/button>
-                <button class="nav-btn" data-target="tabCoupons">荑좏룿 ?낅젰</button>
-                <button class="nav-btn" data-target="tabCart">???λ컮援щ땲</button>
-                <button class="nav-btn" data-target="tabProfile">?꾨줈???ㅼ젙</button>
-                <button class="nav-btn" data-target="tabSecurity">蹂댁븞 諛?寃곗젣</button>
-                <button class="nav-btn" data-target="tabFriends">移쒓뎄</button>
-                <button class="nav-btn bordered" data-target="tabChatSub">梨꾪똿 諛?援щ룆 愿由?/button>
+                <button class="nav-btn active" data-target="tabDashboard">대시보드</button>
+                <button class="nav-btn" data-target="tabClasses">수강 클래스</button>
+                <button class="nav-btn" data-target="tabCoupons">쿠폰 입력</button>
+                <button class="nav-btn" data-target="tabCart">장바구니</button>
+                <button class="nav-btn" data-target="tabFriends">친구</button>
+                <button class="nav-btn bordered" data-target="tabChatSub">채팅 및 구독 관리</button>
+                <button class="nav-btn" data-target="tabProfile">프로필</button>
+                <button class="nav-btn" data-target="tabSecurity">보안 및 결제</button>
             </nav>
+
         </aside>
 
         <main class="mypage-content">
+            <div id="mypageNotice" class="mypage-notice-stack"></div>
             <section id="tabDashboard" class="mypage-tab active">
-                <h2 class="tab-title">?섏쓽 ??쒕낫??/h2>
+                <h2 class="tab-title">나의 대시보드</h2>
                 <div id="dashboardStats"
                     style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
                     <div class="stat-card"
                         style="background:var(--bg-card); padding:1.5rem; border-radius:12px; border:1px solid var(--border-color); text-align:center;">
-                        <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">?렖</span>
-                        <h4 style="color:var(--comm-text2); margin-bottom:0.5rem;">蹂댁쑀 ?섍컯沅?/h4>
-                        <p id="dashPassCount" style="font-size:1.5rem; font-weight:700; color:var(--text-color);">0媛?/p>
+                        <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">🎫</span>
+                        <h4 style="color:var(--comm-text2); margin-bottom:0.5rem;">보유 수강권</h4>
+                        <p id="dashPassCount" style="font-size:1.5rem; font-weight:700; color:var(--text-color);">0개</p>
                     </div>
                     <div class="stat-card"
                         style="background:var(--bg-card); padding:1.5rem; border-radius:12px; border:1px solid var(--border-color); text-align:center;">
-                        <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">?뾺截?/span>
-                        <h4 style="color:var(--comm-text2); margin-bottom:0.5rem;">?섍컯以??대옒??/h4>
-                        <p id="dashClassCount" style="font-size:1.5rem; font-weight:700; color:var(--text-color);">0媛?/p>
+                        <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">🎓</span>
+                        <h4 style="color:var(--comm-text2); margin-bottom:0.5rem;">수강 중 클래스</h4>
+                        <p id="dashClassCount" style="font-size:1.5rem; font-weight:700; color:var(--text-color);">0개</p>
                     </div>
                     <div class="stat-card"
                         style="background:var(--bg-card); padding:1.5rem; border-radius:12px; border:1px solid var(--border-color); text-align:center;">
-                        <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">?뮠</span>
-                        <h4 style="color:var(--comm-text2); margin-bottom:0.5rem;">李몄뿬以?梨꾪똿</h4>
-                        <p id="dashChatCount" style="font-size:1.5rem; font-weight:700; color:var(--text-color);">0媛?/p>
+                        <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">💬</span>
+                        <h4 style="color:var(--comm-text2); margin-bottom:0.5rem;">참여 중 채팅</h4>
+                        <p id="dashChatCount" style="font-size:1.5rem; font-weight:700; color:var(--text-color);">0개</p>
                     </div>
                 </div>
 
                 <div class="dashboard-quick-links" style="display:flex; gap:10px; margin-bottom: 2rem;">
                     <button class="btn-primary" style="flex:1; padding:1rem; border-radius:12px;"
-                        onclick="location.href='../community/community.html'">??梨꾪똿諛?諛붾줈媛湲?/button>
+                        onclick="location.href='../community/community.html'">채팅방 바로가기</button>
                     <button class="btn-secondary" style="flex:1; padding:1rem; border-radius:12px;"
-                        onclick="location.href='../create_class/create_class.html'">???대옒??媛쒖꽕</button>
+                        onclick="location.href='../create_class/create_class.html'">클래스 개설</button>
                     <button class="btn-secondary mypage-tab-shortcut" type="button" data-open-tab="tabCart"
-                        style="flex:1; padding:1rem; border-radius:12px;">???λ컮援щ땲</button>
+                        style="flex:1; padding:1rem; border-radius:12px;">장바구니</button>
                 </div>
 
                 <div class="mypage-panel-grid">
@@ -70,63 +74,63 @@
                         <div class="mypage-panel-head">
                             <div>
                                 <p class="mypage-panel-eyebrow">Coupon Wallet</p>
-                                <h3>蹂댁쑀 荑좏룿</h3>
+                                <h3>보유 쿠폰</h3>
                             </div>
                             <button class="mypage-inline-link mypage-tab-shortcut" type="button"
-                                data-open-tab="tabCoupons">荑좏룿 ?깅줉</button>
+                                data-open-tab="tabCoupons">쿠폰 등록</button>
                         </div>
                         <div id="dashboardCouponWallet" class="mypage-list-stack">
-                            <div class="empty-state compact">蹂댁쑀 荑좏룿??遺덈윭?ㅻ뒗 以묒엯?덈떎.</div>
+                            <div class="empty-state compact">보유 쿠폰을 불러오는 중입니다.</div>
                         </div>
                     </section>
                     <section class="mypage-panel-card">
                         <div class="mypage-panel-head">
                             <div>
                                 <p class="mypage-panel-eyebrow">Cart</p>
-                                <h3>???λ컮援щ땲</h3>
+                                <h3>장바구니</h3>
                             </div>
                             <button class="mypage-inline-link mypage-tab-shortcut" type="button"
-                                data-open-tab="tabCart">?꾩껜 蹂닿린</button>
+                                data-open-tab="tabCart">전체 보기</button>
                         </div>
                         <div id="dashboardCartItems" class="mypage-list-stack">
-                            <div class="empty-state compact">?λ컮援щ땲瑜?遺덈윭?ㅻ뒗 以묒엯?덈떎.</div>
+                            <div class="empty-state compact">장바구니를 불러오는 중입니다.</div>
                         </div>
                     </section>
                 </div>
 
-                <h3 style="margin-bottom: 1rem;">?섍컯 以묒씤 ?대옒??/h3>
+                <h3 style="margin-bottom: 1rem;">수강 중인 클래스</h3>
                 <div class="my-class-list" id="dashboardEnrolledClasses">
-                    <div class="empty-state">?섍컯 ?뺣낫瑜?遺덈윭?ㅻ뒗 以?..</div>
+                    <div class="empty-state">수강 정보를 불러오는 중입니다.</div>
                 </div>
 
-                <h3 style="margin-top: 2rem; margin-bottom: 1rem;">?닿? ?깅줉(媛쒖꽕)???대옒??/h3>
+                <h3 style="margin-top: 2rem; margin-bottom: 1rem;">내가 등록(개설)한 클래스</h3>
                 <div class="my-class-list" id="dashboardCreatedClasses">
-                    <div class="empty-state">?꾩쭅 ?깅줉???대옒?ㅺ? ?놁뒿?덈떎.</div>
+                    <div class="empty-state">아직 등록된 클래스가 없습니다.</div>
                 </div>
 
-                <h3 style="margin-top: 2rem; margin-bottom: 1rem;">理쒓렐 ?섍컯 ?대옒??/h3>
+                <h3 style="margin-top: 2rem; margin-bottom: 1rem;">최근 수강 클래스</h3>
                 <div class="my-class-list" id="dashRecentClass">
-                    <div class="empty-state">理쒓렐 ?섍컯 ?댁뿭??遺덈윭?ㅻ뒗 以?..</div>
+                    <div class="empty-state">최근 수강 내역을 불러오는 중입니다.</div>
                 </div>
             </section>
 
             <section id="tabClasses" class="mypage-tab">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                    <h2 class="tab-title" style="margin-bottom:0;">?섏쓽 ?대옒???꾪솴</h2>
+                    <h2 class="tab-title" style="margin-bottom:0;">나의 클래스 현황</h2>
                     <button class="btn-primary"
                         style="padding:0.6rem 1.2rem; border-radius:12px; font-weight:700; background:linear-gradient(135deg, #ff6b6b, #ff8e53); color:white; border:none; box-shadow:0 4px 10px rgba(255,107,107,0.3); cursor:pointer;"
-                        onclick="location.href='../class_list/class_list.html'">?섍컯沅?援щℓ?섍린</button>
+                        onclick="location.href='../class/class_list.html'">수강권 구매하기</button>
                 </div>
                 <div class="class-section">
-                    <h3>?섍컯 以묒씤 ?대옒??/h3>
+                    <h3>수강 중인 클래스</h3>
                     <div class="my-class-list" id="tabEnrolledClasses">
-                        <div class="empty-state">?붿껌?섏떊 ?대옒?ㅻ? 遺덈윭?ㅻ뒗 以묒엯?덈떎...</div>
+                        <div class="empty-state">요청하신 클래스를 불러오는 중입니다...</div>
                     </div>
                 </div>
                 <div class="class-section" style="margin-top: 2rem;">
-                    <h3>?닿? ?깅줉(媛쒖꽕)???대옒??/h3>
+                    <h3>내가 등록(개설)한 클래스</h3>
                     <div class="my-class-list" id="tabCreatedClasses">
-                        <div class="empty-state">?꾩쭅 ?깅줉???대옒?ㅺ? ?놁뒿?덈떎.</div>
+                        <div class="empty-state">아직 등록된 클래스가 없습니다.</div>
                     </div>
                 </div>
             </section>
@@ -136,16 +140,16 @@
                     <div class="commerce-hero">
                         <div>
                             <p class="commerce-eyebrow">Coupon Claim</p>
-                            <h2 class="tab-title commerce-title">荑좏룿 ?낅젰</h2>
-                            <p class="commerce-copy">?대깽??荑좏룿 肄붾뱶瑜??깅줉?섎㈃ ??荑좏룿?⑥쑝濡?利됱떆 諛섏쁺?⑸땲??</p>
+                            <h2 class="tab-title commerce-title">쿠폰 입력</h2>
+                            <p class="commerce-copy">이벤트 쿠폰 코드를 등록하면 내 쿠폰함에 바로 반영됩니다.</p>
                         </div>
                     </div>
                     <div class="coupon-claim-card">
-                        <label for="mypageCouponCode" class="commerce-label">荑좏룿 肄붾뱶</label>
+                        <label for="mypageCouponCode" class="commerce-label">쿠폰 코드</label>
                         <div class="coupon-claim-row">
                             <input type="text" id="mypageCouponCode" class="commerce-input"
-                                placeholder="?? BSQSPRING2026">
-                            <button type="button" class="btn-primary" id="btnClaimCoupon">荑좏룿 ?깅줉</button>
+                                placeholder="BSQSPRING2026">
+                            <button type="button" class="btn-primary" id="btnClaimCoupon">쿠폰 등록</button>
                         </div>
                         <p id="mypageCouponClaimMessage" class="commerce-message"></p>
                     </div>
@@ -154,25 +158,25 @@
                             <div class="mypage-panel-head">
                                 <div>
                                     <p class="mypage-panel-eyebrow">Owned Coupons</p>
-                                    <h3>??荑좏룿??/h3>
+                                    <h3>내 쿠폰함</h3>
                                 </div>
-                                <button type="button" class="mypage-inline-link" id="btnRefreshCouponWallet">?덈줈怨좎묠</button>
+                                <button type="button" class="mypage-inline-link" id="btnRefreshCouponWallet">새로고침</button>
                             </div>
                             <div id="couponWalletList" class="mypage-list-stack">
-                                <div class="empty-state compact">荑좏룿?⑥쓣 遺덈윭?ㅻ뒗 以묒엯?덈떎.</div>
+                                <div class="empty-state compact">쿠폰을 불러오는 중입니다.</div>
                             </div>
                         </section>
                         <section class="mypage-panel-card">
                             <div class="mypage-panel-head">
                                 <div>
                                     <p class="mypage-panel-eyebrow">Guide</p>
-                                    <h3>?ъ슜 ?덈궡</h3>
+                                    <h3>사용 안내</h3>
                                 </div>
                             </div>
                             <div class="coupon-guide-list">
-                                <div class="coupon-guide-item">?댁쁺?먭? 諛쒓툒???대깽??荑좏룿? 紐⑤뱺 ?대옒?ㅼ뿉???ъ슜?????덉뒿?덈떎.</div>
-                                <div class="coupon-guide-item">?ъ슜 媛??湲곌컙怨?理쒖냼 寃곗젣 湲덉븸? 荑좏룿 ?곸꽭 ?뺣낫???곕씪 ?щ씪吏묐땲??</div>
-                                <div class="coupon-guide-item">?대옒???꾩슜 荑좏룿? 寃곗젣 ?붾㈃?먯꽌 洹몃?濡??낅젰?????덉뒿?덈떎.</div>
+                                <div class="coupon-guide-item">발행된 이벤트 쿠폰은 모든 클래스에서 사용할 수 있습니다.</div>
+                                <div class="coupon-guide-item">사용 기간과 최소 결제 금액은 쿠폰 상세 정보에 따라 달라집니다.</div>
+                                <div class="coupon-guide-item">클래스 이용 쿠폰은 결제 화면에서 그대로 입력할 수 있습니다.</div>
                             </div>
                         </section>
                     </div>
@@ -184,8 +188,8 @@
                     <div class="commerce-hero">
                         <div>
                             <p class="commerce-eyebrow">Wallet + Cart</p>
-                            <h2 class="tab-title commerce-title">???λ컮援щ땲</h2>
-                            <p class="commerce-copy">?꾩뿉???닿? 蹂댁쑀??荑좏룿, ?꾨옒?먮뒗 ?댁븘 ???대옒?ㅼ? 而⑦뀗痢좊? ?뺤씤?⑸땲??</p>
+                            <h2 class="tab-title commerce-title"> 장바구니</h2>
+                            <p class="commerce-copy">보유 쿠폰, 장바구니, 그리고 저장된 콘텐츠를 한 곳에서 확인합니다.</p>
                         </div>
                     </div>
                     <div class="commerce-stack">
@@ -193,25 +197,25 @@
                             <div class="mypage-panel-head">
                                 <div>
                                     <p class="mypage-panel-eyebrow">Coupon Wallet</p>
-                                    <h3>蹂댁쑀 以묒씤 荑좏룿</h3>
+                                    <h3>보유 중인 쿠폰</h3>
                                 </div>
                                 <button class="mypage-inline-link mypage-tab-shortcut" type="button"
-                                    data-open-tab="tabCoupons">荑좏룿 ?낅젰 ??쑝濡??대룞</button>
+                                    data-open-tab="tabCoupons">쿠폰 입력으로 이동</button>
                             </div>
                             <div id="cartCouponWallet" class="mypage-list-stack">
-                                <div class="empty-state compact">蹂댁쑀 荑좏룿??遺덈윭?ㅻ뒗 以묒엯?덈떎.</div>
+                                <div class="empty-state compact">보유 쿠폰 불러오는 중입니다.</div>
                             </div>
                         </section>
                         <section class="mypage-panel-card">
                             <div class="mypage-panel-head">
                                 <div>
                                     <p class="mypage-panel-eyebrow">Saved Items</p>
-                                    <h3>?댁븘 ???대옒??/ 而⑦뀗痢?/h3>
+                                    <h3>저장한 클래스 / 콘텐츠</h3>
                                 </div>
-                                <button type="button" class="mypage-inline-link" id="btnRefreshCart">?덈줈怨좎묠</button>
+                                <button type="button" class="mypage-inline-link" id="btnRefreshCart">새로고침</button>
                             </div>
                             <div id="cartItemList" class="mypage-list-stack">
-                                <div class="empty-state compact">?λ컮援щ땲瑜?遺덈윭?ㅻ뒗 以묒엯?덈떎.</div>
+                                <div class="empty-state compact">장바구니를 불러오는 중입니다.</div>
                             </div>
                         </section>
                     </div>
@@ -219,216 +223,216 @@
             </section>
 
             <section id="tabProfile" class="mypage-tab">
-                <h2 class="tab-title">?꾨줈???ㅼ젙</h2>
+                <h2 class="tab-title">프로필 설정</h2>
                 <form id="profileForm" class="mypage-form">
                     <div class="profile-upload-wrapper">
                         <div class="profile-image-container" id="profileImagePreview">
-                            <span class="placeholder-icon">?셽</span>
+                            <span class="placeholder-icon">👤</span>
                         </div>
                         <div class="profile-image-actions">
-                            <label for="profileImage" class="btn-image-upload">?ъ쭊 蹂寃?/label>
+                            <label for="profileImage" class="btn-image-upload">사진 변경</label>
                             <input type="file" id="profileImage" accept="image/*" hidden>
-                            <p class="upload-tip">異붿쿇 ?ъ씠利?400x400px</p>
+                            <p class="upload-tip">권장 사이즈 400x400px</p>
                         </div>
                     </div>
 
                     <div class="form-grid">
                         <div class="input-group">
-                            <label>?대쫫</label>
-                            <input type="text" id="profileName" placeholder="?대쫫???낅젰?섏꽭?? required>
+                            <label>이름</label>
+                            <input type="text" id="profileName" placeholder="이름을 입력하세요" required>
                         </div>
                         <div class="input-group">
-                            <label>?꾩씠???섏젙遺덇?)</label>
+                            <label>아이디 수정(변경 불가)</label>
                             <input type="text" id="profileUsername" readonly>
                         </div>
                         <div class="input-group">
-                            <label>?꾪솕踰덊샇</label>
+                            <label>휴대전화</label>
                             <input type="tel" id="profilePhone" placeholder="010-0000-0000" required>
                         </div>
                         <div class="input-group">
-                            <label>SNS 留곹겕 (?몄뒪?洹몃옩)</label>
+                            <label>SNS 링크 (인스타그램)</label>
                             <input type="url" id="profileSns" placeholder="@your_id">
                         </div>
                     </div>
 
                     <div class="input-group full-width">
-                        <label>?섏쓽 ?좏샇 移댄뀒怨좊━ (以묐났 ?좏깮 媛??</label>
+                        <label>나의 선호 카테고리 (중복 선택 가능)</label>
                         <div class="category-chips" id="categoryChips">
-                            <button type="button" class="category-chip" data-category="?붾━">?뜵 ?붾━</button>
-                            <button type="button" class="category-chip" data-category="怨듭삁">?㏊ 怨듭삁</button>
-                            <button type="button" class="category-chip" data-category="?ㅽ룷痢?>?룂 ?ㅽ룷痢?/button>
-                            <button type="button" class="category-chip" data-category="酉고떚">?뭵 酉고떚</button>
-                            <button type="button" class="category-chip" data-category="?붿옄??>?렓 ?붿옄??/button>
-                            <button type="button" class="category-chip" data-category="?뚯븙">?렦 ?뚯븙</button>
-                            <button type="button" class="category-chip" data-category="踰좎씠??>?쭅 踰좎씠??/button>
-                            <button type="button" class="category-chip" data-category="?ъ쭊">?벜 ?ъ쭊</button>
-                            <button type="button" class="category-chip" data-category="?곸긽">?렗 ?곸긽</button>
-                            <button type="button" class="category-chip" data-category="?꾪듃">?뼂截??꾪듃</button>
+                            <button type="button" class="category-chip" data-category="요리">🍳 요리</button>
+                            <button type="button" class="category-chip" data-category="공예">🛠 공예</button>
+                            <button type="button" class="category-chip" data-category="스포츠">🏅 스포츠</button>
+                            <button type="button" class="category-chip" data-category="뷰티">💄 뷰티</button>
+                            <button type="button" class="category-chip" data-category="디자인">✏ 디자인</button>
+                            <button type="button" class="category-chip" data-category="음악">🎵 음악</button>
+                            <button type="button" class="category-chip" data-category="베이킹">🧁 베이킹</button>
+                            <button type="button" class="category-chip" data-category="사진">📷 사진</button>
+                            <button type="button" class="category-chip" data-category="영상">🎬 영상</button>
+                            <button type="button" class="category-chip" data-category="아트">🎨 아트</button>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-submit">湲곕낯 ?뺣낫 ???/button>
+                    <button type="submit" class="btn-submit">기본 정보 저장</button>
                 </form>
             </section>
 
             <section id="tabSecurity" class="mypage-tab">
-                <h2 class="tab-title">蹂댁븞 諛?寃곗젣 ?뺣낫</h2>
+                <h2 class="tab-title">보안 및 결제 정보</h2>
 
                 <div class="security-card">
-                    <h3>鍮꾨?踰덊샇 蹂寃?/h3>
+                    <h3>비밀번호 변경</h3>
                     <form id="passwordForm" class="mypage-form">
                         <div class="input-group">
-                            <label>??鍮꾨?踰덊샇</label>
-                            <input type="password" id="newPassword" placeholder="??鍮꾨?踰덊샇 (6?먮━ ?댁긽)" required minlength="6">
+                            <label>새 비밀번호</label>
+                            <input type="password" id="newPassword" placeholder="새 비밀번호 (6자리 이상)" required minlength="6">
                         </div>
                         <div class="input-group">
-                            <label>??鍮꾨?踰덊샇 ?뺤씤</label>
-                            <input type="password" id="confirmPassword" placeholder="鍮꾨?踰덊샇瑜??ㅼ떆 ?낅젰?섏꽭?? required minlength="6">
+                            <label> 비밀번호 확인</label>
+                            <input type="password" id="confirmPassword" placeholder="비밀번호를 다시 입력하세요" required minlength="6">
                         </div>
-                        <button type="submit" class="btn-submit" style="width: auto; padding: 0.8rem 2rem;">鍮꾨?踰덊샇 蹂寃쏀븯湲?/button>
+                        <button type="submit" class="btn-submit" style="width: auto; padding: 0.8rem 2rem;">비밀번호 변경하기</button>
                     </form>
                 </div>
 
                 <div class="security-card" style="margin-top: 2rem;">
-                    <h3>蹂댁븞 ?ㅼ젙</h3>
+                    <h3>보안 설정</h3>
                     <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem 0; border-bottom:1px solid var(--glass-border);">
                         <div>
-                            <p style="font-weight:600;">2?④퀎 ?몄쬆 (MFA)</p>
-                            <p style="font-size:0.85rem; color:var(--text-secondary);">濡쒓렇????異붽? ?몄쬆??吏꾪뻾?⑸땲??</p>
+                            <p style="font-weight:600;">2단계 인증 (MFA)</p>
+                            <p style="font-size:0.85rem; color:var(--text-secondary);">로그인 추가 인증을 진행합니다.</p>
                         </div>
                         <input type="checkbox" id="mfaToggle" style="width:40px; height:20px; cursor:pointer;">
                     </div>
                 </div>
 
                 <div class="security-card" style="margin-top: 2rem;">
-                    <h3>寃곗젣 ?섎떒 愿由?/h3>
+                    <h3>결제 수단 관리</h3>
                     <div id="paymentMethodsList" style="display:flex; flex-direction:column; gap:10px;">
-                        <p style="color:var(--text-secondary); text-align:center; padding:2rem 0;">?깅줉??寃곗젣 ?섎떒???놁뒿?덈떎.</p>
+                        <p style="color:var(--text-secondary); text-align:center; padding:2rem 0;">등록된 결제 수단이 없습니다.</p>
                     </div>
-                    <button type="button" class="btn-secondary" id="btnAddCard" style="width:100%; margin-top:1rem;">+ ??移대뱶 ?깅줉</button>
+                    <button type="button" class="btn-secondary" id="btnAddCard" style="width:100%; margin-top:1rem;">+ 새 카드 등록</button>
                 </div>
 
                 <div class="security-card" style="margin-top: 2rem;">
-                    <h3>寃곗젣 ?댁뿭</h3>
+                    <h3>결제 내역</h3>
                     <div id="paymentHistoryList" class="payment-history-list">
-                        <p style="color:var(--text-secondary); text-align:center; padding:2rem 0;">寃곗젣 ?댁뿭??遺덈윭?ㅻ뒗 以?..</p>
+                        <p style="color:var(--text-secondary); text-align:center; padding:2rem 0;">결제 내역을 불러오는 중입니다...</p>
                     </div>
                 </div>
             </section>
 
             <section id="tabFriends" class="mypage-tab">
-                <h2 class="tab-title">移쒓뎄</h2>
+                <h2 class="tab-title">친구</h2>
 
                 <div style="background:linear-gradient(135deg,rgba(255,149,0,0.08),rgba(255,59,48,0.05)); border:1px solid rgba(255,149,0,0.15); border-radius:16px; padding:1.5rem; margin-bottom:1.5rem;">
                     <h3 style="margin:0 0 1rem 0; display:flex; align-items:center; gap:8px; font-size:1rem;">
-                        <i class="fa-solid fa-bell" style="color:#FF9500;"></i> 諛쏆? 移쒓뎄 ?붿껌
+                        <i class="fa-solid fa-bell" style="color:#FF9500;"></i> 받은 친구 요청
                         <span id="pendingCount" style="background:#FF9500; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700;">0</span>
                     </h3>
                     <div id="pendingFriendList" style="max-height:300px; overflow-y:auto;">
-                        <p style="color:#888; font-size:0.9rem;">?붿껌???놁뒿?덈떎</p>
+                        <p style="color:#888; font-size:0.9rem;">요청이 없습니다</p>
                     </div>
                 </div>
 
                 <div style="background:var(--bg-card,#1a1a2e); border:1px solid var(--border-color,#333); border-radius:16px; padding:1.5rem;">
                     <h3 style="margin:0 0 1rem 0; display:flex; align-items:center; gap:8px; font-size:1rem;">
-                        <i class="fa-solid fa-user-group" style="color:var(--comm-accent,#6D8FFF);"></i> ??移쒓뎄
+                        <i class="fa-solid fa-user-group" style="color:var(--comm-accent,#6D8FFF);"></i> 내 친구
                         <span id="friendCount" style="background:var(--comm-accent,#6D8FFF); color:#fff; padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:700;">0</span>
                     </h3>
                     <div id="friendListArea" style="max-height:500px; overflow-y:auto;">
-                        <p style="color:#888; font-size:0.9rem;">移쒓뎄 紐⑸줉??遺덈윭?ㅻ뒗 以?..</p>
+                        <p style="color:#888; font-size:0.9rem;">친구 목록을 불러오는 중입니다.</p>
                     </div>
                 </div>
             </section>
 
             <section id="tabChatSub" class="mypage-tab">
-                <h2 class="tab-title">梨꾪똿 諛?援щ룆 愿由?/h2>
+                <h2 class="tab-title">채팅 및 구독 관리</h2>
 
                 <div class="chat-manage-card">
-                    <h3>吏꾪뻾 以묒씤 梨꾪똿</h3>
+                    <h3>진행 중인 채팅</h3>
                     <ul class="chat-list" id="chatList"></ul>
                 </div>
 
                 <div class="sub-card" style="margin-top: 2rem;">
-                    <div class="loader">援щ룆 ?뺣낫瑜?遺덈윭?ㅻ뒗 以?..</div>
+                    <div class="loader">구독 정보를 불러오는 중입니다...</div>
                 </div>
             </section>
 
             <section id="tabEditClass" class="mypage-tab">
-                <h2 class="tab-title">?대옒???뺣낫 ?섏젙</h2>
+                <h2 class="tab-title">클래스 정보 수정</h2>
                 <form id="editClassForm" class="mypage-form">
                     <input type="hidden" id="editClassId">
                     <div class="input-group">
-                        <label>?대옒???쒕ぉ</label>
+                        <label>클래스 제목</label>
                         <input type="text" id="editClassTitle" required>
                     </div>
                     <div class="input-group">
-                        <label>移댄뀒怨좊━</label>
+                        <label>카테고리</label>
                         <select id="editClassCategory" required>
-                            <option value="?붾━">?뜵 ?붾━</option>
-                            <option value="怨듭삁">?㏊ 怨듭삁</option>
-                            <option value="?ㅽ룷痢?>?룂 ?ㅽ룷痢?/option>
-                            <option value="酉고떚">?뭵 酉고떚</option>
-                            <option value="?붿옄??>?렓 ?붿옄??/option>
-                            <option value="?뚯븙">?렦 ?뚯븙</option>
-                            <option value="踰좎씠??>?쭅 踰좎씠??/option>
-                            <option value="?ъ쭊">?벜 ?ъ쭊</option>
-                            <option value="?곸긽">?렗 ?곸긽</option>
-                            <option value="?꾪듃">?뼂截??꾪듃</option>
+                            <option value="요리">🍳 요리</option>
+                            <option value="공예">🛠 공예</option>
+                            <option value="스포츠">🏅 스포츠</option>
+                            <option value="뷰티">💄 뷰티</option>
+                            <option value="디자인">✏ 디자인</option>
+                            <option value="음악">🎵 음악</option>
+                            <option value="베이킹">🧁 베이킹</option>
+                            <option value="사진">📷 사진</option>
+                            <option value="영상">🎬 영상</option>
+                            <option value="아트">🎨 아트</option>
                         </select>
                     </div>
                     <div class="input-group">
-                        <label>?대옒???붿빟</label>
+                        <label>클래스 요약</label>
                         <input type="text" id="editClassSummary" required>
                     </div>
                     <div class="input-group">
-                        <label>?곸꽭 ?ㅻ챸</label>
+                        <label>상세 설명</label>
                         <textarea id="editClassDescription" rows="5" required></textarea>
                     </div>
                     <div class="input-group">
-                        <label>媛寃???</label>
+                        <label>가격</label>
                         <input type="number" id="editClassPrice" required>
                     </div>
                     <div class="input-group">
-                        <label>?좎씤??%)</label>
+                        <label>할인율%)</label>
                         <input type="number" id="editClassDiscount" placeholder="0" min="0" max="100">
                     </div>
                     <div class="input-group">
-                        <label>荑좏룿 諛쒗뻾</label>
+                        <label>쿠폰 발행</label>
                         <div style="display: flex; gap: 20px; align-items: center; padding: 10px 0;">
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" id="editClassCoupon" style="width: auto;"> 荑좏룿??諛쒗뻾?섍린
+                                <input type="checkbox" id="editClassCoupon" style="width: auto;"> 쿠폰을 발행하기
                             </label>
                         </div>
                     </div>
                     <div class="input-group">
-                        <label>?대옒???좏삎</label>
+                        <label>클래스 유형</label>
                         <div style="display: flex; gap: 20px; align-items: center; padding: 10px 0;">
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="radio" name="editClassType" value="VOD" checked style="width: auto;"> VOD (?뱁솕 媛뺤쓽)
+                                <input type="radio" name="editClassType" value="VOD" checked style="width: auto;"> VOD (녹화 강의)
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="radio" name="editClassType" value="LIVE" style="width: auto;"> LIVE (?ㅼ떆媛?媛뺤쓽)
+                                <input type="radio" name="editClassType" value="LIVE" style="width: auto;"> LIVE (실시간 강의)
                             </label>
                         </div>
                     </div>
                     <div style="display: flex; gap: 10px; margin-top: 2rem;">
-                        <button type="submit" class="btn-submit">?뺣낫 ?섏젙 ?꾨즺</button>
+                        <button type="submit" class="btn-submit">정보 수정 완료</button>
                         <button type="button" class="btn-secondary"
                             onclick="document.querySelector('[data-target=tabDashboard]').click()"
-                            style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-secondary); padding: 0.8rem 2rem; border-radius: 8px;">痍⑥냼</button>
+                            style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-secondary); padding: 0.8rem 2rem; border-radius: 8px;">취소</button>
                     </div>
                 </form>
             </section>
         </main>
     </div>
 
-    <script src="mypage.js?v=20260324_02"></script>
-    <script src="tab_profile.js?v=20260324_02"></script>
-    <script src="tab_classes.js?v=20260324_02"></script>
-    <script src="tab_security.js?v=20260324_02"></script>
-    <script src="tab_chat_sub.js?v=20260324_02"></script>
-    <script src="../header.js?v=20260324_03"></script>
-    <script src="../dev_mode.js?v=20260324_02"></script>
+    <script src="mypage.js?v=20260324_02" defer></script>
+    <script src="tab_profile.js?v=20260324_02" defer></script>
+    <script src="tab_classes.js?v=20260324_02" defer></script>
+    <script src="tab_security.js?v=20260324_02" defer></script>
+    <script src="tab_chat_sub.js?v=20260324_02" defer></script>
+    <script src="../header.js?v=20260324_03" defer></script>
+    <script src="../dev_mode.js?v=20260324_02" defer></script>
 </body>
 
 </html>

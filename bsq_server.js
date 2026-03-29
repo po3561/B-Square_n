@@ -1,19 +1,19 @@
-// bsq_server.js - B-Square 餓λ쵐釉???뺤쒔 筌뤴뫀諭?(??뽯땾 Cloudflare D1 API 筌뤴뫀諭?
-// Firebase/Supabase ?袁⑹읈 ??볤탢. 筌뤴뫀諭??怨쀬뵠?怨뺣뮉 D1 API(/api/*)?????퉸 筌ｌ꼶??
-// ???쒑린? window.BSQ.api('/api/classes'), await window.BSQ.ready
+// bsq_server.js - B-Square 브랜딩 공통 쉘 (클라우드플레어 D1 API 연동)
+// Firebase/Supabase 없이 직접 Cloudflare D1 API 연동
+// 사용 방법: window.BSQ.api('/api/classes'), await window.BSQ.ready
 (function () {
     'use strict';
 
-    // ---- ?怨밴묶 ----
-    let _session = null;     // 嚥≪뮄????紐꾨?{ user: { id, email, name, ... }, expires_at }
+    // ---- 전역 변수 ----
+    let _session = null;     // 세션 정보: { user: { id, email, name, ... }, expires_at }
     let _readyResolve = null;
     const readyPromise = new Promise(resolve => { _readyResolve = resolve; });
+    let _siteSettingsPromise = null;
     const OPERATOR_MODE_KEY = 'bsq_operator_view_mode';
     const OPERATOR_GHOST_TOKEN = 'OPERATOR_GHOST';
     // ==================================================
-    // API 踰좎씠??URL ?먮룞 媛먯? 諛??먭꺽 ?쒕쾭 ?곕룞
+    // API 베이스 URL 자동 감지 및 자격 서버 연동
     // ==================================================
-    const PRODUCTION_API_URL = 'https://b-square-web.pages.dev';
     const WRANGLER_PORT = 8788;
     const _currentPort = parseInt(window.location.port) || (window.location.protocol === 'https:' ? 443 : 80);
     const _isLocalHost = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
@@ -32,6 +32,8 @@
         if (_hasHttpOrigin) return window.location.origin;
         return '';
     })();
+    const PUBLIC_API_BASE = API_BASE || (_hasHttpOrigin ? window.location.origin : '');
+    const API_BASE_LABEL = PUBLIC_API_BASE || 'same-origin';
 
     function normalizeRequestBody(value) {
         if (value == null) return value;
@@ -48,13 +50,13 @@
 
     const REQUEST_TIMEOUT_MS = 20000;
 
-    // API ?곌껐 ?곹깭 諛곕꼫瑜??쒓굅?덉뒿?덈떎. (?ъ슜???붿껌)
+    // API 연결 상태 배너를 제거했습니다. (사용자 요청)
 
     // ==================================================
-    // D1 API ?몄텧 ?ы띁 (Standard V2)
+    // D1 API 호출 헬퍼 (Standard V2)
     // ==================================================
 
-    // ???筌왖 野껋럥以??癒?짗 癰귣똻??(?怨? 野껋럥以?-> ??? 野껋럥以?
+    // D1 API 호출 헬퍼 (Standard V2)
     async function apiCall(endpoint, methodOrOptions = 'GET', body = null, options = {}) {
         let method = 'GET';
         let finalOptions = {};
@@ -88,7 +90,6 @@
         if (_hasHttpOrigin) pushBase(window.location.origin);
         pushBase('http://127.0.0.1:8788');
         pushBase('http://localhost:8788');
-        pushBase(PRODUCTION_API_URL);
 
         const performFetch = async (baseUrl) => {
             let requestUrl = baseUrl ? (baseUrl + endpoint) : endpoint;
@@ -204,18 +205,36 @@
         return { success: false, error: fallbackError.message };
     }
 
+    function ensureSiteSettingsPromise() {
+        if (_siteSettingsPromise) return _siteSettingsPromise;
+
+        // Fetch once and share the result across header / shell / SEO updates.
+        _siteSettingsPromise = apiCall('/api/site-settings', { cacheBust: false })
+            .then((result) => {
+                const settings = result?.success ? (result.data || null) : null;
+                window.__BSQ_SITE_SETTINGS__ = settings || null;
+                return settings || null;
+            })
+            .catch((error) => {
+                console.warn('[BSQ Server] Site settings prefetch failed:', error);
+                return window.__BSQ_SITE_SETTINGS__ || null;
+            });
+
+        return _siteSettingsPromise;
+    }
+
     function fixImageUrls(data) {
         if (!data) return data;
         if (typeof data === 'string') {
-            // Base64 ?怨쀬뵠?怨뺣뮉 椰꾨?諭띄뵳?? ??놁벉
+            // Base64 이미지이거나 외부 URL은 처리하지 않음
             if (data.startsWith('data:')) return data;
-            // ??? ??? 野껋럥以??野껋럩??椰꾨?諭띄뵳?? ??놁벉
+            // 외부 URL은 처리하지 않음
             if (data.startsWith('http')) return data;
 
-            // uploads/ ?癒?뮉 assets/ 嚥???뽰삂??롫뮉 ?怨? 野껋럥以?筌ｌ꼶??(??????醫듢??怨???곸뵠)
+            // uploads/ 또는 assets/ 경로로 시작하는 경우에만 현재 오리진을 붙여줌 (CDN 사용 시)
             const cleanPath = data.startsWith('/') ? data : '/' + data;
             if (cleanPath.startsWith('/uploads/') || cleanPath.startsWith('/assets/')) {
-                return PRODUCTION_API_URL + cleanPath;
+                return _runtimeOrigin + cleanPath;
             }
             return data;
         }
@@ -232,7 +251,7 @@
         return data;
     }
 
-    // ?遺얇늺 ???뵝 ??뽯뻻 (?源껊궗/??살첒 ?닌됲뀋)
+    // 화면에 알림 표시 (성공/실패 알림)
     function showOnScreenAlert(msg, type = 'error') {
         if (typeof document === 'undefined') return;
         const alertBox = document.createElement('div');
@@ -298,6 +317,30 @@
         delete window.__BSQ_OPERATOR_PROFILE__;
     }
 
+    function seedSessionFromStorage() {
+        try {
+            const operatorModeRequested = localStorage.getItem(OPERATOR_MODE_KEY) === '1';
+            const token = localStorage.getItem('bsq_token');
+            const storedUserStr = localStorage.getItem('bsq_user');
+            const storedUser = storedUserStr ? JSON.parse(storedUserStr) : null;
+
+            if (!token && !operatorModeRequested) return;
+
+            if (token === OPERATOR_GHOST_TOKEN || operatorModeRequested) {
+                const fallbackUser = getOperatorFallbackUser();
+                _session = { user: fallbackUser };
+                setOperatorViewGlobals(fallbackUser);
+                return;
+            }
+
+            if (storedUser && storedUser.id) {
+                _session = { user: storedUser };
+            }
+        } catch {
+            // Ignore storage bootstrap errors and fall back to network validation.
+        }
+    }
+
     async function runCheckSession() {
         const operatorModeRequested = localStorage.getItem(OPERATOR_MODE_KEY) === '1';
         if (operatorModeRequested && !localStorage.getItem('bsq_token')) {
@@ -312,7 +355,7 @@
 
         if (result.success && session?.user) {
             _session = session;
-            console.log('[BSQ Server] ???β돦裕????筌먦끉逾?', _session.user.email);
+            console.log('[BSQ Server] 로그인 유지 확인 완료:', _session.user.email);
             localStorage.setItem('bsq_user', JSON.stringify(_session.user));
 
             const sessionUser = _session.user;
@@ -374,13 +417,14 @@
     }
 
     // ==================================================
-    // ?紐꾨?疫꿸퀡而??紐꾩쵄 筌ｋ똾寃?& ?癒?짗 ??녿┛??    // ==================================================
+    // 세션 관리 및 인증 관련
+    // ==================================================
     async function checkSession() {
         return await runCheckSession();
     }
 
     // ==================================================
-    // [?醫됲뇣] ??쇰뻻揶??怨뚭퍙 ??덊닏 (Connection Hub) UI
+    // [개발용] 연결 상태 허브 (Connection Hub) UI
     // ==================================================
     function updateConnectionHub() {
         if (typeof document === 'undefined') return;
@@ -414,38 +458,39 @@
     }
 
     // ==================================================
-    // ?λ뜃由??    // ==================================================
+    // 초기화
+    // ==================================================
     async function init() {
         if (!_isWrangler) {
-            console.log(`[BSQ Server] ????癒?봄 API 筌뤴뫀諭???뽮쉐: ${PRODUCTION_API_URL}`);
+            console.log(`[BSQ Server] 현재 연결된 API 엔드포인트: ${API_BASE_LABEL}`);
         }
 
-        // 1. ?紐꾨??類ㅼ뵥
+        // 1. 세션 체크
         await checkSession();
 
-        // 2. ready ?怨밴묶 獄쏆꼹??
+        // 2. ready 전역 변수 완료
         _readyResolve({
             session: _session,
             userId: _session?.user?.id || null,
             userProfile: _session?.user || null
         });
 
-        console.log('[BSQ Server] ????뺤쒔 ?怨뚭퍙 ?λ뜃由???袁⑥┷ (D1 API 筌뤴뫀諭?', {
+        console.log('[BSQ Server] 브랜딩 쉘 로드 및 인증 체크 완료 (D1 API 연동)', {
             loggedIn: !!_session,
             userId: _session?.user?.id || 'none'
         });
 
-        // 3. ???????쇱젟 嚥≪뮆諭?        applySiteSettings();
+        // 3. 사이트 설정 적용
+        void applySiteSettings();
     }
 
     // ==================================================
-    // ???????쇱젟 ??D1 API 疫꿸퀡而?    // ==================================================
+    // 사이트 설정 및 D1 API 연동
+    // ==================================================
     async function applySiteSettings() {
         try {
-            const result = await apiCall('/api/site-settings');
-            if (!result.success || !result.data) return;
-
-            const settings = result.data;
+            const settings = window.__BSQ_SITE_SETTINGS__ || await ensureSiteSettingsPromise();
+            if (!settings) return;
 
             // Title
             if (settings.site_name) {
@@ -473,14 +518,14 @@
 
             if (footerInfoElems.length > 0) {
                 const parts = [];
-                if (settings.ceo_name) parts.push(`???? ${settings.ceo_name}`);
-                if (settings.biz_num) parts.push(`??毓?癒?쾻嚥≪빖苡?? ${settings.biz_num}`);
-                if (settings.mail_order_num) parts.push(`???뻿?癒?꼻??녿뻿?? ${settings.mail_order_num}`);
-                if (settings.cs_phone) parts.push(`?⑥쥒而??녠숲: ${settings.cs_phone}`);
-                if (settings.cs_email) parts.push(`??李?? ${settings.cs_email}`);
+                if (settings.ceo_name) parts.push(`대표 ${settings.ceo_name}`);
+                if (settings.biz_num) parts.push(`사업자등록번호 ${settings.biz_num}`);
+                if (settings.mail_order_num) parts.push(`통신판매업신고 ${settings.mail_order_num}`);
+                if (settings.cs_phone) parts.push(`고객센터 ${settings.cs_phone}`);
+                if (settings.cs_email) parts.push(`이메일 ${settings.cs_email}`);
 
                 let fullText = parts.join(' | ');
-                if (settings.address) fullText += `\n雅뚯눘?? ${settings.address}`;
+                if (settings.address) fullText += `\n주소 ${settings.address}`;
                 if (fullText) footerInfoElems.forEach(el => el.innerText = fullText);
             }
 
@@ -510,7 +555,7 @@
         } catch (e) { console.warn('[BSQ] Site settings load skip'); }
     }
 
-    // ---- ?紐꾩쵄 ????----
+    // ---- 로그인 관련 ----
     async function login(username, password) {
         const result = await apiCall('/api/auth/login', {
             method: 'POST',
@@ -541,15 +586,18 @@
         return await runLogout();
     }
 
-    // [?醫됲뇣] ??쇰뻻揶???녿┛???紐꺿봺椰?
+    // [동기화] 이벤트 디스패치 트리거
     function triggerSync(type = 'default') {
         window.dispatchEvent(new CustomEvent('bsq_sync', { detail: { type, timestamp: Date.now() } }));
     }
 
-    // ---- ?袁⑸열 API ----
+    // ---- 공개 API ----
+    seedSessionFromStorage();
+
     window.BSQ = {
         ready: readyPromise,
-        apiBaseUrl: API_BASE || (_hasHttpOrigin ? window.location.origin : '') || PRODUCTION_API_URL,
+        apiBaseUrl: PUBLIC_API_BASE,
+        siteSettingsReady: ensureSiteSettingsPromise(),
 
         get session() {
             return _session;
@@ -562,10 +610,10 @@
         },
         get isLoggedIn() { return !!_session; },
 
-        // D1 API ?紐꾪뀱
+        // D1 API 호출
         api: apiCall,
 
-        // ?紐꾩쵄 ????
+        // 로그인 관련
         login,
         register,
         logout,
@@ -573,7 +621,7 @@
         triggerSync
     };
 
-    // ---- 筌앸맩????쎈뻬 ----
+    // ---- 즉시 실행 시작 ----
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {

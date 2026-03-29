@@ -8,11 +8,8 @@
   const scriptTag = document.currentScript;
   const scriptDir = scriptTag ? scriptTag.src.substring(0, scriptTag.src.lastIndexOf('/') + 1) : '';
   
-  const isSharedBundle = currentPath.includes('/bsnnnnnnnnnnnnnnnnnn/') || currentPath.includes('bsnnnnnnnnnnnnnnnnnn');
-  
   // Use scriptDir for absolute-like relative paths for CSS dynamic injection
   const shellCSSPath = scriptDir + 'shell_overrides.css';
-  const mobileOptimizePath = scriptDir + 'mobile_210px_optimize.css';
 
   const homePrefix = currentPath.split('/').length > 2 ? '../' : './';
   const prefix = homePrefix;
@@ -157,7 +154,7 @@
           <a href="${prefix}class/class_list.html" class="drawer-nav-item${activeNav === 'class' ? ' active' : ''}">클래스</a>
           <a href="${prefix}create_class/create_class.html" class="drawer-nav-item${activeNav === 'create' ? ' active' : ''}">등록</a>
           <a href="${prefix}notice/notice.html" class="drawer-nav-item${activeNav === 'notice' ? ' active' : ''}">공지사항</a>
-          <a href="${prefix}contact/contact.html" class="drawer-nav-item${activeNav === 'notice' ? ' active' : ''}">문의</a>
+          <a href="${prefix}contact/contact.html" class="drawer-nav-item${activeNav === 'contact' ? ' active' : ''}">문의</a>
           <a href="${prefix}community/community.html" class="drawer-nav-item${activeNav === 'community' ? ' active' : ''}">커뮤니티</a>
           <a href="${prefix}mi_pesg/mypage.html" class="drawer-nav-item${activeNav === 'mypage' ? ' active' : ''}">마이페이지</a>
         </nav>
@@ -243,12 +240,9 @@
 
   async function applyShellBranding() {
     try {
-      if (window.BSQ && window.BSQ.ready) {
-        await window.BSQ.ready;
-      }
-
-      const settingsSource = window.__BSQ_SITE_SETTINGS__;
-      const settings = settingsSource || (await window.BSQ?.api?.('/api/site-settings', { cacheBust: false }))?.data || null;
+      const settings = window.__BSQ_SITE_SETTINGS__
+        || (window.BSQ?.siteSettingsReady ? await window.BSQ.siteSettingsReady : null)
+        || null;
       if (!settings) return;
 
       const brandName = settings.company_name || settings.site_name || 'B-Square';
@@ -312,14 +306,6 @@
   }
 
   function injectUI() {
-    if (!document.getElementById('bsqMobileOptimizeCSS')) {
-      const linkCSS = document.createElement('link');
-      linkCSS.id = 'bsqMobileOptimizeCSS';
-      linkCSS.rel = 'stylesheet';
-      linkCSS.href = mobileOptimizePath;
-      document.head.appendChild(linkCSS);
-    }
-
     if (!document.getElementById('bsqShellOverridesCSS')) {
       const shellCSS = document.createElement('link');
       shellCSS.id = 'bsqShellOverridesCSS';
@@ -422,17 +408,20 @@
   }
 
   async function initAuth() {
-    if (window.BSQ && window.BSQ.ready) {
-      await window.BSQ.ready;
-    } else {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-    }
-
     const session = window.BSQ?.session;
     const user = session?.user || null;
     renderAuthenticatedMenu(session, user);
+    void applyShellBranding();
 
-    await applyShellBranding();
+    if (window.BSQ?.ready?.then) {
+      window.BSQ.ready.then(() => {
+        const nextSession = window.BSQ?.session;
+        renderAuthenticatedMenu(nextSession, nextSession?.user || null);
+        void applyShellBranding();
+      }).catch((error) => {
+        console.warn('[BSQ] Auth hydration skipped:', error);
+      });
+    }
   }
 
   window.handleGlobalLogout = async function () {

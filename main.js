@@ -1,6 +1,5 @@
 // main.js - homepage data loader (D1 API)
 document.addEventListener('DOMContentLoaded', async () => {
-    await window.BSQ.ready;
     const currentCategory = getCurrentHomeCategory();
 
     await Promise.all([
@@ -78,13 +77,14 @@ function setHomeCategoryExpandedState(expanded) {
 const HOME_CATEGORY_ACCENTS = ['#ff5a5f', '#ffaa00', '#00c3a0', '#00a8ff', '#9c27b0'];
 
 const HOME_CATEGORY_ICON_RULES = [
-    { pattern: /(구독|이벤트|쿠폰)/, icon: 'ticket', accent: '#ff5a5f' },
-    { pattern: /(특강|라이브)/, icon: 'live', accent: '#ffaa00' },
-    { pattern: /(AI|데이터|프로그래밍)/, icon: 'code', accent: '#00a8ff' },
-    { pattern: /(창업|부업|비즈니스)/, icon: 'briefcase', accent: '#9c27b0' },
-    { pattern: /(드로잉|디자인|공예)/, icon: 'pen', accent: '#ff8d4f' },
-    { pattern: /(운동|스포츠)/, icon: 'dumbbell', accent: '#00c3a0' },
-    { pattern: /(요리|베이킹)/, icon: 'pot', accent: '#ffaa00' },
+    { pattern: /(구독|이벤트|쿠폰|선물)/, icon: 'ticket', accent: '#ff5a5f' },
+    { pattern: /(특강|라이브|실시간|스트리밍)/, icon: 'live', accent: '#ffaa00' },
+    { pattern: /(AI|데이터|프로그래밍|개발|코딩|IT)/, icon: 'code', accent: '#00a8ff' },
+    { pattern: /(창업|부업|비즈니스|성공|생산성)/, icon: 'briefcase', accent: '#9c27b0' },
+    { pattern: /(드로잉|디자인|공예|사진|영상|예술)/, icon: 'pen', accent: '#ff8d4f' },
+    { pattern: /(운동|스포츠|피트니스|레저)/, icon: 'dumbbell', accent: '#00c3a0' },
+    { pattern: /(요리|베이킹|심야|맛집|카페)/, icon: 'pot', accent: '#ffaa00' },
+    { pattern: /(소모임|동아리|커뮤니티|문화|여행)/, icon: 'heart', accent: '#ff5a5f' },
 ];
 
 function resolveHomeCategoryMeta(name, index = 0) {
@@ -115,7 +115,7 @@ function svgIcon(kind) {
         bookmark: '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>',
         'bookmark-filled': '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="currentColor"></path>',
     };
-    return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:block; width:100%; height:100%;">${icons[kind] || icons.spark}</svg>`;
+    return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="bsq-icon">${icons[kind] || icons.spark}</svg>`;
 }
 
 async function renderHomeCategoryMenu(currentCategory = 'all') {
@@ -143,15 +143,19 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
         <div class="home-category-shell">
             <div class="home-category-grid">
                 <a href="#" class="home-category-item${currentCategory === 'all' ? ' is-active' : ''}" data-cat="all">
-                    <span class="home-category-icon" style="background:#f5f5f5;">${svgIcon('spark')}</span>
-                    <span class="home-category-label">전체</span>
+                    <div class="home-category-icon" style="background:#f5f5f5;">
+                        ${svgIcon('spark')}
+                    </div>
+                    <span class="home-category-name">전체</span>
                 </a>
                 ${displayList.map((item, index) => {
                     const meta = resolveHomeCategoryMeta(item.name, index);
                     return `
                         <a href="#" class="home-category-item${currentCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">
-                            <span class="home-category-icon" style="background:${meta.accent}12; color:${meta.accent};">${svgIcon(meta.icon)}</span>
-                            <span class="home-category-label">${escapeHtml(item.name)}</span>
+                            <div class="home-category-icon" style="background:${meta.accent}15; color:${meta.accent};">
+                                ${svgIcon(meta.icon)}
+                            </div>
+                            <span class="home-category-name">${escapeHtml(item.name)}</span>
                         </a>
                     `;
                 }).join('')}

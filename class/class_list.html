@@ -1,72 +1,74 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>?대옒??紐⑥쓬 | B-Square</title>
+    <title>클래스 모음 | B-Square</title>
     <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
 
-    <!-- CSS -->
+    <!-- CSS - 미디어 쿼리로 분리 -->
     <link rel="stylesheet" href="../style_mobile.css" media="(max-width: 768px)">
-    <link rel="stylesheet" href="../style_pc.css">
-    <link rel="stylesheet" href="class_list.css?v=20260324_02">
+    <link rel="stylesheet" href="../style_pc.css" media="(min-width: 769px)">
+    <link rel="stylesheet" href="class_list.css?v=20260327_01">
 
     <!-- SDKs -->
-    <script src="../bsq_server.js?v=20260324_02"></script>
+    <script src="../bsq_server.js?v=20260327_01" defer></script>
 </head>
 
 <body>
-    <!-- header.js媛 ?ㅻ뜑/?명꽣/Drawer/BottomNav瑜??숈쟻 ?쎌엯 -->
+    <!-- header.js가 헤더/푸터/Drawer/BottomNav를 동적 삽입 -->
 
     <main class="class-list-main">
         <div class="section-inner">
             <div class="index-layout">
-                <!-- 醫뚯륫 ?ъ씠?쒕컮 ?듬찓??-->
+                <!-- 좌측 사이드바 카테고리 -->
                 <aside class="sidebar-nav">
                     <nav class="category-sidebar" id="categoryFilter">
-                        <h3 class="sidebar-title">?대옒??移댄뀒怨좊━</h3>
+                        <h3 class="sidebar-title">클래스 카테고리</h3>
                         <ul>
-                            <li class="active"><a href="#" data-cat="all"><span class="icon">?뙋</span>?꾩껜</a></li>
-                            <li><a href="#" data-cat="?붿옄??><span class="icon">?뮲</span>?붿옄??/a></li>
-                            <li><a href="#" data-cat="?앹궛??><span class="icon">?뱢</span>?앹궛??/a></li>
-                            <li><a href="#" data-cat="?ㅽ룷痢?><span class="icon">??/span>?ㅽ룷痢?/a></li>
-                            <li><a href="#" data-cat="?붿????쒕줈??><span class="icon">?렓</span>?붿????쒕줈??/a></li>
-                            <li><a href="#" data-cat="?깃났 留덉씤??><span class="icon">?뮕</span>?깃났 留덉씤??/a></li>
-                            <li><a href="#" data-cat="?뚯븙"><span class="icon">?렦</span>?뚯븙</a></li>
-                            <li><a href="#" data-cat="踰좎씠??><span class="icon">?쪖</span>踰좎씠??/a></li>
-                            <li><a href="#" data-cat="?ъ쭊"><span class="icon">?벝</span>?ъ쭊</a></li>
-                            <li><a href="#" data-cat="?곸긽"><span class="icon">?렗</span>?곸긽</a></li>
-                            <li><a href="#" data-cat="怨듭삁"><span class="icon">?㎍</span>怨듭삁</a></li>
+                            <li class="active"><a href="#" data-cat="all"><span class="icon">📋</span>전체</a></li>
+                            <li><a href="#" data-cat="디자인"><span class="icon">🎨</span>디자인</a></li>
+                            <li><a href="#" data-cat="생산성"><span class="icon">💼</span>생산성</a></li>
+                            <li><a href="#" data-cat="스포츠"><span class="icon">⚽</span>스포츠</a></li>
+                            <li><a href="#" data-cat="디지털 드로잉"><span class="icon">✏️</span>디지털 드로잉</a></li>
+                            <li><a href="#" data-cat="성공 마인드"><span class="icon">🧠</span>성공 마인드</a></li>
+                            <li><a href="#" data-cat="음악"><span class="icon">🎵</span>음악</a></li>
+                            <li><a href="#" data-cat="베이킹"><span class="icon">🧁</span>베이킹</a></li>
+                            <li><a href="#" data-cat="사진"><span class="icon">📷</span>사진</a></li>
+                            <li><a href="#" data-cat="영상"><span class="icon">🎬</span>영상</a></li>
+                            <li><a href="#" data-cat="공예"><span class="icon">🪡</span>공예</a></li>
                         </ul>
                     </nav>
                 </aside>
 
-                <!-- 硫붿씤 肄섑뀗痢??곸뿭 -->
+                <!-- 메인 콘텐츠 영역 -->
                 <div class="content-area">
                     <section class="class-lists-section class-page-overrides">
                         <div class="class-grid-header">
-                            <h3 class="group-title">?꾩껜 ?대옒??紐⑸줉</h3>
+                            <div class="header-copy">
+                                <h3 class="group-title">전체 클래스 목록</h3>
+                                <p class="group-subtitle">카테고리, 검색, 정렬로 원하는 클래스를 빠르게 찾을 수 있습니다.</p>
+                            </div>
                             <div class="list-controls">
                                 <div class="search-filter">
-                                    <input type="text" id="classSearchInput" placeholder="?대옒??寃??.." class="class-search-input">
+                                    <input type="text" id="classSearchInput" placeholder="클래스명, 강사명 검색" class="class-search-input">
                                 </div>
                                 <select id="sortSelect" class="sort-select">
-                                    <option value="newest">理쒖떊??/option>
-                                    <option value="popular">?멸린??/option>
-                                    <option value="price-low">媛寃??????/option>
-                                    <option value="price-high">媛寃??믪???/option>
+                                    <option value="newest">최신순</option>
+                                    <option value="popular">인기순</option>
+                                    <option value="price-low">가격 낮은순</option>
+                                    <option value="price-high">가격 높은순</option>
                                 </select>
-                                <span id="totalClassCount" class="total-count">珥?0媛?/span>
+                                <span id="totalClassCount" class="total-count">총 0개</span>
                             </div>
                         </div>
+                        <div id="classListNotice" class="class-list-notice" aria-live="polite"></div>
                         <div class="card-grid" id="allClassGrid">
-                            <!-- JS?먯꽌 ?숈쟻 ?뚮뜑留?-->
+                            <!-- JS에서 동적 렌더링 -->
                             <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 4rem; color:#888;">
-                                ?곗씠?곕? 遺덈윭?ㅻ뒗 以묒엯?덈떎...</div>
+                                데이터를 불러오는 중입니다...</div>
                         </div>
                     </section>
                 </div>
@@ -75,9 +77,9 @@
     </main>
 
     <!-- Scripts -->
-    <script src="class_list.js?v=20260324_02"></script>
-    <script src="../header.js?v=20260324_03"></script>
-    <script src="../dev_mode.js?v=20260324_02"></script>
+    <script src="class_list.js?v=20260327_01" defer></script>
+    <script src="../header.js?v=20260327_01" defer></script>
+    <script src="../dev_mode.js?v=20260327_01" defer></script>
 </body>
 
 </html>

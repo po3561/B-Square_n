@@ -1,6 +1,5 @@
 import { requireSession } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
-import { ensureDmMessagesSchema, ensureUserChatsSchema } from '../_lib/schema.js';
 
 function getPathParts(params) {
   if (Array.isArray(params.path)) return params.path;
@@ -8,18 +7,25 @@ function getPathParts(params) {
   return [];
 }
 
-function normalizeMessage(row) {
-  let reactions = {};
+function parseReactions(value) {
+  if (!value) return {};
+  if (typeof value === 'object') return value;
   try {
-    reactions = row.reactions ? JSON.parse(row.reactions) : {};
-  } catch {}
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
 
+function normalizeMessage(row) {
   return {
     ...row,
     content: row.content || row.message || '',
     message: row.content || row.message || '',
     text: row.content || row.message || '',
-    reactions,
+    file_data: row.file_data || row.image_url || null,
+    reactions: parseReactions(row.reactions),
   };
 }
 
@@ -35,7 +41,7 @@ function buildSinceClause(since) {
 
   if (numeric > 9999999999) {
     return {
-      sql: " AND (strftime('%s', created_at) * 1000) > ?",
+      sql: " AND (strftime('%s', COALESCE(updated_at, created_at)) * 1000) > ?",
       bind: numeric,
     };
   }
@@ -45,6 +51,37 @@ function buildSinceClause(since) {
     bind: numeric,
   };
 }
+
+const DM_MESSAGE_COLUMNS = `
+  id,
+  room_id,
+  room_type,
+  class_id,
+  sender_id,
+  user_name,
+  user_avatar,
+  content,
+  message,
+  type,
+  reply_to,
+  reply_text,
+  reply_user,
+  image_url,
+  file_name,
+  file_size,
+  gather_title,
+  gather_time,
+  gather_place,
+  min_capacity,
+  max_capacity,
+  current_count,
+  status,
+  is_edited,
+  is_pinned,
+  reactions,
+  created_at,
+  updated_at
+`;
 
 async function streamMessages(context, roomId, roomType, initialSince) {
   const { env } = context;
@@ -58,7 +95,7 @@ async function streamMessages(context, roomId, roomType, initialSince) {
       while (true) {
         const sinceClause = buildSinceClause(since);
         let query = `
-          SELECT *
+          SELECT ${DM_MESSAGE_COLUMNS}
           FROM dm_messages
           WHERE room_id = ?
             AND room_type = ?
@@ -70,12 +107,12 @@ async function streamMessages(context, roomId, roomType, initialSince) {
           binds.push(sinceClause.bind);
         }
 
-        query += ' ORDER BY id ASC LIMIT 100';
+        query += ' ORDER BY COALESCE(updated_at, created_at) ASC, id ASC LIMIT 100';
 
         try {
           const { results } = await env.DB.prepare(query).bind(...binds).all();
           for (const row of results || []) {
-            since = String((new Date(row.created_at).getTime()) || row.id);
+            since = String((new Date(row.updated_at || row.created_at).getTime()) || row.id);
             controller.enqueue(encoder.encode(`event: message\ndata: ${JSON.stringify(normalizeMessage(row))}\n\n`));
           }
           controller.enqueue(encoder.encode(`event: ping\ndata: {"ts":${Date.now()}}\n\n`));
@@ -114,7 +151,7 @@ export async function onRequest(context) {
   const extra = pathParts[3];
 
   if (!roomId || resource !== 'messages') {
-    return json(request, env, { success: false, error: '유효하지 않은 DM 경로입니다.' }, { status: 400 });
+    return json(request, env, { success: false, error: 'Invalid DM route' }, { status: 400 });
   }
 
   const url = new URL(request.url);
@@ -122,9 +159,6 @@ export async function onRequest(context) {
   const pinnedOnly = ['1', 'true', 'yes'].includes((url.searchParams.get('pinned_only') || '').toLowerCase());
 
   try {
-    await ensureDmMessagesSchema(env.DB);
-    await ensureUserChatsSchema(env.DB);
-
     if (request.method === 'GET' && subResource === 'stream') {
       const since = url.searchParams.get('since') || '0';
       return streamMessages(context, roomId, roomType, since);
@@ -132,10 +166,10 @@ export async function onRequest(context) {
 
     if (request.method === 'GET') {
       const since = url.searchParams.get('since') || '';
-      const limit = Math.min(parseInt(url.searchParams.get('limit')) || 100, 200);
+      const limit = Math.min(parseInt(url.searchParams.get('limit'), 10) || 100, 200);
       const sinceClause = buildSinceClause(since);
       let query = `
-        SELECT *
+        SELECT ${DM_MESSAGE_COLUMNS}
         FROM dm_messages
         WHERE room_id = ?
           AND room_type = ?
@@ -151,7 +185,7 @@ export async function onRequest(context) {
         query += ' AND is_pinned = 1';
       }
 
-      query += ' ORDER BY id ASC LIMIT ?';
+        query += ' ORDER BY COALESCE(updated_at, created_at) ASC, id ASC LIMIT ?';
       binds.push(limit);
 
       const { results } = await env.DB.prepare(query).bind(...binds).all();
@@ -161,21 +195,25 @@ export async function onRequest(context) {
     if (request.method === 'POST' && subResource && extra === 'reaction') {
       const messageId = subResource;
       const body = await request.json();
-      const emoji = body.emoji;
+      const emoji = String(body.emoji || '').trim();
 
       if (!emoji) {
-        return json(request, env, { success: false, error: 'emoji가 필요합니다.' }, { status: 400 });
+        return json(request, env, { success: false, error: 'emoji is required' }, { status: 400 });
       }
 
-      const message = await env.DB.prepare('SELECT reactions FROM dm_messages WHERE id = ? AND room_id = ?').bind(messageId, roomId).first();
+      const message = await env.DB.prepare('SELECT reactions FROM dm_messages WHERE id = ? AND room_id = ?')
+        .bind(messageId, roomId)
+        .first();
       if (!message) {
-        return json(request, env, { success: false, error: '메시지를 찾을 수 없습니다.' }, { status: 404 });
+        return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
       }
 
       let reactions = {};
       try {
         reactions = message.reactions ? JSON.parse(message.reactions) : {};
-      } catch {}
+      } catch {
+        reactions = {};
+      }
 
       reactions[emoji] = reactions[emoji] || [];
       if (reactions[emoji].includes(auth.user.id)) {
@@ -191,7 +229,11 @@ export async function onRequest(context) {
         WHERE id = ? AND room_id = ?
       `).bind(JSON.stringify(reactions), messageId, roomId).run();
 
-      return json(request, env, { success: true, data: { id: messageId, reactions } });
+      const updated = await env.DB.prepare(`SELECT ${DM_MESSAGE_COLUMNS} FROM dm_messages WHERE id = ? AND room_id = ?`)
+        .bind(messageId, roomId)
+        .first();
+
+      return json(request, env, { success: true, data: { ...normalizeMessage(updated), reactions } });
     }
 
     if (request.method === 'POST') {
@@ -199,25 +241,26 @@ export async function onRequest(context) {
       const content = body.content || body.message || body.text || '';
       const resolvedRoomType = body.room_type || roomType;
       const resolvedClassId = resolvedRoomType === 'class' ? roomId : (body.class_id || null);
+      const attachmentUrl = body.image_url || body.file_data || null;
 
-      if (!content && !body.file_data && !body.image_url && body.type !== 'gathering_card') {
-        return json(request, env, { success: false, error: 'message가 필요합니다.' }, { status: 400 });
+      if (!content && !attachmentUrl && body.type !== 'gathering_card') {
+        return json(request, env, { success: false, error: 'message or attachment is required' }, { status: 400 });
       }
 
       await env.DB.prepare(`
         INSERT INTO dm_messages (
           room_id, room_type, class_id, sender_id, user_name, user_avatar,
           content, message, type, reply_to, reply_text, reply_user,
-          image_url, file_name, file_size, file_data,
+          image_url, file_name, file_size,
           gather_title, gather_time, gather_place, min_capacity, max_capacity, current_count, status,
           is_pinned, reactions, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       `).bind(
         roomId,
         resolvedRoomType,
         resolvedClassId,
         auth.user.id,
-        body.user_name || auth.user.name || auth.user.username || '사용자',
+        body.user_name || auth.user.name || auth.user.username || 'User',
         body.user_avatar || auth.user.profile_image_url || '',
         content,
         content,
@@ -225,10 +268,9 @@ export async function onRequest(context) {
         body.reply_to || null,
         body.reply_text || null,
         body.reply_user || null,
-        body.image_url || null,
+        attachmentUrl,
         body.file_name || null,
         body.file_size || null,
-        body.file_data || null,
         body.gather_title || null,
         body.gather_time || null,
         body.gather_place || null,
@@ -237,11 +279,11 @@ export async function onRequest(context) {
         body.current_count || 0,
         body.status || null,
         body.is_pinned ? 1 : 0,
-        JSON.stringify(body.reactions || {})
+        JSON.stringify(body.reactions || {}),
       ).run();
 
       const inserted = await env.DB.prepare(`
-        SELECT *
+        SELECT ${DM_MESSAGE_COLUMNS}
         FROM dm_messages
         WHERE room_id = ?
           AND sender_id = ?
@@ -253,9 +295,12 @@ export async function onRequest(context) {
         UPDATE user_chats
         SET last_message = ?, last_message_at = datetime('now')
         WHERE room_id = ?
-      `).bind((content || body.file_name || '첨부파일').substring(0, 100), roomId).run().catch(() => null);
+      `).bind((content || body.file_name || 'attachment').substring(0, 100), roomId).run().catch(() => null);
 
-      return json(request, env, { success: true, data: normalizeMessage(inserted) }, { status: 201 });
+      const responseData = normalizeMessage(inserted);
+      if (body.client_id) responseData.client_id = String(body.client_id);
+
+      return json(request, env, { success: true, data: responseData }, { status: 201 });
     }
 
     if (request.method === 'PATCH' && subResource) {
@@ -265,7 +310,7 @@ export async function onRequest(context) {
       const hasPinState = body.is_pinned !== undefined;
 
       if (!hasContent && !hasPinState) {
-        return json(request, env, { success: false, error: 'content 또는 is_pinned 값이 필요합니다.' }, { status: 400 });
+        return json(request, env, { success: false, error: 'content or is_pinned is required' }, { status: 400 });
       }
 
       if (hasContent) {
@@ -284,7 +329,13 @@ export async function onRequest(context) {
         `).bind(body.is_pinned ? 1 : 0, subResource, roomId).run();
       }
 
-      return json(request, env, { success: true });
+      const updated = await env.DB.prepare(`
+        SELECT ${DM_MESSAGE_COLUMNS}
+        FROM dm_messages
+        WHERE id = ? AND room_id = ?
+      `).bind(subResource, roomId).first();
+
+      return json(request, env, { success: true, data: normalizeMessage(updated) });
     }
 
     if (request.method === 'DELETE' && subResource) {
@@ -296,11 +347,11 @@ export async function onRequest(context) {
       return json(request, env, { success: true });
     }
 
-    return json(request, env, { success: false, error: '지원하지 않는 메서드입니다.' }, { status: 405 });
+    return json(request, env, { success: false, error: 'Method not allowed' }, { status: 405 });
   } catch (error) {
     return json(request, env, {
       success: false,
-      error: 'DM 처리 중 오류가 발생했습니다.',
+      error: 'Failed to process DM request',
       detail: error.message,
     }, { status: 500 });
   }

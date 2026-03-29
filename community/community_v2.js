@@ -1,8 +1,6 @@
 window.CommunityModules = window.CommunityModules || {};
 
 document.addEventListener('DOMContentLoaded', async () => {
-    if (window.BSQ?.ready) await window.BSQ.ready;
-
     const session = window.BSQ?.session;
     const isOperator = window.__BSQ_DEV_MODE__ === true;
     if ((!session || !session.user) && !isOperator) {
@@ -31,11 +29,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     wireShellActions(userId, { shared, SyncBridge, ChatList, ChatUI, DM });
-    await registerClassChats(userId);
-    const rooms = await ChatList.loadChatRooms();
+    const roomsPromise = ChatList.loadChatRooms();
+    const registrationPromise = registerClassChatsOptimized(userId);
+    const rooms = await roomsPromise;
     const routeParams = new URLSearchParams(location.search);
     const hasExplicitRoute = routeParams.has('dm') || routeParams.has('room') || routeParams.has('type') || routeParams.has('class') || routeParams.has('group');
     await openInitialRoute(userId, { shared, ChatList, ChatUI, DM });
+
+    registrationPromise
+        .then(() => ChatList.loadChatRooms())
+        .catch(() => {});
 
     if (!hasExplicitRoute) {
         const lastRoomId = localStorage.getItem('bsq_comm_last_room');
@@ -54,42 +57,55 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('Community shell ready:', userId);
 });
 
+async function registerClassChatsOptimized(userId) {
+    try {
+        if (!userId || userId === 'OPERATOR_GHOST') return;
+
+        const cacheKey = `bsq_comm_class_chat_sync:${userId}`;
+        const res = await window.BSQ.api(`/api/enrollments?user_id=${encodeURIComponent(userId)}`);
+        const enrollments = res?.success ? (res.data?.enrollments || res.data || []) : [];
+        const signature = enrollments
+            .map((enroll) => `${String(enroll.class_id || '')}:${String(enroll.title || '').trim()}`)
+            .filter(Boolean)
+            .sort()
+            .join('|');
+
+        if (signature && localStorage.getItem(cacheKey) === signature) {
+            return;
+        }
+
+        await Promise.all(enrollments.map((enroll) => window.BSQ.api('/api/user-chats', {
+            method: 'POST',
+            body: JSON.stringify({
+                type: 'class',
+                room_id: enroll.class_id,
+                class_name: enroll.title || '클래스',
+                class_image: enroll.image_url || '',
+                class_category: enroll.category || '',
+                is_instructor: String(enroll.instructor_id || '') === String(userId),
+            })
+        }).catch(() => {})));
+
+        if (signature) {
+            localStorage.setItem(cacheKey, signature);
+        }
+    } catch (error) {
+        console.warn('registerClassChatsOptimized failed:', error);
+    }
+}
+
 function renderLoginPrompt() {
     const main = document.querySelector('.community-shell, .comm-container, body');
     if (main) {
         main.innerHTML = `
             <div class="login-gate">
                 <div class="login-gate-card">
-                    <h2>로그인이 필요합니다</h2>
-                    <p>커뮤니티 기능은 로그인 후 사용할 수 있습니다.</p>
-                    <button class="btn-primary" onclick="location.href='../login/login.html'">로그인하기</button>
+                    <h2>濡쒓렇?몄씠 ?꾩슂?⑸땲??/h2>
+                    <p>而ㅻ??덊떚 湲곕뒫? 濡쒓렇?????ъ슜?????덉뒿?덈떎.</p>
+                    <button class="btn-primary" onclick="location.href='../login/login.html'">濡쒓렇?명븯湲?/button>
                 </div>
             </div>
         `;
-    }
-}
-
-async function registerClassChats(userId) {
-    try {
-        if (!userId || userId === 'OPERATOR_GHOST') return;
-
-        const res = await window.BSQ.api(`/api/enrollments?user_id=${encodeURIComponent(userId)}`);
-        const enrollments = res?.success ? (res.data?.enrollments || res.data || []) : [];
-        for (const enroll of enrollments) {
-            await window.BSQ.api('/api/user-chats', {
-                method: 'POST',
-                body: JSON.stringify({
-                    type: 'class',
-                    room_id: enroll.class_id,
-                    class_name: enroll.title || '클래스',
-                    class_image: enroll.image_url || '',
-                    class_category: enroll.category || '',
-                    is_instructor: String(enroll.instructor_id || '') === String(userId),
-                })
-            }).catch(() => {});
-        }
-    } catch (error) {
-        console.warn('registerClassChats failed:', error);
     }
 }
 
@@ -189,14 +205,14 @@ function setupNewChatModal({ userId, shared, SyncBridge, ChatList, ChatUI, DM, c
             const users = await SyncBridge.searchUsers(query);
             results.innerHTML = users.map(user => `
                 <div class="user-search-item" data-uid="${shared.escapeAttr(user.id)}" data-name="${shared.escapeAttr(user.name || user.nickname || '사용자')}" data-avatar="${shared.escapeAttr(user.profile_image_url || '')}">
-                    <div class="user-avatar-mini" style="${user.profile_image_url ? `background-image:url(${shared.escapeAttr(user.profile_image_url)})` : ''}">${user.profile_image_url ? '' : '👤'}</div>
+                    <div class="user-avatar-mini" style="${user.profile_image_url ? `background-image:url(${shared.escapeAttr(user.profile_image_url)})` : ''}">${user.profile_image_url ? '' : '?뫀'}</div>
                     <div class="user-search-meta">
                         <strong>${shared.escapeHtml(user.name || user.nickname || '사용자')}</strong>
                         <span>${shared.escapeHtml(user.email || '')}</span>
                     </div>
-                    <button class="btn-add-contact" data-uid="${shared.escapeAttr(user.id)}">채팅</button>
+                    <button class="btn-add-contact" data-uid="${shared.escapeAttr(user.id)}">梨꾪똿</button>
                 </div>
-            `).join('') || '<p class="empty-inline">검색 결과가 없습니다.</p>';
+            `).join('') || '<p class="empty-inline">寃??寃곌낵媛 ?놁뒿?덈떎.</p>';
 
             results.querySelectorAll('.btn-add-contact').forEach(btn => {
                 btn.addEventListener('click', async (event) => {
@@ -231,7 +247,7 @@ function setupGroupChatModal({ userId, shared, SyncBridge, ChatList, closeMenu }
         selectedMembers.innerHTML = memberIds.map(id => `
             <span class="member-chip">
                 ${shared.escapeHtml(id.slice(0, 8))}...
-                <button type="button" data-remove="${shared.escapeAttr(id)}">✕</button>
+                <button type="button" data-remove="${shared.escapeAttr(id)}">??/button>
             </span>
         `).join('');
         selectedMembers.querySelectorAll('button[data-remove]').forEach(btn => {
@@ -265,14 +281,14 @@ function setupGroupChatModal({ userId, shared, SyncBridge, ChatList, closeMenu }
             const filtered = users.filter(user => user.id !== userId && !memberIds.includes(user.id));
             results.innerHTML = filtered.map(user => `
                 <div class="user-search-item" data-uid="${shared.escapeAttr(user.id)}" data-name="${shared.escapeAttr(user.name || user.nickname || '사용자')}">
-                    <div class="user-avatar-mini" style="${user.profile_image_url ? `background-image:url(${shared.escapeAttr(user.profile_image_url)})` : ''}">${user.profile_image_url ? '' : '👤'}</div>
+                    <div class="user-avatar-mini" style="${user.profile_image_url ? `background-image:url(${shared.escapeAttr(user.profile_image_url)})` : ''}">${user.profile_image_url ? '' : '?뫀'}</div>
                     <div class="user-search-meta">
                         <strong>${shared.escapeHtml(user.name || user.nickname || '사용자')}</strong>
                         <span>${shared.escapeHtml(user.email || '')}</span>
                     </div>
-                    <button class="btn-add-contact">추가</button>
+                    <button class="btn-add-contact">異붽?</button>
                 </div>
-            `).join('') || '<p class="empty-inline">검색 결과가 없습니다.</p>';
+            `).join('') || '<p class="empty-inline">寃??寃곌낵媛 ?놁뒿?덈떎.</p>';
 
             results.querySelectorAll('.user-search-item').forEach(item => {
                 item.addEventListener('click', () => {
@@ -289,7 +305,7 @@ function setupGroupChatModal({ userId, shared, SyncBridge, ChatList, closeMenu }
     createBtn.addEventListener('click', async () => {
         const name = groupNameInput.value.trim();
         if (!name) {
-            alert('그룹 이름을 입력하세요.');
+            alert('洹몃９ ?대쫫???낅젰?섏꽭??');
             return;
         }
 
@@ -308,7 +324,7 @@ function setupGroupChatModal({ userId, shared, SyncBridge, ChatList, closeMenu }
             groupNameInput.value = '';
             await ChatList.loadChatRooms();
         } else {
-            alert(res?.error || '그룹 생성 실패');
+            alert(res?.error || '洹몃９ ?앹꽦 ?ㅽ뙣');
         }
     });
 
@@ -342,14 +358,14 @@ function setupFriendsModal({ userId, shared, SyncBridge, ChatUI, ChatList, DM })
             const users = await SyncBridge.searchUsers(query);
             searchResults.innerHTML = users.map(user => `
                 <div class="user-search-item" data-uid="${shared.escapeAttr(user.id)}">
-                    <div class="user-avatar-mini" style="${user.profile_image_url ? `background-image:url(${shared.escapeAttr(user.profile_image_url)})` : ''}">${user.profile_image_url ? '' : '👤'}</div>
+                    <div class="user-avatar-mini" style="${user.profile_image_url ? `background-image:url(${shared.escapeAttr(user.profile_image_url)})` : ''}">${user.profile_image_url ? '' : '?뫀'}</div>
                     <div class="user-search-meta">
                         <strong>${shared.escapeHtml(user.name || user.nickname || '사용자')}</strong>
                         <span>${shared.escapeHtml(user.email || '')}</span>
                     </div>
-                    <button class="btn-add-contact">친구 추가</button>
+                    <button class="btn-add-contact">移쒓뎄 異붽?</button>
                 </div>
-            `).join('') || '<p class="empty-inline">검색 결과가 없습니다.</p>';
+            `).join('') || '<p class="empty-inline">寃??寃곌낵媛 ?놁뒿?덈떎.</p>';
 
             searchResults.querySelectorAll('.user-search-item').forEach(item => {
                 item.addEventListener('click', async () => {
@@ -393,36 +409,36 @@ async function loadFriendsPanel(userId, SyncBridge) {
         const avatar = item.profile_image_url || '';
         return `
             <div class="friend-card">
-                <div class="friend-avatar" style="${avatar ? `background-image:url(${shared.escapeAttr(avatar)})` : ''}">${avatar ? '' : '👤'}</div>
+                <div class="friend-avatar" style="${avatar ? `background-image:url(${shared.escapeAttr(avatar)})` : ''}">${avatar ? '' : '?뫀'}</div>
                 <div class="friend-info">
                     <strong>${shared.escapeHtml(name)}</strong>
                     <span>${shared.escapeHtml(item.email || item.username || '')}</span>
                 </div>
                 <div class="friend-actions">
-                    <button class="btn-mini" data-accept="${shared.escapeAttr(item.requester_id)}">수락</button>
-                    <button class="btn-mini" data-reject="${shared.escapeAttr(item.requester_id)}">거절</button>
+                    <button class="btn-mini" data-accept="${shared.escapeAttr(item.requester_id)}">?섎씫</button>
+                    <button class="btn-mini" data-reject="${shared.escapeAttr(item.requester_id)}">嫄곗젅</button>
                 </div>
             </div>
         `;
-    }).join('') : '<p class="empty-inline">받은 요청이 없습니다.</p>';
+    }).join('') : '<p class="empty-inline">諛쏆? ?붿껌???놁뒿?덈떎.</p>';
 
     friendArea.innerHTML = friends.length ? friends.map(item => {
         const name = item.nickname || item.name || item.username || '사용자';
         const avatar = item.profile_image_url || '';
         return `
             <div class="friend-card">
-                <div class="friend-avatar" style="${avatar ? `background-image:url(${shared.escapeAttr(avatar)})` : ''}">${avatar ? '' : '👤'}</div>
+                <div class="friend-avatar" style="${avatar ? `background-image:url(${shared.escapeAttr(avatar)})` : ''}">${avatar ? '' : '?뫀'}</div>
                 <div class="friend-info">
                     <strong>${shared.escapeHtml(name)}</strong>
                     <span>${shared.escapeHtml(item.email || item.username || '')}</span>
                 </div>
                 <div class="friend-actions">
-                    <button class="btn-mini" data-open-dm="${shared.escapeAttr(item.friend_id)}">연락하기</button>
-                    <button class="btn-mini danger" data-remove="${shared.escapeAttr(item.friend_id)}">삭제</button>
+                    <button class="btn-mini" data-open-dm="${shared.escapeAttr(item.friend_id)}">?곕씫?섍린</button>
+                    <button class="btn-mini danger" data-remove="${shared.escapeAttr(item.friend_id)}">??젣</button>
                 </div>
             </div>
         `;
-    }).join('') : '<p class="empty-inline">친구가 없습니다.</p>';
+    }).join('') : '<p class="empty-inline">移쒓뎄媛 ?놁뒿?덈떎.</p>';
 
     pendingArea.querySelectorAll('button[data-accept]').forEach(btn => {
         btn.addEventListener('click', async () => {
@@ -449,7 +465,7 @@ async function loadFriendsPanel(userId, SyncBridge) {
     });
     friendArea.querySelectorAll('button[data-remove]').forEach(btn => {
         btn.addEventListener('click', async () => {
-            if (!confirm('친구를 삭제하시겠습니까?')) return;
+            if (!confirm('移쒓뎄瑜???젣?섏떆寃좎뒿?덇퉴?')) return;
             await window.BSQ.api('/api/friends', {
                 method: 'POST',
                 body: JSON.stringify({ action: 'remove', user_id: userId, friend_id: btn.dataset.remove })
@@ -499,7 +515,7 @@ async function openDirectChat(targetUserId, { userId, shared, SyncBridge, ChatLi
     const profile = await SyncBridge.getUserProfile(targetUserId);
     const roomId = await DM.openOrCreateRoom(targetUserId);
     if (!roomId) {
-        shared.toast?.('대화방을 열 수 없습니다. 상대 계정을 확인해 주세요.');
+        shared.toast?.('??붾갑???????놁뒿?덈떎. ?곷? 怨꾩젙???뺤씤??二쇱꽭??');
         return;
     }
 
@@ -520,7 +536,7 @@ async function openDirectChat(targetUserId, { userId, shared, SyncBridge, ChatLi
 function openCurrentRoomPopup(ChatUI, shared) {
     const roomId = ChatUI.getCurrentRoomId?.();
     if (!roomId) {
-        shared.toast?.('먼저 채팅방을 선택하세요.');
+        shared.toast?.('癒쇱? 梨꾪똿諛⑹쓣 ?좏깮?섏꽭??');
         return;
     }
     shared.openPopupRoom?.({
@@ -586,7 +602,7 @@ async function openInitialRoute(userId, { shared, ChatList, ChatUI, DM }) {
     }
 
     if (groupId) {
-        const roomInfo = ChatList.getRoom(groupId) || { roomId: groupId, type: 'group', group_name: params.get('name') || '그룹' };
+        const roomInfo = ChatList.getRoom(groupId) || { roomId: groupId, type: 'group', group_name: params.get('name') || '洹몃９' };
         ChatUI.openRoom(groupId, 'group', roomInfo);
         ChatList.setActiveRoom(groupId);
         if (params.get('panel') === 'info') {
@@ -660,10 +676,10 @@ window.addFriend = async function (targetUserId) {
     const shared = window.BSQCommunityShared || {};
     const res = await shared.requestFriend?.(targetUserId);
     if (res?.success) {
-        shared.toast?.(res.message || '친구 요청을 보냈습니다.');
+        shared.toast?.(res.message || '移쒓뎄 ?붿껌??蹂대깉?듬땲??');
         await window.__BSQ_FRIENDS_REFRESH__?.();
     } else {
-        shared.toast?.(res?.error || '친구 요청에 실패했습니다.');
+        shared.toast?.(res?.error || '移쒓뎄 ?붿껌???ㅽ뙣?덉뒿?덈떎.');
     }
     return res;
 };

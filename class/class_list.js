@@ -17,8 +17,6 @@ const FALLBACK_CLASS_CATEGORIES = [
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
-  if (window.BSQ?.ready) await window.BSQ.ready;
-
   const urlParams = new URLSearchParams(window.location.search);
   const state = {
     allClasses: [],
@@ -27,6 +25,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentSort: 'newest',
     searchQuery: '',
   };
+
+  function showNotice(type, message, duration = 2800) {
+    const host = document.getElementById('classListNotice');
+    if (!host) return;
+    host.innerHTML = '';
+
+    const chip = document.createElement('div');
+    chip.className = `notice-chip ${type || 'info'}`;
+    chip.textContent = message;
+    host.appendChild(chip);
+
+    if (duration > 0) {
+      window.setTimeout(() => {
+        if (chip.isConnected) chip.remove();
+      }, duration);
+    }
+  }
 
   function escapeHtml(value = '') {
     return String(value)
@@ -205,14 +220,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       `;
     }).join('');
 
+    grid.querySelectorAll('.class-card[role="button"]').forEach((card) => {
+      card.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          card.click();
+        }
+      });
+    });
+
     grid.querySelectorAll('[data-action="bookmark-class"]').forEach((button) => {
       button.addEventListener('click', async (event) => {
         event.stopPropagation();
         const classId = button.dataset.classId;
         if (!window.BSQ?.isLoggedIn) {
-          if (confirm('찜하기를 사용하려면 로그인이 필요합니다. 로그인 화면으로 이동할까요?')) {
+          showNotice('info', '찜하기는 로그인 후 사용할 수 있습니다. 로그인 화면으로 이동합니다.');
+          window.setTimeout(() => {
             window.location.href = `../login/login.html?redirect=${encodeURIComponent(window.location.href)}`;
-          }
+          }, 650);
           return;
         }
 
@@ -225,7 +250,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           button.textContent = bookmarked ? '♥' : '♡';
           button.dataset.bookmarked = bookmarked ? '1' : '0';
         } catch (error) {
-          alert(`찜하기 처리에 실패했습니다: ${error.message}`);
+          showNotice('error', `찜하기 처리에 실패했습니다. ${error.message}`);
           button.textContent = original;
         } finally {
           button.disabled = false;

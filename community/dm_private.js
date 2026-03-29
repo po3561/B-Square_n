@@ -40,10 +40,12 @@ window.CommunityModules.DM = (function () {
         const userId = bridge().getUserId();
 
         try {
+            const clientId = `dm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
             const msgPayload = {
                 content,
                 room_type: 'dm',
                 image_url: null,
+                client_id: clientId,
             };
 
             if (fileData && fileData.data) {
@@ -81,11 +83,11 @@ window.CommunityModules.DM = (function () {
     }
 
     function startListening(roomId, onAdd) {
-        bridge().listenMessages(roomId, 'dm', onAdd);
+        return bridge().listenMessages(roomId, 'dm', onAdd);
     }
 
     function stopListening(roomId) {
-        bridge().stopListeningMessages(roomId);
+        bridge().stopListeningMessages(roomId, 'dm');
     }
 
     return {

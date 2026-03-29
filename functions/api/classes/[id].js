@@ -1,6 +1,3 @@
-import { ensureClassBookmarksSchema } from '../_lib/class_support.js';
-import { ensureClassesSchema, ensureReviewsSchema, ensureClassStatsSchema } from '../_lib/schema.js';
-
 async function bumpClassVisit(db, classId) {
   await db.prepare(`
     INSERT INTO class_stats (class_id, total_visits, updated_at)
@@ -47,12 +44,7 @@ export async function onRequest(context) {
     return Response.json({ success: false, error: 'class_id is required' }, { status: 400 });
   }
 
-  try {
-    await ensureClassesSchema(db);
-    await ensureReviewsSchema(db);
-    await ensureClassStatsSchema(db);
-    await ensureClassBookmarksSchema(db);
-
+    try {
     const classData = await db
       .prepare(`
         SELECT
@@ -82,7 +74,7 @@ export async function onRequest(context) {
       return Response.json({ success: false, error: 'Class not found' }, { status: 404 });
     }
 
-    await bumpClassVisit(db, classId);
+    await bumpClassVisit(db, classId).catch(() => null);
 
     const chatCountResult = await db
       .prepare('SELECT COUNT(*) AS count FROM chat_messages WHERE class_id = ?')

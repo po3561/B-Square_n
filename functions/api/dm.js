@@ -1,29 +1,74 @@
 import { requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
-import { ensureDmMessagesSchema, ensureUserChatsSchema } from './_lib/schema.js';
+
+function parseReactions(value) {
+  if (!value) return {};
+  if (typeof value === 'object') return value;
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function normalizeDmMessage(row) {
+  if (!row) return row;
+  return {
+    ...row,
+    content: row.content || row.message || '',
+    message: row.content || row.message || '',
+    text: row.content || row.message || '',
+    file_data: row.file_data || row.image_url || null,
+    reactions: parseReactions(row.reactions),
+  };
+}
+
+const DM_MESSAGE_COLUMNS = `
+  id,
+  room_id,
+  room_type,
+  sender_id,
+  user_name,
+  user_avatar,
+  content,
+  message,
+  type,
+  image_url,
+  file_name,
+  file_size,
+  is_pinned,
+  is_edited,
+  reactions,
+  created_at,
+  updated_at
+`;
 
 export async function onRequestGet(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
-  const url = new URL(request.url);
-  const room_id = url.searchParams.get('room_id');
-  const limit = parseInt(url.searchParams.get('limit')) || 100;
 
-  if (!room_id) {
-    return json(request, env, { success: false, error: 'room_id 필요' }, { status: 400 });
+  const url = new URL(request.url);
+  const roomId = url.searchParams.get('room_id');
+  const limit = Math.min(Number.parseInt(url.searchParams.get('limit') || '100', 10) || 100, 200);
+
+  if (!roomId) {
+    return json(request, env, { success: false, error: 'room_id is required' }, { status: 400 });
   }
 
   try {
-    await ensureDmMessagesSchema(env.DB);
+    const { results } = await env.DB.prepare(`
+      SELECT ${DM_MESSAGE_COLUMNS}
+      FROM dm_messages
+      WHERE room_id = ? AND room_type = 'dm'
+      ORDER BY id ASC
+      LIMIT ?
+    `).bind(roomId, limit).all();
 
-    const { results } = await env.DB.prepare(
-      "SELECT * FROM dm_messages WHERE room_id = ? AND room_type = 'dm' ORDER BY id ASC LIMIT ?"
-    ).bind(room_id, limit).all();
-
-    return json(request, env, { success: true, data: results });
-  } catch (err) {
-    return json(request, env, { success: false, error: 'DM 조회 오류', detail: err.message }, { status: 500 });
+    return json(request, env, { success: true, data: (results || []).map(normalizeDmMessage) });
+  } catch (error) {
+    return json(request, env, { success: false, error: 'Failed to load DM messages', detail: error.message }, { status: 500 });
   }
 }
 
@@ -31,33 +76,50 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
+
   try {
-    await ensureDmMessagesSchema(env.DB);
-    await ensureUserChatsSchema(env.DB);
-
     const body = await request.json();
-    const { room_id, text, image_url } = body;
-    const content = body.content || body.message || text || '';
+    const roomId = String(body.room_id || '').trim();
+    const content = String(body.content || body.message || body.text || '').trim();
+    const attachmentUrl = body.image_url || body.file_data || null;
 
-    if (!room_id || !content) {
-      return json(request, env, { success: false, error: '필수 항목 누락 (room_id, content)' }, { status: 400 });
+    if (!roomId || (!content && !attachmentUrl)) {
+      return json(request, env, { success: false, error: 'room_id and content are required' }, { status: 400 });
     }
 
-    await env.DB.prepare(
-      "INSERT INTO dm_messages (room_id, room_type, sender_id, user_name, user_avatar, content, message, type, image_url, created_at, updated_at) VALUES (?, 'dm', ?, ?, ?, ?, ?, 'text', ?, datetime('now'), datetime('now'))"
-    ).bind(room_id, auth.user.id, auth.user.name || auth.user.username || '사용자', auth.user.profile_image_url || '', content, content, image_url || null).run();
+    await env.DB.prepare(`
+      INSERT INTO dm_messages (
+        room_id, room_type, sender_id, user_name, user_avatar,
+        content, message, type, image_url, created_at, updated_at
+      ) VALUES (?, 'dm', ?, ?, ?, ?, ?, 'text', ?, datetime('now'), datetime('now'))
+    `).bind(
+      roomId,
+      auth.user.id,
+      auth.user.name || auth.user.username || 'User',
+      auth.user.profile_image_url || '',
+      content,
+      content,
+      attachmentUrl,
+    ).run();
 
     await env.DB.prepare(
       'UPDATE user_chats SET last_message = ?, last_message_at = CURRENT_TIMESTAMP WHERE room_id = ?'
-    ).bind(content.substring(0, 100), room_id).run();
+    ).bind(content.substring(0, 100) || 'attachment', roomId).run();
 
-    const message = await env.DB.prepare("SELECT * FROM dm_messages WHERE room_id = ? AND room_type = 'dm' ORDER BY id DESC LIMIT 1").bind(room_id).first();
-    return json(request, env, { success: true, data: message }, { status: 201 });
-  } catch (err) {
-    return json(request, env, { success: false, error: 'DM 전송 오류', detail: err.message }, { status: 500 });
+    const message = await env.DB.prepare(`
+      SELECT ${DM_MESSAGE_COLUMNS}
+      FROM dm_messages
+      WHERE room_id = ? AND room_type = 'dm'
+      ORDER BY id DESC
+      LIMIT 1
+    `).bind(roomId).first();
+
+    return json(request, env, { success: true, data: normalizeDmMessage(message) }, { status: 201 });
+  } catch (error) {
+    return json(request, env, { success: false, error: 'Failed to send DM message', detail: error.message }, { status: 500 });
   }
 }
 
 export async function onRequestOptions(context) {
-    return options(context.request, context.env);
+  return options(context.request, context.env);
 }

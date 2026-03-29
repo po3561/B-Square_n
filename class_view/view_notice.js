@@ -1,4 +1,3 @@
-// class notice module
 window.BSquareModules = window.BSquareModules || {};
 
 window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, isInstructor, authorContext = {}) {
@@ -42,7 +41,7 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
+            .replace(/\"/g, '&quot;')
             .replace(/'/g, '&#39;');
     }
 
@@ -65,7 +64,7 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
         const role = String(item?.author_role || authorContext?.role || '').trim().toLowerCase();
         if (item?.author_role_label) return item.author_role_label;
         if (role === 'main_instructor') return '메인 강사';
-        if (role === 'sub_instructor') return '서브 강사';
+        if (role === 'sub_instructor') return '보조 강사';
         if (role === 'operator') return '운영자';
         if (role === 'admin' || role === 'super_admin') return '관리자';
         return '강사';
@@ -83,7 +82,7 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
         if (!quill) {
             quill = new Quill('#ceEditorContainer', {
                 theme: 'snow',
-                placeholder: '내용을 입력하세요...',
+                placeholder: '내용을 입력하세요.',
                 modules: {
                     toolbar: [
                         [{ header: [1, 2, 3, false] }],
@@ -121,11 +120,10 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
     }
 
     function openEditor(item = null) {
-        if (!editorModal) return;
-        if (!canWriteNotice) return;
+        if (!editorModal || !canWriteNotice) return;
 
         ceTargetId.value = item?.id || item?.push_key || '';
-        ceModalTitle.textContent = item ? '공지 수정' : '새 공지 작성';
+        ceModalTitle.textContent = item ? '공지사항 수정' : '공지사항 등록';
         ceTitle.value = item?.title || '';
         setEditorContent(item?.content || '');
         editorModal.style.display = 'flex';
@@ -144,7 +142,7 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
         cvTitle.textContent = item.title || '공지사항';
         cvAuthor.textContent = `작성자: ${getRoleLabel(item)} ${item.author_name || '강사'}`;
         cvDate.textContent = `등록일: ${formatDate(item.created_at)}`;
-        cvViews.textContent = `조회수: ${Number(item.views || 0)}`;
+        cvViews.textContent = `조회수 ${Number(item.views || 0)}`;
         cvContent.innerHTML = item.content || '<div class="empty-state">내용이 없습니다.</div>';
 
         setViewerExtrasVisible(false);
@@ -175,7 +173,7 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
         if (!listContainer) return;
 
         if (!notices.length) {
-            listContainer.innerHTML = '<div class="empty-state" style="padding: 3rem; text-align: center; color: var(--comm-text2);">등록된 공지가 없습니다.</div>';
+            listContainer.innerHTML = '<div class="empty-state" style="padding: 3rem; text-align: center; color: var(--comm-text2);">아직 등록된 공지사항이 없습니다.</div>';
             return;
         }
 
@@ -234,12 +232,12 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
         const content = getEditorContent();
 
         if (!title) {
-            alert('제목을 입력해주세요.');
+            showToast('info', '제목을 입력해 주세요', '공지사항 제목이 비어 있습니다.');
             return;
         }
 
         if (!stripHtml(content)) {
-            alert('내용을 입력해주세요.');
+            showToast('info', '내용을 입력해 주세요', '공지사항 내용을 작성한 뒤 저장해 주세요.');
             return;
         }
 
@@ -269,14 +267,14 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
 
             closeEditor();
             await loadClassNotices();
-            alert('공지사항이 등록되었습니다.');
+            showToast('success', '공지사항이 등록되었습니다', '수강생들에게 바로 노출됩니다.');
         } catch (error) {
             console.error('Class notice save failed:', error);
-            alert(error.message || '저장에 실패했습니다.');
+            showToast('error', '저장에 실패했습니다', error.message || '잠시 후 다시 시도해 주세요.');
         } finally {
             if (btn) {
                 btn.disabled = false;
-                btn.textContent = originalText || '저장';
+                btn.textContent = originalText || '저장하기';
             }
         }
     }

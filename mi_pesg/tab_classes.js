@@ -38,6 +38,36 @@ window.initClassesTab = function initClassesTab(_db, userId) {
     let categoryCache = [...FALLBACK_CLASS_CATEGORIES];
     let categoryCacheLoaded = false;
 
+    function getMypageBootCache() {
+        return window.__BSQ_MYPAGE_CACHE__ || {};
+    }
+
+    function cacheSharedCategories(categories) {
+        const normalized = Array.isArray(categories) && categories.length
+            ? categories.map((item) => ({ ...item }))
+            : [...FALLBACK_CLASS_CATEGORIES];
+        categoryCache = normalized;
+        categoryCacheLoaded = true;
+        window.__BSQ_MYPAGE_CACHE__ = {
+            ...(window.__BSQ_MYPAGE_CACHE__ || {}),
+            categories: normalized,
+            categoriesUpdatedAt: Date.now(),
+        };
+        return categoryCache;
+    }
+
+    async function fetchSharedCategories() {
+        try {
+            const res = await window.BSQ.api('/api/class-categories', { cacheBust: false });
+            if (res?.success && Array.isArray(res.data) && res.data.length) {
+                return cacheSharedCategories(normalizeCategories(res.data));
+            }
+        } catch (error) {
+            console.warn('[mypage] category load fallback:', error);
+        }
+        return cacheSharedCategories([...FALLBACK_CLASS_CATEGORIES]);
+    }
+
     function escapeHtml(value = '') {
         return String(value)
             .replace(/&/g, '&amp;')
@@ -83,20 +113,24 @@ window.initClassesTab = function initClassesTab(_db, userId) {
     }
 
     async function loadCategories(force = false) {
+        const bootCache = getMypageBootCache();
+        if (!force && Array.isArray(bootCache.categories) && bootCache.categories.length) {
+            categoryCache = bootCache.categories.map((item) => ({ ...item }));
+            categoryCacheLoaded = true;
+            return categoryCache;
+        }
         if (!force && categoryCacheLoaded) return categoryCache;
+
+        if (force || !window.__BSQ_MYPAGE_CATEGORY_PROMISE__) {
+            window.__BSQ_MYPAGE_CATEGORY_PROMISE__ = fetchSharedCategories();
+        }
+
         try {
-            const res = await window.BSQ.api('/api/class-categories', { cacheBust: false });
-            if (res?.success && Array.isArray(res.data) && res.data.length) {
-                categoryCache = normalizeCategories(res.data);
-                categoryCacheLoaded = true;
-                return categoryCache;
-            }
+            return await window.__BSQ_MYPAGE_CATEGORY_PROMISE__;
         } catch (error) {
             console.warn('[mypage] category load fallback:', error);
+            return cacheSharedCategories([...FALLBACK_CLASS_CATEGORIES]);
         }
-        categoryCache = [...FALLBACK_CLASS_CATEGORIES];
-        categoryCacheLoaded = true;
-        return categoryCache;
     }
 
     function buildCategoryOptions(selected = '') {
@@ -430,14 +464,37 @@ window.initClassesTab = function initClassesTab(_db, userId) {
         });
     }
 
-    window.loadMyClasses = async function loadMyClasses() {
+    window.loadMyClasses = async function loadMyClasses(forceRefresh = false) {
         createdTargets.forEach((target) => {
             target.innerHTML = emptyState('클래스를 불러오는 중입니다.');
         });
 
         try {
+            if (!forceRefresh) {
+                const bootCache = getMypageBootCache();
+                if (bootCache.userId === userId && Array.isArray(bootCache.myClasses)) {
+                    renderCreatedClasses(bootCache.myClasses);
+                    return;
+                }
+
+                if (window.__BSQ_MYPAGE_BOOT_PROMISE__) {
+                    await window.__BSQ_MYPAGE_BOOT_PROMISE__;
+                    const readyCache = getMypageBootCache();
+                    if (readyCache.userId === userId && Array.isArray(readyCache.myClasses)) {
+                        renderCreatedClasses(readyCache.myClasses);
+                        return;
+                    }
+                }
+            }
+
             const res = await window.BSQ.api(`/api/classes?instructor_id=${encodeURIComponent(userId)}`);
             const data = res?.success ? (res.data || []) : [];
+            window.__BSQ_MYPAGE_CACHE__ = {
+                ...(window.__BSQ_MYPAGE_CACHE__ || {}),
+                userId,
+                myClasses: data,
+                updatedAt: Date.now(),
+            };
             renderCreatedClasses(data);
         } catch (error) {
             console.error('[mypage] loadMyClasses failed:', error);
@@ -453,18 +510,35 @@ window.initClassesTab = function initClassesTab(_db, userId) {
             const res = await window.BSQ.api(`/api/classes?id=${encodeURIComponent(classId)}`, { method: 'DELETE' });
             if (!res?.success) throw new Error(res?.error || '삭제에 실패했습니다.');
             alert('클래스를 삭제했습니다.');
-            await window.loadMyClasses();
+            await window.loadMyClasses(true);
         } catch (error) {
             alert(error.message || '클래스 삭제 중 오류가 발생했습니다.');
         }
     };
 
-    window.loadEnrolledClasses = async function loadEnrolledClasses() {
+    window.loadEnrolledClasses = async function loadEnrolledClasses(forceRefresh = false) {
         enrolledTargets.forEach((target) => {
             target.innerHTML = emptyState('수강 정보를 불러오는 중입니다.');
         });
 
         try {
+            if (!forceRefresh) {
+                const bootCache = getMypageBootCache();
+                if (bootCache.userId === userId && Array.isArray(bootCache.enrollments) && Array.isArray(bootCache.passes)) {
+                    renderEnrolledClasses(bootCache.enrollments, bootCache.passes);
+                    return;
+                }
+
+                if (window.__BSQ_MYPAGE_BOOT_PROMISE__) {
+                    await window.__BSQ_MYPAGE_BOOT_PROMISE__;
+                    const readyCache = getMypageBootCache();
+                    if (readyCache.userId === userId && Array.isArray(readyCache.enrollments) && Array.isArray(readyCache.passes)) {
+                        renderEnrolledClasses(readyCache.enrollments, readyCache.passes);
+                        return;
+                    }
+                }
+            }
+
             const [enrollRes, passRes] = await Promise.all([
                 window.BSQ.api(`/api/enrollments?user_id=${encodeURIComponent(userId)}`),
                 window.BSQ.api(`/api/user-passes?user_id=${encodeURIComponent(userId)}`),
@@ -472,6 +546,13 @@ window.initClassesTab = function initClassesTab(_db, userId) {
 
             const enrollments = enrollRes?.success ? (enrollRes.data?.enrollments || enrollRes.data || []) : [];
             const passes = passRes?.success ? (passRes.data || []) : [];
+            window.__BSQ_MYPAGE_CACHE__ = {
+                ...(window.__BSQ_MYPAGE_CACHE__ || {}),
+                userId,
+                enrollments,
+                passes,
+                updatedAt: Date.now(),
+            };
             renderEnrolledClasses(enrollments, passes);
         } catch (error) {
             console.error('[mypage] loadEnrolledClasses failed:', error);
@@ -538,7 +619,7 @@ window.initClassesTab = function initClassesTab(_db, userId) {
                 if (!res?.success) throw new Error(res?.error || '수정에 실패했습니다.');
 
                 alert('클래스 정보를 수정했습니다.');
-                await window.loadMyClasses();
+                await window.loadMyClasses(true);
                 document.querySelector('[data-target="tabClasses"]')?.click();
             } catch (error) {
                 alert(`수정 실패: ${error.message}`);
@@ -584,7 +665,7 @@ window.initClassesTab = function initClassesTab(_db, userId) {
                 refreshCommercePanels().catch((error) => console.warn('[mypage] commerce sync failed:', error));
             }
             if (type === 'enroll') {
-                window.loadEnrolledClasses?.();
+                window.loadEnrolledClasses?.(true);
             }
         });
         window.addEventListener('storage', (event) => {

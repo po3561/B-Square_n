@@ -1,12 +1,32 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
+function showMypageNotice(type, title, message, duration = 3000) {
+    const host = document.getElementById('mypageNotice');
+    if (!host) return;
 
+    const notice = document.createElement('div');
+    notice.className = `mypage-notice ${type || 'info'}`;
+    notice.innerHTML = `
+        <div class="mypage-notice-title">${title || ''}</div>
+        <div class="mypage-notice-message">${message || ''}</div>
+    `;
+
+    host.replaceChildren(notice);
+
+    if (duration > 0) {
+        window.setTimeout(() => {
+            if (notice.isConnected) notice.remove();
+        }, duration);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
     const session = window.BSQ?.session;
     const isOperator = !!window.__BSQ_DEV_MODE__;
 
     if (!session && !isOperator) {
-        alert('로그인이 필요합니다.');
-        window.location.href = '../login/login.html';
+        showMypageNotice('info', '로그인이 필요합니다', '로그인 화면으로 이동합니다.');
+        window.setTimeout(() => {
+            window.location.href = `../login/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+        }, 650);
         return;
     }
 
@@ -17,7 +37,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     bindSidebarProfile(user);
     bindTabs(userId);
-    await loadDashboard(userId, isOperator);
+    window.__BSQ_MYPAGE_CACHE__ = window.__BSQ_MYPAGE_CACHE__ || {};
+    window.__BSQ_MYPAGE_BOOT_PROMISE__ = loadDashboard(userId, isOperator).catch((error) => {
+        console.error('[MyPage] dashboard boot failed:', error);
+        showMypageNotice('error', '대시보드 정보를 불러오지 못했습니다', '탭을 눌러 다시 시도해 주세요.');
+        return null;
+    });
+    void window.__BSQ_MYPAGE_BOOT_PROMISE__;
 
     if (typeof window.initClassesTab === 'function') window.initClassesTab(null, userId);
     if (typeof window.initProfileTab === 'function') window.initProfileTab(userId, user);
@@ -91,7 +117,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             friendArea.querySelectorAll('[data-friend-remove]').forEach((btn) => {
                 btn.onclick = async () => {
-                    if (!confirm('친구를 삭제하시겠습니까?')) return;
+                    if (btn.dataset.armed !== '1') {
+                        btn.dataset.armed = '1';
+                        showMypageNotice('info', '친구 삭제 확인', '같은 버튼을 5초 안에 다시 누르면 친구가 삭제됩니다.');
+                        window.setTimeout(() => {
+                            if (btn.isConnected) btn.dataset.armed = '';
+                        }, 5000);
+                        return;
+                    }
+                    btn.dataset.armed = '';
                     await window.BSQ.api('/api/friends', {
                         method: 'POST',
                         body: JSON.stringify({ action: 'remove', user_id: uid, friend_id: btn.dataset.friendRemove }),
@@ -105,6 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (friendCount) friendCount.textContent = '0';
             pendingArea.innerHTML = '<div class="empty-state compact friends-empty error">받은 요청을 불러오지 못했습니다.</div>';
             friendArea.innerHTML = '<div class="empty-state compact friends-empty error">친구 목록을 불러오지 못했습니다.</div>';
+            showMypageNotice('error', '친구 목록을 불러오지 못했습니다', '네트워크 상태를 확인한 뒤 다시 시도해 주세요.');
         }
     }
 
@@ -263,6 +298,14 @@ async function loadDashboard(userId, isOperator) {
         const enrollments = enrollRes?.success ? (enrollRes.data?.enrollments || enrollRes.data || []) : [];
         const passes = passRes?.success ? (passRes.data || []) : [];
         const myClasses = classRes?.success ? (classRes.data || []) : [];
+        window.__BSQ_MYPAGE_CACHE__ = {
+            ...(window.__BSQ_MYPAGE_CACHE__ || {}),
+            userId,
+            enrollments,
+            passes,
+            myClasses,
+            updatedAt: Date.now(),
+        };
 
         const totalPasses = passes.reduce((sum, pass) => sum + (Number(pass.remaining_count || 0) > 0 ? Number(pass.remaining_count || 0) : 0), 0);
 

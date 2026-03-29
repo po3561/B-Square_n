@@ -1,6 +1,5 @@
-import { requireSession } from '../../_lib/auth.js';
+import { isAtLeastRole, requireClassManager, requireSession } from '../../_lib/auth.js';
 import { json, options } from '../../_lib/http.js';
-import { ensureChatMessagesSchema } from '../../_lib/schema.js';
 
 function parseReactions(value) {
   if (!value) return {};
@@ -25,7 +24,7 @@ export async function onRequest(context) {
 
   const messageId = params?.id;
   if (!messageId) {
-    return json(request, env, { success: false, error: 'message id required' }, { status: 400 });
+    return json(request, env, { success: false, error: 'message id is required' }, { status: 400 });
   }
 
   if (request.method !== 'POST' && request.method !== 'PATCH') {
@@ -33,19 +32,23 @@ export async function onRequest(context) {
   }
 
   try {
-    await ensureChatMessagesSchema(env.DB);
+    const message = await env.DB.prepare(
+      'SELECT id, class_id, user_id, reactions FROM chat_messages WHERE id = ?'
+    ).bind(messageId).first();
+    if (!message) {
+      return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
+    }
+
+    const isOwner = String(message.user_id) === String(auth.user.id);
+    if (!isOwner && !isAtLeastRole(auth.user.role, 'admin')) {
+      const classAuth = await requireClassManager(context, message.class_id);
+      if (!classAuth.ok) return classAuth.response;
+    }
 
     const body = await request.json();
     const emoji = String(body.emoji || body.reaction || '').trim();
     if (!emoji) {
-      return json(request, env, { success: false, error: 'emoji required' }, { status: 400 });
-    }
-
-    const message = await env.DB.prepare(
-      'SELECT id, reactions FROM chat_messages WHERE id = ?'
-    ).bind(messageId).first();
-    if (!message) {
-      return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
+      return json(request, env, { success: false, error: 'emoji is required' }, { status: 400 });
     }
 
     const reactions = parseReactions(message.reactions);
@@ -64,11 +67,22 @@ export async function onRequest(context) {
       "UPDATE chat_messages SET reactions = ?, updated_at = datetime('now') WHERE id = ?"
     ).bind(JSON.stringify(reactions), messageId).run();
 
-    return json(request, env, { success: true, data: { id: messageId, reactions } });
+    const updated = await env.DB.prepare(
+      'SELECT id, class_id, user_id, reactions, updated_at FROM chat_messages WHERE id = ?'
+    ).bind(messageId).first();
+
+    return json(request, env, {
+      success: true,
+      data: {
+        id: messageId,
+        reactions,
+        updated_at: updated?.updated_at || new Date().toISOString(),
+      },
+    });
   } catch (error) {
     return json(request, env, {
       success: false,
-      error: 'reaction processing failed',
+      error: 'Failed to process reaction',
       detail: error.message,
     }, { status: 500 });
   }

@@ -1,4 +1,3 @@
-import { ensureSiteSettingsSchema } from './_lib/schema.js';
 import { json, options } from './_lib/http.js';
 
 const RESPONSE_HEADERS = {
@@ -18,8 +17,6 @@ export async function onRequest(context) {
   const { request, env } = context;
   const db = env.DB;
   const method = request.method;
-
-  await ensureSiteSettingsSchema(db);
 
   if (method === 'GET') {
     try {

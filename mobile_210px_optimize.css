@@ -5,7 +5,7 @@
 
 /* -- 모바일 공통 보정 (≤ 480px) -- */
 @media (max-width: 480px) {
-    .category-grid ul {
+    .home-category-grid {
         grid-template-columns: repeat(4, 1fr) !important;
         gap: 0.5rem !important;
     }
@@ -26,7 +26,7 @@
 
 /* -- 320px 이하 -- */
 @media (max-width: 320px) {
-    .category-grid ul {
+    .home-category-grid {
         grid-template-columns: repeat(3, 1fr) !important;
     }
 
@@ -49,7 +49,7 @@
 
 /* -- 280px 이하 -- */
 @media (max-width: 280px) {
-    .category-grid ul {
+    .home-category-grid {
         grid-template-columns: repeat(2, 1fr) !important;
     }
 
@@ -128,7 +128,7 @@
         min-height: 12px !important;
     }
 
-    .category-grid ul {
+    .home-category-grid {
         grid-template-columns: 1fr !important;
     }
 

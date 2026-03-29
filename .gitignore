@@ -4,6 +4,7 @@ node_modules/
 .env
 .env.local
 *.sql
+!migrations/*.sql
 *.log
 .codex_tmp/
 .playwright-cli/
