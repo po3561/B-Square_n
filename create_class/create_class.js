@@ -1,4 +1,4 @@
-// create_class.js — 클래스 개설 (D1 API 연동)
+﻿// create_class.js — 클래스 개설 (D1 API 연동)
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("🚀 B-Square Create Class Page Initializing (v2 Logic)...");

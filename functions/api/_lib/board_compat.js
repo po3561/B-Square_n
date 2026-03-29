@@ -1,4 +1,4 @@
-import { addColumnIfMissing } from './schema.js';
+﻿import { addColumnIfMissing } from './schema.js';
 
 let boardCompatReady = false;
 

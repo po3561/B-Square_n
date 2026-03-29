@@ -1,4 +1,4 @@
-import { requireAdmin } from '../_lib/auth.js';
+﻿import { requireAdmin } from '../_lib/auth.js';
 import { options } from '../_lib/http.js';
 
 export async function onRequest(context) {

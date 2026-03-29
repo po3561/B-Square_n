@@ -1,4 +1,4 @@
-// view_edit.js - 강사 전용 클래스 관리 모듈
+﻿// view_edit.js - 강사 전용 클래스 관리 모듈
 // D1 API 기반 클래스 관리
 window.BSquareModules = window.BSquareModules || {};
 window.BSquareModules.initEdit = async function (db, classId, classData, supabase, userId) {

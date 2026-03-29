@@ -1,4 +1,4 @@
-// recommend_view.js - Detailed view for recommended folders
+﻿// recommend_view.js - Detailed view for recommended folders
 
 document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);

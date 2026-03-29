@@ -1,4 +1,4 @@
-import { requireAdmin } from '../_lib/auth.js';
+﻿import { requireAdmin } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
 import { loadClassCategories, normalizeCategoryName, defaultCategoryEmoji, ensureClassCategoriesSchema } from '../_lib/class_support.js';
 

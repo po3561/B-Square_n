@@ -1,4 +1,4 @@
-import { applyMasterAdminOverride, hashPassword, isAtLeastRole, isMasterAdminUserId, requireSession } from '../_lib/auth.js';
+﻿import { applyMasterAdminOverride, hashPassword, isAtLeastRole, isMasterAdminUserId, requireSession } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
 import { ensureAuthSchema, ensureClassesSchema, ensureOperationsSchema } from '../_lib/schema.js';
 

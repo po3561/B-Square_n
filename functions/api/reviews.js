@@ -1,4 +1,4 @@
-import { requireClassManager, requireSession } from './_lib/auth.js';
+﻿import { requireClassManager, requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
 import { refreshClassStats } from './_lib/class_support.js';
 import { ensureClassesSchema, ensureReviewsSchema } from './_lib/schema.js';

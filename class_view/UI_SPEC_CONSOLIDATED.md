@@ -1,4 +1,4 @@
-# B-Square Class View UI/UX 최종 통합 기획서 (Consolidated)
+﻿# B-Square Class View UI/UX 최종 통합 기획서 (Consolidated)
 
 이 문서는 `class_view` 채팅 UI 고도화 작업의 모든 요구사항과 설계를 하나로 통합한 최종 명세서입니다.
 

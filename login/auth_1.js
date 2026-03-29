@@ -1,4 +1,4 @@
-// auth_1.js — B-Square 로그인 (D1 API 기반)
+﻿// auth_1.js — B-Square 로그인 (D1 API 기반)
 document.addEventListener('DOMContentLoaded', async () => {
     // BSQ.ready 대기
     if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;

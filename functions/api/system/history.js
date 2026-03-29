@@ -1,4 +1,4 @@
-// GET /api/system/history — 시스템 작업 히스토리 조회
+﻿// GET /api/system/history — 시스템 작업 히스토리 조회
 // POST /api/system/history — 새 히스토리 등록 (내부용)
 
 export async function onRequest(context) {

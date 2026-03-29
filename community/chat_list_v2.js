@@ -1,4 +1,4 @@
-window.CommunityModules = window.CommunityModules || {};
+﻿window.CommunityModules = window.CommunityModules || {};
 
 window.CommunityModules.ChatList = (() => {
     const shared = () => window.BSQCommunityShared || {};
@@ -10,6 +10,7 @@ window.CommunityModules.ChatList = (() => {
     let currentFolder = null;
     let onRoomSelect = null;
     let roomsCache = new Map();
+    let activeRoomId = null;
     let refreshTimer = null;
     let searchTimer = null;
     let activeSearchQuery = '';
@@ -271,7 +272,7 @@ window.CommunityModules.ChatList = (() => {
             const time = room.last_timestamp ? formatTime(room.last_timestamp) : '';
 
             return `
-                <div class="chat-room-item${isPinned ? ' pinned' : ''}" data-room-id="${room.roomId}" data-type="${room.type}">
+                <div class="chat-room-item${isPinned ? ' pinned' : ''}${activeRoomId === room.roomId ? ' active' : ''}" data-room-id="${room.roomId}" data-type="${room.type}">
                     <div class="room-avatar" style="${avatar ? `background-image:url(${shared().escapeAttr(avatar)})` : ''}">
                         ${!avatar ? (room.type === 'group' ? '👥' : room.type === 'class' ? '🏫' : '👤') : ''}
                     </div>
@@ -450,9 +451,21 @@ window.CommunityModules.ChatList = (() => {
     }
 
     function setActiveRoom(roomId) {
+        activeRoomId = roomId;
+        if (!roomId) {
+            document.querySelectorAll('.chat-room-item').forEach(item => item.classList.remove('active'));
+            return;
+        }
+        const next = roomsCache.get(roomId);
+        if (next && Number(next.unread_count || 0) > 0) {
+            next.unread_count = 0;
+            roomsCache.set(roomId, next);
+            renderRooms(activeSearchQuery);
+        }
         document.querySelectorAll('.chat-room-item').forEach(item => {
             item.classList.toggle('active', item.dataset.roomId === roomId);
         });
+        bridge()?.markAsRead?.(roomId);
     }
 
     function getRoom(roomId) {

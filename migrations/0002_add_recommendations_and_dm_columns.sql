@@ -1,4 +1,4 @@
--- Canonical schema already includes these fields in 0001_canonical_schema.sql.
+﻿-- Canonical schema already includes these fields in 0001_canonical_schema.sql.
 -- This migration is intentionally a no-op to preserve numbering without
 -- re-adding columns that would fail on fresh apply.
 --

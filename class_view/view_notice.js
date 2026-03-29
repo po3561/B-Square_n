@@ -1,4 +1,4 @@
-window.BSquareModules = window.BSquareModules || {};
+﻿window.BSquareModules = window.BSquareModules || {};
 
 window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, isInstructor, authorContext = {}) {
     const listContainer = document.getElementById('classNoticeList');

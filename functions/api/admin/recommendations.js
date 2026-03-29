@@ -1,4 +1,4 @@
-import { ensureClassStatsSchema, ensureClassesSchema, ensureRecommendationsSchema } from '../_lib/schema.js';
+﻿import { ensureClassStatsSchema, ensureClassesSchema, ensureRecommendationsSchema } from '../_lib/schema.js';
 import { loadClassesByIds } from '../_lib/class_support.js';
 import { json as jsonResponse, options } from '../_lib/http.js';
 

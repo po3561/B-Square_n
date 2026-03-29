@@ -12,19 +12,6 @@
 <body>
     <div class="loading">?좎떆留?湲곕떎?ㅼ＜?몄슂...</div>
     <script>
-        // B-Square Mobile Integration: User-Agent based redirection
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const path = window.location.pathname;
-
-        if (isMobile) {
-            // Redirect to Mobile Next.js App (assuming /m subpath or same domain)
-            // If Next.js is hosted at root, we need to be careful not to loop.
-            // For now, let's assume the user will handle the final routing in Cloudflare,
-            // but we provide the client-side bridge.
-            console.log("Mobile detected, prepared for redirection");
-        }
-
-        // Existing PC Redirection Logic
         window.location.replace('./index.html');
     </script>
 </body>

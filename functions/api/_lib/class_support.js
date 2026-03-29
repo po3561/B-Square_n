@@ -1,4 +1,4 @@
-import { addColumnIfMissing, ensureClassStatsSchema, ensureClassesSchema } from './schema.js';
+﻿import { addColumnIfMissing, ensureClassStatsSchema, ensureClassesSchema } from './schema.js';
 
 let classCategoriesSchemaReady = false;
 let classBookmarksSchemaReady = false;

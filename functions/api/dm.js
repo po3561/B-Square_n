@@ -1,4 +1,4 @@
-import { requireSession } from './_lib/auth.js';
+﻿import { requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
 
 function parseReactions(value) {
@@ -82,6 +82,7 @@ export async function onRequestPost(context) {
     const roomId = String(body.room_id || '').trim();
     const content = String(body.content || body.message || body.text || '').trim();
     const attachmentUrl = body.image_url || body.file_data || null;
+    const messageId = 'dm_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16);
 
     if (!roomId || (!content && !attachmentUrl)) {
       return json(request, env, { success: false, error: 'room_id and content are required' }, { status: 400 });
@@ -89,10 +90,11 @@ export async function onRequestPost(context) {
 
     await env.DB.prepare(`
       INSERT INTO dm_messages (
-        room_id, room_type, sender_id, user_name, user_avatar,
+        id, room_id, room_type, sender_id, user_name, user_avatar,
         content, message, type, image_url, created_at, updated_at
-      ) VALUES (?, 'dm', ?, ?, ?, ?, ?, 'text', ?, datetime('now'), datetime('now'))
+      ) VALUES (?, ?, 'dm', ?, ?, ?, ?, ?, 'text', ?, datetime('now'), datetime('now'))
     `).bind(
+      messageId,
       roomId,
       auth.user.id,
       auth.user.name || auth.user.username || 'User',
@@ -109,12 +111,13 @@ export async function onRequestPost(context) {
     const message = await env.DB.prepare(`
       SELECT ${DM_MESSAGE_COLUMNS}
       FROM dm_messages
-      WHERE room_id = ? AND room_type = 'dm'
-      ORDER BY id DESC
-      LIMIT 1
-    `).bind(roomId).first();
+      WHERE id = ?
+    `).bind(messageId).first();
 
-    return json(request, env, { success: true, data: normalizeDmMessage(message) }, { status: 201 });
+    const responseData = normalizeDmMessage(message);
+    if (body.client_id) responseData.client_id = String(body.client_id);
+
+    return json(request, env, { success: true, data: responseData }, { status: 201 });
   } catch (error) {
     return json(request, env, { success: false, error: 'Failed to send DM message', detail: error.message }, { status: 500 });
   }

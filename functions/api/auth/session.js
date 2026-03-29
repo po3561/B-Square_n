@@ -1,4 +1,4 @@
-import { clearSessionCookie, getCurrentUser, getSessionToken } from '../_lib/auth.js';
+﻿import { clearSessionCookie, getCurrentUser, getSessionToken } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
 import { ensureAuthSchema } from '../_lib/schema.js';
 

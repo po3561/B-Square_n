@@ -1,4 +1,4 @@
-# Admin Dashboard (관리자 대시보드)
+﻿# Admin Dashboard (관리자 대시보드)
 
 이 폴더는 B-Square 플랫폼의 전체적인 관리 및 설정을 위한 관리자 전용 대시보드 기능을 포함하고 있습니다.
 

@@ -1,4 +1,4 @@
-import { json, options } from './_lib/http.js';
+﻿import { json, options } from './_lib/http.js';
 
 const RESPONSE_HEADERS = {
   'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',

@@ -1,4 +1,4 @@
-// bsq_server.js - B-Square 브랜딩 공통 쉘 (클라우드플레어 D1 API 연동)
+﻿// bsq_server.js - B-Square 브랜딩 공통 쉘 (클라우드플레어 D1 API 연동)
 // Firebase/Supabase 없이 직접 Cloudflare D1 API 연동
 // 사용 방법: window.BSQ.api('/api/classes'), await window.BSQ.ready
 (function () {
@@ -8,7 +8,9 @@
     let _session = null;     // 세션 정보: { user: { id, email, name, ... }, expires_at }
     let _readyResolve = null;
     const readyPromise = new Promise(resolve => { _readyResolve = resolve; });
+    let _readyResolved = false;
     let _siteSettingsPromise = null;
+    let _sessionBootstrapPromise = null;
     const OPERATOR_MODE_KEY = 'bsq_operator_view_mode';
     const OPERATOR_GHOST_TOKEN = 'OPERATOR_GHOST';
     // ==================================================
@@ -223,6 +225,18 @@
         return _siteSettingsPromise;
     }
 
+    function emitSessionEvent(reason = 'update') {
+        if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+        window.dispatchEvent(new CustomEvent('bsq_session', {
+            detail: {
+                reason,
+                session: _session,
+                user: _session?.user || null,
+                timestamp: Date.now(),
+            },
+        }));
+    }
+
     function fixImageUrls(data) {
         if (!data) return data;
         if (typeof data === 'string') {
@@ -263,7 +277,8 @@
             text-align: center; white-space: pre-wrap; transition: all 0.3s ease;
         `;
         alertBox.innerText = msg;
-        document.body.appendChild(alertBox);
+        const mountTarget = document.body || document.documentElement;
+        mountTarget.appendChild(alertBox);
         setTimeout(() => {
             alertBox.style.opacity = '0';
             alertBox.style.transform = 'translateX(-50%) translateY(-20px)';
@@ -402,6 +417,7 @@
         }
 
         updateConnectionHub();
+        emitSessionEvent('session-check');
         return _session;
     }
 
@@ -413,6 +429,7 @@
         clearOperatorViewGlobals();
         _session = null;
         updateConnectionHub();
+        emitSessionEvent('logout');
         return result;
     }
 
@@ -421,6 +438,12 @@
     // ==================================================
     async function checkSession() {
         return await runCheckSession();
+    }
+
+    function ensureSessionBootstrapPromise() {
+        if (_sessionBootstrapPromise) return _sessionBootstrapPromise;
+        _sessionBootstrapPromise = runCheckSession();
+        return _sessionBootstrapPromise;
     }
 
     // ==================================================
@@ -441,7 +464,8 @@
                 transition: all 0.3s ease; opacity: 0.8; cursor: pointer;
             `;
             hub.onclick = () => { hub.style.opacity = hub.style.opacity === '1' ? '0.4' : '1'; };
-            document.body.appendChild(hub);
+            const mountTarget = document.body || document.documentElement;
+            mountTarget.appendChild(hub);
         }
 
         const envText = _isWrangler ? '<span style="color:#ffa502">LOCAL (Wrangler)</span>' : '<span style="color:#2ed573">PRODUCTION (Remote)</span>';
@@ -462,25 +486,27 @@
     // ==================================================
     async function init() {
         if (!_isWrangler) {
-            console.log(`[BSQ Server] 현재 연결된 API 엔드포인트: ${API_BASE_LABEL}`);
+            console.log(`[BSQ Server] Booting API shell with base ${API_BASE_LABEL}`);
         }
 
-        // 1. 세션 체크
-        await checkSession();
+        if (!_readyResolved) {
+            _readyResolved = true;
+            _readyResolve({
+                session: _session,
+                userId: _session?.user?.id || null,
+                userProfile: _session?.user || null
+            });
+        }
 
-        // 2. ready 전역 변수 완료
-        _readyResolve({
-            session: _session,
-            userId: _session?.user?.id || null,
-            userProfile: _session?.user || null
+        void ensureSessionBootstrapPromise().catch((error) => {
+            console.warn('[BSQ Server] Session bootstrap failed:', error);
         });
 
-        console.log('[BSQ Server] 브랜딩 쉘 로드 및 인증 체크 완료 (D1 API 연동)', {
+        console.log('[BSQ Server] Shell ready; session bootstrap continues in background', {
             loggedIn: !!_session,
             userId: _session?.user?.id || 'none'
         });
 
-        // 3. 사이트 설정 적용
         void applySiteSettings();
     }
 
@@ -593,6 +619,9 @@
 
     // ---- 공개 API ----
     seedSessionFromStorage();
+    void ensureSessionBootstrapPromise().catch((error) => {
+        console.warn('[BSQ Server] Session bootstrap failed:', error);
+    });
 
     window.BSQ = {
         ready: readyPromise,
@@ -618,7 +647,8 @@
         register,
         logout,
         checkSession,
-        triggerSync
+        triggerSync,
+        sessionBootstrapPromise: ensureSessionBootstrapPromise(),
     };
 
     // ---- 즉시 실행 시작 ----

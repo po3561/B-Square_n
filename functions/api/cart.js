@@ -1,4 +1,4 @@
-import { requireSession, isAtLeastRole } from './_lib/auth.js';
+﻿import { requireSession, isAtLeastRole } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
 import { ensureCommerceSchema } from './_lib/schema.js';
 

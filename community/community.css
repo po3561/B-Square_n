@@ -1,4 +1,4 @@
-/* ==========================================
+﻿/* ==========================================
    community.css - B-Square 커뮤니티 채팅 UI
    다크/라이트 테마 + 텔레그램 스타일
    ========================================== */
@@ -280,8 +280,8 @@
     cursor: pointer;
     transition: background 0.15s;
     position: relative;
-    user-select: none;
-    -webkit-user-select: none;
+    user-select: auto;
+    -webkit-user-select: auto;
 }
 
 .chat-room-item:hover {
@@ -329,6 +329,8 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    user-select: text;
+    -webkit-user-select: text;
 }
 
 .room-time {
@@ -343,6 +345,8 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    user-select: text;
+    -webkit-user-select: text;
 }
 
 .room-badge {
@@ -1418,7 +1422,9 @@
     }
 
     .comm-info-panel {
-        display: none !important;
+        width: 0;
+        min-width: 0;
+        overflow: hidden;
     }
 }
 
@@ -1478,13 +1484,15 @@
         gap: 8px;
     }
 
-    .btn-header-action {
+    .btn-header-action,
+    .btn-header-icon {
         width: 32px;
         height: 32px;
         font-size: 0.95rem;
     }
 
-    .input-main-row textarea {
+    .input-main-row textarea,
+    .input-pill-wrapper textarea {
         font-size: 0.85rem;
         padding: 8px 12px;
     }
@@ -1864,7 +1872,8 @@
         font-size: 0.65rem;
     }
 
-    .room-item {
+    .room-item,
+    .chat-room-item {
         padding: 8px 6px;
         gap: 6px;
     }
@@ -1880,7 +1889,8 @@
         font-size: 0.75rem;
     }
 
-    .room-last-msg {
+    .room-last-msg,
+    .room-preview {
         font-size: 0.65rem;
     }
 
@@ -1923,12 +1933,14 @@
         font-size: 0.55rem;
     }
 
-    .input-main-row {
+    .input-main-row,
+    .input-pill-wrapper {
         gap: 4px;
         padding: 4px;
     }
 
-    .input-main-row textarea {
+    .input-main-row textarea,
+    .input-pill-wrapper textarea {
         font-size: 0.72rem;
         padding: 5px 8px;
         min-height: 28px;
@@ -1967,4 +1979,31 @@
     .no-chat-inner p {
         font-size: 0.7rem;
     }
+}
+
+/* Legacy fallback polish */
+.comm-nav-rail,
+.comm-sidebar,
+.comm-main,
+.comm-info-panel,
+.message-popup-shell,
+.modal-card {
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.chat-top-header,
+.chat-search-bar,
+.pinned-msg-bar,
+.chat-input-area {
+    border-color: color-mix(in srgb, var(--comm-border) 92%, transparent);
+}
+
+.chat-room-item {
+    border-radius: 18px;
+}
+
+.chat-room-item:hover,
+.chat-room-item.active {
+    transform: translateY(-1px);
 }

@@ -1,4 +1,4 @@
-import { json, options } from '../_lib/http.js';
+﻿import { json, options } from '../_lib/http.js';
 import { refreshClassStats } from '../_lib/class_support.js';
 import { ensureAuthSchema, ensureClassesSchema, ensureReviewsSchema } from '../_lib/schema.js';
 

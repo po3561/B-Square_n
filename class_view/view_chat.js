@@ -1,4 +1,4 @@
-// view_chat.js - Class Channel with Lock/Unlock + D1 API 기반 정보 패널
+﻿// view_chat.js - Class Channel with Lock/Unlock + D1 API 기반 정보 패널
 window.BSquareModules = window.BSquareModules || {};
 window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAccess, isInstructor) {
     console.log("💬 Chat Module Initializing... | Access:", hasAccess, "| Instructor:", isInstructor);

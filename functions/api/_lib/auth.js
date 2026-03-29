@@ -1,5 +1,4 @@
-import { json } from './http.js';
-import { ensureAuthSchema, ensureClassesSchema } from './schema.js';
+﻿import { json } from './http.js';
 
 const PASSWORD_SALT = '_bsq_salt_2024';
 export const MASTER_ADMIN_USER_ID = 'user_b7a935e26112';
@@ -126,8 +125,6 @@ export function clearSessionCookie(request) {
 
 export async function getCurrentUser(context) {
   const { request, env } = context;
-
-  await ensureAuthSchema(env.DB);
   const token = getSessionToken(request);
   if (!token) return null;
 
@@ -242,9 +239,6 @@ export async function requireAdmin(context) {
 export async function requireClassManager(context, classId) {
   const current = await requireSession(context);
   if (!current.ok) return current;
-
-  await ensureAuthSchema(context.env.DB);
-  await ensureClassesSchema(context.env.DB);
 
   const cls = await context.env.DB.prepare(`
     SELECT id, creator_id, sub_instructors

@@ -1,4 +1,4 @@
-# Community & Real-time Chat (커뮤니티 및 실시간 채팅)
+﻿# Community & Real-time Chat (커뮤니티 및 실시간 채팅)
 
 이 폴더는 B-Square 사용자들이 실시간으로 소통할 수 있는 커뮤니티 공간과 채팅 시스템을 포함하고 있습니다.
 

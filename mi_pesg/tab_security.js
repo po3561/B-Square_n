@@ -1,4 +1,4 @@
-window.initSecurityTab = function (userId) {
+﻿window.initSecurityTab = function (userId) {
     const passwordForm = document.getElementById('passwordForm');
 
     if (passwordForm) {

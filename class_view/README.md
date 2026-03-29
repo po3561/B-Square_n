@@ -1,4 +1,4 @@
-# 🎓 B-Square Class View Project
+﻿# 🎓 B-Square Class View Project
 
 B-Square 플랫폼의 클래스 상세 페이지 프로젝트입니다. 수강생에게 강의 정보를 효과적으로 전달하고, 강사와 수강생 간의 소통 및 학습 관리를 지원하는 통합 인터페이스를 제공합니다.
 

@@ -1,6 +1,11 @@
-// main.js - homepage data loader (D1 API)
+﻿// main.js - homepage data loader (D1 API)
 document.addEventListener('DOMContentLoaded', async () => {
     const currentCategory = getCurrentHomeCategory();
+    const allGrid = document.getElementById('allClassGrid');
+
+    if (allGrid && !allGrid.children.length) {
+        allGrid.innerHTML = '<p class="empty-state">클래스 정보를 불러오는 중...</p>';
+    }
 
     await Promise.all([
         renderHomeCategoryMenu(currentCategory),
@@ -10,12 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.addEventListener('bsq_sync', (e) => {
         console.log('[BSQ Sync] Data refresh requested:', e.detail);
-        const activeCategory = getCurrentHomeCategory();
-        void Promise.all([
-            initMainPage(activeCategory),
-            initBanners(),
-            renderHomeCategoryMenu(activeCategory),
-        ]).catch((error) => console.warn('[BSQ Sync] refresh failed:', error));
+        scheduleHomeRefresh(e.detail?.type);
     });
 
     document.querySelector('.category-grid')?.addEventListener('click', (event) => {
@@ -48,13 +48,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             void renderHomeCategoryMenu(categoryName);
             return;
         }
-        filterAllClassesByCategory(categoryName);
+        if (allGrid) {
+            const filtered = globalAllClasses.filter((item) => String(item.category || '').trim() === categoryName);
+            renderClassCards(filtered, allGrid);
+        }
         void renderHomeCategoryMenu(categoryName);
         document.querySelector('.all-classes')?.scrollIntoView({ behavior: 'smooth' });
     });
 });
 
 let globalAllClasses = [];
+let globalHomeCategories = [];
+let homeRefreshTimer = null;
+const HOME_CLASS_FETCH_LIMIT = 60;
 
 function getCurrentHomeCategory() {
     return new URLSearchParams(window.location.search).get('cat') || 'all';
@@ -126,13 +132,24 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
     try {
         const res = await window.BSQ.api('/api/class-categories', { cacheBust: false });
         if (res.success && Array.isArray(res.data)) {
-            categories = res.data.map(c => ({ name: c.name }));
+            categories = res.data.map(c => ({
+                name: c.name,
+                class_count: Number(c.class_count || 0),
+            }));
         }
     } catch (e) { console.warn(e); }
 
     if (!categories.length) {
-        categories = [{ name: '디자인' }, { name: '생산성' }, { name: '비즈니스' }, { name: '요리' }, { name: '운동' }];
+        categories = [
+            { name: '디자인', class_count: 0 },
+            { name: '생산성', class_count: 0 },
+            { name: '비즈니스', class_count: 0 },
+            { name: '요리', class_count: 0 },
+            { name: '운동', class_count: 0 },
+        ];
     }
+
+    globalHomeCategories = categories;
 
     const expanded = getHomeCategoryExpandedState();
     const limit = 10;
@@ -147,6 +164,7 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
                         ${svgIcon('spark')}
                     </div>
                     <span class="home-category-name">전체</span>
+                    <span class="home-category-count">${globalAllClasses.length || 0}</span>
                 </a>
                 ${displayList.map((item, index) => {
                     const meta = resolveHomeCategoryMeta(item.name, index);
@@ -156,6 +174,7 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
                                 ${svgIcon(meta.icon)}
                             </div>
                             <span class="home-category-name">${escapeHtml(item.name)}</span>
+                            <span class="home-category-count">${Number(item.class_count || 0)}</span>
                         </a>
                     `;
                 }).join('')}
@@ -168,14 +187,26 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
             </div>
         </div>
     `;
+
+    updateHomeHeroStats();
 }
 
-async function initMainPage(currentCategory = 'all') {
+async function initMainPage(currentCategory = 'all', forceRefresh = false) {
     const allGrid = document.getElementById('allClassGrid');
     if (!allGrid) return;
 
     try {
-        const res = await window.BSQ.api('/api/classes?limit=100', { cacheBust: false });
+        if (!forceRefresh && globalAllClasses.length > 0) {
+            if (currentCategory === 'all') {
+                renderClassCards(globalAllClasses, allGrid);
+            } else {
+                const filtered = globalAllClasses.filter(c => c.category === currentCategory);
+                renderClassCards(filtered, allGrid);
+            }
+            return;
+        }
+
+        const res = await window.BSQ.api(`/api/classes?limit=${HOME_CLASS_FETCH_LIMIT}`, { cacheBust: false });
         if (res.success) {
             globalAllClasses = res.data?.classes || res.data || [];
             if (currentCategory === 'all') {
@@ -184,6 +215,7 @@ async function initMainPage(currentCategory = 'all') {
                 const filtered = globalAllClasses.filter(c => c.category === currentCategory);
                 renderClassCards(filtered, allGrid);
             }
+            updateHomeHeroStats();
         }
     } catch (e) { console.error(e); }
 }
@@ -195,28 +227,100 @@ function renderClassCards(classes, container) {
         return;
     }
 
-    container.innerHTML = classes.map(cls => `
-        <div class="class-card" onclick="location.href='class_view/class_view.html?id=${cls.id}'">
-            <div class="card-thumbnail">
-                <img src="${cls.thumbnail || cls.image_url || ''}" loading="lazy">
-                <button class="btn-bookmark" onclick="event.stopPropagation()">${svgIcon('bookmark')}</button>
-            </div>
-            <div class="card-info">
-                <span class="category">${cls.category}</span>
-                <h4 class="title">${cls.title}</h4>
-                <div class="price-info">
-                    <span class="price">${Number(cls.price).toLocaleString()}원</span>
+    container.innerHTML = classes.map((cls, index) => {
+        const href = `class_view/class_view.html?id=${encodeURIComponent(cls.id)}`;
+        const title = escapeHtml(cls.title || '제목 없음');
+        const category = escapeHtml(cls.category || '미분류');
+        const instructor = escapeHtml(cls.instructor_name || cls.creator_name || '작성자 정보 없음');
+        const summary = getClassSummary(cls);
+        const price = Number(cls.price || 0);
+        const discountRate = Number(cls.discount_rate || 0);
+        const currentPrice = discountRate > 0 ? Math.max(Math.round(price * (1 - discountRate / 100)), 0) : price;
+        const avgRating = cls.avg_rating ? Number(cls.avg_rating).toFixed(1) : '0.0';
+        const reviewCount = Number(cls.review_count || 0);
+        const likeCount = Number(cls.like_count || cls.bookmark_count || 0);
+        const students = Number(cls.current_participants || cls.total_enrollments || 0);
+        return `
+        <article class="class-card class-card-home card-animate" style="animation-delay:${index * 0.05}s">
+            <a class="class-card-link" href="${href}" aria-label="${title} 상세 보기">
+                <div class="card-thumbnail">
+                    <img src="${escapeHtml(cls.thumbnail || cls.image_url || '/assets/default-cover.svg')}" alt="${title}" loading="lazy">
+                    <div class="card-badges">
+                        ${cls.coupon_pack ? '<span class="badge-coupon">쿠폰 가능</span>' : ''}
+                        ${discountRate > 0 ? `<span class="badge-discount">${discountRate}% 할인</span>` : ''}
+                    </div>
                 </div>
-            </div>
-        </div>
-    `).join('');
+                <div class="card-info">
+                    <div class="card-topline">
+                        <span class="category">${category}</span>
+                        <span class="card-chip">${instructor}</span>
+                    </div>
+                    <h4 class="title">${title}</h4>
+                    ${summary ? `<p class="card-summary">${escapeHtml(summary)}</p>` : ''}
+                    <div class="meta">
+                        <span class="rating">★ ${avgRating} (${reviewCount})</span>
+                        <span class="likes">찜 ${likeCount}</span>
+                        <span class="students">👥 ${students}</span>
+                    </div>
+                    <div class="price-info">
+                        ${discountRate > 0 ? `<span class="original-price">${price.toLocaleString()}원</span>` : ''}
+                        <span class="price">${currentPrice === 0 ? '무료' : `${currentPrice.toLocaleString()}원`}</span>
+                    </div>
+                </div>
+            </a>
+            <button type="button" class="btn-bookmark" aria-label="찜하기" onclick="event.preventDefault(); event.stopPropagation();">${svgIcon('bookmark')}</button>
+        </article>
+    `;
+    }).join('');
 }
 
 async function initBanners() {
     // Basic banner placeholder
 }
 
+function scheduleHomeRefresh(syncType = '') {
+    clearTimeout(homeRefreshTimer);
+    const shouldForceRefresh = ['create', 'edit', 'delete', 'class-categories', 'recommendations'].includes(String(syncType || ''));
+    homeRefreshTimer = window.setTimeout(() => {
+        const activeCategory = getCurrentHomeCategory();
+        void Promise.all([
+            initMainPage(activeCategory, shouldForceRefresh),
+            initBanners(),
+            renderHomeCategoryMenu(activeCategory),
+        ]).catch((error) => console.warn('[BSQ Sync] refresh failed:', error));
+    }, shouldForceRefresh ? 50 : 120);
+}
+
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+}
+
+function stripHtml(value = '') {
+    return String(value).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function getClassSummary(cls) {
+    const raw = stripHtml(cls.summary || cls.short_description || cls.description || cls.intro || cls.content || '');
+    if (!raw) return '';
+    return raw.length > 88 ? `${raw.slice(0, 88).trimEnd()}…` : raw;
+}
+
+function updateHomeHeroStats() {
+    const classTotal = document.getElementById('homeClassTotal');
+    const categoryTotal = document.getElementById('homeCategoryTotal');
+    const freshCount = document.getElementById('homeFreshCount');
+
+    if (classTotal) classTotal.textContent = String(globalAllClasses.length || 0);
+    if (categoryTotal) categoryTotal.textContent = String(globalHomeCategories.length || 0);
+
+    if (freshCount) {
+        const now = Date.now();
+        const recentWindow = 14 * 24 * 60 * 60 * 1000;
+        const recentClasses = globalAllClasses.filter((cls) => {
+            const created = cls?.created_at ? new Date(cls.created_at).getTime() : 0;
+            return created && (now - created <= recentWindow);
+        });
+        freshCount.textContent = String(recentClasses.length || 0);
+    }
 }

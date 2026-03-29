@@ -1,4 +1,4 @@
-async function bumpClassVisit(db, classId) {
+﻿async function bumpClassVisit(db, classId) {
   await db.prepare(`
     INSERT INTO class_stats (class_id, total_visits, updated_at)
     VALUES (?, 1, datetime('now'))

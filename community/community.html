@@ -1,32 +1,32 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>커뮤니티 | B-Square</title>
-    <link rel="stylesheet" href="../style_mobile.css" media="(max-width: 768px)">
-    <link rel="stylesheet" href="../style_pc.css" media="(min-width: 769px)">
-    <link rel="stylesheet" href="community_refined.css">
+    <link rel="stylesheet" href="../style_mobile.css?v=20260329_04" media="(max-width: 768px)">
+    <link rel="stylesheet" href="../style_pc.css?v=20260329_04" media="(min-width: 769px)">
+    <link rel="stylesheet" href="community_refined.css?v=20260329_04">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="../bsq_server.js?v=20260323_05" defer></script>
+    <script src="../bsq_server.js?v=20260329_04" defer></script>
 </head>
 <body data-layout="community">
     <main class="community-shell">
         <nav class="comm-nav-rail" id="commNavRail">
             <div class="rail-top">
-                <button class="btn-hamburger" id="commHamburgerBtn" title="硫붾돱 열기"><i class="fa-solid fa-bars"></i></button>
+                <button class="btn-hamburger" id="commHamburgerBtn" title="메뉴 열기" aria-label="메뉴 열기"><i class="fa-solid fa-bars"></i></button>
             </div>
             <div class="rail-tabs" id="sidebarTabs">
-                <button class="stab active" data-filter="all" title="전체">
+                <button class="stab active" data-filter="all" title="전체" aria-label="전체">
                     <span class="icon"><i class="fa-solid fa-comments"></i></span>
                 </button>
-                <button class="stab" data-filter="dm" title="1:1">
+                <button class="stab" data-filter="dm" title="1:1" aria-label="1:1 채팅">
                     <span class="icon"><i class="fa-solid fa-user"></i></span>
                 </button>
-                <button class="stab" data-filter="class" title="클래스">
+                <button class="stab" data-filter="class" title="클래스" aria-label="클래스 채팅">
                     <span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>
                 </button>
-                <button class="stab" data-filter="group" title="洹몃９">
+                <button class="stab" data-filter="group" title="그룹" aria-label="그룹 채팅">
                     <span class="icon"><i class="fa-solid fa-users-rectangle"></i></span>
                 </button>
             </div>
@@ -37,13 +37,13 @@
             <div class="sidebar-header">
                 <div class="sidebar-search">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="chatSearchInput" placeholder="梨꾪똿 寃 ">
+                    <input type="text" id="chatSearchInput" placeholder="채팅방 또는 대화 검색" aria-label="채팅방 검색">
                 </div>
             </div>
             <div class="chat-room-list" id="chatRoomList">
                 <div class="chat-list-empty">
                     <i class="fa-regular fa-comments"></i>
-                    <p>梨꾪똿諛⑹씠 없습니다</p>
+                    <p>채팅방이 없습니다</p>
                 </div>
             </div>
         </aside>
@@ -53,7 +53,7 @@
                 <div class="no-chat-inner">
                     <i class="fa-regular fa-comment-dots"></i>
                     <h3>B-Square 커뮤니티</h3>
-                    <p>??붾? 선택?섍굅은행 ?붾? 시작?섏꽭 </p>
+                    <p>대화를 선택하거나 새 대화를 시작해보세요.</p>
                 </div>
             </div>
 
@@ -62,33 +62,33 @@
                     <button class="btn-back-mobile" id="btnBackMobile"><i class="fa-solid fa-arrow-left"></i></button>
                     <div class="chat-header-avatar" id="chatHeaderAvatar"></div>
                     <div class="chat-header-info">
-                        <span class="chat-header-name" id="chatHeaderName">梨꾪똿諛?</span>
+                        <span class="chat-header-name" id="chatHeaderName">채팅방</span>
                         <span class="chat-header-status" id="chatHeaderStatus">오프라인</span>
                     </div>
-                    <a href="#" id="btnGoToClass" class="btn-go-class" style="display:none;"><i class="fa-solid fa-house"></i> 클래스보기</a>
+                    <a href="#" id="btnGoToClass" class="btn-go-class" style="display:none;" aria-label="클래스 상세로 이동"><i class="fa-solid fa-house"></i> 클래스 보기</a>
                     <div class="chat-header-actions">
-                        <button class="btn-header-icon" id="btnChatSearch" title="寃 "><i class="fa-solid fa-magnifying-glass"></i></button>
-                        <button class="btn-header-icon" id="btnOpenPopup" title="팝업 李?"><i class="fa-regular fa-window-restore"></i></button>
-                        <button class="btn-header-icon" id="btnThemeToggle" title="테마 전환"><i id="themeIcon" class="fas fa-moon"></i></button>
-                        <button class="btn-header-icon" id="btnChatInfo" title="정보"><i class="fa-solid fa-circle-info"></i></button>
+                        <button class="btn-header-icon" id="btnChatSearch" title="메시지 검색" aria-label="메시지 검색"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        <button class="btn-header-icon" id="btnOpenPopup" title="팝업 열기" aria-label="팝업 열기"><i class="fa-regular fa-window-restore"></i></button>
+                        <button class="btn-header-icon" id="btnThemeToggle" title="테마 전환" aria-label="테마 전환"><i id="themeIcon" class="fas fa-moon"></i></button>
+                        <button class="btn-header-icon" id="btnChatInfo" title="채팅 정보" aria-label="채팅 정보"><i class="fa-solid fa-circle-info"></i></button>
                     </div>
                 </div>
 
                 <div class="chat-search-bar" id="chatSearchBar" style="display:none;">
-                    <input type="text" id="msgSearchInput" placeholder="硫붿떆吏에서 寃 ">
+                    <input type="text" id="msgSearchInput" placeholder="메시지에서 검색" aria-label="메시지 검색">
                     <span id="msgSearchCount" class="search-count"></span>
-                    <button id="msgSearchClose" class="btn-search-close"><i class="fa-solid fa-xmark"></i></button>
+                    <button id="msgSearchClose" class="btn-search-close" aria-label="검색 닫기"><i class="fa-solid fa-xmark"></i></button>
                 </div>
 
                 <div id="pinnedMsgBar" class="pinned-msg-bar" style="display:none;">
                     <i class="fa-solid fa-thumbtack pin-icon"></i>
-                    <div id="pinnedMsgContent" class="pinned-msg-content"><b>고정 硫붿떆吏</b> 濡쒕뵫 以?..</div>
+                    <div id="pinnedMsgContent" class="pinned-msg-content"><b>고정 메시지</b> 불러오는 중...</div>
                     <i class="fa-solid fa-bars-staggered"></i>
                 </div>
 
                 <div class="chat-messages-container" id="chatMessagesContainer"></div>
 
-                <button id="btnScrollBottom" class="btn-scroll-bottom" title="理쒖떊 硫붿떆吏濡?이동">
+                <button id="btnScrollBottom" class="btn-scroll-bottom" title="최신 메시지로 이동">
                     <i class="fa-solid fa-chevron-down"></i>
                     <span class="badge" id="scrollBadge" style="display:none;">0</span>
                 </button>
@@ -104,19 +104,19 @@
                 <div class="file-drop-overlay" id="fileDropOverlay">
                     <div class="file-drop-inner">
                         <i class="fa-solid fa-paperclip"></i>
-                        <p>파일 여기濡?드래그?섏꽭</p>
+                        <p>파일을 여기로 드래그하세요.</p>
                     </div>
                 </div>
 
                 <div id="chatInputArea" class="chat-input-area">
                     <div class="input-pill-wrapper">
-                        <button class="btn-input-icon-pill" id="btnAttach" title="파일 泥⑤?"><i class="fa-solid fa-paperclip"></i></button>
-                        <button class="btn-input-icon-pill" id="btnGathering" title="클래스紐⑥쭛 카드" style="display:none;"><i class="fa-solid fa-calendar-check"></i></button>
+                        <button class="btn-input-icon-pill" id="btnAttach" title="파일 첨부" aria-label="파일 첨부"><i class="fa-solid fa-paperclip"></i></button>
+                        <button class="btn-input-icon-pill" id="btnGathering" title="클래스 모집 카드" aria-label="모임 카드 만들기" style="display:none;"><i class="fa-solid fa-calendar-check"></i></button>
                         <input type="file" id="fileInput" multiple hidden>
-                        <textarea id="msgInput" placeholder="硫붿떆吏 작성..." rows="1" spellcheck="false"></textarea>
-                        <button class="btn-input-icon-pill" id="btnEmoji" title="?대え吏"><i class="fa-regular fa-face-smile-wink"></i></button>
+                        <textarea id="msgInput" placeholder="메시지를 입력하세요..." rows="1" spellcheck="false" aria-label="메시지 입력"></textarea>
+                        <button class="btn-input-icon-pill" id="btnEmoji" title="이모지" aria-label="이모지"><i class="fa-regular fa-face-smile-wink"></i></button>
                     </div>
-                    <button class="btn-send-pill" id="btnSend" title="硫붿떆吏 전송">
+                    <button class="btn-send-pill" id="btnSend" title="메시지 전송" aria-label="메시지 전송">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
@@ -126,29 +126,29 @@
         <aside class="comm-info-panel" id="commInfoPanel">
             <div class="info-panel-header">
                 <h3 id="infoPanelTitle">프로필</h3>
-                <button class="btn-close-panel" id="btnClosePanel"><i class="fa-solid fa-xmark"></i></button>
+                <button class="btn-close-panel" id="btnClosePanel" aria-label="정보 패널 닫기"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="info-panel-body" id="infoPanelBody"></div>
         </aside>
 
         <div class="hamburger-menu" id="hamburgerMenu" style="display:none;">
             <button class="hm-item" id="hmMyProfile"><i class="fa-regular fa-user"></i> 내 프로필</button>
-            <button class="hm-item" id="hmNewChat"><i class="fa-regular fa-pen-to-square"></i> 은행 시작</button>
-            <button class="hm-item" id="hmGroupChat"><i class="fa-solid fa-users-rectangle"></i> ?⑥껜諛?留뚮뱾湲?</button>
-            <button class="hm-item" id="hmFriends"><i class="fa-regular fa-address-book"></i> 친구 紐⑸줉</button>
-            <button class="hm-item" id="hmSettings"><i class="fa-solid fa-gear"></i> 硫붿떆吏李 ㅼ젙</button>
-            <button class="hm-item" id="hmPopup"><i class="fa-regular fa-window-restore"></i> 硫붿떆吏 팝업李?</button>
-            <button class="hm-item" id="hmClassList"><i class="fa-solid fa-graduation-cap"></i> 클래스紐⑸줉</button>
+            <button class="hm-item" id="hmNewChat"><i class="fa-regular fa-pen-to-square"></i> 새 대화 시작</button>
+            <button class="hm-item" id="hmGroupChat"><i class="fa-solid fa-users-rectangle"></i> 그룹 채팅 만들기</button>
+            <button class="hm-item" id="hmFriends"><i class="fa-regular fa-address-book"></i> 친구 목록</button>
+            <button class="hm-item" id="hmSettings"><i class="fa-solid fa-gear"></i> 메시지 설정</button>
+            <button class="hm-item" id="hmPopup"><i class="fa-regular fa-window-restore"></i> 메시지 팝업</button>
+            <button class="hm-item" id="hmClassList"><i class="fa-solid fa-graduation-cap"></i> 클래스 목록</button>
         </div>
 
         <div class="new-chat-modal" id="newChatModal" style="display:none;">
             <div class="modal-card">
                 <div class="modal-header">
-                    <h3><i class="fa-regular fa-pen-to-square"></i> 은행 시작</h3>
+                    <h3><i class="fa-regular fa-pen-to-square"></i> 새 대화 시작</h3>
                     <button class="btn-close-modal" id="btnCloseModal"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="userSearchInput" placeholder="이름 또는 이메일로 寃 ">
+                    <input type="text" id="userSearchInput" placeholder="이름 또는 이메일로 검색">
                     <div class="user-search-results" id="userSearchResults"></div>
                 </div>
             </div>
@@ -157,15 +157,15 @@
         <div class="new-chat-modal" id="groupChatModal" style="display:none;">
             <div class="modal-card">
                 <div class="modal-header">
-                    <h3><i class="fa-solid fa-users-rectangle"></i> ?⑥껜 梨꾪똿 留뚮뱾湲?</h3>
+                    <h3><i class="fa-solid fa-users-rectangle"></i> 그룹 채팅 만들기</h3>
                     <button class="btn-close-modal" id="btnCloseGroupModal"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="modal-body">
                     <input type="text" id="groupNameInput" placeholder="그룹 이름" style="margin-bottom:8px;">
-                    <input type="text" id="groupSearchInput" placeholder="硫ㅻ쾭 寃 ">
+                    <input type="text" id="groupSearchInput" placeholder="멤버 검색">
                     <div class="selected-members" id="selectedMembers"></div>
                     <div class="user-search-results" id="groupSearchResults"></div>
-                    <button class="btn-create-group" id="btnCreateGroup">洹몃９ 留뚮뱾湲?</button>
+                    <button class="btn-create-group" id="btnCreateGroup">그룹 만들기</button>
                 </div>
             </div>
         </div>
@@ -173,11 +173,11 @@
         <div class="new-chat-modal" id="friendsModal" style="display:none;">
             <div class="modal-card modal-card-wide">
                 <div class="modal-header">
-                    <h3><i class="fa-regular fa-address-book"></i> 친구 紐⑸줉</h3>
+                    <h3><i class="fa-regular fa-address-book"></i> 친구 목록</h3>
                     <button class="btn-close-modal" id="btnCloseFriendsModal"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="modal-body friends-modal-body">
-                    <input type="text" id="friendSearchInput" placeholder="친구 추가 寃 ">
+                    <input type="text" id="friendSearchInput" placeholder="친구 추가 검색">
                     <div class="friend-grid">
                         <section class="friend-block">
                             <div class="friend-block-title">받은 요청 <span id="pendingCount">0</span></div>
@@ -196,20 +196,20 @@
         <div class="new-chat-modal" id="messageSettingsModal" style="display:none;">
             <div class="modal-card modal-card-wide">
                 <div class="modal-header">
-                    <h3><i class="fa-solid fa-sliders"></i> 硫붿떆吏李 ㅼ젙</h3>
+                    <h3><i class="fa-solid fa-sliders"></i> 메시지 설정</h3>
                     <button class="btn-close-modal" id="btnCloseSettingsModal"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="modal-body settings-modal-body">
                     <button class="settings-theme-btn" id="btnSettingsTheme"><i class="fa-solid fa-moon"></i> 테마 전환</button>
-                    <button class="settings-theme-btn" id="btnSettingsPopup"><i class="fa-regular fa-window-restore"></i> 현재 梨꾪똿 팝업</button>
+                    <button class="settings-theme-btn" id="btnSettingsPopup"><i class="fa-regular fa-window-restore"></i> 현재 채팅 팝업</button>
                     <label class="setting-row"><span>Enter로 전송</span><input type="checkbox" id="settingEnterToSend"></label>
-                    <label class="setting-row"><span>而댄뙥 諛</span>
+                    <label class="setting-row"><span>메시지 밀도</span>
                         <select id="settingDensity">
-                            <option value="comfortable">蹂댄넻</option>
-                            <option value="compact">而댄뙥</option>
+                            <option value="comfortable">넓게</option>
+                            <option value="compact">좁게</option>
                         </select>
                     </label>
-                    <label class="setting-row"><span>紐⑥뀡 以꾩씠湲?</span><input type="checkbox" id="settingReduceMotion"></label>
+                    <label class="setting-row"><span>모션 줄이기</span><input type="checkbox" id="settingReduceMotion"></label>
                     <button class="btn-submit" id="btnResetShellSettings">설정 초기화</button>
                 </div>
             </div>
@@ -218,16 +218,16 @@
         <div class="new-chat-modal" id="gatheringModal" style="display:none;">
             <div class="modal-card">
                 <div class="modal-header">
-                    <h3><i class="fa-solid fa-calendar-check"></i> 클래스紐⑥쭛 카드 蹂대궡湲?</h3>
+                    <h3><i class="fa-solid fa-calendar-check"></i> 클래스 모집 카드 생성</h3>
                     <button class="btn-close-modal" id="btnCloseGatheringModal"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="gatherTitle" placeholder="紐⑥쭛 제목" style="margin-bottom:8px;">
+                    <input type="text" id="gatherTitle" placeholder="모임 제목" style="margin-bottom:8px;">
                     <input type="text" id="gatherTime" placeholder="시간 / 일정" style="margin-bottom:8px;">
                     <input type="text" id="gatherPlace" placeholder="장소" style="margin-bottom:8px;">
-                    <input type="number" id="gatherMin" placeholder="理쒖냼 인원" style="margin-bottom:8px;">
-                    <input type="number" id="gatherMax" placeholder="理쒕? 인원" style="margin-bottom:8px;">
-                    <button class="btn-submit" id="btnSendGatheringSubmit">紐⑥쭛 카드 전송</button>
+                    <input type="number" id="gatherMin" placeholder="최소 인원" style="margin-bottom:8px;">
+                    <input type="number" id="gatherMax" placeholder="최대 인원" style="margin-bottom:8px;">
+                    <button class="btn-submit" id="btnSendGatheringSubmit">모임 카드 전송</button>
                 </div>
             </div>
         </div>
@@ -235,7 +235,7 @@
         <div class="new-chat-modal" id="folderModal" style="display:none;">
             <div class="modal-card">
                 <div class="modal-header">
-                    <h3><i class="fa-solid fa-folder-open"></i> ?대뜑 愿由?</h3>
+                    <h3><i class="fa-solid fa-folder-open"></i> 폴더 관리</h3>
                     <button class="btn-close-modal" id="btnCloseFolderModal"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="modal-body">
@@ -254,14 +254,14 @@
         </div>
     </main>
 
-    <script src="../header.js?v=20260324_03" defer></script>
-    <script src="../kakao_quick.js" defer></script>
-    <script src="../dev_mode.js" defer></script>
-    <script src="community_shared_v2.js" defer></script>
-    <script src="sync_bridge.js" defer></script>
-    <script src="dm_private.js" defer></script>
-    <script src="chat_list_v2.js" defer></script>
-    <script src="chat_ui.js" defer></script>
-    <script src="community_v2.js" defer></script>
+    <script src="../header.js?v=20260329_04" defer></script>
+    <script src="../kakao_quick.js?v=20260329_04" defer></script>
+    <script src="../dev_mode.js?v=20260329_04" defer></script>
+    <script src="community_shared_v2.js?v=20260329_04" defer></script>
+    <script src="sync_bridge.js?v=20260329_04" defer></script>
+    <script src="dm_private.js?v=20260329_04" defer></script>
+    <script src="chat_list_v2.js?v=20260329_04" defer></script>
+    <script src="chat_ui.js?v=20260329_04" defer></script>
+    <script src="community_v2.js?v=20260329_04" defer></script>
 </body>
 </html>

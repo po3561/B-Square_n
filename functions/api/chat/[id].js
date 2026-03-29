@@ -1,4 +1,4 @@
-import { isAtLeastRole, requireClassManager, requireSession } from '../_lib/auth.js';
+﻿import { isAtLeastRole, requireClassManager, requireSession } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
 
 const CHAT_MESSAGE_COLUMNS = `
@@ -31,6 +31,10 @@ function parseMaybeJson(value, fallback = null) {
   }
 }
 
+function trimText(value) {
+  return String(value ?? '').trim();
+}
+
 function normalizeChatMessage(row) {
   if (!row) return row;
 
@@ -42,7 +46,7 @@ function normalizeChatMessage(row) {
     content,
     message: row.message || content,
     text: row.text || content,
-    file_data: row.file_data || row.image_url || null,
+    file_data: row.image_url ?? row.file_data ?? null,
     reply_data: replyData || null,
     reactions: reactions && typeof reactions === 'object' ? reactions : {},
     edited: row.edited || row.is_edited === 1 || row.is_edited === true,
@@ -88,7 +92,7 @@ export async function onRequest(context) {
 
     if (request.method === 'PUT' || request.method === 'PATCH') {
       const body = await request.json();
-      const content = String(body.message || body.content || '').trim();
+      const content = trimText(body.message || body.content || '');
       if (!content) {
         return json(request, env, { success: false, error: 'message is required' }, { status: 400 });
       }

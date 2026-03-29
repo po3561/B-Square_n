@@ -1,4 +1,4 @@
-function showMypageNotice(type, title, message, duration = 3000) {
+﻿function showMypageNotice(type, title, message, duration = 3000) {
     const host = document.getElementById('mypageNotice');
     if (!host) return;
 
@@ -19,8 +19,18 @@ function showMypageNotice(type, title, message, duration = 3000) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const session = window.BSQ?.session;
-    const isOperator = !!window.__BSQ_DEV_MODE__;
+    let session = window.BSQ?.session;
+    let isOperator = !!window.__BSQ_DEV_MODE__;
+
+    if (!session && !isOperator && window.BSQ?.ready?.then) {
+        try {
+            await window.BSQ.ready;
+        } catch {
+            // Continue with the current state if auth hydration fails.
+        }
+        session = window.BSQ?.session;
+        isOperator = !!window.__BSQ_DEV_MODE__;
+    }
 
     if (!session && !isOperator) {
         showMypageNotice('info', '로그인이 필요합니다', '로그인 화면으로 이동합니다.');
@@ -49,14 +59,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (typeof window.initProfileTab === 'function') window.initProfileTab(userId, user);
     if (typeof window.initSecurityTab === 'function') window.initSecurityTab(userId);
     if (typeof window.initChatSubTab === 'function') window.initChatSubTab(userId);
-
-    document.querySelectorAll('.nav-btn').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            if (btn.dataset.target === 'tabFriends') {
-                loadFriends(userId);
-            }
-        });
-    });
 
     async function loadFriends(uid) {
         const pendingArea = document.getElementById('pendingFriendList');
@@ -169,7 +171,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.addEventListener('click', () => {
                 const target = btn.dataset.target;
                 navBtns.forEach((b) => b.classList.remove('active'));
+                navBtns.forEach((b) => b.removeAttribute('aria-current'));
                 btn.classList.add('active');
+                btn.setAttribute('aria-current', 'page');
                 tabs.forEach((tab) => tab.classList.remove('active'));
                 document.getElementById(target)?.classList.add('active');
 

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS user_coupon_wallet (
+﻿CREATE TABLE IF NOT EXISTS user_coupon_wallet (
   id TEXT PRIMARY KEY,
   coupon_code TEXT NOT NULL,
   user_id TEXT NOT NULL,

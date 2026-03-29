@@ -1,4 +1,4 @@
-// auth.js — B-Square 회원가입 (D1 API 기반)
+﻿// auth.js — B-Square 회원가입 (D1 API 기반)
 (function () {
     let _isIdChecked = false;
 

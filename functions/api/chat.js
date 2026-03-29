@@ -1,4 +1,4 @@
-import { requireSession } from './_lib/auth.js';
+﻿import { requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
 
 function parseMaybeJson(value, fallback = null) {
@@ -9,6 +9,24 @@ function parseMaybeJson(value, fallback = null) {
   } catch {
     return fallback;
   }
+}
+
+function trimText(value) {
+  return String(value ?? '').trim();
+}
+
+function toSQLiteTimestamp(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  const date = new Date(numeric);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function isTruthyFlag(value) {
+  if (value === true || value === 1) return true;
+  const text = String(value ?? '').trim().toLowerCase();
+  return text === '1' || text === 'true' || text === 'yes';
 }
 
 function normalizeChatMessage(row) {
@@ -22,7 +40,7 @@ function normalizeChatMessage(row) {
     content,
     message: row.message || content,
     text: row.text || content,
-    file_data: row.file_data || row.image_url || null,
+    file_data: row.image_url ?? row.file_data ?? null,
     reply_data: replyData || null,
     reactions: reactions && typeof reactions === 'object' ? reactions : {},
     edited: row.edited || row.is_edited === 1 || row.is_edited === true,
@@ -58,9 +76,19 @@ function buildSinceClause(since, after) {
   if (hasSince) {
     const numeric = Number(since);
     if (Number.isFinite(numeric)) {
+      const timestamp = toSQLiteTimestamp(numeric);
+      if (!timestamp) {
+        return {
+          sql: '',
+          bind: null,
+          orderSql: 'ORDER BY created_at ASC, id ASC',
+        };
+      }
+
       return {
-        sql: " AND (strftime('%s', COALESCE(updated_at, created_at)) * 1000) > ?",
-        bind: numeric,
+        sql: ' AND updated_at > ?',
+        bind: timestamp,
+        orderSql: 'ORDER BY updated_at ASC, id ASC',
       };
     }
   }
@@ -70,10 +98,11 @@ function buildSinceClause(since, after) {
     return {
       sql: ' AND created_at > (SELECT created_at FROM chat_messages WHERE id = ?)',
       bind: String(after),
+      orderSql: 'ORDER BY created_at ASC, id ASC',
     };
   }
 
-  return { sql: '', bind: null };
+  return { sql: '', bind: null, orderSql: 'ORDER BY created_at ASC, id ASC' };
 }
 
 const CHAT_MESSAGE_COLUMNS = `
@@ -107,17 +136,27 @@ function buildChatMessageSelect(whereSql = '', orderSql = '', limitSql = '') {
 }
 
 async function streamMessages(context, classId, since) {
-  const { env } = context;
+  const { env, request } = context;
   const encoder = new TextEncoder();
   let lastSince = Number(since) || 0;
+  let cancelled = false;
+  const abort = () => { cancelled = true; };
+
+  if (request?.signal?.aborted) {
+    cancelled = true;
+  }
+
+  try {
+    request?.signal?.addEventListener('abort', abort, { once: true });
+  } catch {}
 
   const stream = new ReadableStream({
     async start(controller) {
       controller.enqueue(encoder.encode('retry: 3000\n\n'));
 
-      while (true) {
+      while (!cancelled) {
         const clause = buildSinceClause(lastSince, null);
-        let query = buildChatMessageSelect(clause.sql, 'ORDER BY created_at ASC, id ASC', 'LIMIT 100');
+        let query = buildChatMessageSelect(clause.sql, clause.orderSql, 'LIMIT 100');
         const binds = [classId];
 
         if (clause.sql) {
@@ -139,6 +178,13 @@ async function streamMessages(context, classId, since) {
 
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
+
+      try {
+        controller.close();
+      } catch {}
+    },
+    cancel() {
+      abort();
     },
   });
 
@@ -157,12 +203,12 @@ export async function onRequestGet(context) {
   if (!auth.ok) return auth.response;
 
   const url = new URL(request.url);
-  const classId = url.searchParams.get('class_id');
-  const limit = Math.min(parseInt(url.searchParams.get('limit'), 10) || 100, 200);
-  const after = url.searchParams.get('after');
-  const since = url.searchParams.get('since');
-  const pinnedOnly = ['1', 'true', 'yes'].includes((url.searchParams.get('pinned_only') || '').toLowerCase());
-  const stream = ['1', 'true', 'yes'].includes((url.searchParams.get('stream') || '').toLowerCase());
+    const classId = url.searchParams.get('class_id');
+    const limit = Math.min(parseInt(url.searchParams.get('limit'), 10) || 50, 100);
+    const after = url.searchParams.get('after');
+    const since = url.searchParams.get('since');
+    const pinnedOnly = ['1', 'true', 'yes'].includes((url.searchParams.get('pinned_only') || '').toLowerCase());
+    const stream = ['1', 'true', 'yes'].includes((url.searchParams.get('stream') || '').toLowerCase());
 
   if (!classId) {
     return json(request, env, { success: false, error: 'class_id is required' }, { status: 400 });
@@ -175,22 +221,34 @@ export async function onRequestGet(context) {
 
     let results;
     if (pinnedOnly) {
-      const query = buildChatMessageSelect(' AND is_pinned = 1', 'ORDER BY COALESCE(updated_at, created_at) DESC, id DESC', 'LIMIT ?');
-      ({ results } = await env.DB.prepare(query).bind(classId, limit).all());
+      const query = buildChatMessageSelect(' AND is_pinned = 1', 'ORDER BY updated_at DESC, id DESC', 'LIMIT ?');
+      ({ results } = await env.DB.prepare(query).bind(classId, limit + 1).all());
     } else {
       const clause = buildSinceClause(since, after);
-      const query = buildChatMessageSelect(clause.sql, 'ORDER BY created_at ASC, id ASC', 'LIMIT ?');
+      const query = buildChatMessageSelect(clause.sql, clause.orderSql, 'LIMIT ?');
       const binds = [classId];
 
       if (clause.sql) {
         binds.push(clause.bind);
       }
 
-      binds.push(limit);
+      binds.push(limit + 1);
       ({ results } = await env.DB.prepare(query).bind(...binds).all());
     }
 
-    return json(request, env, { success: true, data: (results || []).map(normalizeChatMessage) });
+    const rows = (results || []).map(normalizeChatMessage);
+    const hasMore = rows.length > limit;
+    const data = hasMore ? rows.slice(0, limit) : rows;
+
+    return json(request, env, {
+      success: true,
+      data,
+      meta: {
+        limit,
+        count: data.length,
+        has_more: hasMore,
+      },
+    });
   } catch (error) {
     return json(request, env, { success: false, error: 'Failed to load chat messages', detail: error.message }, { status: 500 });
   }
@@ -204,16 +262,20 @@ export async function onRequestPost(context) {
   try {
     const body = await request.json();
     const classId = body.class_id;
-    const message = body.message || body.content || body.text || body.file_name || '';
-    const attachmentUrl = body.image_url || body.file_data || null;
+    const message = trimText(body.message || body.content || body.text || body.file_name || '');
+    const attachmentUrl = trimText(body.image_url || body.file_data || '') || null;
 
     if (!classId || (!message && !attachmentUrl)) {
       return json(request, env, { success: false, error: 'message or attachment is required' }, { status: 400 });
     }
 
     const id = 'msg_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16);
-    const replyData = body.reply_data ? JSON.stringify(body.reply_data) : null;
-    const reactions = body.reactions ? JSON.stringify(body.reactions) : '{}';
+    const replyData = typeof body.reply_data === 'string'
+      ? body.reply_data
+      : (body.reply_data ? JSON.stringify(body.reply_data) : null);
+    const reactions = typeof body.reactions === 'string'
+      ? body.reactions
+      : JSON.stringify(body.reactions || {});
 
     await env.DB.prepare(
       'INSERT INTO chat_messages (id, class_id, user_id, user_name, user_avatar, message, reply_to, reply_data, type, image_url, file_name, file_size, is_pinned, reactions, is_edited) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
@@ -221,16 +283,16 @@ export async function onRequestPost(context) {
       id,
       classId,
       auth.user.id,
-      body.user_name || auth.user.name || auth.user.username || 'User',
-      body.user_avatar || auth.user.profile_image_url || '',
+      trimText(body.user_name) || trimText(auth.user.name) || trimText(auth.user.username) || 'User',
+      trimText(body.user_avatar) || trimText(auth.user.profile_image_url) || '',
       message,
-      body.reply_to || null,
+      trimText(body.reply_to) || null,
       replyData,
-      body.type || 'text',
+      trimText(body.type) || 'text',
       attachmentUrl,
-      body.file_name || null,
-      body.file_size || null,
-      body.is_pinned ? 1 : 0,
+      trimText(body.file_name) || null,
+      Number.isFinite(Number(body.file_size)) ? Number(body.file_size) : null,
+      isTruthyFlag(body.is_pinned) ? 1 : 0,
       reactions,
       0,
     ).run();
@@ -262,7 +324,7 @@ export async function onRequestPatch(context) {
     }
 
     await env.DB.prepare('UPDATE chat_messages SET is_pinned = ?, updated_at = datetime(\'now\') WHERE id = ?')
-      .bind(is_pinned ? 1 : 0, id)
+      .bind(isTruthyFlag(is_pinned) ? 1 : 0, id)
       .run();
 
     const updated = await env.DB.prepare(`SELECT ${CHAT_MESSAGE_COLUMNS} FROM chat_messages WHERE id = ?`)

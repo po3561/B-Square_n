@@ -1,4 +1,4 @@
-// GET  /api/friends?user_id=xxx           -> accepted friends
+﻿// GET  /api/friends?user_id=xxx           -> accepted friends
 // GET  /api/friends?user_id=xxx&pending=1 -> pending requests
 // POST /api/friends { action, user_id, friend_id }
 

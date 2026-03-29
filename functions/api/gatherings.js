@@ -1,4 +1,4 @@
-import { ensureGatheringsSchema } from './_lib/schema.js';
+﻿import { ensureGatheringsSchema } from './_lib/schema.js';
 import { refreshClassStats } from './_lib/class_support.js';
 
 export async function onRequestGet(context) {

@@ -1,4 +1,4 @@
-// notice_admin.js - 운영자전용 (D1 API 기반)
+﻿// notice_admin.js - 운영자전용 (D1 API 기반)
 document.addEventListener('DOMContentLoaded', async () => {
     // bsq_server.js 초기화 대기
     if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;

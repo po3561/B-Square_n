@@ -1,4 +1,4 @@
-// header.js - B-Square shared header / drawer / footer shell
+﻿// header.js - B-Square shared header / drawer / footer shell
 (function () {
   'use strict';
 
@@ -408,20 +408,25 @@
   }
 
   async function initAuth() {
-    const session = window.BSQ?.session;
-    const user = session?.user || null;
-    renderAuthenticatedMenu(session, user);
-    void applyShellBranding();
+    const renderCurrentSession = () => {
+      const nextSession = window.BSQ?.session;
+      renderAuthenticatedMenu(nextSession, nextSession?.user || null);
+      void applyShellBranding();
+    };
 
-    if (window.BSQ?.ready?.then) {
-      window.BSQ.ready.then(() => {
-        const nextSession = window.BSQ?.session;
-        renderAuthenticatedMenu(nextSession, nextSession?.user || null);
-        void applyShellBranding();
-      }).catch((error) => {
+    renderCurrentSession();
+
+    if (window.BSQ?.sessionBootstrapPromise?.then) {
+      window.BSQ.sessionBootstrapPromise.then(renderCurrentSession).catch((error) => {
+        console.warn('[BSQ] Auth hydration skipped:', error);
+      });
+    } else if (window.BSQ?.ready?.then) {
+      window.BSQ.ready.then(renderCurrentSession).catch((error) => {
         console.warn('[BSQ] Auth hydration skipped:', error);
       });
     }
+
+    window.addEventListener('bsq_session', renderCurrentSession);
   }
 
   window.handleGlobalLogout = async function () {

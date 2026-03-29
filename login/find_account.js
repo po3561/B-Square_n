@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async () => {
+﻿document.addEventListener('DOMContentLoaded', async () => {
     const emailInput = document.getElementById('findEmail');
     const submitBtn = document.querySelector('.btn-submit');
     const stepIndicators = document.querySelectorAll('.step-item');

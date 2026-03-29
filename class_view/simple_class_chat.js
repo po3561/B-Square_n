@@ -17,6 +17,7 @@
     };
 
     const EMOJIS = ['😀', '😂', '🥰', '😍', '🤔', '😅', '😎', '🥳', '😢', '😡', '👍', '👎', '❤️', '🔥', '⭐', '🎉', '💯', '🙌', '👏', '🤝', '💪', '🙏', '✨', '💬'];
+    const MESSAGE_CURSOR_OVERLAP_MS = 1000;
 
     function bridge() { return window.CommunityModules?.SyncBridge || null; }
     function q(id) { return document.getElementById(id); }
@@ -59,6 +60,11 @@
             msg?.reply_to || '', msg?.reply_text || '', msg?.reply_user || '',
             msg?.is_pinned ? '1' : '0', msg?.edited ? '1' : '0', msg?.updated_at || '', reactions,
         ].join('||');
+    }
+
+    function replaySince(cursor) {
+        const numeric = Number(cursor) || 0;
+        return numeric > 0 ? Math.max(0, numeric - MESSAGE_CURSOR_OVERLAP_MS) : 0;
     }
 
     function getContainer() { return q('chatMessagesContainer'); }
@@ -227,7 +233,7 @@
         const params = new URLSearchParams();
         params.set('class_id', state.classId);
         params.set('limit', String(limit));
-        if (since !== '' && since != null) params.set('since', String(since));
+        if (since !== '' && since != null) params.set('since', String(replaySince(since)));
         if (pinnedOnly) params.set('pinned_only', '1');
         const res = await window.BSQ.api(`/api/chat?${params.toString()}`);
         if (!res?.success) return [];
@@ -291,6 +297,7 @@
             since: state.lastCursor,
             seedMessages,
             limit: 120,
+            cursorOverlapMs: MESSAGE_CURSOR_OVERLAP_MS,
         });
     }
 
@@ -355,7 +362,7 @@
             </div>`;
 
         const row = existing || document.createElement('div');
-        row.className = `msg-row ${isMine ? 'mine' : 'other'} ${msg.is_pinned ? 'pinned' : ''}${optimistic ? ' pending' : ''}`;
+        row.className = `msg-row ${isMine ? 'mine' : 'other'} ${msg.is_pinned ? 'pinned' : ''}${msg.__pending ? ' pending' : ''}`;
         row.id = `msg-${id}`;
         row.dataset.messageId = id;
         row.dataset.signature = signature;
@@ -442,9 +449,11 @@
                     client_id: clientId,
                 }),
             });
-            if (res?.success && res.data) {
-                renderMessage(normalizeMessage({ ...res.data, client_id: res.data.client_id || clientId }), { optimistic: true });
+            if (!res?.success || !res.data) {
+                throw new Error(res?.error || '메시지 전송에 실패했습니다.');
             }
+
+            renderMessage(normalizeMessage({ ...res.data, client_id: res.data.client_id || clientId }), { optimistic: true });
             input.value = '';
             clearReplyPreview();
         } catch (error) {
@@ -497,13 +506,15 @@
                             type: isImage ? 'image' : 'file',
                             file_name: file.name,
                             file_size: file.size,
-                            file_data: event.target.result,
+                            image_url: event.target.result,
                             client_id: tempId,
                         }),
                     });
-                    if (res?.success && res.data) {
-                        renderMessage(normalizeMessage({ ...res.data, client_id: res.data.client_id || tempId }), { optimistic: true });
+                    if (!res?.success || !res.data) {
+                        throw new Error(res?.error || '파일 전송에 실패했습니다.');
                     }
+
+                    renderMessage(normalizeMessage({ ...res.data, client_id: res.data.client_id || tempId }), { optimistic: true });
                 } catch (error) {
                     console.warn('file upload failed:', error);
                     removeCachedMessage(tempId);
@@ -553,24 +564,27 @@
                     capacity_max: Number(maxCap) || 0,
                 }),
             });
-            if (res?.success && res.data) {
-                const gatheringId = res.data.id;
-                const chatRes = await window.BSQ.api('/api/chat', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        class_id: state.classId,
-                        user_id: state.userId,
-                        user_name: profile.name || 'User',
-                        user_avatar: profile.profile_image_url || '',
-                        type: 'gathering',
-                        message: JSON.stringify({ gathering_id: gatheringId, title, location: place, gathering_at: time, capacity_max: Number(maxCap) || 0 }),
-                        client_id: clientId,
-                    }),
-                });
-                if (chatRes?.success && chatRes.data) {
-                    renderMessage(normalizeMessage({ ...chatRes.data, client_id: chatRes.data.client_id || clientId }), { optimistic: true });
-                }
+            if (!res?.success || !res.data) {
+                throw new Error(res?.error || '모집 카드 생성에 실패했습니다.');
             }
+
+            const gatheringId = res.data.id;
+            const chatRes = await window.BSQ.api('/api/chat', {
+                method: 'POST',
+                body: JSON.stringify({
+                    class_id: state.classId,
+                    user_id: state.userId,
+                    user_name: profile.name || 'User',
+                    user_avatar: profile.profile_image_url || '',
+                    type: 'gathering',
+                    message: JSON.stringify({ gathering_id: gatheringId, title, location: place, gathering_at: time, capacity_max: Number(maxCap) || 0 }),
+                    client_id: clientId,
+                }),
+            });
+            if (!chatRes?.success || !chatRes.data) {
+                throw new Error(chatRes?.error || '모집 카드 전송에 실패했습니다.');
+            }
+            renderMessage(normalizeMessage({ ...chatRes.data, client_id: chatRes.data.client_id || clientId }), { optimistic: true });
         } catch (error) {
             console.warn('sendGatheringCard failed:', error);
             removeCachedMessage(clientId);
@@ -585,7 +599,6 @@
             });
             if (res?.success) {
                 await loadPinnedMessages();
-                await loadInitialMessages();
             }
         } catch (error) {
             console.warn('joinGathering failed:', error);
@@ -600,7 +613,6 @@
             });
             if (res?.success) {
                 await loadPinnedMessages();
-                await loadInitialMessages();
             }
         } catch (error) {
             console.warn('closeGathering failed:', error);
@@ -826,6 +838,15 @@
     }
 
     function init(_, classId, userId, hasAccess, isInstructor) {
+        stopFeed();
+        state.lastCursor = 0;
+        state.pinnedMessages = [];
+        state.messageCache = new Map();
+        state.replyTarget = null;
+        state.editTargetId = null;
+        state.deletePrompt = { id: null, at: 0 };
+        setPendingState(false);
+
         state.classId = classId;
         state.userId = userId;
         state.userProfile = window.BSQ?.session?.user || { name: 'User', profile_image_url: '' };

@@ -1,4 +1,4 @@
-// dev_mode.js - legacy compatibility shim
+﻿// dev_mode.js - legacy compatibility shim
 // The old keyboard PIN/code developer backdoor was removed.
 // This file mirrors the explicit operator-mode toggle used by the header.
 (function () {

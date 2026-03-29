@@ -1,4 +1,4 @@
-window.CommunityModules = window.CommunityModules || {};
+﻿window.CommunityModules = window.CommunityModules || {};
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.BSQ?.ready) await window.BSQ.ready;

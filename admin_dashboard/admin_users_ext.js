@@ -1,4 +1,4 @@
-// admin_users_ext.js - member management extensions
+﻿// admin_users_ext.js - member management extensions
 
 (function () {
   if (window.__BSQ_ADMIN_USERS_EXT__) return;

@@ -1,4 +1,4 @@
-# 🛠️ Class View 복구 완료 보고 (최종)
+﻿# 🛠️ Class View 복구 완료 보고 (최종)
 
 사용자님의 엄중한 요청에 따라, 파손되었던 `class_view` 모듈을 **Apple Mac & Telegram Premium 스타일**로 완벽하게 재건하였습니다. 
 

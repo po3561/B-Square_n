@@ -1,4 +1,4 @@
-/* class_view.js - Modular Orchestrator & Payment Controller (D1 API 기반) */
+﻿/* class_view.js - Modular Orchestrator & Payment Controller (D1 API 기반) */
 
 const urlParams = new URLSearchParams(window.location.search);
 const classId = urlParams.get('id') || urlParams.get('classId');
@@ -23,6 +23,47 @@ function safeParseArray(value, fallback = []) {
     } catch {
         return fallback;
     }
+}
+
+function formatMoney(value, fallback = '0원') {
+    const num = Number(value);
+    if (!Number.isFinite(num) || num <= 0) return fallback;
+    return `${num.toLocaleString()}원`;
+}
+
+function getHeroSummary(data) {
+    const summary = String(data?.summary || data?.subtitle || '').trim();
+    if (summary) return summary.replace(/\s+/g, ' ').slice(0, 120);
+    const description = String(data?.description || '')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .trim();
+    if (description) return description.replace(/\s+/g, ' ').slice(0, 120);
+    const category = String(data?.category || '클래스').trim();
+    const instructor = String(data?.creator_name || data?.instructor_name || '').trim();
+    return instructor ? `${category} · ${instructor} 클래스의 핵심 흐름을 한눈에 확인할 수 있습니다.` : `${category} 클래스의 핵심 흐름을 한눈에 확인할 수 있습니다.`;
+}
+
+function getPriceSummary(data, price) {
+    if (data?.tickets?.price_monthly) {
+        return `${Number(data.tickets.price_monthly).toLocaleString()}원 / 월`;
+    }
+    if (data?.tickets?.price_multi && data?.tickets?.pass_count) {
+        return `${Number(data.tickets.price_multi).toLocaleString()}원 / ${data.tickets.pass_count}회`;
+    }
+    if (data?.tickets?.price_one_time) {
+        return `${Number(data.tickets.price_one_time).toLocaleString()}원`;
+    }
+    return Number(price) > 0 ? `${Number(price).toLocaleString()}원` : '무료';
+}
+
+function getOfferSummary(data) {
+    const ticketParts = [];
+    if (data?.tickets?.price_one_time) ticketParts.push('1회');
+    if (data?.tickets?.price_multi && data?.tickets?.pass_count) ticketParts.push(`${data.tickets.pass_count}회`);
+    if (data?.tickets?.price_monthly) ticketParts.push('월정액');
+    if (ticketParts.length) return ticketParts.join(' · ');
+    return Number(data?.price || 0) > 0 ? '단일 수강권' : '무료 수강';
 }
 
 function getClassImageUrl(data) {
@@ -194,9 +235,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. BSQ 초기화 대기 (D1 API 기반)
     ensureCommerceControls();
 
+    const needsAuthHydration = !window.BSQ?.session && !window.__BSQ_DEV_MODE__ && window.BSQ?.ready?.then;
+    const authReadyPromise = needsAuthHydration ? window.BSQ.ready.catch(() => null) : Promise.resolve();
+    const classRequest = window.BSQ.api(`/api/classes/${classId}`);
+    let accessPromise = null;
+
     // 2. 세션 확인 (D1 API 쿠키 기반)
-    const session = window.BSQ?.session;
-    const isOperator = window.__BSQ_DEV_MODE__ === true;
+    let session = window.BSQ?.session;
+    let isOperator = window.__BSQ_DEV_MODE__ === true;
+
+    if (needsAuthHydration) {
+        await authReadyPromise;
+        session = window.BSQ?.session;
+        isOperator = window.__BSQ_DEV_MODE__ === true;
+    }
 
     if (session || isOperator) {
         userId = isOperator ? 'OPERATOR_GHOST' : session.user.id;
@@ -207,13 +259,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             userProfile = session.user;
         }
+
+        if (userId && !window.__BSQ_DEV_MODE__) {
+            accessPromise = Promise.all([
+                window.BSQ.api(`/api/enrollments?user_id=${userId}&class_id=${classId}`),
+                window.BSQ.api(`/api/user-passes?user_id=${userId}`),
+            ]).then(([enrollResult, passResult]) => ({ enrollResult, passResult }))
+                .catch((error) => ({ error }));
+        }
     } else {
         console.warn('⚠️ 미로그인 상태');
     }
 
     // 3. ★ D1 API에서 클래스 데이터 로드
     try {
-        const result = await window.BSQ.api(`/api/classes/${classId}`);
+        const result = await classRequest;
         if (result.success && result.data) {
             classData = result.data;
         }
@@ -263,18 +323,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (window.BSquareModules.initCurriculum) window.BSquareModules.initCurriculum(classData);
 
                 // ★ D1 API로 수강 여부 확인
-                if (userId && !window.__BSQ_DEV_MODE__) {
+                if (accessPromise) {
                     try {
-                        const [enrollResult, passResult] = await Promise.all([
-                            window.BSQ.api(`/api/enrollments?user_id=${userId}&class_id=${classId}`),
-                            window.BSQ.api(`/api/user-passes?user_id=${userId}`),
-                        ]);
+                        const accessResult = await accessPromise;
+                        if (accessResult?.error) {
+                            throw accessResult.error;
+                        }
+                        const { enrollResult, passResult } = accessResult || {};
 
-                        if (enrollResult.success) {
+                        if (enrollResult?.success) {
                             isEnrolled = enrollResult.data?.enrolled || false;
                         }
 
-                        if (passResult.success && Array.isArray(passResult.data)) {
+                        if (passResult?.success && Array.isArray(passResult.data)) {
                             const currentPass = passResult.data.find((item) => item.class_id === classId);
                             userPassCount = currentPass?.remaining_count ?? currentPass?.remaining_passes ?? currentPass?.remaining ?? 0;
                             isMonthlySubscribed = (currentPass?.pass_type || '') === 'monthly';
@@ -283,6 +344,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         console.warn("수강 상태 확인 실패:", enrollErr);
                     }
                 }
+
+                accessPromise = null;
 
                 const hasAccess = isEnrolled || isInstructor || window.__BSQ_DEV_MODE__;
                 console.log("🔑 권한 상태:", { isEnrolled, isInstructor, hasAccess });
@@ -423,8 +486,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 8. 스크롤 격리
     const tabChat = document.getElementById('tabChat');
     if (tabChat) {
-        tabChat.addEventListener('mouseenter', () => { document.body.style.overflow = 'hidden'; });
-        tabChat.addEventListener('mouseleave', () => { document.body.style.overflow = ''; });
+        tabChat.addEventListener('mouseenter', () => { document.documentElement.style.scrollBehavior = 'auto'; });
+        tabChat.addEventListener('mouseleave', () => { document.documentElement.style.scrollBehavior = ''; });
     }
 });
 
@@ -889,6 +952,8 @@ async function finalizeEnrollment(rsp) {
 function renderCorePageInfo(data) {
     document.getElementById('viewTitle').textContent = data.title;
     document.getElementById('sidebarTitle').textContent = data.title;
+    document.getElementById('heroSummary').textContent = getHeroSummary(data);
+    document.getElementById('heroInstructor').textContent = data.creator_name || data.instructor_name || '강사 정보 없음';
     // 채팅 헤더에 클래스명 채팅채널 표시
     const chatHeaderName = document.getElementById('chatHeaderName');
     if (chatHeaderName) chatHeaderName.textContent = `${data.title} 채팅채널`;
@@ -904,6 +969,24 @@ function renderCorePageInfo(data) {
     document.getElementById('sidebarCategory').textContent = data.category || '기타';
 
     const price = data.tickets && selectedPassType ? selectedPassPrice : (data.price || 0);
+    const reviewCount = Number(data.review_count || 0);
+    const avgRating = Number(data.avg_rating || 0);
+    const ratingText = Number.isFinite(avgRating) && avgRating > 0 ? avgRating.toFixed(1) : '0.0';
+    const starCount = Math.max(0, Math.min(5, Math.round(avgRating || 0)));
+
+    document.getElementById('heroAvgRating').textContent = ratingText;
+    document.getElementById('sideAvgRating').textContent = ratingText;
+    document.getElementById('heroAvgStars').textContent = starCount > 0 ? '★'.repeat(starCount) : '★';
+    document.getElementById('sideAvgStars').textContent = starCount > 0 ? '★'.repeat(starCount) : '★';
+    document.getElementById('heroReviewCount').textContent = String(reviewCount);
+    document.getElementById('sideReviewCount').textContent = String(reviewCount);
+    document.getElementById('heroPriceSummary').textContent = getPriceSummary(data, price);
+    document.getElementById('heroOfferSummary').textContent = getOfferSummary(data);
+    const heroFormatChip = document.getElementById('heroFormatChip');
+    if (heroFormatChip) {
+        const mode = String(data.operating_mode || data.delivery_type || data.format || '').trim();
+        heroFormatChip.textContent = mode || (Number(price) > 0 ? '유료 클래스' : '무료 클래스');
+    }
 
     // 다회권 / 구독권 UI
     const passOptionsContainer = document.getElementById('passOptionsContainer');
@@ -916,21 +999,21 @@ function renderCorePageInfo(data) {
         if (data.tickets.price_one_time) {
             optionsHtml += `<label style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #444; border-radius:8px; cursor:pointer;">
                 <span><input type="radio" name="passType" value="one_time" data-price="${data.tickets.price_one_time}" style="margin-right:8px;">1회 수강권</span>
-                <span style="color:var(--comm-accent); font-weight:bold;">${data.tickets.price_one_time.toLocaleString()}원</span>
+                <span style="color:var(--accent-color); font-weight:bold;">${data.tickets.price_one_time.toLocaleString()}원</span>
             </label>`;
             if (!firstAvailable) firstAvailable = { type: 'one_time', price: data.tickets.price_one_time };
         }
         if (data.tickets.price_multi && data.tickets.pass_count) {
             optionsHtml += `<label style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #444; border-radius:8px; cursor:pointer;">
                 <span><input type="radio" name="passType" value="multi" data-price="${data.tickets.price_multi}" data-count="${data.tickets.pass_count}" style="margin-right:8px;">다회권 (${data.tickets.pass_count}회)</span>
-                <span style="color:var(--comm-accent); font-weight:bold;">${data.tickets.price_multi.toLocaleString()}원</span>
+                <span style="color:var(--accent-color); font-weight:bold;">${data.tickets.price_multi.toLocaleString()}원</span>
             </label>`;
             if (!firstAvailable) firstAvailable = { type: 'multi', price: data.tickets.price_multi };
         }
         if (data.tickets.price_monthly) {
             optionsHtml += `<label style="display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #444; border-radius:8px; cursor:pointer;">
                 <span><input type="radio" name="passType" value="monthly" data-price="${data.tickets.price_monthly}" style="margin-right:8px;">월정액(구독) 패스</span>
-                <span style="color:var(--comm-accent); font-weight:bold;">${data.tickets.price_monthly.toLocaleString()}원/월</span>
+                <span style="color:var(--accent-color); font-weight:bold;">${data.tickets.price_monthly.toLocaleString()}원/월</span>
             </label>`;
             if (!firstAvailable) firstAvailable = { type: 'monthly', price: data.tickets.price_monthly };
         }

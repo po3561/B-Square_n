@@ -1,4 +1,4 @@
-window.BSquareModules = window.BSquareModules || {};
+﻿window.BSquareModules = window.BSquareModules || {};
 
 window.BSquareModules.initReviews = function (_, classId, userId, __, hasAccess, isInstructor) {
     loadReviews(classId, isInstructor);

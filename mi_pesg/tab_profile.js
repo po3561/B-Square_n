@@ -1,4 +1,4 @@
-window.initProfileTab = function (userId, user) {
+﻿window.initProfileTab = function (userId, user) {
     const profileForm = document.getElementById('profileForm');
     const categoryChips = document.getElementById('categoryChips');
     const profileImageInput = document.getElementById('profileImage');

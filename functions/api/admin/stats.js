@@ -1,4 +1,4 @@
-import { json, options } from '../_lib/http.js';
+﻿import { json, options } from '../_lib/http.js';
 import { ensureAuthSchema, ensureClassesSchema, ensureOperationsSchema } from '../_lib/schema.js';
 
 function buildDateRange(range) {

@@ -1,4 +1,4 @@
-// chat_list.js - 모듈2: 채팅 목록 관리 (D1 API 버전)
+﻿// chat_list.js - 모듈2: 채팅 목록 관리 (D1 API 버전)
 window.CommunityModules = window.CommunityModules || {};
 
 window.CommunityModules.ChatList = (function () {
@@ -7,6 +7,7 @@ window.CommunityModules.ChatList = (function () {
     let currentFolder = null;
     let roomsCache = {};
     let onRoomSelect = null;
+    let activeRoomId = null;
 
     // 사용자별 설정 (localStorage)
     function getSettings() {
@@ -174,7 +175,7 @@ window.CommunityModules.ChatList = (function () {
             else if (r.type === 'group') typeBadge = '<span class="room-type-badge">그룹</span>';
 
             return `
-                <div class="chat-room-item${isPinned ? ' pinned' : ''}" data-room-id="${r.roomId}" data-type="${r.type}">
+                <div class="chat-room-item${isPinned ? ' pinned' : ''}${activeRoomId === r.roomId ? ' active' : ''}" data-room-id="${r.roomId}" data-type="${r.type}">
                     <div class="room-avatar" style="${avatar ? `background-image:url(${avatar})` : ''}">
                         ${!avatar ? (r.type === 'group' ? '👥' : '👤') : ''}
                     </div>
@@ -331,9 +332,21 @@ window.CommunityModules.ChatList = (function () {
     }
 
     function setActiveRoom(roomId) {
+        activeRoomId = roomId;
+        if (!roomId) {
+            document.querySelectorAll('.chat-room-item').forEach(i => i.classList.remove('active'));
+            return;
+        }
+        const next = roomsCache[roomId];
+        if (next && Number(next.unread_count || 0) > 0) {
+            next.unread_count = 0;
+            roomsCache[roomId] = next;
+            renderRooms();
+        }
         document.querySelectorAll('.chat-room-item').forEach(i => {
             i.classList.toggle('active', i.dataset.roomId === roomId);
         });
+        bridge()?.markAsRead?.(roomId);
     }
 
     return {

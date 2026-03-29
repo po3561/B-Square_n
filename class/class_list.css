@@ -1,4 +1,4 @@
-/* class_list.css */
+﻿/* class_list.css */
 
 .class-list-main {
     padding-top: 3rem;
@@ -378,5 +378,535 @@
 
     .class-list-notice .notice-chip {
         width: 100%;
+    }
+}
+
+/* =========================================================
+   Final Landing Polish for Class List
+========================================================= */
+body.class-list-page {
+    background:
+        radial-gradient(circle at 12% 0%, rgba(120, 149, 255, 0.14), transparent 28%),
+        radial-gradient(circle at 88% 8%, rgba(93, 225, 198, 0.1), transparent 24%),
+        linear-gradient(180deg, #05070b 0%, #070a10 38%, #05070b 100%);
+}
+
+body.class-list-page .class-list-main {
+    padding-top: clamp(1.25rem, 2.8vw, 2.5rem);
+    padding-bottom: 1.75rem;
+}
+
+body.class-list-page .section-inner {
+    max-width: min(1440px, calc(100vw - 2rem));
+    display: grid;
+    gap: clamp(1.2rem, 2.4vw, 1.8rem);
+}
+
+body.class-list-page .class-list-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.75fr);
+    gap: 1rem;
+    padding: 1.4rem;
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(18, 22, 31, 0.96), rgba(10, 12, 18, 0.92));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26);
+}
+
+body.class-list-page .class-list-hero-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+body.class-list-page .page-eyebrow {
+    display: inline-flex;
+    width: fit-content;
+    padding: 0.42rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #d9e6ff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+body.class-list-page .class-list-hero-copy h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 3.2vw, 3.2rem);
+    line-height: 1.05;
+    letter-spacing: -0.06em;
+    color: #f7f9ff;
+}
+
+body.class-list-page .class-list-hero-copy p {
+    margin: 0;
+    max-width: 58ch;
+    color: rgba(236, 242, 255, 0.72);
+    line-height: 1.8;
+}
+
+body.class-list-page .class-list-hero-stats {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.class-list-page .hero-metric {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 110px;
+    padding: 1rem;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.class-list-page .hero-metric strong {
+    font-size: 1.8rem;
+    line-height: 1;
+    color: #fff;
+    letter-spacing: -0.05em;
+}
+
+body.class-list-page .hero-metric span {
+    color: rgba(236, 242, 255, 0.7);
+    font-size: 0.88rem;
+    margin-top: 0.35rem;
+}
+
+body.class-list-page .index-layout {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+}
+
+body.class-list-page .sidebar-nav {
+    position: sticky;
+    top: 92px;
+    align-self: start;
+}
+
+body.class-list-page .category-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: 1.15rem;
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(18, 22, 31, 0.96), rgba(10, 12, 18, 0.92));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+}
+
+body.class-list-page .sidebar-title {
+    margin: 0;
+    font-size: 1rem;
+    letter-spacing: -0.03em;
+    color: #f7f9ff;
+}
+
+body.class-list-page .category-sidebar ul {
+    display: grid;
+    gap: 0.55rem;
+}
+
+body.class-list-page .category-sidebar li a {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.92rem 1rem;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid transparent;
+    color: rgba(236, 242, 255, 0.82);
+    transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+body.class-list-page .category-sidebar li a:hover,
+body.class-list-page .category-sidebar li.active a {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(142, 165, 255, 0.28);
+    color: #fff;
+}
+
+body.class-list-page .category-sidebar li a:focus-visible,
+body.class-list-page .class-card-link:focus-visible,
+body.class-list-page .btn-bookmark:focus-visible,
+body.class-list-page .class-search-input:focus-visible,
+body.class-list-page .sort-select:focus-visible {
+    outline: 2px solid rgba(142, 165, 255, 0.95);
+    outline-offset: 3px;
+}
+
+body.class-list-page .category-sidebar .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+}
+
+body.class-list-page .category-sidebar .cat-label {
+    flex: 1;
+    min-width: 0;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+body.class-list-page .category-sidebar .cat-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2rem;
+    padding: 0.22rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+body.class-list-page .content-area {
+    min-width: 0;
+}
+
+body.class-list-page .class-page-overrides {
+    padding: 1.25rem;
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(18, 22, 31, 0.96), rgba(10, 12, 18, 0.92));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+}
+
+body.class-list-page .class-grid-header {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    gap: 1rem;
+}
+
+body.class-list-page .header-copy {
+    gap: 0.45rem;
+}
+
+body.class-list-page .group-title {
+    color: #f7f9ff;
+}
+
+body.class-list-page .group-subtitle {
+    color: rgba(236, 242, 255, 0.7);
+}
+
+body.class-list-page .list-controls {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) minmax(160px, 190px) auto;
+    gap: 0.75rem;
+    align-items: center;
+    width: min(100%, 620px);
+}
+
+body.class-list-page .class-search-input,
+body.class-list-page .sort-select {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 16px;
+    padding: 0.82rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f7f9ff;
+    transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+body.class-list-page .class-search-input:focus,
+body.class-list-page .sort-select:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(142, 165, 255, 0.32);
+    box-shadow: 0 0 0 4px rgba(142, 165, 255, 0.12);
+    transform: translateY(-1px);
+}
+
+body.class-list-page .class-search-input::placeholder {
+    color: rgba(236, 242, 255, 0.45);
+}
+
+body.class-list-page .sort-select option {
+    background: #11141b;
+    color: #f7f9ff;
+}
+
+body.class-list-page .total-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 1rem;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(236, 242, 255, 0.82);
+    font-weight: 700;
+}
+
+body.class-list-page .class-list-notice .notice-chip {
+    border-radius: 18px;
+    padding: 0.85rem 1rem;
+}
+
+body.class-list-page .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+}
+
+body.class-list-page .class-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    border-radius: 24px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(18, 22, 31, 0.96), rgba(10, 12, 18, 0.94));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+body.class-list-page .class-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(142, 165, 255, 0.28);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28);
+}
+
+body.class-list-page .class-card-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.95rem;
+    color: inherit;
+    min-height: 100%;
+}
+
+body.class-list-page .card-thumbnail {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    width: 100%;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(110, 142, 251, 0.18), rgba(93, 225, 198, 0.12));
+}
+
+body.class-list-page .card-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+body.class-list-page .card-thumbnail::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 56%;
+    background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.42));
+    pointer-events: none;
+}
+
+body.class-list-page .card-badges {
+    position: absolute;
+    left: 0.9rem;
+    bottom: 0.9rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    z-index: 1;
+}
+
+body.class-list-page .badge-coupon,
+body.class-list-page .badge-discount,
+body.class-list-page .badge-new {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0.28rem 0.62rem;
+    border-radius: 999px;
+    background: rgba(9, 12, 18, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #eef4ff;
+    font-size: 0.76rem;
+    font-weight: 700;
+    backdrop-filter: blur(12px);
+}
+
+body.class-list-page .btn-bookmark {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.9rem;
+    z-index: 2;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: rgba(12, 15, 21, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+    backdrop-filter: blur(14px);
+}
+
+body.class-list-page .card-info {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0 1rem 1.05rem;
+}
+
+body.class-list-page .card-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    color: rgba(236, 242, 255, 0.72);
+    font-size: 0.8rem;
+}
+
+body.class-list-page .card-chip,
+body.class-list-page .card-summary {
+    color: rgba(236, 242, 255, 0.68);
+}
+
+body.class-list-page .card-chip {
+    min-width: 0;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.class-list-page .title {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.4;
+    letter-spacing: -0.03em;
+    color: #f7f9ff;
+}
+
+body.class-list-page .card-summary {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+body.class-list-page .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+    color: rgba(236, 242, 255, 0.66);
+    font-size: 0.84rem;
+}
+
+body.class-list-page .price-info {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-top: 0.25rem;
+}
+
+body.class-list-page .original-price {
+    color: rgba(236, 242, 255, 0.45);
+    font-size: 0.82rem;
+    text-decoration: line-through;
+}
+
+body.class-list-page .current-price,
+body.class-list-page .price {
+    font-size: 1.08rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+body.class-list-page .card-animate {
+    opacity: 0;
+    animation: classListCardRise 0.45s ease forwards;
+}
+
+@keyframes classListCardRise {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 1024px) {
+    body.class-list-page .index-layout {
+        grid-template-columns: 1fr;
+    }
+
+    body.class-list-page .sidebar-nav {
+        position: static;
+    }
+
+    body.class-list-page .class-list-hero {
+        grid-template-columns: 1fr;
+    }
+
+    body.class-list-page .list-controls {
+        width: 100%;
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    body.class-list-page .class-list-main {
+        padding-top: 1rem;
+    }
+
+    body.class-list-page .section-inner {
+        max-width: 100%;
+        padding: 0 0.9rem;
+    }
+
+    body.class-list-page .class-list-hero,
+    body.class-list-page .category-sidebar,
+    body.class-list-page .class-page-overrides {
+        border-radius: 24px;
+    }
+
+    body.class-list-page .class-list-hero-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    body.class-list-page .card-grid {
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    }
+
+    body.class-list-page .class-page-overrides .class-grid-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 540px) {
+    body.class-list-page .class-list-hero-stats {
+        grid-template-columns: 1fr;
+    }
+
+    body.class-list-page .card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.class-list-page .category-sidebar li a {
+        padding: 0.85rem 0.95rem;
     }
 }

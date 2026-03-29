@@ -1,4 +1,4 @@
-import { json, options } from '../_lib/http.js';
+﻿import { json, options } from '../_lib/http.js';
 
 async function ensureMenuSchema(db) {
   await db.prepare(`

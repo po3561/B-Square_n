@@ -1,4 +1,4 @@
-// community.js - 커뮤니티 채팅 메인 컨트롤러 (D1 API 버전)
+﻿// community.js - 커뮤니티 채팅 메인 컨트롤러 (D1 API 버전)
 // Firebase/Supabase 의존성 완전 제거 → BSQ.api 기반
 document.addEventListener('DOMContentLoaded', async () => {
     // ---- BSQ.ready 대기 ----

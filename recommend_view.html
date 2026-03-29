@@ -1,14 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>추천 클래스 | B-Square</title>
-    <link rel="stylesheet" href="style_mobile.css" media="(max-width: 768px)">
-    <link rel="stylesheet" href="style_pc.css" media="(min-width: 769px)">
+    <link rel="stylesheet" href="style_mobile.css?v=20260329_04" media="(max-width: 768px)">
+    <link rel="stylesheet" href="style_pc.css?v=20260329_04" media="(min-width: 769px)">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="bsq_server.js?v=20260323_05"></script>
+    <script src="bsq_server.js?v=20260329_04"></script>
     <style>
         .recommend-container {
             display: grid;
@@ -20,13 +19,8 @@
         }
 
         @media (max-width: 768px) {
-            .recommend-container {
-                grid-template-columns: 1fr;
-            }
-
-            .sidebar-categories {
-                display: none;
-            }
+            .recommend-container { grid-template-columns: 1fr; }
+            .sidebar-categories { display: none; }
         }
 
         .sidebar-categories h3 {
@@ -65,7 +59,6 @@
         }
     </style>
 </head>
-
 <body>
     <main class="main-content">
         <div class="recommend-container">
@@ -73,16 +66,16 @@
                 <h3>카테고리</h3>
                 <ul id="categoryList">
                     <li><a href="#" class="active" data-cat="all">전체보기</a></li>
-                    <li><a href="#" data-cat="디자인">  디자인</a></li>
-                    <li><a href="#" data-cat="생산성">  생산성</a></li>
-                    <li><a href="#" data-cat="스포츠">? 스포츠</a></li>
-                    <li><a href="#" data-cat="디지털드로잉">  디지털 드로잉</a></li>
-                    <li><a href="#" data-cat="성공마인드">  성공 마인드</a></li>
-                    <li><a href="#" data-cat="음악">  음악</a></li>
-                    <li><a href="#" data-cat="베이킹">  베이킹</a></li>
-                    <li><a href="#" data-cat="사진">  사진</a></li>
-                    <li><a href="#" data-cat="영상">  영상</a></li>
-                    <li><a href="#" data-cat="공예">  공예</a></li>
+                    <li><a href="#" data-cat="디자인">디자인</a></li>
+                    <li><a href="#" data-cat="생산성">생산성</a></li>
+                    <li><a href="#" data-cat="스포츠">스포츠</a></li>
+                    <li><a href="#" data-cat="디지털드로잉">디지털 드로잉</a></li>
+                    <li><a href="#" data-cat="성공마인드">성공 마인드</a></li>
+                    <li><a href="#" data-cat="음악">음악</a></li>
+                    <li><a href="#" data-cat="베이킹">베이킹</a></li>
+                    <li><a href="#" data-cat="사진">사진</a></li>
+                    <li><a href="#" data-cat="영상">영상</a></li>
+                    <li><a href="#" data-cat="공예">공예</a></li>
                 </ul>
             </aside>
             <section class="recommend-content">
@@ -90,15 +83,16 @@
                     <h2 id="folderTitle">추천 클래스</h2>
                 </header>
                 <div class="card-grid" id="folderClassGrid">
-                    <!-- Classes loaded here -->
+                    <div class="empty-state" style="grid-column:1/-1; text-align:center; padding:4rem; color:#888;">
+                        추천 클래스를 불러오는 중입니다...
+                    </div>
                 </div>
             </section>
         </div>
     </main>
 
-    <script src="header.js?v=20260324_03"></script>
-    <script src="recommend_view.js?v=20260322_01"></script>
-    <script src="dev_mode.js"></script>
+    <script src="header.js?v=20260329_04"></script>
+    <script src="recommend_view.js?v=20260329_04"></script>
+    <script src="dev_mode.js?v=20260329_04"></script>
 </body>
-
 </html>

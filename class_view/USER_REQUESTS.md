@@ -1,4 +1,4 @@
-# B-Square Class View 프로젝트 요구사항 정리
+﻿# B-Square Class View 프로젝트 요구사항 정리
 
 ## 1. 핵심 기능 복구 사항
 - **관리자 기능**: `view_edit.js` 내 쿠폰 생성 및 관리 탭 기능 복구

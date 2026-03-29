@@ -5,28 +5,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>클래스 상세 정보 | B-Square</title>
-    <link rel="stylesheet" href="../style_mobile.css" media="(max-width: 768px)">
-    <link rel="stylesheet" href="../style_pc.css" media="(min-width: 769px)">
-    <link rel="stylesheet" href="class_view.css?v=20260324_02">
-    <link rel="stylesheet" href="../community/community.css?v=20260324_02">
-    <link rel="stylesheet" href="view_chat.css?v=20260324_02">
-    <link rel="stylesheet" href="payment_toast.css?v=20260324_02">
+    <link rel="stylesheet" href="../style_mobile.css?v=20260329_04" media="(max-width: 768px)">
+    <link rel="stylesheet" href="../style_pc.css?v=20260329_04" media="(min-width: 769px)">
+    <link rel="stylesheet" href="class_view.css?v=20260329_04">
+    <link rel="stylesheet" href="view_chat.css?v=20260329_04">
+    <link rel="stylesheet" href="payment_toast.css?v=20260329_04">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <!-- Quill.js 由ъ튂 ?띿뒪???먮뵒??-->
+    <!-- Quill.js 리치 텍스트 에디터 -->
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 
-    <!-- 寃곗젣 SDK 異붽? (PortOne) -->
+    <!-- 결제 SDK 추가 (PortOne) -->
     <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
 
     <!-- SDKs -->
-    <script src="../bsq_server.js?v=20260324_02"></script>
+    <script src="../bsq_server.js?v=20260329_04"></script>
 </head>
 
-<body>
-    <!-- header.js媛 ?ㅻ뜑/?명꽣/Drawer/BottomNav瑜??숈쟻 ?쎌엯 -->
+<body class="class-view-page">
+    <!-- header.js가 헤더/푸터/Drawer/BottomNav를 동적으로 삽입 -->
 
     <main class="view-container">
         <!-- Premium Hero Section -->
@@ -48,10 +47,27 @@
                     </div>
                 </div>
                 <div class="hero-brief-panel">
-                    <p class="hero-badge">수업 한눈에 보기</p>
+                    <div class="hero-eyebrow-row">
+                        <p class="hero-badge">수업 한눈에 보기</p>
+                        <span id="heroFormatChip" class="hero-format-chip">추천 클래스</span>
+                    </div>
                     <span id="viewCategory" class="hero-kicker">카테고리</span>
                     <h1 id="viewTitle" class="hero-title">클래스 제목</h1>
                     <p id="heroSummary" class="hero-summary">클래스의 핵심 장점과 수강 포인트를 한눈에 보여줍니다.</p>
+                    <div class="hero-quick-stats" aria-label="클래스 핵심 정보">
+                        <article class="hero-stat-card">
+                            <span class="hero-stat-label">강사</span>
+                            <strong id="heroInstructor">-</strong>
+                        </article>
+                        <article class="hero-stat-card">
+                            <span class="hero-stat-label">가격</span>
+                            <strong id="heroPriceSummary">0원</strong>
+                        </article>
+                        <article class="hero-stat-card">
+                            <span class="hero-stat-label">구성</span>
+                            <strong id="heroOfferSummary">단일 수강권</strong>
+                        </article>
+                    </div>
                     <div class="hero-meta hero-rating-line">
                         <span id="heroAvgStars">★</span>
                         <span id="heroAvgRating">0.0</span>
@@ -62,12 +78,18 @@
                         <button type="button" class="btn-cta-start" id="btnGoToClass">소개 보기</button>
                         <button type="button" class="btn-cta-secondary" id="btnAddToCart">장바구니 담기</button>
                     </div>
+                    <div class="hero-trust-row" aria-label="수강 안내">
+                        <span>즉시 채팅</span>
+                        <span>후기 확인</span>
+                        <span>안전 결제</span>
+                    </div>
                 </div>
+            </div>
         </section>
 
         <div class="view-grid">
             <div class="view-main-content">
-                <!-- ??硫붾돱 -->
+                <!-- 상단 탭 메뉴 -->
                 <div class="view-tabs" id="viewTabs">
                     <button class="tab-btn active" data-target="tabIntro">소개</button>
                     <button class="tab-btn" data-target="tabNotice">공지사항</button>
@@ -75,7 +97,7 @@
                     <button class="tab-btn" data-target="tabReview">수강 후기</button>
                     <button class="tab-btn" data-target="tabChat">채팅</button>
                     <button class="tab-btn" id="tabEditBtn" data-target="tabEdit"
-                        style="display:none; color: var(--comm-accent);">강사 전용 수정</button>
+                        style="display:none; color: var(--accent-color);">강사 전용 수정</button>
                 </div>
 
                 <!-- TAB: Intro -->
@@ -88,21 +110,21 @@
                             </p>
                         </div>
 
-                        <!-- ?곸꽭 ?ㅻ챸 (Rich HTML) -->
+                        <!-- 상세 소개 (Rich HTML) -->
                         <div class="intro-divider"></div>
                         <div class="intro-section">
-                            <h3 class="section-title">?뱷 ?대옒???뚭컻</h3>
+                            <h3 class="section-title">상세 소개</h3>
                             <div class="html-viewer" id="descriptionViewer"></div>
                         </div>
 
-                        <!-- ????섍컯??-->
+                        <!-- 추천 대상 -->
                         <div class="intro-divider"></div>
                         <div class="intro-section">
                             <h3 class="section-title">이런 분들께 추천해요</h3>
                             <ul class="target-list" id="targetList"></ul>
                         </div>
 
-                        <!-- ?숈뒿 紐⑺몴 -->
+                        <!-- 학습 목표 -->
                         <div class="intro-divider"></div>
                         <div class="intro-section">
                             <h3 class="section-title">수업에서 얻을 수 있는 것</h3>
@@ -114,16 +136,17 @@
                 <!-- TAB: Notice -->
                 <div id="tabNotice" class="tab-content">
                     <section class="content-card">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                            <h3 class="section-title" style="margin-bottom:0;">공지사항</h3>
-                            <button id="btnCreateClassNotice" class="btn-submit"
-                                style="display:none; padding: 6px 12px; font-size: 0.9rem;">공지 작성</button>
+                        <div class="section-toolbar section-toolbar-between">
+                            <div class="section-title-group">
+                                <p class="section-eyebrow">Latest updates</p>
+                                <h3 class="section-title" style="margin-bottom:0;">공지사항</h3>
+                            </div>
+                            <button id="btnCreateClassNotice" class="btn-submit section-inline-action"
+                                style="display:none;">공지 작성</button>
                         </div>
                         <div id="classNoticeList" class="notice-list">
-                            <!-- 공지사항 ?뚮뜑留??곸뿭 -->
-                            <div class="empty-state"
-                                style="padding: 3rem; text-align: center; color: var(--comm-text2);">아직 등록된 공지사항이 없습니다.</div>
+                            <!-- 공지사항 빈 상태 영역 -->
+                            <div class="empty-state empty-state-card">아직 등록된 공지사항이 없습니다.</div>
                         </div>
                     </section>
                 </div>
@@ -131,11 +154,13 @@
                 <!-- TAB: Curriculum -->
                 <div id="tabCurriculum" class="tab-content">
                     <section class="content-card">
-                        <div class="curriculum-header-row">
-                            <h3 style="font-size: 1.5rem;">커리큘럼 <span id="chapCount"
-                                    style="color:#666; font-size:1rem; margin-left:10px;">챕터 0개</span></h3>
-                            <button id="btnToggleAll"
-                                style="background:none; border:1px solid #444; color:#aaa; padding:6px 12px; border-radius:6px; cursor:pointer;">전체 펼치기</button>
+                        <div class="section-toolbar section-toolbar-between curriculum-header-row">
+                            <div class="section-title-group">
+                                <p class="section-eyebrow">Course map</p>
+                                <h3 style="font-size: 1.5rem; margin-bottom:0;">커리큘럼 <span id="chapCount"
+                                        style="color:var(--text-secondary); font-size:1rem; margin-left:10px;">챕터 0개</span></h3>
+                            </div>
+                            <button id="btnToggleAll" class="section-inline-action">전체 펼치기</button>
                         </div>
                         <div id="viewCurriculum" class="curriculum-container"></div>
                     </section>
@@ -144,8 +169,9 @@
                 <!-- TAB: Review -->
                 <div id="tabReview" class="tab-content">
                     <section class="content-card">
-                        <div class="review-header-minimal">
+                        <div class="review-header-minimal section-toolbar section-toolbar-between">
                             <h4>수강 후기 <span class="review-count-badge" id="reviewTotalCount">0</span></h4>
+                            <p class="section-eyebrow" style="margin:0;">실제 수강생의 경험을 확인해 보세요.</p>
                         </div>
                         <h4 style="margin-bottom: 1.5rem;">수강생 포토 후기</h4>
                         <div class="photo-review-grid" id="photoReviewGrid"></div>
@@ -204,13 +230,13 @@
                                             </div>
                                         </div>
 
-                                        <!-- 메시지?寃?됰컮 -->
+                                        <!-- 메시지 검색 바 -->
                                         <div class="chat-search-bar" id="chatSearchBar" style="display:none;">
                                             <input type="text" id="msgSearchInput" placeholder="메시지에서 검색...">
                                             <span id="msgSearchCount" class="search-count"></span>
                                             <button id="msgSearchClose" class="btn-search-close"></button>
                                         </div>
-                                        <!-- 고정 硫붿떆吏 諛?-->
+                                        <!-- 고정 메시지 바 -->
                                         <div class="pinned-msg-bar" id="pinnedMsgBar">
                                             <i class="fas fa-thumbtack pin-icon"></i>
                                             <div class="pinned-separator"></div>
@@ -223,7 +249,7 @@
                                             </button>
                                         </div>
 
-                                        <!-- 고정 메시지꾩껜蹂닿린 ?ㅻ쾭?덉씠 (?붾젅洹몃옩 ?ㅽ??? -->
+                                        <!-- 고정 메시지 전체 보기 오버레이 (드래그 가능한 리스트) -->
                                         <div class="pinned-list-overlay" id="pinnedListOverlay" style="display:none;">
                                             <div class="pinned-list-container">
                                                 <div class="pinned-list-header">
@@ -234,7 +260,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="pinned-list-body" id="pinnedListBody">
-                                                    <!-- ?좎쭨 ?ㅻ뜑 諛?고정 메시지꾩씠?쒕뱾???ш린???뚮뜑留곷맖 -->
+                                                    <!-- 최근 메시지와 고정 메시지가 섞여 표시되는 영역 -->
                                                 </div>
                                                 <div class="pinned-list-footer" id="pinnedListFooter"
                                                     style="display:none;">
@@ -244,7 +270,7 @@
                                             </div>
                                         </div>
 
-                                        <!-- 硫붿떆吏 고정 ?뺤씤 紐⑤떖 -->
+                                        <!-- 메시지 고정 확인 모달 -->
                                         <div class="pin-confirm-modal" id="pinConfirmModal" style="display:none;">
                                             <div class="pin-modal-content">
                                                 <p class="pin-modal-text">이 메시지를 고정하시겠습니까?</p>
@@ -377,7 +403,6 @@
                     </div>
                 </div>
             </aside>
-        </div>
         </div>
     </main>
 
@@ -579,7 +604,7 @@
                     style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;" aria-label="닫기"></button>
             </div>
             <div
-                style="padding: 0 2rem 1.5rem; font-size: 0.9rem; color: var(--comm-text2); border-bottom: 1px solid var(--border-color); display:flex; gap:15px;">
+                style="padding: 0 2rem 1.5rem; font-size: 0.9rem; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); display:flex; gap:15px;">
                 <span id="cvAuthor">작성자</span>
                 <span id="cvDate">등록일 -</span>
                 <span id="cvViews">조회수 0</span>
@@ -644,16 +669,16 @@
     </div>
 
     <!-- Scripts Load -->
-    <script src="../community/sync_bridge.js?v=20260324_02"></script>
-    <script src="view_intro.js?v=20260324_02"></script>
-    <script src="view_curriculum.js?v=20260324_02"></script>
-    <script src="view_reviews.js?v=20260324_02"></script>
-    <script src="simple_class_chat.js?v=20260324_02"></script>
-    <script src="view_edit.js?v=20260324_02"></script>
-    <script src="view_notice.js?v=20260324_02"></script>
-    <script src="class_view.js?v=20260324_02"></script>
-    <script src="../header.js?v=20260324_03"></script>
-    <script src="../dev_mode.js?v=20260324_02"></script>
+    <script src="../community/sync_bridge.js?v=20260329_04"></script>
+    <script src="view_intro.js?v=20260329_04"></script>
+    <script src="view_curriculum.js?v=20260329_04"></script>
+    <script src="view_reviews.js?v=20260329_04"></script>
+    <script src="simple_class_chat.js?v=20260329_04"></script>
+    <script src="view_edit.js?v=20260329_04"></script>
+    <script src="view_notice.js?v=20260329_04"></script>
+    <script src="class_view.js?v=20260329_04"></script>
+    <script src="../header.js?v=20260329_04"></script>
+    <script src="../dev_mode.js?v=20260329_04"></script>
 </body>
 
 </html>

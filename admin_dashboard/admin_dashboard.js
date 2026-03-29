@@ -1,4 +1,4 @@
-// admin_dashboard.js — D1 API 기반 대시보드 통계 (V2)
+﻿// admin_dashboard.js — D1 API 기반 대시보드 통계 (V2)
 (function () {
   let mainChart = null;
 

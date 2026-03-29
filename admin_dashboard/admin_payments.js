@@ -1,4 +1,4 @@
-// admin_payments.js - Handles Payment and Refund history
+﻿// admin_payments.js - Handles Payment and Refund history
 
 document.addEventListener('DOMContentLoaded', () => {
     const tabPayments = document.getElementById('tabPayments');

@@ -1,4 +1,4 @@
-;(function () {
+﻿;(function () {
 var ADMIN_CLASSES_VERSION = '2026.03.24-01';
 
 var PREMIUM_EMOJIS = [

@@ -1,4 +1,4 @@
-import { isAtLeastRole, requireSession } from './_lib/auth.js';
+﻿import { isAtLeastRole, requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
 
 function trimText(value) {
@@ -9,6 +9,22 @@ function parseIntOrDefault(value, fallback, max) {
   const parsed = Number.parseInt(value, 10);
   if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
   return Math.min(parsed, max);
+}
+
+function isTruthyFlag(value) {
+  if (value === true || value === 1) return true;
+  const text = String(value ?? '').trim().toLowerCase();
+  return text === '1' || text === 'true' || text === 'yes';
+}
+
+function buildPageMeta(limit, offset, count, hasMore) {
+  return {
+    limit,
+    offset,
+    count,
+    has_more: hasMore,
+    next_offset: hasMore ? offset + limit : null,
+  };
 }
 
 const USER_CHAT_COLUMNS = `
@@ -34,7 +50,7 @@ export async function onRequestGet(context) {
   const url = new URL(request.url);
   const targetUserId = trimText(url.searchParams.get('user_id') || auth.user.id);
   const type = trimText(url.searchParams.get('type'));
-  const limit = parseIntOrDefault(url.searchParams.get('limit'), 100, 200);
+  const limit = parseIntOrDefault(url.searchParams.get('limit'), 50, 100);
   const offset = Math.max(Number.parseInt(url.searchParams.get('offset') || '0', 10) || 0, 0);
 
   if (targetUserId !== auth.user.id && !isAtLeastRole(auth.user.role, 'admin')) {
@@ -50,11 +66,18 @@ export async function onRequestGet(context) {
       binds.push(type);
     }
 
-    query += ' ORDER BY COALESCE(last_message_at, datetime(\'1970-01-01\')) DESC, room_id DESC LIMIT ? OFFSET ?';
-    binds.push(limit, offset);
+    query += ' ORDER BY last_message_at DESC, room_id DESC LIMIT ? OFFSET ?';
+    binds.push(limit + 1, offset);
 
     const { results } = await env.DB.prepare(query).bind(...binds).all();
-    return json(request, env, { success: true, data: results || [] });
+    const rows = results || [];
+    const hasMore = rows.length > limit;
+    const data = hasMore ? rows.slice(0, limit) : rows;
+    return json(request, env, {
+      success: true,
+      data,
+      meta: buildPageMeta(limit, offset, data.length, hasMore),
+    });
   } catch (error) {
     return json(request, env, { success: false, error: 'Failed to load chats', detail: error.message }, { status: 500 });
   }
@@ -95,10 +118,10 @@ export async function onRequestPost(context) {
       `).bind(
         userId,
         classRoomId,
-        class_name || target_name || 'Class',
-        class_image || target_avatar || '',
-        class_category || '',
-        is_instructor ? 1 : 0,
+        trimText(class_name) || trimText(target_name) || 'Class',
+        trimText(class_image) || trimText(target_avatar) || '',
+        trimText(class_category) || '',
+        isTruthyFlag(is_instructor) ? 1 : 0,
       ).run();
 
       return json(request, env, { success: true, data: { room_id: classRoomId } }, { status: 201 });
@@ -114,7 +137,7 @@ export async function onRequestPost(context) {
         INSERT OR IGNORE INTO user_chats (
           user_id, room_id, type, group_name
         ) VALUES (?, ?, 'group', ?)
-      `).bind(userId, groupRoomId, group_name || target_name || 'Group').run();
+      `).bind(userId, groupRoomId, trimText(group_name) || trimText(target_name) || 'Group').run();
 
       return json(request, env, { success: true, data: { room_id: groupRoomId } }, { status: 201 });
     }
@@ -128,8 +151,8 @@ export async function onRequestPost(context) {
     const dmRoomId = `dm_${ids.join('_')}`;
 
     const [targetUser, myUser] = await Promise.all([
-      env.DB.prepare('SELECT id, name, profile_image_url FROM users WHERE id = ?').bind(resolvedTargetUserId).first(),
-      env.DB.prepare('SELECT id, name, profile_image_url FROM users WHERE id = ?').bind(userId).first(),
+      env.DB.prepare('SELECT id, name, profile_image_url FROM users WHERE id = ? LIMIT 1').bind(resolvedTargetUserId).first(),
+      env.DB.prepare('SELECT id, name, profile_image_url FROM users WHERE id = ? LIMIT 1').bind(userId).first(),
     ]);
 
     if (!myUser) {
@@ -141,7 +164,7 @@ export async function onRequestPost(context) {
     }
 
     const existing = await env.DB.prepare(
-      'SELECT 1 FROM user_chats WHERE user_id = ? AND room_id = ?'
+      'SELECT 1 FROM user_chats WHERE user_id = ? AND room_id = ? LIMIT 1'
     ).bind(userId, dmRoomId).first();
 
     if (existing) {
@@ -159,8 +182,8 @@ export async function onRequestPost(context) {
       userId,
       dmRoomId,
       'dm',
-      target_name || targetUser.name || 'User',
-      target_avatar || targetUser.profile_image_url || '',
+      trimText(target_name) || trimText(targetUser.name) || 'User',
+      trimText(target_avatar) || trimText(targetUser.profile_image_url) || '',
     ).run();
 
     await env.DB.prepare(`
@@ -170,8 +193,8 @@ export async function onRequestPost(context) {
       resolvedTargetUserId,
       dmRoomId,
       'dm',
-      myUser.name || 'User',
-      myUser.profile_image_url || '',
+      trimText(myUser.name) || 'User',
+      trimText(myUser.profile_image_url) || '',
     ).run();
 
     return json(request, env, { success: true, data: { room_id: dmRoomId } }, { status: 201 });
@@ -198,7 +221,11 @@ export async function onRequestDelete(context) {
   }
 
   try {
-    await env.DB.prepare('DELETE FROM user_chats WHERE user_id = ? AND room_id = ?').bind(targetUserId, roomId).run();
+    const result = await env.DB.prepare('DELETE FROM user_chats WHERE user_id = ? AND room_id = ?').bind(targetUserId, roomId).run();
+    if ((result.meta?.changes || 0) === 0) {
+      return json(request, env, { success: false, error: 'Chat not found' }, { status: 404 });
+    }
+
     return json(request, env, { success: true });
   } catch (error) {
     return json(request, env, { success: false, error: 'Failed to delete chat', detail: error.message }, { status: 500 });

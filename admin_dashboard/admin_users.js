@@ -1,4 +1,4 @@
-// Admin member management tab
+﻿// Admin member management tab
 
 const USER_DETAIL_MODAL_ID = 'userDetailModal';
 

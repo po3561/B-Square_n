@@ -1,15 +1,15 @@
-window.initClassesTab = function initClassesTab(_db, userId) {
+﻿window.initClassesTab = function initClassesTab(_db, userId) {
     const FALLBACK_CLASS_CATEGORIES = [
-        { name: '요리', emoji: '🍳' },
+        { name: '라이프스타일', emoji: '✨' },
+        { name: '창작', emoji: '🎨' },
+        { name: '운동', emoji: '🏃' },
         { name: '공예', emoji: '🧵' },
-        { name: '스포츠', emoji: '🏃' },
-        { name: '뷰티', emoji: '💄' },
-        { name: '디자인', emoji: '🎨' },
+        { name: '디자인', emoji: '🖌️' },
+        { name: '스포츠', emoji: '⚽' },
         { name: '음악', emoji: '🎵' },
-        { name: '베이킹', emoji: '🧁' },
-        { name: '사진', emoji: '📷' },
-        { name: '영상', emoji: '🎬' },
-        { name: '아트', emoji: '🖌️' },
+        { name: '여행', emoji: '✈️' },
+        { name: '비즈니스', emoji: '💼' },
+        { name: '교육', emoji: '📚' },
     ];
 
     const createdTargets = [
@@ -505,14 +505,15 @@ window.initClassesTab = function initClassesTab(_db, userId) {
     };
 
     window.deleteMyClass = async function deleteMyClass(classId, title) {
-        if (!confirm(`'${title}' 클래스를 정말 삭제하시겠습니까?`)) return;
+        if (!confirm(`'${title}' 클래스를 삭제할까요?
+이 작업은 되돌릴 수 없습니다.`)) return;
         try {
             const res = await window.BSQ.api(`/api/classes?id=${encodeURIComponent(classId)}`, { method: 'DELETE' });
             if (!res?.success) throw new Error(res?.error || '삭제에 실패했습니다.');
-            alert('클래스를 삭제했습니다.');
+            showMypageNotice('success', '클래스 삭제 완료', '클래스를 삭제했습니다.');
             await window.loadMyClasses(true);
         } catch (error) {
-            alert(error.message || '클래스 삭제 중 오류가 발생했습니다.');
+            showMypageNotice('error', '클래스 삭제 실패', error.message || '클래스 삭제 중 오류가 발생했습니다.');
         }
     };
 
@@ -587,7 +588,7 @@ window.initClassesTab = function initClassesTab(_db, userId) {
             document.querySelector('[data-target="tabDashboard"]')?.classList.add('active');
             document.getElementById('tabEditClass')?.classList.add('active');
         } catch (error) {
-            alert(`정보 로드 실패: ${error.message}`);
+            showMypageNotice('error', '?? ?? ??', error.message || '?? ? ?? ??? ???.');
         }
     };
 
@@ -618,11 +619,11 @@ window.initClassesTab = function initClassesTab(_db, userId) {
                 });
                 if (!res?.success) throw new Error(res?.error || '수정에 실패했습니다.');
 
-                alert('클래스 정보를 수정했습니다.');
+                showMypageNotice('success', '?? ??', '??? ??? ??????.');
                 await window.loadMyClasses(true);
                 document.querySelector('[data-target="tabClasses"]')?.click();
             } catch (error) {
-                alert(`수정 실패: ${error.message}`);
+                showMypageNotice('error', '?? ??', error.message || '?? ? ?? ??? ???.');
             }
         };
     }

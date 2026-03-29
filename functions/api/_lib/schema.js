@@ -1,4 +1,4 @@
-let authSchemaReady = false;
+﻿let authSchemaReady = false;
 let recommendationsSchemaReady = false;
 let classesSchemaReady = false;
 let reviewsSchemaReady = false;
@@ -12,13 +12,29 @@ let gatheringsSchemaReady = false;
 let operationsSchemaReady = false;
 let siteSettingsSchemaReady = false;
 let commerceSchemaReady = false;
+const tableColumnsCache = new Map();
+
+function getColumnNameFromDefinition(columnDefinition) {
+  const firstToken = String(columnDefinition ?? '').trim().split(/\s+/)[0] || '';
+  return firstToken.replace(/^[`"'[]+/, '').replace(/[`"'\];]+$/, '');
+}
 
 export async function addColumnIfMissing(db, table, columnDefinition) {
+  const columnName = getColumnNameFromDefinition(columnDefinition);
+  if (!columnName) return;
+
+  const columns = await getTableColumns(db, table);
+  if (columns.some((column) => column.name === columnName)) {
+    return;
+  }
+
   try {
     await db.prepare(`ALTER TABLE ${table} ADD COLUMN ${columnDefinition}`).run();
+    tableColumnsCache.set(table, [...columns, { name: columnName }]);
   } catch (error) {
     const message = error.message || '';
     if (/duplicate column name/i.test(message)) {
+      await getTableColumns(db, table, { refresh: true });
       return;
     }
 
@@ -31,9 +47,11 @@ export async function addColumnIfMissing(db, table, columnDefinition) {
       if (sanitized !== columnDefinition) {
         try {
           await db.prepare(`ALTER TABLE ${table} ADD COLUMN ${sanitized}`).run();
+          await getTableColumns(db, table, { refresh: true });
           return;
         } catch (retryError) {
           if (/duplicate column name/i.test(retryError.message || '')) {
+            await getTableColumns(db, table, { refresh: true });
             return;
           }
           throw retryError;
@@ -78,9 +96,15 @@ async function dedupeUserCartItems(db) {
   `).run();
 }
 
-async function getTableColumns(db, table) {
+async function getTableColumns(db, table, { refresh = false } = {}) {
+  if (!refresh && tableColumnsCache.has(table)) {
+    return tableColumnsCache.get(table);
+  }
+
   const { results } = await db.prepare(`PRAGMA table_info(${table})`).all().catch(() => ({ results: [] }));
-  return results || [];
+  const columns = results || [];
+  tableColumnsCache.set(table, columns);
+  return columns;
 }
 
 async function migrateLegacyInquiriesTable(db) {

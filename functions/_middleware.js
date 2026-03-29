@@ -1,4 +1,4 @@
-import { createCorsHeaders, options } from './api/_lib/http.js';
+﻿import { createCorsHeaders, options } from './api/_lib/http.js';
 
 export async function onRequest(context) {
   const { request, env } = context;

@@ -1,4 +1,4 @@
-// functions/api/admin/transactions.js — 관리자용 결제/수강 내역 조회 API
+﻿// functions/api/admin/transactions.js — 관리자용 결제/수강 내역 조회 API
 // GET /api/admin/transactions?limit=100&offset=0
 
 import { json, options } from '../_lib/http.js';

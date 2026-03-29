@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+﻿import * as XLSX from 'xlsx';
 
 export function toNumber(value, fallback = 0) {
   const n = Number(value);

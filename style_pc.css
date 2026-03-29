@@ -1,21 +1,30 @@
-/* ==========================================
+﻿/* ==========================================
    기본 설정 (Reset & Typography)
 =========================================== */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
 :root {
-    --bg-color: #000000;
-    --card-bg: rgba(30, 30, 30, 0.4);
-    --border-color: rgba(255, 255, 255, 0.1);
-    --accent-color: #ffffff;
-    --text-primary: #ffffff;
-    --text-secondary: #a0a0a0;
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-blur: blur(15px) saturate(180%);
-    --card-radius: 20px;
-    --btn-radius: 24px;
-    --primary-font: 'Inter', 'Pretendard', sans-serif;
+    --bg-color: #070b12;
+    --card-bg: rgba(18, 21, 30, 0.92);
+    --border-color: rgba(255, 255, 255, 0.10);
+    --accent-color: #9ebcff;
+    --accent-strong: #dbe8ff;
+    --text-primary: #f7f9fd;
+    --text-secondary: #a3adbe;
+    --glass-bg: rgba(255, 255, 255, 0.035);
+    --glass-border: rgba(255, 255, 255, 0.085);
+    --glass-blur: blur(24px) saturate(140%);
+    --card-radius: 24px;
+    --btn-radius: 18px;
+    --primary-font: 'Pretendard', 'Inter', sans-serif;
+    --page-container: 1360px;
+    --page-container-wide: 1480px;
+    --section-spacing: clamp(1.75rem, 4vw, 4.25rem);
+    --surface-strong: rgba(255, 255, 255, 0.06);
+    --surface-soft: rgba(255, 255, 255, 0.03);
+    --shadow-lg: 0 34px 80px rgba(0, 0, 0, 0.38);
+    --shadow-md: 0 22px 50px rgba(0, 0, 0, 0.28);
+    --shadow-sm: 0 14px 28px rgba(0, 0, 0, 0.20);
 }
 
 /* ==========================================
@@ -248,9 +257,15 @@
 }
 
 body {
-    background-color: var(--bg-color);
+    background:
+        radial-gradient(circle at top left, rgba(110, 142, 251, 0.14), transparent 28%),
+        radial-gradient(circle at top right, rgba(92, 224, 166, 0.08), transparent 24%),
+        var(--bg-color);
     color: var(--text-primary);
     line-height: 1.6;
+    color-scheme: dark;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 a {
@@ -273,12 +288,10 @@ button {
 }
 
 /* 터치 대상 최소 크기 보장 (모바일 최적화) */
-button,
 input,
 select,
 .btn-link {
     min-height: 44px;
-    min-width: 44px;
 }
 
 /* ==========================================

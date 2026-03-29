@@ -1,4 +1,4 @@
-PRAGMA foreign_keys = ON;
+﻿PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
@@ -78,6 +78,7 @@ CREATE TABLE IF NOT EXISTS classes (
   instructor_name TEXT,
   instructor_email TEXT,
   current_participants INTEGER DEFAULT 0,
+  is_public INTEGER DEFAULT 1,
   coupon_detail TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -145,7 +146,9 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   file_name TEXT,
   file_size INTEGER,
   file_data TEXT,
+  is_edited INTEGER DEFAULT 0,
   is_pinned INTEGER DEFAULT 0,
+  reactions TEXT DEFAULT '{}',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

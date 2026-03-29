@@ -1,9 +1,11 @@
-window.CommunityModules = window.CommunityModules || {};
+﻿window.CommunityModules = window.CommunityModules || {};
 
 window.CommunityModules.SyncBridge = (function () {
     let userId = null;
     let eventHandlers = {};
     const listeners = new Map();
+    const roomReadState = new Map();
+    const MESSAGE_CURSOR_OVERLAP_MS = 1000;
 
     function init(_db, _supabase, _userId) {
         userId = _userId;
@@ -134,6 +136,13 @@ window.CommunityModules.SyncBridge = (function () {
         return `/api/dm/${encodeURIComponent(String(roomId))}/messages?${params.toString()}`;
     }
 
+    function replaySince(cursor, overlapMs = MESSAGE_CURSOR_OVERLAP_MS) {
+        const numeric = Number(cursor);
+        const overlap = Math.max(0, Number(overlapMs) || 0);
+        if (!Number.isFinite(numeric) || numeric <= 0) return 0;
+        return Math.max(0, numeric - overlap);
+    }
+
     function stopListenerState(state) {
         if (!state) return;
         state.stopped = true;
@@ -189,6 +198,7 @@ window.CommunityModules.SyncBridge = (function () {
             pollInFlight: false,
             pollInterval: Math.max(1000, Number(options.pollInterval) || 3500),
             limit: Math.min(Math.max(Number(options.limit) || 100, 1), 200),
+            cursorOverlapMs: Math.max(0, Number(options.cursorOverlapMs) || MESSAGE_CURSOR_OVERLAP_MS),
             preferSse: options.preferSse !== false,
             fallbackActive: false,
             stopped: false,
@@ -245,7 +255,7 @@ window.CommunityModules.SyncBridge = (function () {
             state.pollInFlight = true;
             try {
                 const endpoint = buildMessagesUrl(roomId, state.type, {
-                    since: state.cursor,
+                    since: replaySince(state.cursor, state.cursorOverlapMs),
                     limit: state.limit,
                 });
                 const res = await window.BSQ.api(endpoint);
@@ -308,7 +318,7 @@ window.CommunityModules.SyncBridge = (function () {
 
             try {
                 const url = buildMessagesUrl(roomId, state.type, {
-                    since: state.cursor,
+                    since: replaySince(state.cursor, state.cursorOverlapMs),
                     limit: state.limit,
                     stream: true,
                 });
@@ -413,11 +423,20 @@ window.CommunityModules.SyncBridge = (function () {
     }
 
     function updateUnread(roomId, count) {
-        // no-op in D1 mode
+        emit('unread_updated', {
+            roomId: String(roomId || ''),
+            count: Number(count) || 0,
+        });
     }
 
     async function markAsRead(roomId) {
-        // handled by shell state only
+        if (!roomId) return false;
+        roomReadState.set(String(roomId), Date.now());
+        emit('room_read', {
+            roomId: String(roomId),
+            userId,
+        });
+        return true;
     }
 
     function on(event, handler) {

@@ -1,4 +1,4 @@
-window.BSquareModules = window.BSquareModules || {};
+﻿window.BSquareModules = window.BSquareModules || {};
 
 window.BSquareModules.initIntro = function (data) {
     renderIntroContent(data);

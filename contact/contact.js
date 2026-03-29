@@ -1,4 +1,4 @@
-// contact.js - B-Square 문의 페이지 (D1 API 기반)
+﻿// contact.js - B-Square 문의 페이지 (D1 API 기반)
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('📞 Contact Page Initializing (D1 API)...');
 

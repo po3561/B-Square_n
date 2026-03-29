@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -9,19 +9,41 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- CSS - 미디어 쿼리로 분리 -->
-    <link rel="stylesheet" href="../style_mobile.css" media="(max-width: 768px)">
-    <link rel="stylesheet" href="../style_pc.css" media="(min-width: 769px)">
-    <link rel="stylesheet" href="class_list.css?v=20260327_01">
+    <link rel="stylesheet" href="../style_mobile.css?v=20260329_04" media="(max-width: 768px)">
+    <link rel="stylesheet" href="../style_pc.css?v=20260329_04" media="(min-width: 769px)">
+    <link rel="stylesheet" href="class_list.css?v=20260329_04">
 
     <!-- SDKs -->
-    <script src="../bsq_server.js?v=20260327_01" defer></script>
+    <script src="../bsq_server.js?v=20260329_04" defer></script>
 </head>
 
-<body>
+<body class="class-list-page">
     <!-- header.js가 헤더/푸터/Drawer/BottomNav를 동적 삽입 -->
 
     <main class="class-list-main">
         <div class="section-inner">
+            <section class="class-list-hero" aria-label="클래스 탐색 요약">
+                <div class="class-list-hero-copy">
+                    <p class="page-eyebrow">Class Explorer</p>
+                    <h1>원하는 클래스를 더 빠르게 찾으세요</h1>
+                    <p>카테고리, 검색, 정렬, 찜하기를 한 화면에 모아 읽기 쉬운 목록으로 정리했습니다.</p>
+                </div>
+                <div class="class-list-hero-stats" aria-label="클래스 목록 요약">
+                    <div class="hero-metric">
+                        <strong id="heroClassTotal">0</strong>
+                        <span>전체 클래스</span>
+                    </div>
+                    <div class="hero-metric">
+                        <strong id="heroCategoryTotal">0</strong>
+                        <span>카테고리</span>
+                    </div>
+                    <div class="hero-metric">
+                        <strong id="heroActiveCategoryCount">0</strong>
+                        <span>선택 카테고리</span>
+                    </div>
+                </div>
+            </section>
+
             <div class="index-layout">
                 <!-- 좌측 사이드바 카테고리 -->
                 <aside class="sidebar-nav">
@@ -77,9 +99,9 @@
     </main>
 
     <!-- Scripts -->
-    <script src="class_list.js?v=20260327_01" defer></script>
-    <script src="../header.js?v=20260327_01" defer></script>
-    <script src="../dev_mode.js?v=20260327_01" defer></script>
+    <script src="class_list.js?v=20260329_04" defer></script>
+    <script src="../header.js?v=20260329_04" defer></script>
+    <script src="../dev_mode.js?v=20260329_04" defer></script>
 </body>
 
 </html>

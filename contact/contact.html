@@ -11,12 +11,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="../style_mobile.css" media="(max-width: 768px)">
-    <link rel="stylesheet" href="../style_pc.css" media="(min-width: 769px)">
-    <link rel="stylesheet" href="contact.css">
+    <link rel="stylesheet" href="../style_mobile.css?v=20260329_04" media="(max-width: 768px)">
+    <link rel="stylesheet" href="../style_pc.css?v=20260329_04" media="(min-width: 769px)">
+    <link rel="stylesheet" href="contact.css?v=20260329_04">
 
     <!-- SDKs -->
-    <script src="../bsq_server.js?v=20260323_05"></script>
+    <script src="../bsq_server.js?v=20260329_04"></script>
 
     <!-- Kakao SDK -->
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/v1/kakao.js"></script>
@@ -38,21 +38,22 @@
         <section class="contact-container">
             <!-- 문의 방법 카드 -->
             <div class="contact-methods">
-                <div class="method-card kakao" id="btnKakaoChannel">
-                    <div class="method-icon">??</div>
+                <div class="method-card kakao" id="btnKakaoChannel" role="button" tabindex="0" aria-label="카카오톡 상담 열기" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); this.click();}">
+                    <div class="method-icon">카톡</div>
                     <h3>카카오톡 상담</h3>
                     <p>카카오 채널을 통해 실시간으로 상담받으세요.</p>
                     <span class="method-badge">가장 빠른 응답</span>
                 </div>
-                <div class="method-card email"
-                    onclick="document.getElementById('contactForm').scrollIntoView({behavior:'smooth'})">
-                    <div class="method-icon">??</div>
+                <div class="method-card email" role="button" tabindex="0" aria-label="이메일 문의 작성으로 이동"
+                    onclick="document.getElementById('contactForm').scrollIntoView({behavior:'smooth'})"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); this.click();}">
+                    <div class="method-icon">메일</div>
                     <h3>이메일 문의</h3>
                     <p>아래 양식으로 문의를 남겨주시면<br>영업일 기준 1~2일 내 답변드립니다.</p>
                     <span class="method-badge">상세 문의</span>
                 </div>
-                <div class="method-card phone">
-                    <div class="method-icon">??</div>
+                <div class="method-card phone" aria-label="전화 상담 안내">
+                    <div class="method-icon">전화</div>
                     <h3>전화 상담</h3>
                     <p>평일 10:00 ~ 18:00<br>(주말 · 공휴일 제외)</p>
                     <span class="method-badge">긴급 문의</span>
@@ -61,7 +62,7 @@
 
             <!-- 문의 양식 -->
             <div class="contact-form-section" id="contactForm">
-                <h2>?? 이메일 문의</h2>
+                <h2>이메일 문의</h2>
                 <form id="inquiryForm" class="inquiry-form">
                     <div class="form-row">
                         <div class="form-group">
@@ -100,7 +101,7 @@
 
             <!-- 관리자: 문의 목록 (개발자 모드에서만 보임) -->
             <div class="admin-inquiries" id="adminInquiries" style="display:none;">
-                <h2>??? 문의 관리</h2>
+                <h2>문의 관리</h2>
                 <div id="inquiryList" class="inquiry-list">
                     <div class="empty-state">접수된 문의가 없습니다.</div>
                 </div>
@@ -109,10 +110,10 @@
     </main>
 
     <!-- Scripts -->
-    <script src="../header.js?v=20260324_03"></script>
-    <script src="../dev_mode.js"></script>
-    <script src="../kakao_quick.js"></script>
-    <script src="contact.js"></script>
+    <script src="../header.js?v=20260329_04"></script>
+    <script src="../dev_mode.js?v=20260329_04"></script>
+    <script src="../kakao_quick.js?v=20260329_04"></script>
+    <script src="contact.js?v=20260329_04"></script>
 </body>
 
 </html>

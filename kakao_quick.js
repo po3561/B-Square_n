@@ -1,4 +1,4 @@
-// kakao_quick.js - 카카오 채널 플로팅 퀵 메뉴 (전 페이지 공통)
+﻿// kakao_quick.js - 카카오 채널 플로팅 퀵 메뉴 (전 페이지 공통)
 (function () {
     'use strict';
 

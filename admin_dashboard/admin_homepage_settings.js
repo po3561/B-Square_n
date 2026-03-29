@@ -1,4 +1,4 @@
-// admin_homepage_settings.js - homepage / footer settings for admin dashboard
+﻿// admin_homepage_settings.js - homepage / footer settings for admin dashboard
 
 (function () {
   'use strict';

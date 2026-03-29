@@ -1,4 +1,4 @@
-// notice.js - 공지사항 통합 (D1 API 기반)
+﻿// notice.js - 공지사항 통합 (D1 API 기반)
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("📢 B-Square Notice Page Initializing (D1 API)...");
 

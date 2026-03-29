@@ -1,4 +1,4 @@
-import { json, options } from '../_lib/http.js';
+﻿import { json, options } from '../_lib/http.js';
 import { ensureAuthSchema } from '../_lib/schema.js';
 
 export async function onRequestGet(context) {

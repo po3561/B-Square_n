@@ -1,4 +1,4 @@
-import { requireClassManager, requireSession } from './_lib/auth.js';
+﻿import { requireClassManager, requireSession } from './_lib/auth.js';
 import { json } from './_lib/http.js';
 
 const RESPONSE_HEADERS = {
@@ -15,6 +15,12 @@ function parseIntOrDefault(value, fallback, max) {
   return Math.min(parsed, max);
 }
 
+function isTruthyFlag(value) {
+  if (value === true || value === 1) return true;
+  const text = String(value ?? '').trim().toLowerCase();
+  return text === '1' || text === 'true' || text === 'yes';
+}
+
 function normalizeClassRow(row) {
   return {
     ...row,
@@ -23,6 +29,16 @@ function normalizeClassRow(row) {
     bookmark_count: Number(row.bookmark_count || 0),
     like_count: Number(row.like_count || row.bookmark_count || 0),
     is_public: Number(row.is_public ?? 1) === 1,
+  };
+}
+
+function buildPageMeta(limit, offset, count, hasMore) {
+  return {
+    limit,
+    offset,
+    count,
+    has_more: hasMore,
+    next_offset: hasMore ? offset + limit : null,
   };
 }
 
@@ -70,7 +86,8 @@ export async function onRequest(context) {
     const category = trimText(url.searchParams.get('category'));
     const query = trimText(url.searchParams.get('q'));
     const instructorId = trimText(url.searchParams.get('instructor_id') || url.searchParams.get('creator_id'));
-    const limit = parseIntOrDefault(url.searchParams.get('limit'), 50, 500);
+    const requestedLimit = parseIntOrDefault(url.searchParams.get('limit'), 50, 200);
+    const limit = category || query || instructorId ? requestedLimit : Math.min(requestedLimit, 120);
     const offset = Math.max(Number.parseInt(url.searchParams.get('offset') || '0', 10) || 0, 0);
 
     try {
@@ -94,19 +111,17 @@ export async function onRequest(context) {
       }
 
       sql += ' ORDER BY c.created_at DESC, c.id DESC LIMIT ? OFFSET ?';
-      params.push(limit, offset);
+      params.push(limit + 1, offset);
 
       const { results } = await db.prepare(sql).bind(...params).all();
-      const enriched = (results || []).map(normalizeClassRow);
+      const rows = (results || []).map(normalizeClassRow);
+      const hasMore = rows.length > limit;
+      const enriched = hasMore ? rows.slice(0, limit) : rows;
 
       return json(request, env, {
         success: true,
         data: enriched,
-        meta: {
-          limit,
-          offset,
-          count: enriched.length,
-        },
+        meta: buildPageMeta(limit, offset, enriched.length, hasMore),
       }, { headers: RESPONSE_HEADERS });
     } catch (error) {
       return json(request, env, {
@@ -136,8 +151,36 @@ export async function onRequest(context) {
 
       for (const key of ['title', 'category', 'is_approved', 'price']) {
         if (body[key] !== undefined) {
-          updates.push(`${key} = ?`);
-          values.push(body[key]);
+          if (key === 'title') {
+            const title = trimText(body[key]);
+            if (!title) {
+              return json(request, env, { success: false, error: 'Title is required' }, { status: 400 });
+            }
+            updates.push('title = ?');
+            values.push(title);
+            continue;
+          }
+
+          if (key === 'category') {
+            updates.push('category = ?');
+            values.push(trimText(body[key]) || null);
+            continue;
+          }
+
+          if (key === 'is_approved') {
+            updates.push('is_approved = ?');
+            values.push(isTruthyFlag(body[key]) ? 1 : 0);
+            continue;
+          }
+
+          if (key === 'price') {
+            const parsedPrice = Number(body[key]);
+            if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+              return json(request, env, { success: false, error: 'price must be a non-negative number' }, { status: 400 });
+            }
+            updates.push('price = ?');
+            values.push(Math.trunc(parsedPrice));
+          }
         }
       }
 
@@ -170,23 +213,40 @@ export async function onRequest(context) {
     if (!auth.ok) return auth.response;
 
     try {
-      await db.prepare('DELETE FROM gathering_participants WHERE gathering_id IN (SELECT id FROM class_gatherings WHERE class_id = ?)').bind(id).run();
-      await db.prepare('DELETE FROM class_gatherings WHERE class_id = ?').bind(id).run();
-
-      const tables = [
+      const cleanupTables = [
         'enrollments',
         'reviews',
         'chat_messages',
+        'dm_messages',
+        'user_chats',
         'class_notices',
         'coupons',
         'class_participants',
         'class_boards',
         'user_passes',
         'class_bookmarks',
+        'class_stats',
       ];
 
-      for (const table of tables) {
+      try {
+        await db.prepare('DELETE FROM gathering_participants WHERE gathering_id IN (SELECT id FROM class_gatherings WHERE class_id = ?)').bind(id).run();
+      } catch (cleanupError) {
+        console.warn('[classes DELETE] skipped gathering_participants:', cleanupError.message);
+      }
+
+      try {
+        await db.prepare('DELETE FROM class_gatherings WHERE class_id = ?').bind(id).run();
+      } catch (cleanupError) {
+        console.warn('[classes DELETE] skipped class_gatherings:', cleanupError.message);
+      }
+
+      for (const table of cleanupTables) {
         try {
+          if (table === 'user_chats') {
+            await db.prepare('DELETE FROM user_chats WHERE room_id = ?').bind(id).run();
+            continue;
+          }
+
           await db.prepare(`DELETE FROM ${table} WHERE class_id = ?`).bind(id).run();
         } catch (cleanupError) {
           console.warn(`[classes DELETE] skipped ${table}:`, cleanupError.message);

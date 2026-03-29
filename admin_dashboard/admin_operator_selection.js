@@ -1,4 +1,4 @@
-// admin_operator_selection.js
+﻿// admin_operator_selection.js
 (function () {
   'use strict';
 

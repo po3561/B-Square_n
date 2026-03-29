@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+﻿import * as XLSX from 'xlsx';
 import { buildSettlementWorkbook } from '../_lib/dashboard_finance.js';
 import { json, options } from '../_lib/http.js';
 import { ensureOperationsSchema } from '../_lib/schema.js';

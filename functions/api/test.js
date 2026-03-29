@@ -1,4 +1,4 @@
-export async function onRequest(context) {
+﻿export async function onRequest(context) {
     // 1. 우리가 설정 파일(wrangler.toml)에서 연결해둔 D1 데이터베이스(DB) 부르기
     const db = context.env.DB;
 

@@ -1,4 +1,4 @@
-// GET /api/classes/members?class_id=xxx&view=instructor|student
+﻿// GET /api/classes/members?class_id=xxx&view=instructor|student
 // 클래스 참여자(수강생+강사) 목록 반환
 // view=instructor → 이름, 전화번호, 잔여수강권 포함
 // view=student → 닉네임만 반환

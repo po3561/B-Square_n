@@ -1,4 +1,4 @@
-// Admin financial records API
+﻿// Admin financial records API
 // GET /api/admin/financial?type=&from=&to=&limit=
 
 import { json, options } from '../_lib/http.js';

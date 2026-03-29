@@ -1,4 +1,4 @@
-window.CommunityModules = window.CommunityModules || {};
+﻿window.CommunityModules = window.CommunityModules || {};
 
 window.CommunityModules.DM = (function () {
     const bridge = () => window.CommunityModules.SyncBridge;
@@ -43,13 +43,25 @@ window.CommunityModules.DM = (function () {
             const clientId = `dm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
             const msgPayload = {
                 content,
+                message: content,
                 room_type: 'dm',
-                image_url: null,
+                type,
                 client_id: clientId,
             };
 
+            if (replyTo) {
+                msgPayload.reply_to = typeof replyTo === 'object' ? replyTo.id || null : replyTo;
+                msgPayload.reply_data = typeof replyTo === 'object' ? replyTo : null;
+            }
+
+            if (customMsgData && typeof customMsgData === 'object') {
+                Object.assign(msgPayload, customMsgData);
+            }
+
             if (fileData && fileData.data) {
                 msgPayload.image_url = fileData.data;
+                msgPayload.file_name = fileData.name || msgPayload.file_name || null;
+                msgPayload.file_size = fileData.size || msgPayload.file_size || null;
             }
 
             const res = await window.BSQ.api(`/api/dm/${roomId}/messages`, {
@@ -57,11 +69,12 @@ window.CommunityModules.DM = (function () {
                 body: JSON.stringify(msgPayload),
             });
 
-            if (res?.success) {
-                bridge().emit('message_sent', { roomId, msgId: res.data.id });
-                return res.data.id;
+            if (!res?.success || !res.data) {
+                throw new Error(res?.error || 'DM send failed');
             }
-            return null;
+
+            bridge().emit('message_sent', { roomId, msgId: res.data.id, clientId });
+            return res.data.id;
         } catch (error) {
             console.error('sendMessage error:', error);
             return null;

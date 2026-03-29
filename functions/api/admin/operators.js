@@ -1,4 +1,4 @@
-import { json, options } from '../_lib/http.js';
+﻿import { json, options } from '../_lib/http.js';
 import { applyMasterAdminOverride, isMasterAdminUserId } from '../_lib/auth.js';
 import { ensureAuthSchema, ensureClassesSchema } from '../_lib/schema.js';
 import { getRoleLabel, getRoleRank, isAtLeastRole, requireAdmin } from '../_lib/auth.js';

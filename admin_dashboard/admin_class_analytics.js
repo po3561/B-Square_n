@@ -1,4 +1,4 @@
-// admin_class_analytics.js — 클래스 통계/분석 탭 핸들러
+﻿// admin_class_analytics.js — 클래스 통계/분석 탭 핸들러
 (function () {
   const API = '/api/admin/class-analytics';
   const fmt = (n) => Number(n || 0).toLocaleString('ko-KR');

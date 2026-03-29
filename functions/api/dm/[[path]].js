@@ -1,4 +1,4 @@
-import { requireSession } from '../_lib/auth.js';
+﻿import { requireSession } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
 
 function getPathParts(params) {
@@ -18,37 +18,54 @@ function parseReactions(value) {
   }
 }
 
+function trimText(value) {
+  return String(value ?? '').trim();
+}
+
+function toSQLiteTimestamp(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  const date = new Date(numeric);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function isTruthyFlag(value) {
+  if (value === true || value === 1) return true;
+  const text = String(value ?? '').trim().toLowerCase();
+  return text === '1' || text === 'true' || text === 'yes';
+}
+
 function normalizeMessage(row) {
   return {
     ...row,
     content: row.content || row.message || '',
     message: row.content || row.message || '',
     text: row.content || row.message || '',
-    file_data: row.file_data || row.image_url || null,
+    file_data: row.image_url ?? row.file_data ?? null,
     reactions: parseReactions(row.reactions),
   };
 }
 
 function buildSinceClause(since) {
   if (!since) {
-    return { sql: '', bind: null };
+    return { sql: '', bind: null, orderSql: 'ORDER BY created_at ASC, id ASC' };
   }
 
   const numeric = Number(since);
   if (!Number.isFinite(numeric)) {
-    return { sql: '', bind: null };
+    return { sql: '', bind: null, orderSql: 'ORDER BY created_at ASC, id ASC' };
   }
 
-  if (numeric > 9999999999) {
-    return {
-      sql: " AND (strftime('%s', COALESCE(updated_at, created_at)) * 1000) > ?",
-      bind: numeric,
-    };
+  const timestamp = toSQLiteTimestamp(numeric);
+  if (!timestamp) {
+    return { sql: '', bind: null, orderSql: 'ORDER BY created_at ASC, id ASC' };
   }
 
   return {
-    sql: ' AND id > ?',
-    bind: numeric,
+    sql: ' AND updated_at > ?',
+    bind: timestamp,
+    orderSql: 'ORDER BY updated_at ASC, id ASC',
   };
 }
 
@@ -84,15 +101,25 @@ const DM_MESSAGE_COLUMNS = `
 `;
 
 async function streamMessages(context, roomId, roomType, initialSince) {
-  const { env } = context;
+  const { env, request } = context;
   const encoder = new TextEncoder();
   let since = initialSince || '0';
+  let cancelled = false;
+  const abort = () => { cancelled = true; };
+
+  if (request?.signal?.aborted) {
+    cancelled = true;
+  }
+
+  try {
+    request?.signal?.addEventListener('abort', abort, { once: true });
+  } catch {}
 
   const stream = new ReadableStream({
     async start(controller) {
       controller.enqueue(encoder.encode('retry: 3000\n\n'));
 
-      while (true) {
+      while (!cancelled) {
         const sinceClause = buildSinceClause(since);
         let query = `
           SELECT ${DM_MESSAGE_COLUMNS}
@@ -107,7 +134,7 @@ async function streamMessages(context, roomId, roomType, initialSince) {
           binds.push(sinceClause.bind);
         }
 
-        query += ' ORDER BY COALESCE(updated_at, created_at) ASC, id ASC LIMIT 100';
+        query += ` ${sinceClause.orderSql} LIMIT 100`;
 
         try {
           const { results } = await env.DB.prepare(query).bind(...binds).all();
@@ -122,6 +149,13 @@ async function streamMessages(context, roomId, roomType, initialSince) {
 
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
+
+      try {
+        controller.close();
+      } catch {}
+    },
+    cancel() {
+      abort();
     },
   });
 
@@ -166,7 +200,7 @@ export async function onRequest(context) {
 
     if (request.method === 'GET') {
       const since = url.searchParams.get('since') || '';
-      const limit = Math.min(parseInt(url.searchParams.get('limit'), 10) || 100, 200);
+      const limit = Math.min(parseInt(url.searchParams.get('limit'), 10) || 50, 100);
       const sinceClause = buildSinceClause(since);
       let query = `
         SELECT ${DM_MESSAGE_COLUMNS}
@@ -183,13 +217,25 @@ export async function onRequest(context) {
 
       if (pinnedOnly) {
         query += ' AND is_pinned = 1';
+        query += ' ORDER BY updated_at DESC, id DESC LIMIT ?';
+      } else {
+        query += ` ${sinceClause.orderSql} LIMIT ?`;
       }
-
-        query += ' ORDER BY COALESCE(updated_at, created_at) ASC, id ASC LIMIT ?';
-      binds.push(limit);
+      binds.push(limit + 1);
 
       const { results } = await env.DB.prepare(query).bind(...binds).all();
-      return json(request, env, { success: true, data: (results || []).map(normalizeMessage) });
+      const rows = (results || []).map(normalizeMessage);
+      const hasMore = rows.length > limit;
+      const data = hasMore ? rows.slice(0, limit) : rows;
+      return json(request, env, {
+        success: true,
+        data,
+        meta: {
+          limit,
+          count: data.length,
+          has_more: hasMore,
+        },
+      });
     }
 
     if (request.method === 'POST' && subResource && extra === 'reaction') {
@@ -238,10 +284,11 @@ export async function onRequest(context) {
 
     if (request.method === 'POST') {
       const body = await request.json();
-      const content = body.content || body.message || body.text || '';
-      const resolvedRoomType = body.room_type || roomType;
-      const resolvedClassId = resolvedRoomType === 'class' ? roomId : (body.class_id || null);
-      const attachmentUrl = body.image_url || body.file_data || null;
+      const content = trimText(body.content || body.message || body.text || '');
+      const resolvedRoomType = trimText(body.room_type) || roomType;
+      const resolvedClassId = resolvedRoomType === 'class' ? roomId : (trimText(body.class_id) || null);
+      const attachmentUrl = trimText(body.image_url || body.file_data || '') || null;
+      const messageId = 'dm_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16);
 
       if (!content && !attachmentUrl && body.type !== 'gathering_card') {
         return json(request, env, { success: false, error: 'message or attachment is required' }, { status: 400 });
@@ -249,47 +296,45 @@ export async function onRequest(context) {
 
       await env.DB.prepare(`
         INSERT INTO dm_messages (
-          room_id, room_type, class_id, sender_id, user_name, user_avatar,
+          id, room_id, room_type, class_id, sender_id, user_name, user_avatar,
           content, message, type, reply_to, reply_text, reply_user,
           image_url, file_name, file_size,
           gather_title, gather_time, gather_place, min_capacity, max_capacity, current_count, status,
           is_pinned, reactions, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       `).bind(
+        messageId,
         roomId,
         resolvedRoomType,
         resolvedClassId,
         auth.user.id,
-        body.user_name || auth.user.name || auth.user.username || 'User',
-        body.user_avatar || auth.user.profile_image_url || '',
+        trimText(body.user_name) || trimText(auth.user.name) || trimText(auth.user.username) || 'User',
+        trimText(body.user_avatar) || trimText(auth.user.profile_image_url) || '',
         content,
         content,
-        body.type || 'text',
-        body.reply_to || null,
-        body.reply_text || null,
-        body.reply_user || null,
+        trimText(body.type) || 'text',
+        trimText(body.reply_to) || null,
+        trimText(body.reply_text) || null,
+        trimText(body.reply_user) || null,
         attachmentUrl,
-        body.file_name || null,
-        body.file_size || null,
-        body.gather_title || null,
-        body.gather_time || null,
-        body.gather_place || null,
-        body.min_capacity || null,
-        body.max_capacity || null,
-        body.current_count || 0,
-        body.status || null,
-        body.is_pinned ? 1 : 0,
-        JSON.stringify(body.reactions || {}),
+        trimText(body.file_name) || null,
+        Number.isFinite(Number(body.file_size)) ? Number(body.file_size) : null,
+        trimText(body.gather_title) || null,
+        trimText(body.gather_time) || null,
+        trimText(body.gather_place) || null,
+        Number.isFinite(Number(body.min_capacity)) ? Number(body.min_capacity) : null,
+        Number.isFinite(Number(body.max_capacity)) ? Number(body.max_capacity) : null,
+        Number.isFinite(Number(body.current_count)) ? Number(body.current_count) : 0,
+        trimText(body.status) || null,
+        isTruthyFlag(body.is_pinned) ? 1 : 0,
+        typeof body.reactions === 'string' ? body.reactions : JSON.stringify(body.reactions || {}),
       ).run();
 
       const inserted = await env.DB.prepare(`
         SELECT ${DM_MESSAGE_COLUMNS}
         FROM dm_messages
-        WHERE room_id = ?
-          AND sender_id = ?
-        ORDER BY id DESC
-        LIMIT 1
-      `).bind(roomId, auth.user.id).first();
+        WHERE id = ?
+      `).bind(messageId).first();
 
       await env.DB.prepare(`
         UPDATE user_chats
@@ -326,7 +371,7 @@ export async function onRequest(context) {
           UPDATE dm_messages
           SET is_pinned = ?, updated_at = datetime('now')
           WHERE id = ? AND room_id = ?
-        `).bind(body.is_pinned ? 1 : 0, subResource, roomId).run();
+        `).bind(isTruthyFlag(body.is_pinned) ? 1 : 0, subResource, roomId).run();
       }
 
       const updated = await env.DB.prepare(`

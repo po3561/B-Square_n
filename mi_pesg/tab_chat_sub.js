@@ -1,4 +1,4 @@
-window.initChatSubTab = async function (userId) {
+﻿window.initChatSubTab = async function (userId) {
     const chatList = document.getElementById('chatList');
     const subCard = document.querySelector('.sub-card');
 

@@ -1,4 +1,4 @@
-window.BSQCommunityShared = window.BSQCommunityShared || {};
+﻿window.BSQCommunityShared = window.BSQCommunityShared || {};
 
 (() => {
     const STORAGE_KEY = 'bsq_community_shell_settings_v2';

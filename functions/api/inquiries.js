@@ -1,4 +1,4 @@
-import { ensureOperationsSchema } from './_lib/schema.js';
+﻿import { ensureOperationsSchema } from './_lib/schema.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',

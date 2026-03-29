@@ -18,9 +18,30 @@ window.CommunityModules.ChatUI = (function () {
     let lastMsgTimestamp = 0;
     let messageFeed = null;
     let roomOpenSeq = 0;
+    const MESSAGE_CURSOR_OVERLAP_MS = 1000;
+    let deletePrompt = { id: null, at: 0 };
+    let gatherClosePrompt = { id: null, at: 0 };
 
     function isClassRoom(roomType = currentRoomType) {
         return roomType === 'class';
+    }
+
+    function toast(message) {
+        if (!message) return;
+        window.BSQCommunityShared?.toast?.(message);
+    }
+
+    function requireSecondTap(store, key, message) {
+        const now = Date.now();
+        if (store.id !== key || now - store.at > 5000) {
+            store.id = key;
+            store.at = now;
+            toast(message);
+            return false;
+        }
+        store.id = null;
+        store.at = 0;
+        return true;
     }
 
     function parseMaybeJson(value, fallback = null) {
@@ -41,6 +62,7 @@ window.CommunityModules.ChatUI = (function () {
         normalized.content = content;
         normalized.message = normalized.message || content;
         normalized.text = normalized.text || content;
+        normalized.file_data = normalized.file_data || normalized.image_url || null;
         normalized.reactions = parseMaybeJson(normalized.reactions, {}) || {};
         normalized.reply_data = parseMaybeJson(normalized.reply_data, null);
         normalized.edited = !!(normalized.edited || normalized.is_edited === 1 || normalized.is_edited === true);
@@ -268,7 +290,37 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     function refreshVisibleMessages() {
-        return loadMessages({ refreshAll: true });
+        return Promise.all([
+            loadMessages({ refreshAll: true }),
+            loadPinnedMessages(),
+        ]);
+    }
+
+    function getReplaySince(timestamp = lastMsgTimestamp) {
+        const numeric = Number(timestamp) || 0;
+        return numeric > 0 ? Math.max(0, numeric - MESSAGE_CURSOR_OVERLAP_MS) : 0;
+    }
+
+    function syncPinnedMessageState(msgData) {
+        const normalized = normalizeIncomingMessage(msgData);
+        const messageKey = String(normalized?.id || normalized?.key || '');
+        if (!messageKey) return false;
+
+        const wasPinned = currentPins.some(pin => String(pin?.id || pin?.key || '') === messageKey);
+        const isPinned = !!normalized.is_pinned;
+        if (!isPinned && !wasPinned) return false;
+
+        currentPins = currentPins.filter(pin => String(pin?.id || pin?.key || '') !== messageKey);
+        if (isPinned) {
+            currentPins.unshift({ ...normalized, is_pinned: 1 });
+        }
+        currentPins.sort((a, b) => messageCursor(b) - messageCursor(a));
+
+        renderPinnedBar();
+        if (document.getElementById('commInfoPanel')?.classList.contains('visible')) {
+            renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo).catch(() => {});
+        }
+        return true;
     }
 
     function getRoomMessageCollectionUrl() {
@@ -362,7 +414,7 @@ window.CommunityModules.ChatUI = (function () {
                 const min = parseInt(document.getElementById('gatherMin')?.value) || 2;
                 const max = parseInt(document.getElementById('gatheringCapacity')?.value) || 10;
 
-                if (!title || !at || !location) { alert("모임명, 일시, 장소를 모두 입력해주세요."); return; }
+                if (!title || !at || !location) { toast("모임명, 일시, 장소를 모두 입력해 주세요."); return; }
 
                 try {
                     // D1 API로 모임 생성
@@ -386,11 +438,11 @@ window.CommunityModules.ChatUI = (function () {
                         await sendGatheringCard(title, min, max, at, location);
                         modal.style.display = 'none';
                     } else {
-                        alert('모임 생성 실패: ' + (res?.error || ''));
+                        toast(res?.error || '모임 생성에 실패했습니다.');
                     }
                 } catch (e) {
                     console.error('Gathering create error:', e);
-                    alert('모임 생성 중 오류 발생');
+                    toast('모임 생성 중 오류가 발생했습니다.');
                 }
             });
         }
@@ -573,6 +625,7 @@ window.CommunityModules.ChatUI = (function () {
     function openRoom(roomId, roomType, roomInfo) {
         const roomToken = ++roomOpenSeq;
         stopMessageFeed();
+        closeAllMenus();
         currentRoomId = roomId;
         currentRoomType = roomType;
         currentRoomInfo = roomInfo || {};
@@ -604,6 +657,17 @@ window.CommunityModules.ChatUI = (function () {
         lastScrollTop = 0; unreadCount = 0;
         const inputArea = document.querySelector('.chat-input-area');
         if (inputArea) inputArea.classList.remove('hidden');
+        const badge = document.getElementById('scrollBadge');
+        const btnScroll = document.getElementById('btnScrollBottom');
+        if (badge) badge.style.display = 'none';
+        if (btnScroll) btnScroll.classList.remove('active');
+        const pinnedBar = document.getElementById('pinnedMsgBar');
+        const pinnedContent = document.getElementById('pinnedMsgContent');
+        if (pinnedBar) {
+            pinnedBar.style.display = 'none';
+            pinnedBar.onclick = null;
+        }
+        if (pinnedContent) pinnedContent.textContent = '';
 
         // 헤더 업데이트
         const name = roomInfo?.target_name || roomInfo?.class_name || roomInfo?.group_name || '채팅방';
@@ -664,6 +728,7 @@ window.CommunityModules.ChatUI = (function () {
             since: lastMsgTimestamp,
             seedMessages,
             limit: 120,
+            cursorOverlapMs: MESSAGE_CURSOR_OVERLAP_MS,
             onStatus: (status) => {
                 const badge = document.getElementById('scrollBadge');
                 if (badge && status === 'polling') {
@@ -680,7 +745,7 @@ window.CommunityModules.ChatUI = (function () {
             const roomId = currentRoomId;
             const roomType = currentRoomType;
             const endpoint = getRoomMessagesUrl({
-                since: refreshAll ? '' : lastMsgTimestamp,
+                since: refreshAll ? '' : getReplaySince(lastMsgTimestamp),
                 limit: refreshAll ? 250 : 100,
             });
             const res = await window.BSQ.api(endpoint);
@@ -818,27 +883,42 @@ window.CommunityModules.ChatUI = (function () {
             }
         };
 
+        const cachedRecord = { ...msgData, id: normalizedId, client_id: clientId || msgData.client_id || '' };
+        cacheMessage(cachedRecord);
+        syncPinnedMessageState(cachedRecord);
+
         if (row) {
             if (row.dataset.signature === signature) {
                 row.classList.toggle('pinned', !!msgData.is_pinned);
                 row.dataset.messageId = normalizedId;
                 if (clientId) row.dataset.clientId = clientId;
-                cacheMessage({ ...msgData, id: normalizedId, client_id: clientId || msgData.client_id || '' });
                 return;
             }
 
             applyRowState(row);
-            cacheMessage({ ...msgData, id: normalizedId, client_id: clientId || msgData.client_id || '' });
-            if (isMine || shouldStickToBottom) scrollToBottom();
+            if (isMine || shouldStickToBottom) {
+                scrollToBottom();
+                unreadCount = 0;
+                const badge = document.getElementById('scrollBadge');
+                const btnScroll = document.getElementById('btnScrollBottom');
+                if (badge) badge.style.display = 'none';
+                if (btnScroll) btnScroll.classList.remove('active');
+            }
             return;
         }
 
         const newRow = document.createElement('div');
         applyRowState(newRow);
         container.appendChild(newRow);
-        cacheMessage({ ...msgData, id: normalizedId, client_id: clientId || msgData.client_id || '' });
 
-        if (isMine || shouldStickToBottom) scrollToBottom();
+        if (isMine || shouldStickToBottom) {
+            scrollToBottom();
+            unreadCount = 0;
+            const badge = document.getElementById('scrollBadge');
+            const btnScroll = document.getElementById('btnScrollBottom');
+            if (badge) badge.style.display = 'none';
+            if (btnScroll) btnScroll.classList.remove('active');
+        }
         else {
             unreadCount++;
             const badge = document.getElementById('scrollBadge');
@@ -860,8 +940,9 @@ window.CommunityModules.ChatUI = (function () {
         }
 
         // 메시지 유형별
-        if (msgData.type === 'image' && msgData.file_data) {
-            contentHtml += `<div class="msg-bubble image-only"><img class="msg-image" src="${msgData.file_data}" alt="이미지"></div>`;
+        if (msgData.type === 'image' && (msgData.file_data || msgData.image_url)) {
+            const imageSrc = msgData.file_data || msgData.image_url;
+            contentHtml += `<div class="msg-bubble image-only"><img class="msg-image" src="${imageSrc}" alt="이미지"></div>`;
         } else if (msgData.type === 'file' && msgData.file_name) {
             contentHtml += `<div class="msg-bubble"><div class="msg-file-attachment">
                 <span class="file-icon">📄</span><div class="file-info"><span class="file-name">${msgData.file_name}</span><span class="file-size">${formatFileSize(msgData.file_size)}</span></div>
@@ -945,6 +1026,14 @@ window.CommunityModules.ChatUI = (function () {
             messageCache.delete(String(cached.client_id));
         }
         messageCache.delete(String(key));
+        const removedId = String(cached?.id || key || '');
+        if (removedId) {
+            currentPins = currentPins.filter(pin => String(pin.id || pin.key || '') !== removedId);
+            renderPinnedBar();
+            if (document.getElementById('commInfoPanel')?.classList.contains('visible')) {
+                renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo).catch(() => {});
+            }
+        }
     }
 
     // ==== 메시지 컨텍스트 메뉴 ====
@@ -1003,7 +1092,7 @@ window.CommunityModules.ChatUI = (function () {
                     }
                     const senderName = msg.user_name || msg.sender_name || '사용자';
                     if (action === 'reply') setReply(key, msg.content, senderName, msg);
-                    else if (action === 'copy') { navigator.clipboard?.writeText((msg.content || '').replace(/<[^>]*>?/gm, '')); alert('복사했습니다.'); }
+                    else if (action === 'copy') { navigator.clipboard?.writeText((msg.content || '').replace(/<[^>]*>?/gm, '')); toast('텍스트를 복사했습니다.'); }
                     else if (action === 'edit') startEdit(key, msg.content);
                     else if (action === 'delete') deleteMsg(key);
                     menu.remove();
@@ -1047,7 +1136,7 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     async function deleteMsg(key) {
-        if (!confirm('이 메시지를 삭제하시겠습니까?')) return;
+        if (!requireSecondTap(deletePrompt, key, '메시지를 삭제하려면 5초 안에 다시 눌러 주세요.')) return;
         try {
             await window.BSQ.api(getRoomMessageItemUrl(key), { method: 'DELETE' });
             removeMessage(key);
@@ -1075,13 +1164,6 @@ window.CommunityModules.ChatUI = (function () {
             });
 
             renderMessage(updated.id || messageId, updated, true);
-            currentPins = nextPinned
-                ? [updated, ...currentPins.filter((item) => String(item.id) !== String(messageId))]
-                : currentPins.filter((item) => String(item.id) !== String(messageId));
-            renderPinnedBar();
-            if (document.getElementById('commInfoPanel')?.classList.contains('visible')) {
-                await renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo);
-            }
         } catch (e) {
             console.warn('setMessagePinned failed:', e);
             window.BSQCommunityShared?.toast?.('고정 처리에 실패했습니다.');
@@ -1097,6 +1179,9 @@ window.CommunityModules.ChatUI = (function () {
         isSending = true;
         const btnSend = document.getElementById('btnSend');
         if (btnSend) btnSend.style.opacity = '0.5';
+        let pendingClientId = null;
+        let previousEditingMessage = null;
+        let shouldClearInput = false;
 
         try {
             let currentUserId = bridge()?.getUserId?.() || '';
@@ -1104,6 +1189,7 @@ window.CommunityModules.ChatUI = (function () {
 
             if (editingMsgKey) {
                 const previous = getCachedMessage(editingMsgKey) || { id: editingMsgKey, sender_id: currentUserId };
+                previousEditingMessage = previous;
                 const optimistic = {
                     ...previous,
                     content,
@@ -1119,13 +1205,17 @@ window.CommunityModules.ChatUI = (function () {
                     method: isClassRoom() ? 'PUT' : 'PATCH',
                     body: JSON.stringify(editPayload)
                 });
-                if (res?.success && res.data) {
-                    renderMessage(res.data.id || editingMsgKey, normalizeIncomingMessage({ ...previous, ...res.data }), true);
+                if (!res?.success || !res.data) {
+                    throw new Error(res?.error || '메시지 수정에 실패했습니다.');
                 }
+
+                renderMessage(res.data.id || editingMsgKey, normalizeIncomingMessage({ ...previous, ...res.data }), true);
                 editingMsgKey = null;
+                shouldClearInput = true;
             } else {
                 const profile = await bridge()?.getUserProfile?.(currentUserId) || { name: '사용자', profile_image_url: '' };
                 const clientId = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                pendingClientId = clientId;
                 const replyData = replyTarget ? (typeof replyTarget === 'object' ? replyTarget : { id: replyTarget }) : null;
                 const optimisticMessage = {
                     id: clientId,
@@ -1186,19 +1276,30 @@ window.CommunityModules.ChatUI = (function () {
                     body: JSON.stringify(pushData)
                 });
 
-                if (res?.success && res.data) {
-                    const serverMsg = normalizeIncomingMessage({ ...res.data, client_id: res.data.client_id || clientId });
-                    renderMessage(serverMsg.id || clientId, serverMsg, true);
+                if (!res?.success || !res.data) {
+                    throw new Error(res?.error || '메시지 전송에 실패했습니다.');
                 }
-            }
 
-            msgInput.value = '';
-            msgInput.style.background = '';
-            msgInput.dispatchEvent(new Event('input'));
-            clearReplyPreview();
+                const serverMsg = normalizeIncomingMessage({ ...res.data, client_id: res.data.client_id || clientId });
+                renderMessage(serverMsg.id || clientId, serverMsg, true);
+                shouldClearInput = true;
+            }
         } catch (e) {
             console.error('Send error:', e);
+            if (previousEditingMessage && editingMsgKey) {
+                renderMessage(editingMsgKey, normalizeIncomingMessage(previousEditingMessage), true);
+            }
+            if (pendingClientId) {
+                removeMessage(pendingClientId);
+            }
+            window.BSQCommunityShared?.toast?.(e?.message || '메시지 전송에 실패했습니다.');
         } finally {
+            if (shouldClearInput) {
+                msgInput.value = '';
+                msgInput.style.background = '';
+                msgInput.dispatchEvent(new Event('input'));
+                clearReplyPreview();
+            }
             isSending = false;
             if (btnSend) btnSend.style.opacity = '1';
         }
@@ -1283,16 +1384,18 @@ window.CommunityModules.ChatUI = (function () {
                                 type: isImage ? 'image' : 'file',
                                 file_name: file.name,
                                 file_size: file.size,
-                                file_data: e.target.result,
+                                image_url: e.target.result,
                                 room_type: currentRoomType,
                                 class_id: isClassRoom() ? currentRoomId : null,
                                 client_id: tempId,
                             })
                         });
 
-                        if (res?.success && res.data) {
-                            renderMessage(res.data.id || tempId, normalizeIncomingMessage({ ...res.data, client_id: res.data.client_id || tempId }), true);
+                        if (!res?.success || !res.data) {
+                            throw new Error(res?.error || '파일 전송에 실패했습니다.');
                         }
+
+                        renderMessage(res.data.id || tempId, normalizeIncomingMessage({ ...res.data, client_id: res.data.client_id || tempId }), true);
                     } catch (error) {
                         removeMessage(tempId);
                         console.warn('File upload failed:', error);
@@ -1331,12 +1434,13 @@ window.CommunityModules.ChatUI = (function () {
     // ==== 모집 카드 전송 (D1 API) ====
     async function sendGatheringCard(title, minCap, maxCap, time, place) {
         if (!currentRoomId) return;
+        let clientId = null;
         try {
             let currentUserId = bridge()?.getUserId?.() || '';
             if (window.__BSQ_DEV_MODE__) currentUserId = 'OPERATOR_GHOST';
             const profile = await bridge()?.getUserProfile?.(currentUserId) || { name: '강사' };
 
-            const clientId = `tmp_gather_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+            clientId = `tmp_gather_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
             renderMessage(clientId, {
                 id: clientId,
                 client_id: clientId,
@@ -1381,12 +1485,15 @@ window.CommunityModules.ChatUI = (function () {
                     client_id: clientId,
                 })
             });
-            if (res?.success && res.data) {
-                renderMessage(res.data.id || clientId, normalizeIncomingMessage({ ...res.data, client_id: res.data.client_id || clientId }), true);
+            if (!res?.success || !res.data) {
+                throw new Error(res?.error || '모집 카드 전송에 실패했습니다.');
             }
+
+            renderMessage(res.data.id || clientId, normalizeIncomingMessage({ ...res.data, client_id: res.data.client_id || clientId }), true);
         } catch (e) {
             console.error('Send Gathering error:', e);
-            alert("모집 카드 전송에 실패했습니다.");
+            removeMessage(clientId);
+            toast("모집 카드 전송에 실패했습니다.");
         }
     }
 
@@ -1401,19 +1508,19 @@ window.CommunityModules.ChatUI = (function () {
                 })
             });
             if (res?.success) {
-                alert("모임 참여가 완료되었습니다!");
-                await refreshVisibleMessages();
+                toast("모임 참여가 완료되었습니다!");
+                await loadPinnedMessages();
             } else {
-                alert(res?.error || "참여 처리에 실패했습니다.");
+                toast(res?.error || "참여 처리에 실패했습니다.");
             }
         } catch (e) {
             console.error("Gathering join error:", e);
-            alert("참여 처리 중 오류가 발생했습니다.");
+            toast("참여 처리 중 오류가 발생했습니다.");
         }
     }
 
     async function closeGathering(roomId, gatherId) {
-        if (!confirm("모집을 마감하시겠습니까?")) return;
+        if (!requireSecondTap(gatherClosePrompt, gatherId, '모집을 마감하려면 5초 안에 다시 눌러 주세요.')) return;
         try {
             const res = await window.BSQ.api('/api/gatherings', {
                 method: 'POST',
@@ -1423,14 +1530,14 @@ window.CommunityModules.ChatUI = (function () {
                 })
             });
             if (res?.success) {
-                alert("모집이 마감되었습니다.");
-                await refreshVisibleMessages();
+                toast("모집이 마감되었습니다.");
+                await loadPinnedMessages();
             } else {
-                alert(res?.error || "마감 처리에 실패했습니다.");
+                toast(res?.error || "마감 처리에 실패했습니다.");
             }
         } catch (e) {
             console.error("Close gathering error:", e);
-            alert("마감 처리 중 오류가 발생했습니다.");
+            toast("마감 처리 중 오류가 발생했습니다.");
         }
     }
 
@@ -1525,12 +1632,3 @@ window.CommunityModules.ChatUI = (function () {
         v2ToggleContact: async (targetId) => { window.addFriend?.(targetId); }
     };
 })();
-
-
-
-
-
-
-
-
-

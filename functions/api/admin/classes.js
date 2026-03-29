@@ -1,4 +1,4 @@
-import { requireAdmin } from '../_lib/auth.js';
+﻿import { requireAdmin } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
 import { ensureClassesSchema, ensureClassStatsSchema, ensureOperationsSchema } from '../_lib/schema.js';
 import { ensureClassBookmarksSchema, getEffectiveClassPrice, getClassHotScore } from '../_lib/class_support.js';

@@ -1,4 +1,4 @@
-window.BSquareModules = window.BSquareModules || {};
+﻿window.BSquareModules = window.BSquareModules || {};
 
 window.BSquareModules.initCurriculum = function (data) {
     renderCurriculum(data);

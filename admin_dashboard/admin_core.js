@@ -1,4 +1,4 @@
-// admin_core.js - core logic for the admin dashboard
+﻿// admin_core.js - core logic for the admin dashboard
 
 const DASHBOARD_ROLE_ORDER = {
   user: 0,

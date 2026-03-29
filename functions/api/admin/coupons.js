@@ -1,4 +1,4 @@
-import { json, options } from '../_lib/http.js';
+﻿import { json, options } from '../_lib/http.js';
 import { ensureCommerceSchema } from '../_lib/schema.js';
 
 function generateCouponCode() {

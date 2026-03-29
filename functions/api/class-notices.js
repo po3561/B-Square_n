@@ -1,4 +1,4 @@
-import { requireSession, normalizeRole, isAtLeastRole } from './_lib/auth.js';
+﻿import { requireSession, normalizeRole, isAtLeastRole } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
 import {
   ensureBoardCompatSchema,

@@ -1,4 +1,4 @@
-import { json, options } from './_lib/http.js';
+﻿import { json, options } from './_lib/http.js';
 import { loadClassCategories } from './_lib/class_support.js';
 
 const RESPONSE_HEADERS = {
