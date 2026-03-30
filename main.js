@@ -64,6 +64,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 let globalAllClasses = [];
 let globalHomeCategories = [];
 let homeRefreshTimer = null;
+let homeBannerCarousels = {
+    main: null,
+    bottom: null,
+};
 const HOME_CLASS_FETCH_LIMIT = 48;
 
 function getCurrentHomeCategory() {
@@ -82,6 +86,167 @@ function setHomeCategoryExpandedState(expanded) {
     try {
         localStorage.setItem('bsq.home.categories.expanded', expanded ? '1' : '0');
     } catch { }
+}
+
+function getHomeSiteSettings() {
+    if (window.__BSQ_SITE_SETTINGS__) return Promise.resolve(window.__BSQ_SITE_SETTINGS__);
+    if (window.BSQ?.siteSettingsReady) {
+        return window.BSQ.siteSettingsReady.catch(() => window.__BSQ_SITE_SETTINGS__ || null);
+    }
+    if (window.BSQ?.api) {
+        return window.BSQ.api('/api/site-settings', { cacheBust: false })
+            .then((res) => (res?.success ? (res.data || null) : null))
+            .catch(() => window.__BSQ_SITE_SETTINGS__ || null);
+    }
+    return Promise.resolve(null);
+}
+
+function normalizeBannerItems(items = [], fallbackLabel = '배너') {
+    return (Array.isArray(items) ? items : [])
+        .map((item, index) => {
+            const imgUrl = String(item?.imgUrl || item?.image || item?.src || '').trim();
+            const linkUrl = String(item?.linkUrl || item?.link || '').trim();
+            const alt = String(item?.alt || item?.title || item?.label || `${fallbackLabel} ${index + 1}`).trim();
+            return { imgUrl, linkUrl, alt };
+        })
+        .filter((item) => item.imgUrl);
+}
+
+function teardownBannerCarousel(kind) {
+    const state = homeBannerCarousels[kind];
+    if (state?.timer) {
+        window.clearInterval(state.timer);
+    }
+    homeBannerCarousels[kind] = null;
+}
+
+function setBannerSlideState(state, nextIndex) {
+    if (!state || !state.slides || !state.slides.length) return;
+    const total = state.slides.length;
+    const safeIndex = ((nextIndex % total) + total) % total;
+    state.index = safeIndex;
+
+    state.slides.forEach((slide, index) => {
+        const active = index === safeIndex;
+        slide.classList.toggle('is-active', active);
+        slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+        slide.tabIndex = active ? 0 : -1;
+    });
+
+    state.dots?.forEach((dot, index) => {
+        const active = index === safeIndex;
+        dot.classList.toggle('is-active', active);
+        dot.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+}
+
+function renderBannerCarousel(kind, items, options = {}) {
+    const track = document.getElementById(options.trackId);
+    const dots = document.getElementById(options.dotsId);
+    const prev = document.getElementById(options.prevId);
+    const next = document.getElementById(options.nextId);
+    if (!track) return;
+
+    teardownBannerCarousel(kind);
+
+    const banners = normalizeBannerItems(items, options.fallbackLabel);
+    const slides = banners.length ? banners : [{
+        imgUrl: '',
+        linkUrl: '',
+        alt: options.emptyAlt || `${options.fallbackLabel} 준비 중`,
+    }];
+
+    track.innerHTML = slides.map((item, index) => {
+        const slideClass = `home-banner-slide${index === 0 ? ' is-active' : ''}`;
+        const content = item.imgUrl
+            ? `<img src="${escapeHtml(item.imgUrl)}" alt="${escapeHtml(item.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async">`
+            : `<div class="home-banner-empty">${escapeHtml(options.emptyMessage || `${options.fallbackLabel}를 준비 중입니다.`)}</div>`;
+        if (item.linkUrl) {
+            return `
+                <div class="${slideClass}" data-banner-index="${index}" aria-hidden="${index === 0 ? 'false' : 'true'}">
+                    <a href="${escapeHtml(item.linkUrl)}" aria-label="${escapeHtml(item.alt)}">
+                        ${content}
+                    </a>
+                </div>
+            `;
+        }
+        return `
+            <div class="${slideClass}" data-banner-index="${index}" aria-hidden="${index === 0 ? 'false' : 'true'}">
+                <div>
+                    ${content}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    const slideEls = Array.from(track.querySelectorAll('.home-banner-slide'));
+    const dotButtons = dots
+        ? slides.map((_, index) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `home-banner-dot${index === 0 ? ' is-active' : ''}`;
+            button.setAttribute('aria-label', `${options.fallbackLabel} ${index + 1}`);
+            button.setAttribute('aria-pressed', index === 0 ? 'true' : 'false');
+            button.addEventListener('click', () => {
+                const state = homeBannerCarousels[kind];
+                setBannerSlideState(state, index);
+            });
+            return button;
+        })
+        : [];
+
+    if (dots) {
+        dots.replaceChildren(...dotButtons);
+        dots.hidden = slideEls.length <= 1;
+    }
+
+    const state = {
+        slides: slideEls,
+        dots: dotButtons,
+        index: 0,
+        timer: null,
+    };
+
+    const reduceMotion = typeof window.matchMedia === 'function'
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const canAutoplay = slideEls.length > 1 && !reduceMotion;
+    if (prev) {
+        prev.hidden = slideEls.length <= 1;
+        prev.onclick = () => setBannerSlideState(state, state.index - 1);
+    }
+    if (next) {
+        next.hidden = slideEls.length <= 1;
+        next.onclick = () => setBannerSlideState(state, state.index + 1);
+    }
+
+    if (track.parentElement) {
+        track.parentElement.dataset.bannerCount = String(slideEls.length);
+        track.parentElement.dataset.bannerKind = kind;
+    }
+
+    const restartTimer = () => {
+        if (!canAutoplay) return;
+        if (state.timer) window.clearInterval(state.timer);
+        state.timer = window.setInterval(() => {
+            setBannerSlideState(state, state.index + 1);
+        }, options.intervalMs || 6500);
+    };
+
+    if (slideEls.length > 1) {
+        restartTimer();
+        if (track.parentElement) {
+            track.parentElement.onpointerenter = () => {
+                if (state.timer) {
+                    window.clearInterval(state.timer);
+                    state.timer = null;
+                }
+            };
+            track.parentElement.onpointerleave = restartTimer;
+        }
+    }
+
+    homeBannerCarousels[kind] = state;
+    setBannerSlideState(state, 0);
 }
 
 function syncHomeCuratedVisibility() {
@@ -169,14 +334,22 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
 
     globalHomeCategories = categories;
 
-    const expanded = getHomeCategoryExpandedState();
     const limit = 8;
-    const hasMore = categories.length > limit;
-    const displayList = expanded ? categories : categories.slice(0, limit);
+    const visibleCategories = categories.slice(0, limit);
+    const hiddenCategories = categories.slice(limit);
+    const expandedRequested = getHomeCategoryExpandedState();
+    const needsAutoExpand = currentCategory !== 'all' && hiddenCategories.some((item) => String(item.name || '').trim() === currentCategory);
+    const expanded = expandedRequested || needsAutoExpand;
+    const extraCategories = expanded ? hiddenCategories : [];
+    const hasMore = hiddenCategories.length > 0;
+
+    if (needsAutoExpand && !expandedRequested) {
+        setHomeCategoryExpandedState(true);
+    }
 
     nav.innerHTML = `
-        <div class="home-category-shell">
-            <div class="home-category-grid">
+        <div class="home-category-shell" data-home-category-shell data-expanded="${expanded ? 'true' : 'false'}">
+            <div class="home-category-grid home-category-grid-primary">
                 <a href="#" class="home-category-item${currentCategory === 'all' ? ' is-active' : ''}" data-cat="all">
                     <div class="home-category-icon" style="background:#f5f5f5;">
                         ${svgIcon('spark')}
@@ -184,7 +357,7 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
                     <span class="home-category-name">전체</span>
                     <span class="home-category-count">${globalAllClasses.length || 0}</span>
                 </a>
-                ${displayList.map((item, index) => {
+                ${visibleCategories.map((item, index) => {
                     const meta = resolveHomeCategoryMeta(item.name, index);
                     return `
                         <a href="#" class="home-category-item${currentCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">
@@ -196,13 +369,28 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
                         </a>
                     `;
                 }).join('')}
-                ${hasMore ? `
-                    <button type="button" class="home-category-item home-category-toggle" data-category-toggle>
-                        <span class="home-category-icon" style="background:#f5f5f5;">${svgIcon(expanded ? 'chevron-up' : 'chevron-down')}</span>
-                        <span class="home-category-label">${expanded ? '접기' : '더보기'}</span>
-                    </button>
-                ` : ''}
             </div>
+            ${hasMore ? `
+                <div class="home-category-toggle-row">
+                    <button type="button" class="home-category-toggle" data-category-toggle>
+                        ${expanded ? '접기' : `더보기 +${hiddenCategories.length}`}
+                    </button>
+                </div>
+                <div class="home-category-grid home-category-grid-extra home-category-extra"${expanded ? '' : ' hidden'}>
+                    ${extraCategories.map((item, index) => {
+                        const meta = resolveHomeCategoryMeta(item.name, index + visibleCategories.length);
+                        return `
+                            <a href="#" class="home-category-item${currentCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">
+                                <div class="home-category-icon" style="background:${meta.accent}15; color:${meta.accent};">
+                                    ${svgIcon(meta.icon)}
+                                </div>
+                                <span class="home-category-name">${escapeHtml(item.name)}</span>
+                                <span class="home-category-count">${Number(item.class_count || 0)}</span>
+                            </a>
+                        `;
+                    }).join('')}
+                </div>
+            ` : ''}
         </div>
     `;
 
@@ -293,7 +481,31 @@ function renderClassCards(classes, container) {
 }
 
 async function initBanners() {
-    // Basic banner placeholder
+    const settings = await getHomeSiteSettings();
+    const mainBanners = normalizeBannerItems(settings?.banners || [], '메인 배너');
+    const bottomBanners = normalizeBannerItems(settings?.bottom_banners || [], '하단 배너');
+
+    renderBannerCarousel('main', mainBanners, {
+        trackId: 'homeMainBannerTrack',
+        dotsId: 'homeMainBannerDots',
+        prevId: 'homeMainBannerPrev',
+        nextId: 'homeMainBannerNext',
+        fallbackLabel: '메인 배너',
+        emptyMessage: '메인 배너를 준비 중입니다.',
+        emptyAlt: '메인 배너 준비 중',
+        intervalMs: 7000,
+    });
+
+    renderBannerCarousel('bottom', bottomBanners, {
+        trackId: 'homeBottomBannerTrack',
+        dotsId: 'homeBottomBannerDots',
+        prevId: 'homeBottomBannerPrev',
+        nextId: 'homeBottomBannerNext',
+        fallbackLabel: '하단 배너',
+        emptyMessage: '하단 배너를 준비 중입니다.',
+        emptyAlt: '하단 배너 준비 중',
+        intervalMs: 9000,
+    });
 }
 
 function scheduleHomeRefresh(syncType = '') {

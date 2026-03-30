@@ -33,14 +33,14 @@
             max-width: min(1440px, calc(100vw - 1.5rem));
             margin: 0 auto;
             display: grid;
-            grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+            grid-template-columns: minmax(0, 1.08fr) minmax(420px, 0.92fr);
             gap: 1rem;
             align-items: stretch;
             padding: 0 1rem;
         }
 
-        body.home-page .main-ad-banner,
-        body.home-page .category-grid,
+        body.home-page .main-ad-banner.home-main-banner,
+        body.home-page .home-category-panel,
         body.home-page .bottom-banner-section .banner-inner {
             background: linear-gradient(180deg, rgba(18, 22, 31, 0.96), rgba(10, 12, 18, 0.92));
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -49,15 +49,18 @@
             -webkit-backdrop-filter: blur(24px);
         }
 
-        body.home-page .main-ad-banner {
+        body.home-page .main-ad-banner.home-main-banner {
             border-radius: 30px;
-            padding: clamp(1.2rem, 2.4vw, 1.8rem);
+            padding: clamp(1rem, 2.2vw, 1.45rem);
             overflow: hidden;
             position: relative;
-            min-height: 300px;
+            min-height: clamp(460px, 36vw, 640px);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
 
-        body.home-page .main-ad-banner::before {
+        body.home-page .main-ad-banner.home-main-banner::before {
             content: "";
             position: absolute;
             inset: 0;
@@ -67,13 +70,99 @@
             pointer-events: none;
         }
 
+        body.home-page .home-banner-stage {
+            position: relative;
+            min-height: clamp(250px, 24vw, 360px);
+            border-radius: 28px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(13, 17, 26, 0.96), rgba(7, 9, 14, 0.96));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        body.home-page .home-banner-stage::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 28%),
+                linear-gradient(180deg, transparent 48%, rgba(4, 6, 10, 0.72) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        body.home-page .home-banner-track {
+            position: absolute;
+            inset: 0;
+        }
+
+        body.home-page .home-banner-slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transform: scale(0.985);
+            transition: opacity 360ms ease, transform 360ms ease;
+            will-change: opacity, transform;
+        }
+
+        body.home-page .home-banner-slide.is-active {
+            opacity: 1;
+            transform: scale(1);
+            z-index: 1;
+        }
+
+        body.home-page .home-banner-slide a,
+        body.home-page .home-banner-slide div {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        body.home-page .home-banner-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #0a0d12;
+        }
+
+        body.home-page .home-banner-empty {
+            display: grid;
+            place-items: center;
+            padding: 1.5rem;
+            text-align: center;
+            color: rgba(236, 242, 255, 0.75);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            background:
+                radial-gradient(circle at top left, rgba(142, 165, 255, 0.16), transparent 28%),
+                radial-gradient(circle at bottom right, rgba(93, 225, 198, 0.12), transparent 30%);
+        }
+
+        body.home-page .home-banner-overlay {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+            gap: 0.9rem;
+            align-items: end;
+        }
+
         body.home-page .home-hero-copy {
             position: relative;
             z-index: 1;
             display: flex;
             flex-direction: column;
-            gap: 0.9rem;
-            max-width: 720px;
+            gap: 0.85rem;
+            max-width: 100%;
+            padding: 1rem 1rem 0.95rem;
+            border-radius: 24px;
+            background: rgba(8, 11, 17, 0.58);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        body.home-page .home-hero-copy .hero-eyebrow {
+            align-self: flex-start;
         }
 
         body.home-page .hero-eyebrow,
@@ -96,8 +185,8 @@
 
         body.home-page .home-hero-title {
             margin: 0;
-            font-size: clamp(1.95rem, 4.1vw, 4rem);
-            line-height: 1.02;
+            font-size: clamp(1.8rem, 3.4vw, 3.5rem);
+            line-height: 1.04;
             letter-spacing: -0.06em;
             max-width: 12ch;
             word-break: keep-all;
@@ -114,8 +203,8 @@
         body.home-page .home-hero-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.65rem;
-            margin-top: 0.2rem;
+            gap: 0.6rem;
+            margin-top: 0.15rem;
         }
 
         body.home-page .home-hero-cta {
@@ -155,10 +244,11 @@
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 0.65rem;
-            margin-top: 0.25rem;
+            align-self: stretch;
+            min-width: min(100%, 420px);
         }
 
-        body.home-page .home-hero-stats > div {
+        body.home-page .home-hero-stats>div {
             border-radius: 18px;
             padding: 0.88rem 0.95rem;
             background: rgba(255, 255, 255, 0.05);
@@ -183,9 +273,9 @@
         body.home-page .home-category-panel {
             display: flex;
             flex-direction: column;
-            gap: 0.9rem;
+            gap: 0.95rem;
             border-radius: 30px;
-            padding: clamp(1.1rem, 2.2vw, 1.6rem);
+            padding: clamp(1.05rem, 2.2vw, 1.45rem);
             min-height: 300px;
         }
 
@@ -213,23 +303,30 @@
 
         body.home-page .home-category-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
-            gap: 0.7rem;
+            gap: 0.6rem;
             align-content: start;
+        }
+
+        body.home-page .home-category-grid-primary {
+            grid-template-columns: repeat(9, minmax(0, 1fr));
+        }
+
+        body.home-page .home-category-grid-extra {
+            grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
         }
 
         body.home-page .home-category-item {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            gap: 0.6rem;
-            min-height: 112px;
-            padding: 0.9rem;
-            border-radius: 22px;
+            gap: 0.45rem;
+            min-height: 104px;
+            padding: 0.68rem 0.45rem;
+            border-radius: 20px;
             background: rgba(255, 255, 255, 0.045);
             border: 1px solid rgba(255, 255, 255, 0.08);
             color: #eef4ff;
-            text-align: left;
+            text-align: center;
         }
 
         body.home-page .home-category-item:hover,
@@ -241,9 +338,9 @@
         }
 
         body.home-page .home-category-icon {
-            width: clamp(38px, 8vw, 48px);
-            height: clamp(38px, 8vw, 48px);
-            border-radius: 16px;
+            width: clamp(34px, 6vw, 44px);
+            height: clamp(34px, 6vw, 44px);
+            border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -252,23 +349,152 @@
 
         body.home-page .home-category-name,
         body.home-page .home-category-label {
-            font-size: 0.92rem;
+            font-size: 0.8rem;
             font-weight: 700;
-            line-height: 1.3;
+            line-height: 1.25;
             word-break: keep-all;
+            text-align: center;
         }
 
         body.home-page .home-category-count {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 2.25rem;
-            padding: 0.2rem 0.5rem;
+            min-width: 2.05rem;
+            padding: 0.18rem 0.45rem;
             border-radius: 999px;
             background: rgba(255, 255, 255, 0.08);
             color: rgba(255, 255, 255, 0.8);
-            font-size: 0.74rem;
+            font-size: 0.7rem;
             font-weight: 700;
+        }
+
+        body.home-page .home-category-toggle-row {
+            display: flex;
+            justify-content: center;
+        }
+
+        body.home-page .home-category-toggle {
+            min-height: 42px;
+            padding: 0.7rem 1rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #eef4ff;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        body.home-page .home-category-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        body.home-page .home-category-extra[hidden] {
+            display: none !important;
+        }
+
+        body.home-page .bottom-banner-section {
+            margin-top: 1rem;
+            padding: 0;
+        }
+
+        body.home-page .bottom-banner-section .banner-inner.home-bottom-banner-inner {
+            position: relative;
+            min-height: clamp(160px, 16vw, 220px);
+            padding: clamp(1rem, 2vw, 1.35rem);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: minmax(0, 1.25fr) auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        body.home-page .home-bottom-banner-track {
+            position: absolute;
+            inset: 0;
+        }
+
+        body.home-page .home-bottom-banner-track .home-banner-slide img {
+            object-fit: cover;
+        }
+
+        body.home-page .home-bottom-banner-overlay {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            max-width: 55ch;
+        }
+
+        body.home-page .home-bottom-banner-overlay h2 {
+            margin: 0;
+            font-size: clamp(1.2rem, 2vw, 1.6rem);
+            line-height: 1.2;
+            letter-spacing: -0.04em;
+            color: #fff;
+        }
+
+        body.home-page .home-bottom-banner-overlay p {
+            margin: 0;
+            color: rgba(236, 242, 255, 0.72);
+            line-height: 1.65;
+            font-size: 0.95rem;
+        }
+
+        body.home-page .banner-actions {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            justify-self: end;
+            align-self: end;
+        }
+
+        body.home-page .home-banner-controls {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.45rem;
+            border-radius: 999px;
+            background: rgba(7, 10, 15, 0.42);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        body.home-page .home-banner-controls .banner-nav {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+        }
+
+        body.home-page .home-banner-dots {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        body.home-page .home-banner-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            border: 0;
+            background: rgba(255, 255, 255, 0.32);
+        }
+
+        body.home-page .home-banner-dot.is-active {
+            width: 18px;
+            background: linear-gradient(135deg, #8ea5ff, #67d9c2);
         }
 
         body.home-page .home-category-toggle {
@@ -553,6 +779,14 @@
                 grid-template-columns: 1fr;
             }
 
+            body.home-page .home-banner-overlay {
+                grid-template-columns: 1fr;
+            }
+
+            body.home-page .home-banner-stage {
+                min-height: 240px;
+            }
+
             body.home-page .home-hero-title {
                 max-width: 15ch;
             }
@@ -563,6 +797,7 @@
         }
 
         @media (max-width: 768px) {
+
             body.home-page .hero-inner,
             body.home-page .section-inner,
             body.home-page .banner-inner {
@@ -575,13 +810,13 @@
                 padding-bottom: 6.5rem;
             }
 
-            body.home-page .main-ad-banner,
+            body.home-page .main-ad-banner.home-main-banner,
             body.home-page .home-category-panel,
             body.home-page .banner-inner {
                 border-radius: 24px;
             }
 
-            body.home-page .main-ad-banner {
+            body.home-page .main-ad-banner.home-main-banner {
                 min-height: 0;
             }
 
@@ -589,12 +824,45 @@
                 min-height: 0;
             }
 
+            body.home-page .home-banner-overlay {
+                grid-template-columns: 1fr;
+            }
+
+            body.home-page .home-banner-stage {
+                min-height: 220px;
+            }
+
+            body.home-page .home-hero-copy {
+                padding: 0.9rem 0.9rem 0.85rem;
+            }
+
+            body.home-page .home-hero-title {
+                max-width: 14ch;
+                font-size: clamp(1.45rem, 6vw, 2.1rem);
+            }
+
+            body.home-page .home-hero-actions {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 0.45rem;
+            }
+
+            body.home-page .home-hero-cta {
+                width: 100%;
+                justify-content: center;
+            }
+
+            body.home-page .home-hero-stats {
+                display: none;
+            }
+
             body.home-page .home-hero-stats {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
-            body.home-page .home-category-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+            body.home-page .home-category-grid-primary,
+            body.home-page .home-category-grid-extra {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
             }
 
             body.home-page .card-grid,
@@ -612,12 +880,36 @@
                 align-items: flex-start;
             }
 
-            body.home-page .banner-copy {
+            body.home-page .home-bottom-banner-inner {
+                grid-template-columns: 1fr;
+            }
+
+            body.home-page .home-bottom-banner-overlay {
                 min-width: 0;
+                max-width: 100%;
+            }
+
+            body.home-page .banner-actions {
+                justify-self: flex-start;
+            }
+
+            body.home-page .home-banner-controls {
+                position: static;
+                inset: auto;
+                width: 100%;
+                justify-content: center;
+                margin-top: 0.35rem;
+                padding: 0.38rem;
+            }
+
+            body.home-page .home-banner-controls .banner-nav {
+                width: 34px;
+                height: 34px;
             }
         }
 
         @media (max-width: 480px) {
+
             body.home-page .hero-inner,
             body.home-page .section-inner,
             body.home-page .banner-inner {
@@ -625,7 +917,7 @@
                 padding-right: 0.75rem;
             }
 
-            body.home-page .main-ad-banner,
+            body.home-page .main-ad-banner.home-main-banner,
             body.home-page .home-category-panel,
             body.home-page .banner-inner {
                 border-radius: 22px;
@@ -651,13 +943,18 @@
                 width: 100%;
             }
 
-            body.home-page .home-category-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+            body.home-page .home-banner-overlay {
+                gap: 0.75rem;
+            }
+
+            body.home-page .home-category-grid-primary,
+            body.home-page .home-category-grid-extra {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
                 gap: 0.55rem;
             }
 
             body.home-page .home-hero-stats {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
             body.home-page .home-category-item {
@@ -689,6 +986,7 @@
         }
 
         @media (max-width: 390px) {
+
             body.home-page .hero-inner,
             body.home-page .section-inner,
             body.home-page .banner-inner {
@@ -696,7 +994,7 @@
                 padding-right: 0.65rem;
             }
 
-            body.home-page .main-ad-banner,
+            body.home-page .main-ad-banner.home-main-banner,
             body.home-page .home-category-panel {
                 padding: 1rem;
             }
@@ -717,7 +1015,8 @@
                 font-size: 0.92rem;
             }
 
-            body.home-page .home-category-grid {
+            body.home-page .home-category-grid-primary,
+            body.home-page .home-category-grid-extra {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
                 gap: 0.5rem;
             }
@@ -737,6 +1036,7 @@
         }
 
         @media (max-width: 320px) {
+
             body.home-page .hero-inner,
             body.home-page .section-inner,
             body.home-page .banner-inner {
@@ -759,7 +1059,8 @@
                 line-height: 1.62;
             }
 
-            body.home-page .home-category-grid {
+            body.home-page .home-category-grid-primary,
+            body.home-page .home-category-grid-extra {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
                 gap: 0.5rem;
             }
@@ -788,7 +1089,7 @@
                 font-size: 0.66rem;
             }
 
-            body.home-page .home-hero-stats > div {
+            body.home-page .home-hero-stats>div {
                 padding: 0.75rem 0.8rem;
             }
 
@@ -808,6 +1109,7 @@
         }
 
         @media (max-width: 220px) {
+
             body.home-page .hero-inner,
             body.home-page .section-inner,
             body.home-page .banner-inner {
@@ -820,7 +1122,8 @@
                 gap: 0.65rem;
             }
 
-            body.home-page .home-category-grid {
+            body.home-page .home-category-grid-primary,
+            body.home-page .home-category-grid-extra {
                 grid-template-columns: 1fr;
             }
 
@@ -912,29 +1215,39 @@
     <main class="main-content">
         <section class="hero-section">
             <div class="hero-inner">
-                <article class="main-ad-banner home-hero-panel">
-                    <div class="home-hero-copy">
-                        <span class="hero-eyebrow">오늘의 추천</span>
-                        <h1 class="home-hero-title">배움을 찾는 가장 빠른 시작점</h1>
-                        <p class="home-hero-summary">관심사별 클래스와 실시간 커뮤니티, 빠른 수강 흐름을 한 화면에 모았습니다. 필요한 순간 바로 탐색하고 바로 시작하세요.</p>
-                        <div class="home-hero-actions">
-                            <a class="home-hero-cta primary" href="class/class_list.html">전체 클래스 보기</a>
-                            <a class="home-hero-cta" href="community/community.html">커뮤니티 열기</a>
-                            <a class="home-hero-cta" href="create_class/create_class.html">클래스 개설</a>
+                <article class="main-ad-banner home-main-banner">
+                    <div class="home-banner-stage" id="homeMainBannerStage" aria-label="메인 배너">
+                        <div class="home-banner-track" id="homeMainBannerTrack"></div>
+                        <div class="home-banner-overlay">
+                            <div class="home-hero-copy">
+                                <span class="hero-eyebrow">Class Explorer</span>
+                                <h1 class="home-hero-title">원하는 클래스를 더 빠르게 찾으세요</h1>
+                                <p class="home-hero-summary">카테고리, 검색, 정렬, 찜하기를 한 화면에 모아 더 읽기 쉬운 목록으로 정리했습니다.</p>
+                                <div class="home-hero-actions">
+                                    <a class="home-hero-cta primary" href="class/class_list.html">전체 클래스 보기</a>
+                                    <a class="home-hero-cta" href="community/community.html">커뮤니티 열기</a>
+                                    <a class="home-hero-cta" href="create_class/create_class.html">클래스 개설</a>
+                                </div>
+                            </div>
+                            <div class="home-hero-stats" aria-label="홈 요약 정보">
+                                <div>
+                                    <strong id="homeClassTotal">0</strong>
+                                    <span>등록 클래스</span>
+                                </div>
+                                <div>
+                                    <strong id="homeCategoryTotal">0</strong>
+                                    <span>카테고리</span>
+                                </div>
+                                <div>
+                                    <strong id="homeFreshCount">0</strong>
+                                    <span>신규 추천</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="home-hero-stats" aria-label="홈 요약 정보">
-                            <div>
-                                <strong id="homeClassTotal">0</strong>
-                                <span>등록 클래스</span>
-                            </div>
-                            <div>
-                                <strong id="homeCategoryTotal">0</strong>
-                                <span>카테고리</span>
-                            </div>
-                            <div>
-                                <strong id="homeFreshCount">0</strong>
-                                <span>신규 추천</span>
-                            </div>
+                        <div class="home-banner-controls" aria-label="메인 배너 조작">
+                            <button type="button" class="banner-nav banner-nav-prev" id="homeMainBannerPrev" aria-label="이전 메인 배너">‹</button>
+                            <div class="home-banner-dots" id="homeMainBannerDots" aria-label="메인 배너 페이지"></div>
+                            <button type="button" class="banner-nav banner-nav-next" id="homeMainBannerNext" aria-label="다음 메인 배너">›</button>
                         </div>
                     </div>
                 </article>
@@ -947,6 +1260,26 @@
                     </div>
                     <nav class="category-grid" aria-label="메인 카테고리"></nav>
                 </aside>
+            </div>
+        </section>
+
+        <section class="bottom-banner-section">
+            <div class="banner-inner home-bottom-banner-inner">
+                <div class="home-bottom-banner-track" id="homeBottomBannerTrack"></div>
+                <div class="home-bottom-banner-overlay">
+                    <span class="banner-eyebrow">Explore more</span>
+                    <h2>커뮤니티에서 질문하고, 클래스에서 바로 시작하세요.</h2>
+                    <p>수강 흐름과 실시간 소통을 끊지 않고 이어가도록 설계했습니다.</p>
+                </div>
+                <div class="banner-actions">
+                    <a class="banner-link" href="community/community.html">커뮤니티 둘러보기</a>
+                    <a class="banner-link subtle" href="class/class_list.html">전체 클래스 보기</a>
+                </div>
+                <div class="home-banner-controls home-bottom-banner-controls" aria-label="하단 배너 조작">
+                    <button type="button" class="banner-nav banner-nav-prev" id="homeBottomBannerPrev" aria-label="이전 하단 배너">‹</button>
+                    <div class="home-banner-dots" id="homeBottomBannerDots" aria-label="하단 배너 페이지"></div>
+                    <button type="button" class="banner-nav banner-nav-next" id="homeBottomBannerNext" aria-label="다음 하단 배너">›</button>
+                </div>
             </div>
         </section>
 
@@ -978,24 +1311,10 @@
                 </article>
             </div>
         </section>
-
-        <section class="bottom-banner-section">
-            <div class="banner-inner">
-                <div class="banner-copy">
-                    <span class="banner-eyebrow">Explore more</span>
-                    <h2>커뮤니티에서 질문하고, 클래스에서 바로 시작하세요.</h2>
-                    <p>수강 흐름과 실시간 소통을 끊지 않고 이어가도록 설계했습니다.</p>
-                </div>
-                <div class="banner-actions">
-                    <a class="banner-link" href="community/community.html">커뮤니티 둘러보기</a>
-                    <a class="banner-link subtle" href="class/class_list.html">전체 클래스 보기</a>
-                </div>
-            </div>
-        </section>
     </main>
 
     <script src="header.js?v=20260329_04" defer></script>
-    <script src="main.js?v=20260330_01" defer></script>
+    <script src="main.js?v=20260330_02" defer></script>
     <script src="dev_mode.js?v=20260329_04" defer></script>
 </body>
 
