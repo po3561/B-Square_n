@@ -566,6 +566,10 @@
                 padding-right: 0.9rem;
             }
 
+            body.home-page .main-content {
+                padding-bottom: 6.5rem;
+            }
+
             body.home-page .main-ad-banner,
             body.home-page .home-category-panel,
             body.home-page .banner-inner {
@@ -739,6 +743,11 @@
                 font-size: clamp(1.34rem, 9vw, 1.8rem);
             }
 
+            body.home-page .home-hero-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.5rem;
+            }
+
             body.home-page .home-hero-summary,
             body.home-page .banner-copy p:last-child {
                 font-size: 0.88rem;
@@ -746,16 +755,14 @@
             }
 
             body.home-page .home-category-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.5rem;
             }
 
             body.home-page .home-category-item {
-                min-height: 72px;
-                padding: 0.72rem 0.8rem;
-                display: grid;
-                grid-template-columns: 34px minmax(0, 1fr) auto;
-                align-items: center;
-                gap: 0.55rem;
+                min-height: 82px;
+                padding: 0.72rem 0.75rem;
+                gap: 0.45rem;
             }
 
             body.home-page .home-category-icon {
@@ -806,6 +813,10 @@
             body.home-page .home-hero-copy,
             body.home-page .home-category-panel {
                 gap: 0.65rem;
+            }
+
+            body.home-page .home-category-grid {
+                grid-template-columns: 1fr;
             }
 
             body.home-page .home-hero-stats {

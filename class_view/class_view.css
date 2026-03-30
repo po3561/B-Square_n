@@ -3057,6 +3057,7 @@ body.class-view-page .content-card {
 @media (max-width: 768px) {
     body.class-view-page .view-container {
         max-width: calc(100vw - 1rem);
+        padding-bottom: 6.5rem;
     }
 
     body.class-view-page .premium-hero {
@@ -3069,7 +3070,7 @@ body.class-view-page .content-card {
     }
 
     body.class-view-page .hero-quick-stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     body.class-view-page .hero-title {
@@ -3110,7 +3111,7 @@ body.class-view-page .content-card {
 @media (max-width: 430px) {
     body.class-view-page .view-container {
         max-width: calc(100vw - 0.75rem);
-        padding-bottom: 5.5rem;
+        padding-bottom: 6.5rem;
     }
 
     body.class-view-page .premium-hero {
@@ -3139,7 +3140,7 @@ body.class-view-page .content-card {
     }
 
     body.class-view-page .hero-quick-stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.55rem;
     }
 
