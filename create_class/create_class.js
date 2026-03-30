@@ -1,4 +1,4 @@
-﻿// create_class.js — 클래스 개설 (D1 API 연동)
+// create_class.js — 클래스 개설 (D1 API 연동)
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("🚀 B-Square Create Class Page Initializing (v2 Logic)...");
@@ -103,6 +103,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnPrev = document.getElementById('btnPrev');
     const btnNext = document.getElementById('btnNext');
     const btnSubmit = document.getElementById('btnSubmit');
+    const mobileStepDots = document.querySelectorAll('.mobile-nav-dots .nav-dot');
+    const mobileProgressFill = document.getElementById('mobileProgressFill');
+    const mobileStepLabel = document.getElementById('mobileStepLabel');
 
     function updateSteps() {
         sections.forEach(s => s.classList.remove('active'));
@@ -120,6 +123,37 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (stepNum === currentStep) item.classList.add('active');
             else if (stepNum < currentStep) item.classList.add('completed');
         });
+
+                // 모바일 단계 업데이트 (연동성 강화)
+        mobileStepDots.forEach(dot => {
+            const stepNum = parseInt(dot.getAttribute('data-step'));
+            if (stepNum === currentStep) {
+                dot.classList.add('active');
+                dot.classList.remove('completed');
+            } else if (stepNum < currentStep) {
+                dot.classList.remove('active');
+                dot.classList.add('completed');
+            } else {
+                dot.classList.remove('active');
+                dot.classList.remove('completed');
+            }
+        });
+
+        if (mobileProgressFill) {
+            // 현재 단계가 1이면 0%, 7이면 100%로 보이고 싶다면 ((currentStep-1)/(totalSteps-1))*100
+            // 하지만 보통 현재 단계를 포함하는 진행바라면 (currentStep / totalSteps) * 100이 맞음
+            const progress = (currentStep / totalSteps) * 100;
+            mobileProgressFill.style.width = `${progress}%`;
+        }
+
+        if (mobileStepLabel) {
+            // 사이드바의 step-item에서 텍스트를 가져옴
+            const activeSidebarItem = Array.from(stepItems).find(item => parseInt(item.getAttribute('data-step')) === currentStep);
+            if (activeSidebarItem) {
+                const text = activeSidebarItem.querySelector('.step-text').textContent;
+                mobileStepLabel.textContent = text;
+            }
+        }
 
         btnPrev.disabled = currentStep === 1;
 

@@ -55,6 +55,24 @@
         </aside>
 
         <main class="create-content">
+            <!-- 모바일 전용 단계 네비게이션 -->
+            <div class="mobile-step-nav">
+                <h3 class="mobile-nav-title">클래스 개설</h3>
+                <div class="mobile-nav-dots">
+                    <div class="nav-dot active" data-step="1">1</div>
+                    <div class="nav-dot" data-step="2">2</div>
+                    <div class="nav-dot" data-step="3">3</div>
+                    <div class="nav-dot" data-step="4">4</div>
+                    <div class="nav-dot" data-step="5">5</div>
+                    <div class="nav-dot" data-step="6">6</div>
+                    <div class="nav-dot" data-step="7">7</div>
+                </div>
+                <div class="mobile-nav-progress">
+                    <div class="progress-fill" id="mobileProgressFill"></div>
+                </div>
+                <div class="mobile-nav-current" id="mobileStepLabel">기본 정보</div>
+            </div>
+
             <form id="createClassForm" class="create-form" novalidate>
 
                 <!-- STEP 1: 기본 정보 -->
