@@ -7,8 +7,8 @@
     <title>B-Square | 클래스 탐색</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="style_mobile.css?v=20260330_04" media="(max-width: 768px)">
-    <link rel="stylesheet" href="style_pc.css?v=20260330_05" media="(min-width: 769px)">
+    <link rel="stylesheet" href="style_mobile.css?v=20260330_06" media="(max-width: 768px)">
+    <link rel="stylesheet" href="style_pc.css?v=20260330_06" media="(min-width: 769px)">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body.home-page {
@@ -30,13 +30,14 @@
         }
 
         body.home-page .hero-inner {
-            max-width: min(1440px, calc(100vw - 1.5rem));
+            width: min(calc(100vw - 0.75rem), 1880px);
+            max-width: none;
             margin: 0 auto;
             display: grid;
             grid-template-columns: 1fr;
             gap: 1rem;
             align-items: stretch;
-            padding: 0 1rem;
+            padding: 0 0.35rem;
         }
 
         body.home-page .main-ad-banner.home-main-banner,
@@ -51,13 +52,13 @@
 
         body.home-page .main-ad-banner.home-main-banner {
             border-radius: 30px;
-            padding: clamp(0.75rem, 1.5vw, 1rem);
+            padding: clamp(0.48rem, 0.8vw, 0.7rem);
             overflow: hidden;
             position: relative;
             min-height: auto;
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 0.45rem;
         }
 
         body.home-page .main-ad-banner.home-main-banner::before {
@@ -72,10 +73,12 @@
 
         body.home-page .home-banner-stage {
             position: relative;
-            min-height: clamp(560px, 48vw, 820px);
+            width: 100%;
+            aspect-ratio: 16 / 5;
+            min-height: 500px;
             border-radius: 28px;
             overflow: hidden;
-            background: linear-gradient(135deg, rgba(13, 17, 26, 0.96), rgba(7, 9, 14, 0.96));
+            background: #090c12;
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
@@ -84,10 +87,20 @@
             position: absolute;
             inset: 0;
             background:
-                linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 28%),
-                linear-gradient(180deg, transparent 48%, rgba(4, 6, 10, 0.72) 100%);
+                linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 24%),
+                linear-gradient(180deg, transparent 55%, rgba(4, 6, 10, 0.22) 100%);
             pointer-events: none;
             z-index: 1;
+        }
+
+        body.home-page .home-banner-stage::after {
+            content: "";
+            position: absolute;
+            inset: auto 0 0;
+            height: clamp(120px, 16vw, 220px);
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.82));
+            pointer-events: none;
+            z-index: 2;
         }
 
         body.home-page .home-banner-track {
@@ -99,8 +112,8 @@
             position: absolute;
             inset: 0;
             opacity: 0;
-            transform: scale(0.985);
-            transition: opacity 360ms ease, transform 360ms ease;
+            transform: scale(1.015);
+            transition: opacity 640ms ease, transform 760ms ease;
             will-change: opacity, transform;
         }
 
@@ -121,6 +134,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center;
             background: #0a0d12;
         }
 
@@ -135,29 +149,6 @@
             background:
                 radial-gradient(circle at top left, rgba(142, 165, 255, 0.16), transparent 28%),
                 radial-gradient(circle at bottom right, rgba(93, 225, 198, 0.12), transparent 30%);
-        }
-
-        body.home-page .home-banner-overlay {
-            display: none;
-        }
-
-        body.home-page .home-hero-copy {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 0.85rem;
-            max-width: 100%;
-            padding: 1rem 1rem 0.95rem;
-            border-radius: 24px;
-            background: rgba(8, 11, 17, 0.58);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-        }
-
-        body.home-page .home-hero-copy .hero-eyebrow {
-            align-self: flex-start;
         }
 
         body.home-page .hero-eyebrow,
@@ -178,56 +169,6 @@
             text-transform: uppercase;
         }
 
-        body.home-page .home-hero-title {
-            margin: 0;
-            font-size: clamp(1.8rem, 3.4vw, 3.5rem);
-            line-height: 1.04;
-            letter-spacing: -0.06em;
-            max-width: 12ch;
-            word-break: keep-all;
-        }
-
-        body.home-page .home-hero-summary {
-            margin: 0;
-            max-width: 60ch;
-            color: rgba(236, 242, 255, 0.74);
-            font-size: clamp(0.94rem, 1.4vw, 1rem);
-            line-height: 1.75;
-        }
-
-        body.home-page .home-hero-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.6rem;
-            margin-top: 0.15rem;
-        }
-
-        body.home-page .home-hero-cta {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 46px;
-            padding: 0.76rem 1.05rem;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.05);
-            color: #eef4ff;
-            font-weight: 700;
-            transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-        }
-
-        body.home-page .home-hero-cta.primary {
-            background: linear-gradient(135deg, #8ea5ff, #67d9c2);
-            border-color: transparent;
-            color: #06111c;
-            box-shadow: 0 14px 30px rgba(104, 154, 255, 0.24);
-        }
-
-        body.home-page .home-hero-cta:hover {
-            transform: translateY(-2px);
-        }
-
-        body.home-page .home-hero-cta:focus-visible,
         body.home-page .banner-link:focus-visible,
         body.home-page .home-category-item:focus-visible,
         body.home-page .class-card-link:focus-visible {
@@ -235,42 +176,12 @@
             outline-offset: 3px;
         }
 
-        body.home-page .home-hero-stats {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.65rem;
-            align-self: stretch;
-            min-width: min(100%, 420px);
-        }
-
-        body.home-page .home-hero-stats>div {
-            border-radius: 18px;
-            padding: 0.88rem 0.95rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        body.home-page .home-hero-stats strong {
-            display: block;
-            font-size: clamp(1.35rem, 3vw, 1.6rem);
-            line-height: 1.1;
-            color: #fff;
-            letter-spacing: -0.05em;
-        }
-
-        body.home-page .home-hero-stats span {
-            display: block;
-            margin-top: 0.35rem;
-            color: rgba(236, 242, 255, 0.68);
-            font-size: 0.88rem;
-        }
-
         body.home-page .home-category-panel {
             display: flex;
             flex-direction: column;
-            gap: 0.95rem;
+            gap: 0.9rem;
             border-radius: 30px;
-            padding: clamp(1.05rem, 2.2vw, 1.45rem);
+            padding: clamp(1rem, 1.8vw, 1.3rem);
             min-height: 0;
         }
 
@@ -293,31 +204,31 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            gap: 0.85rem;
+            gap: 0.7rem;
         }
 
         body.home-page .home-category-grid {
             display: grid;
-            gap: 0.6rem;
+            gap: 0.55rem;
             align-content: start;
         }
 
         body.home-page .home-category-grid-primary {
-            grid-template-columns: repeat(9, minmax(0, 1fr));
+            grid-template-columns: repeat(6, minmax(0, 1fr));
         }
 
         body.home-page .home-category-grid-extra {
-            grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+            grid-template-columns: repeat(6, minmax(0, 1fr));
         }
 
         body.home-page .home-category-item {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            gap: 0.45rem;
-            min-height: 104px;
-            padding: 0.68rem 0.45rem;
-            border-radius: 20px;
+            gap: 0.4rem;
+            min-height: 100px;
+            padding: 0.68rem 0.42rem;
+            border-radius: 18px;
             background: rgba(255, 255, 255, 0.045);
             border: 1px solid rgba(255, 255, 255, 0.08);
             color: #eef4ff;
@@ -333,9 +244,9 @@
         }
 
         body.home-page .home-category-icon {
-            width: clamp(34px, 6vw, 44px);
-            height: clamp(34px, 6vw, 44px);
-            border-radius: 15px;
+            width: clamp(36px, 4vw, 44px);
+            height: clamp(36px, 4vw, 44px);
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -355,24 +266,26 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 2.05rem;
-            padding: 0.18rem 0.45rem;
+            min-width: 1.9rem;
+            padding: 0.16rem 0.42rem;
             border-radius: 999px;
             background: rgba(255, 255, 255, 0.08);
             color: rgba(255, 255, 255, 0.8);
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 700;
         }
 
         body.home-page .home-category-toggle-row {
             display: flex;
             justify-content: center;
+            padding-top: 0.1rem;
         }
 
         body.home-page .home-category-toggle {
-            min-height: 42px;
-            padding: 0.7rem 1rem;
-            border-radius: 999px;
+            width: clamp(120px, 16vw, 160px);
+            min-height: 92px;
+            padding: 0.82rem 0.95rem;
+            border-radius: 20px;
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.08);
             color: #eef4ff;
@@ -450,27 +363,57 @@
 
         body.home-page .home-banner-controls {
             position: absolute;
-            right: 1.1rem;
-            top: 1.1rem;
+            right: 1rem;
+            top: 1rem;
             z-index: 3;
             display: flex;
             align-items: center;
-            gap: 0.55rem;
-            padding: 0.45rem;
+            gap: 0.32rem;
+            padding: 0.3rem 0.34rem;
             border-radius: 999px;
-            background: rgba(7, 10, 15, 0.42);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(7, 10, 15, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
         }
 
+        body.home-page .home-banner-controls-main {
+            top: 1rem;
+            right: auto;
+            left: 1rem;
+            bottom: auto;
+            z-index: 4;
+        }
+
         body.home-page .home-banner-controls .banner-nav {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 999px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.08);
             color: #fff;
+        }
+
+        body.home-page .home-banner-controls .banner-nav-toggle,
+        body.home-page .home-banner-controls .banner-nav-interval {
+            width: auto;
+            min-width: 38px;
+            padding: 0 0.6rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        body.home-page .home-banner-counter {
+            min-width: 4rem;
+            padding: 0 0.05rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: rgba(240, 244, 255, 0.82);
+            text-align: center;
+            white-space: nowrap;
         }
 
         body.home-page .home-banner-dots {
@@ -779,7 +722,7 @@
             }
 
             body.home-page .home-banner-stage {
-                min-height: 500px;
+                min-height: 460px;
             }
 
             body.home-page .home-hero-title {
@@ -824,7 +767,7 @@
             }
 
             body.home-page .home-banner-stage {
-                min-height: 420px;
+                min-height: 280px;
             }
 
             body.home-page .home-hero-copy {
@@ -857,7 +800,7 @@
 
             body.home-page .home-category-grid-primary,
             body.home-page .home-category-grid-extra {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
+                grid-template-columns: repeat(4, minmax(0, 1fr));
             }
 
             body.home-page .card-grid,
@@ -889,17 +832,38 @@
             }
 
             body.home-page .home-banner-controls {
-                position: static;
-                inset: auto;
-                width: 100%;
-                justify-content: center;
-                margin-top: 0.35rem;
-                padding: 0.38rem;
+                top: auto;
+                right: auto;
+                left: 0.7rem;
+                bottom: 0.7rem;
+                width: auto;
+                justify-content: flex-start;
+                margin-top: 0;
+                padding: 0.28rem 0.3rem;
+            }
+
+            body.home-page .home-banner-controls-main {
+                top: 0.7rem;
+                right: auto;
+                left: 0.7rem;
+                bottom: auto;
             }
 
             body.home-page .home-banner-controls .banner-nav {
-                width: 34px;
-                height: 34px;
+                width: 30px;
+                height: 30px;
+            }
+
+            body.home-page .home-banner-controls .banner-nav-toggle,
+            body.home-page .home-banner-controls .banner-nav-interval {
+                min-width: 34px;
+                padding: 0 0.52rem;
+                font-size: 0.68rem;
+            }
+
+            body.home-page .home-banner-counter {
+                min-width: 3.5rem;
+                font-size: 0.68rem;
             }
         }
 
@@ -944,8 +908,8 @@
 
             body.home-page .home-category-grid-primary,
             body.home-page .home-category-grid-extra {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 0.55rem;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 0.5rem;
             }
 
             body.home-page .home-hero-stats {
@@ -953,19 +917,19 @@
             }
 
             body.home-page .home-category-item {
-                min-height: 96px;
-                padding: 0.8rem;
+                min-height: 86px;
+                padding: 0.72rem 0.55rem;
             }
 
             body.home-page .home-category-icon {
-                width: 36px;
-                height: 36px;
-                border-radius: 14px;
+                width: 34px;
+                height: 34px;
+                border-radius: 12px;
             }
 
             body.home-page .home-category-name,
             body.home-page .home-category-label {
-                font-size: 0.85rem;
+                font-size: 0.8rem;
             }
 
             body.home-page .home-category-count {
@@ -1012,13 +976,13 @@
 
             body.home-page .home-category-grid-primary,
             body.home-page .home-category-grid-extra {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.5rem;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 0.45rem;
             }
 
             body.home-page .home-category-item {
-                min-height: 90px;
-                gap: 0.5rem;
+                min-height: 82px;
+                gap: 0.42rem;
             }
 
             body.home-page .card-thumbnail {
@@ -1056,25 +1020,25 @@
 
             body.home-page .home-category-grid-primary,
             body.home-page .home-category-grid-extra {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.5rem;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.42rem;
             }
 
             body.home-page .home-category-item {
-                min-height: 82px;
-                padding: 0.72rem 0.75rem;
-                gap: 0.45rem;
+                min-height: 78px;
+                padding: 0.62rem 0.48rem;
+                gap: 0.4rem;
             }
 
             body.home-page .home-category-icon {
-                width: 34px;
-                height: 34px;
-                border-radius: 12px;
+                width: 32px;
+                height: 32px;
+                border-radius: 11px;
             }
 
             body.home-page .home-category-name,
             body.home-page .home-category-label {
-                font-size: 0.8rem;
+                font-size: 0.74rem;
                 line-height: 1.25;
             }
 
@@ -1119,7 +1083,7 @@
 
             body.home-page .home-category-grid-primary,
             body.home-page .home-category-grid-extra {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
             body.home-page .home-hero-stats {
@@ -1213,27 +1177,14 @@
                 <article class="main-ad-banner home-main-banner">
                     <div class="home-banner-stage" id="homeMainBannerStage" aria-label="메인 배너">
                         <div class="home-banner-track" id="homeMainBannerTrack"></div>
-                        <div class="home-banner-overlay">
-
-                            <div class="home-hero-stats" aria-label="홈 요약 정보">
-                                <div>
-                                    <strong id="homeClassTotal">0</strong>
-                                    <span>등록 클래스</span>
-                                </div>
-                                <div>
-                                    <strong id="homeCategoryTotal">0</strong>
-                                    <span>카테고리</span>
-                                </div>
-                                <div>
-                                    <strong id="homeFreshCount">0</strong>
-                                    <span>신규 추천</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="home-banner-controls" aria-label="메인 배너 조작">
+                        <div class="home-banner-controls home-banner-controls-main" aria-label="메인 배너 조작">
                             <button type="button" class="banner-nav banner-nav-prev" id="homeMainBannerPrev"
                                 aria-label="이전 메인 배너">‹</button>
-                            <div class="home-banner-dots" id="homeMainBannerDots" aria-label="메인 배너 페이지"></div>
+                            <button type="button" class="banner-nav banner-nav-toggle" id="homeMainBannerPlay"
+                                aria-label="자동 넘김 일시정지" aria-pressed="true">❚❚</button>
+                            <span class="home-banner-counter" id="homeMainBannerCounter" aria-live="polite">1 / 1</span>
+                            <button type="button" class="banner-nav banner-nav-interval" id="homeMainBannerInterval"
+                                aria-label="자동 넘김 간격">6s</button>
                             <button type="button" class="banner-nav banner-nav-next" id="homeMainBannerNext"
                                 aria-label="다음 메인 배너">›</button>
                         </div>
@@ -1243,8 +1194,7 @@
                 <aside class="home-category-panel">
                     <div>
                         <span class="hero-eyebrow">카테고리 탐색</span>
-                        <h2>분야를 선택하세요</h2>
-                        <p>인기·신규·관심사별로 바로 찾을 수 있습니다.</p>
+
                     </div>
                     <nav class="category-grid" aria-label="메인 카테고리"></nav>
                 </aside>
@@ -1303,8 +1253,8 @@
         </section>
     </main>
 
-    <script src="header.js?v=20260330_05" defer></script>
-    <script src="main.js?v=20260330_05" defer></script>
+    <script src="header.js?v=20260330_06" defer></script>
+    <script src="main.js?v=20260330_06" defer></script>
     <script src="dev_mode.js?v=20260330_04" defer></script>
 </body>
 

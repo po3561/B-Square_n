@@ -416,17 +416,20 @@ body,
 .ad-content h2 { margin: 0; max-width: 12ch; font-size: clamp(1.8rem, 3.5vw, 3.2rem); line-height: 0.95; letter-spacing: -0.06em; color: #fff; }
 .hero-section .category-grid { margin-top: 0.9rem; padding: 0; background: transparent; border: 0; box-shadow: none; }
 .home-category-shell { width: 100%; padding: 1rem; border-radius: 28px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: var(--shadow-sm); }
-.home-category-grid { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 0.7rem; }
+.home-category-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.7rem; }
+.home-category-grid-primary,
+.home-category-grid-extra { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.home-category-toggle-row { display: flex; justify-content: center; padding-top: 0.1rem; }
 .home-category-item,
 .home-category-toggle {
-  min-height: 108px;
-  padding: 0.92rem 0.8rem;
+  min-height: 104px;
+  padding: 0.88rem 0.72rem;
   border-radius: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
+  justify-content: space-between;
+  gap: 0.5rem;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: #fff;
@@ -450,6 +453,23 @@ body,
   justify-content: center;
   color: #fff;
   background: rgba(158, 188, 255, 0.12);
+}
+.home-category-toggle {
+  width: clamp(120px, 14vw, 158px);
+  min-height: 92px;
+  border-radius: 20px;
+}
+.home-category-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.9rem;
+  padding: 0.16rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.68rem;
+  font-weight: 700;
 }
 .home-category-name,
 .home-category-label { display: block; font-size: 0.9rem; font-weight: 700; line-height: 1.25; text-align: center; color: #fff; }
@@ -628,7 +648,7 @@ body,
 @media (max-width: 1280px) {
   .card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .large-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .home-category-grid { grid-template-columns: repeat(9, minmax(0, 1fr)); }
+  .home-category-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .footer-links-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
@@ -669,26 +689,26 @@ body,
   .search-bar { display: none; }
   .hero-section,
   .class-lists-section { padding-inline: 0; }
-  .main-ad-banner { min-height: 220px; border-radius: 28px; }
+  .main-ad-banner { min-height: 300px; border-radius: 28px; }
   .home-category-shell { padding: 0.8rem; }
   .home-category-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     gap: 0.6rem !important;
   }
   .home-category-item,
   .home-category-toggle {
-    min-height: 94px !important;
-    padding: 0.78rem 0.55rem !important;
+    min-height: 90px !important;
+    padding: 0.74rem 0.52rem !important;
     border-radius: 20px !important;
   }
   .home-category-icon,
   .home-category-toggle .home-category-icon {
-    width: 42px !important;
-    height: 42px !important;
+    width: 40px !important;
+    height: 40px !important;
   }
   .home-category-name,
   .home-category-label {
-    font-size: 0.78rem !important;
+    font-size: 0.76rem !important;
   }
   .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .large-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -733,25 +753,25 @@ body,
     font-size: 0.65rem;
     white-space: nowrap;
   }
-  .main-ad-banner { min-height: 192px; padding: 0.95rem; }
+  .main-ad-banner { min-height: 250px; padding: 0.95rem; }
   .ad-content h2,
   .hero-title { font-size: clamp(1.4rem, 7vw, 1.95rem); }
   .home-category-shell { padding: 0.7rem; }
   .home-category-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 0.55rem !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
   }
   .home-category-item,
   .home-category-toggle {
     min-height: 84px !important;
-    padding: 0.68rem 0.45rem !important;
+    padding: 0.68rem 0.46rem !important;
     gap: 0.45rem !important;
     border-radius: 18px !important;
   }
   .home-category-icon,
   .home-category-toggle .home-category-icon {
-    width: 40px !important;
-    height: 40px !important;
+    width: 38px !important;
+    height: 38px !important;
     border-radius: 12px !important;
   }
   .home-category-name,
@@ -816,7 +836,7 @@ body,
 }
 
 @media (max-width: 390px) {
-  .main-ad-banner { min-height: 178px; }
+  .main-ad-banner { min-height: 230px; }
   .hero-meta { gap: 0.4rem; }
   .class-page-overrides .group-title { font-size: 1.08rem; }
   .card-info { padding: 0.88rem 0.88rem 0.98rem; }
@@ -835,6 +855,24 @@ body,
     min-height: 34px;
     padding: 0.3rem 0.46rem;
     font-size: 0.62rem;
+  }
+  .home-category-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0.46rem !important;
+  }
+  .home-category-item,
+  .home-category-toggle {
+    min-height: 80px !important;
+    padding: 0.62rem 0.42rem !important;
+  }
+  .home-category-icon,
+  .home-category-toggle .home-category-icon {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  .home-category-name,
+  .home-category-label {
+    font-size: 0.68rem !important;
   }
 }
 
@@ -865,10 +903,10 @@ body,
   .btn-login-main,
   .btn-operator-mode,
   .btn-logout { padding: 0.32rem 0.44rem; font-size: 0.6rem; }
-  .main-ad-banner { min-height: 168px; padding: 0.8rem; }
+  .main-ad-banner { min-height: 210px; padding: 0.8rem; }
   .ad-content h2,
   .hero-title { font-size: clamp(1.2rem, 7vw, 1.55rem); }
-  .home-category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .home-category-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
   .home-category-item,
   .home-category-toggle { min-height: 78px !important; padding: 0.6rem 0.4rem !important; }
   .home-category-icon,
@@ -896,8 +934,8 @@ body,
   .home-category-grid,
   .card-grid,
   .large-grid,
-  .recommend-columns { grid-template-columns: 1fr !important; gap: 0.6rem !important; }
-  .main-ad-banner { min-height: 150px; padding: 0.72rem; border-radius: 18px; }
+  .recommend-columns { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 0.45rem !important; }
+  .main-ad-banner { min-height: 190px; padding: 0.72rem; border-radius: 18px; }
   .ad-content h2,
   .hero-title { font-size: clamp(1.08rem, 7vw, 1.4rem); }
   .card-info { padding: 0.72rem 0.72rem 0.82rem; }
@@ -945,7 +983,7 @@ body,
   .home-category-grid,
   .card-grid,
   .large-grid,
-  .recommend-columns { grid-template-columns: 1fr !important; gap: 0.5rem !important; }
+  .recommend-columns { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 0.45rem !important; }
   .home-category-item,
   .home-category-toggle {
     min-height: 70px !important;
@@ -963,7 +1001,7 @@ body,
     font-size: 0.62rem !important;
     line-height: 1.1;
   }
-  .main-ad-banner { min-height: 132px; padding: 0.58rem; border-radius: 16px; }
+  .main-ad-banner { min-height: 170px; padding: 0.58rem; border-radius: 16px; }
   .ad-content h2,
   .hero-title { font-size: clamp(1rem, 8vw, 1.28rem); }
   .group-title { font-size: 0.92rem; }

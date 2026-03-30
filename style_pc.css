@@ -558,27 +558,33 @@ option {
 
 .home-category-grid {
     display: grid !important;
-    grid-template-columns: repeat(9, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
     gap: 0.7rem !important;
     padding: 0.2rem 0 !important;
     max-width: none !important;
     margin: 0 auto !important;
 }
 
+.home-category-grid-primary,
+.home-category-grid-extra {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+}
+
 .home-category-item {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    gap: 0.6rem !important;
-    padding: 0.92rem 0.72rem !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
+    padding: 0.88rem 0.72rem !important;
     background: rgba(255, 255, 255, 0.04) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 20px !important;
-    min-height: 108px !important;
+    min-height: 104px !important;
     font-size: 0.86rem !important;
     font-weight: 600 !important;
     color: var(--text-secondary) !important;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    transition: transform 0.28s ease, background 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease !important;
     backdrop-filter: blur(5px) !important;
 }
 
@@ -586,8 +592,8 @@ option {
     background: rgba(255, 255, 255, 0.1) !important;
     border-color: rgba(255, 255, 255, 0.3) !important;
     color: #fff !important;
-    transform: translateY(-8px) !important;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22) !important;
 }
 
 .home-category-icon {
@@ -601,6 +607,31 @@ option {
     border-radius: 15px !important;
     transition: inherit !important;
     overflow: hidden !important;
+}
+
+.home-category-toggle-row {
+    display: flex !important;
+    justify-content: center !important;
+    padding-top: 0.1rem !important;
+}
+
+.home-category-toggle {
+    width: clamp(120px, 14vw, 158px) !important;
+    min-height: 92px !important;
+    border-radius: 20px !important;
+}
+
+.home-category-count {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 1.9rem !important;
+    padding: 0.16rem 0.42rem !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
 }
 
 .home-category-icon svg,

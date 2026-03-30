@@ -120,7 +120,82 @@ function teardownBannerCarousel(kind) {
     homeBannerCarousels[kind] = null;
 }
 
-function setBannerSlideState(state, nextIndex) {
+function stopBannerTimer(state) {
+    if (state?.timer) {
+        window.clearInterval(state.timer);
+        state.timer = null;
+    }
+}
+
+function formatBannerIntervalLabel(ms) {
+    const seconds = Math.max(1, Math.round(Number(ms || 0) / 1000));
+    return `${seconds}s`;
+}
+
+function updateBannerControlState(state) {
+    if (!state) return;
+
+    const total = state.slides?.length || 0;
+    if (state.counterEl) {
+        state.counterEl.textContent = total > 0 ? `${state.index + 1} / ${total}` : '0 / 0';
+    }
+
+    if (state.playEl) {
+        const playing = !!state.isPlaying && total > 1;
+        state.playEl.textContent = playing ? '❚❚' : '▶';
+        state.playEl.setAttribute('aria-pressed', playing ? 'true' : 'false');
+        state.playEl.setAttribute('aria-label', playing ? '자동 넘김 일시정지' : '자동 넘김 재생');
+        state.playEl.disabled = total <= 1;
+    }
+
+    if (state.intervalEl) {
+        const label = formatBannerIntervalLabel(state.intervalMs);
+        state.intervalEl.textContent = label;
+        state.intervalEl.setAttribute('aria-label', `자동 넘김 간격 ${label}`);
+        state.intervalEl.disabled = total <= 1;
+    }
+
+    if (state.prevEl) {
+        state.prevEl.hidden = total <= 1;
+    }
+    if (state.nextEl) {
+        state.nextEl.hidden = total <= 1;
+    }
+}
+
+function startBannerTimer(state) {
+    if (!state || !state.canAutoplay || !state.isPlaying || state.hoverPaused) return;
+    stopBannerTimer(state);
+    state.timer = window.setInterval(() => {
+        setBannerSlideState(state, state.index + 1, { restartTimer: false });
+    }, state.intervalMs);
+}
+
+function applyBannerTimer(state) {
+    if (!state) return;
+    if (state.canAutoplay && state.isPlaying && !state.hoverPaused) {
+        startBannerTimer(state);
+        return;
+    }
+    stopBannerTimer(state);
+}
+
+function setBannerPlaying(state, playing) {
+    if (!state) return;
+    state.isPlaying = !!playing;
+    updateBannerControlState(state);
+    applyBannerTimer(state);
+}
+
+function cycleBannerInterval(state) {
+    if (!state || !Array.isArray(state.intervalOptions) || !state.intervalOptions.length) return;
+    state.intervalIndex = (state.intervalIndex + 1) % state.intervalOptions.length;
+    state.intervalMs = state.intervalOptions[state.intervalIndex];
+    updateBannerControlState(state);
+    applyBannerTimer(state);
+}
+
+function setBannerSlideState(state, nextIndex, options = {}) {
     if (!state || !state.slides || !state.slides.length) return;
     const total = state.slides.length;
     const safeIndex = ((nextIndex % total) + total) % total;
@@ -138,6 +213,11 @@ function setBannerSlideState(state, nextIndex) {
         dot.classList.toggle('is-active', active);
         dot.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
+
+    updateBannerControlState(state);
+    if (options.restartTimer !== false) {
+        applyBannerTimer(state);
+    }
 }
 
 function renderBannerCarousel(kind, items, options = {}) {
@@ -145,6 +225,9 @@ function renderBannerCarousel(kind, items, options = {}) {
     const dots = document.getElementById(options.dotsId);
     const prev = document.getElementById(options.prevId);
     const next = document.getElementById(options.nextId);
+    const counter = document.getElementById(options.counterId);
+    const play = document.getElementById(options.playId);
+    const interval = document.getElementById(options.intervalId);
     if (!track) return;
 
     teardownBannerCarousel(kind);
@@ -204,16 +287,33 @@ function renderBannerCarousel(kind, items, options = {}) {
         dots.hidden = slideEls.length <= 1;
     }
 
+    const reduceMotion = typeof window.matchMedia === 'function'
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     const state = {
         slides: slideEls,
         dots: dotButtons,
         index: 0,
         timer: null,
+        counterEl: counter || null,
+        playEl: play || null,
+        intervalEl: interval || null,
+        prevEl: prev || null,
+        nextEl: next || null,
+        hoverPaused: false,
+        canAutoplay: slideEls.length > 1 && !reduceMotion,
+        isPlaying: slideEls.length > 1 && !reduceMotion,
+        intervalOptions: Array.isArray(options.intervalOptions) && options.intervalOptions.length
+            ? options.intervalOptions.map((value) => Math.max(1000, Number(value) || 0)).filter(Boolean)
+            : [4000, 6000, 8000],
+        intervalIndex: 0,
+        intervalMs: Math.max(1000, Number(options.intervalMs || 6000) || 6000),
     };
 
-    const reduceMotion = typeof window.matchMedia === 'function'
-        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const canAutoplay = slideEls.length > 1 && !reduceMotion;
+    const intervalIndex = state.intervalOptions.findIndex((value) => value === state.intervalMs);
+    state.intervalIndex = intervalIndex >= 0 ? intervalIndex : 0;
+    state.intervalMs = state.intervalOptions[state.intervalIndex] || state.intervalMs;
+
     if (prev) {
         prev.hidden = slideEls.length <= 1;
         prev.onclick = () => setBannerSlideState(state, state.index - 1);
@@ -222,35 +322,36 @@ function renderBannerCarousel(kind, items, options = {}) {
         next.hidden = slideEls.length <= 1;
         next.onclick = () => setBannerSlideState(state, state.index + 1);
     }
+    if (play) {
+        play.hidden = slideEls.length <= 1;
+        play.onclick = () => setBannerPlaying(state, !state.isPlaying);
+    }
+    if (interval) {
+        interval.hidden = slideEls.length <= 1;
+        interval.onclick = () => cycleBannerInterval(state);
+    }
 
     if (track.parentElement) {
         track.parentElement.dataset.bannerCount = String(slideEls.length);
         track.parentElement.dataset.bannerKind = kind;
     }
 
-    const restartTimer = () => {
-        if (!canAutoplay) return;
-        if (state.timer) window.clearInterval(state.timer);
-        state.timer = window.setInterval(() => {
-            setBannerSlideState(state, state.index + 1);
-        }, options.intervalMs || 6500);
-    };
-
     if (slideEls.length > 1) {
-        restartTimer();
         if (track.parentElement) {
             track.parentElement.onpointerenter = () => {
-                if (state.timer) {
-                    window.clearInterval(state.timer);
-                    state.timer = null;
-                }
+                state.hoverPaused = true;
+                applyBannerTimer(state);
             };
-            track.parentElement.onpointerleave = restartTimer;
+            track.parentElement.onpointerleave = () => {
+                state.hoverPaused = false;
+                applyBannerTimer(state);
+            };
         }
     }
 
     homeBannerCarousels[kind] = state;
-    setBannerSlideState(state, 0);
+    setBannerSlideState(state, 0, { restartTimer: false });
+    applyBannerTimer(state);
 }
 
 function syncHomeCuratedVisibility() {
@@ -338,7 +439,7 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
 
     globalHomeCategories = categories;
 
-    const limit = 7;
+    const limit = 9;
     const visibleCategories = categories.slice(0, limit);
     const hiddenCategories = categories.slice(limit);
     const expandedRequested = getHomeCategoryExpandedState();
@@ -373,16 +474,18 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
                         </a>
                     `;
                 }).join('')}
-                ${hasMore ? `
+            </div>
+            ${hasMore ? `
+                <div class="home-category-toggle-row">
                     <button type="button" class="home-category-item home-category-toggle${expanded ? ' is-expanded' : ''}" data-category-toggle aria-expanded="${expanded ? 'true' : 'false'}">
                         <div class="home-category-icon" style="background: rgba(255, 255, 255, 0.08); color: #eef4ff;">
                             ${svgIcon(expanded ? 'chevron-up' : 'chevron-down')}
                         </div>
-                        <span class="home-category-label">${expanded ? '접기' : `더보기`}</span>
+                        <span class="home-category-label">${expanded ? '접기' : '더보기'}</span>
                         ${expanded ? '' : `<span class="home-category-count">+${hiddenCategories.length}</span>`}
                     </button>
-                ` : ''}
-            </div>
+                </div>
+            ` : ''}
             ${hasMore ? `
                 <div class="home-category-grid home-category-grid-extra home-category-extra"${expanded ? '' : ' hidden'}>
                     ${extraCategories.map((item, index) => {
@@ -495,13 +598,16 @@ async function initBanners() {
 
     renderBannerCarousel('main', mainBanners, {
         trackId: 'homeMainBannerTrack',
-        dotsId: 'homeMainBannerDots',
         prevId: 'homeMainBannerPrev',
+        playId: 'homeMainBannerPlay',
+        counterId: 'homeMainBannerCounter',
+        intervalId: 'homeMainBannerInterval',
         nextId: 'homeMainBannerNext',
         fallbackLabel: '메인 배너',
         emptyMessage: '메인 배너를 준비 중입니다.',
         emptyAlt: '메인 배너 준비 중',
-        intervalMs: 7000,
+        intervalMs: 6000,
+        intervalOptions: [4000, 6000, 8000],
     });
 
     renderBannerCarousel('bottom', bottomBanners, {

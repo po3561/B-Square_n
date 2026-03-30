@@ -700,10 +700,10 @@ option {
 
 .home-category-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.65rem;
     text-align: center;
-    max-width: 800px;
+    max-width: none;
     margin: 0 auto;
 }
 
@@ -711,35 +711,63 @@ option {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
-    font-size: 0.8rem;
-    color: #555;
-    padding: 0.8rem 0;
-    border-radius: 12px;
-    border: 1px solid transparent;
-    transition: all 0.2s ease;
+    justify-content: space-between;
+    gap: 0.42rem;
+    font-size: 0.75rem;
+    color: #eef4ff;
+    padding: 0.72rem 0.52rem;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease;
 }
 
 .home-category-item:hover {
-    background: #f5f5f5;
-    color: #1a1a1a;
-    border-color: #eee;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.14);
     transform: translateY(-2px);
 }
 
 .home-category-item.is-active {
-    color: var(--accent-color);
+    color: #fff;
     font-weight: 700;
+    border-color: rgba(142, 165, 255, 0.28);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .home-category-icon {
-    width: 48px;
-    height: 48px;
+    width: 36px;
+    height: 36px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 2px;
+    margin-bottom: 0;
+}
+
+.home-category-toggle-row {
+    display: flex;
+    justify-content: center;
+    padding-top: 0.1rem;
+}
+
+.home-category-toggle {
+    width: clamp(92px, 26vw, 132px);
+    min-height: 84px;
+}
+
+.home-category-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.8rem;
+    padding: 0.14rem 0.38rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.64rem;
+    font-weight: 700;
 }
 
 .group-title {
