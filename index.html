@@ -7,8 +7,8 @@
     <title>B-Square | 클래스 탐색</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="style_mobile.css?v=20260329_04" media="(max-width: 768px)">
-    <link rel="stylesheet" href="style_pc.css?v=20260329_04" media="(min-width: 769px)">
+    <link rel="stylesheet" href="style_mobile.css?v=20260330_04" media="(max-width: 768px)">
+    <link rel="stylesheet" href="style_pc.css?v=20260330_04" media="(min-width: 769px)">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body.home-page {
@@ -33,7 +33,7 @@
             max-width: min(1440px, calc(100vw - 1.5rem));
             margin: 0 auto;
             display: grid;
-            grid-template-columns: minmax(0, 1.08fr) minmax(420px, 0.92fr);
+            grid-template-columns: 1fr;
             gap: 1rem;
             align-items: stretch;
             padding: 0 1rem;
@@ -276,7 +276,7 @@
             gap: 0.95rem;
             border-radius: 30px;
             padding: clamp(1.05rem, 2.2vw, 1.45rem);
-            min-height: 300px;
+            min-height: 0;
         }
 
         body.home-page .home-category-panel h2 {
@@ -1206,7 +1206,7 @@
         }
     </style>
     <!-- 중앙 서버 모듈 (D1 API 모드) -->
-    <script src="bsq_server.js?v=20260329_04" defer></script>
+    <script src="bsq_server.js?v=20260330_04" defer></script>
 </head>
 
 <body class="home-page">
@@ -1263,26 +1263,6 @@
             </div>
         </section>
 
-        <section class="bottom-banner-section">
-            <div class="banner-inner home-bottom-banner-inner">
-                <div class="home-bottom-banner-track" id="homeBottomBannerTrack"></div>
-                <div class="home-bottom-banner-overlay">
-                    <span class="banner-eyebrow">Explore more</span>
-                    <h2>커뮤니티에서 질문하고, 클래스에서 바로 시작하세요.</h2>
-                    <p>수강 흐름과 실시간 소통을 끊지 않고 이어가도록 설계했습니다.</p>
-                </div>
-                <div class="banner-actions">
-                    <a class="banner-link" href="community/community.html">커뮤니티 둘러보기</a>
-                    <a class="banner-link subtle" href="class/class_list.html">전체 클래스 보기</a>
-                </div>
-                <div class="home-banner-controls home-bottom-banner-controls" aria-label="하단 배너 조작">
-                    <button type="button" class="banner-nav banner-nav-prev" id="homeBottomBannerPrev" aria-label="이전 하단 배너">‹</button>
-                    <div class="home-banner-dots" id="homeBottomBannerDots" aria-label="하단 배너 페이지"></div>
-                    <button type="button" class="banner-nav banner-nav-next" id="homeBottomBannerNext" aria-label="다음 하단 배너">›</button>
-                </div>
-            </div>
-        </section>
-
         <section class="class-lists-section">
             <div class="section-inner">
                 <!-- 큐레이션 영역 -->
@@ -1311,11 +1291,31 @@
                 </article>
             </div>
         </section>
+
+        <section class="bottom-banner-section">
+            <div class="banner-inner home-bottom-banner-inner">
+                <div class="home-bottom-banner-track" id="homeBottomBannerTrack"></div>
+                <div class="home-bottom-banner-overlay">
+                    <span class="banner-eyebrow">Explore more</span>
+                    <h2>커뮤니티에서 질문하고, 클래스에서 바로 시작하세요.</h2>
+                    <p>수강 흐름과 실시간 소통을 끊지 않고 이어가도록 설계했습니다.</p>
+                </div>
+                <div class="banner-actions">
+                    <a class="banner-link" href="community/community.html">커뮤니티 둘러보기</a>
+                    <a class="banner-link subtle" href="class/class_list.html">전체 클래스 보기</a>
+                </div>
+                <div class="home-banner-controls home-bottom-banner-controls" aria-label="하단 배너 조작">
+                    <button type="button" class="banner-nav banner-nav-prev" id="homeBottomBannerPrev" aria-label="이전 하단 배너">‹</button>
+                    <div class="home-banner-dots" id="homeBottomBannerDots" aria-label="하단 배너 페이지"></div>
+                    <button type="button" class="banner-nav banner-nav-next" id="homeBottomBannerNext" aria-label="다음 하단 배너">›</button>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <script src="header.js?v=20260329_04" defer></script>
-    <script src="main.js?v=20260330_02" defer></script>
-    <script src="dev_mode.js?v=20260329_04" defer></script>
+    <script src="header.js?v=20260330_04" defer></script>
+    <script src="main.js?v=20260330_05" defer></script>
+    <script src="dev_mode.js?v=20260330_04" defer></script>
 </body>
 
 </html>

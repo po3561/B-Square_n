@@ -558,10 +558,10 @@ option {
 
 .home-category-grid {
     display: grid !important;
-    grid-template-columns: repeat(5, 1fr) !important;
-    gap: 1.5rem !important;
-    padding: 1.5rem 1rem !important;
-    max-width: 1000px !important;
+    grid-template-columns: repeat(9, minmax(0, 1fr)) !important;
+    gap: 0.7rem !important;
+    padding: 0.2rem 0 !important;
+    max-width: none !important;
     margin: 0 auto !important;
 }
 
@@ -569,12 +569,13 @@ option {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    gap: 0.8rem !important;
-    padding: 1.2rem 1.6rem !important;
+    gap: 0.6rem !important;
+    padding: 0.92rem 0.72rem !important;
     background: rgba(255, 255, 255, 0.04) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 20px !important;
-    font-size: 0.9rem !important;
+    min-height: 108px !important;
+    font-size: 0.86rem !important;
     font-weight: 600 !important;
     color: var(--text-secondary) !important;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
@@ -593,11 +594,11 @@ option {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 44px !important;
-    height: 44px !important;
-    min-width: 44px !important;
-    min-height: 44px !important;
-    border-radius: 12px !important;
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px !important;
+    min-height: 50px !important;
+    border-radius: 15px !important;
     transition: inherit !important;
     overflow: hidden !important;
 }
@@ -612,7 +613,7 @@ option {
 .home-category-name {
     display: block !important;
     text-align: center !important;
-    font-size: 0.9rem !important;
+    font-size: 0.86rem !important;
 }
 
 .category-sidebar li a {

@@ -150,11 +150,15 @@ function renderBannerCarousel(kind, items, options = {}) {
     teardownBannerCarousel(kind);
 
     const banners = normalizeBannerItems(items, options.fallbackLabel);
-    const slides = banners.length ? banners : [{
-        imgUrl: '',
-        linkUrl: '',
-        alt: options.emptyAlt || `${options.fallbackLabel} 준비 중`,
-    }];
+    const slides = banners.length ? banners : (
+        options.showEmptyState === false
+            ? []
+            : [{
+                imgUrl: '',
+                linkUrl: '',
+                alt: options.emptyAlt || `${options.fallbackLabel} 준비 중`,
+            }]
+    );
 
     track.innerHTML = slides.map((item, index) => {
         const slideClass = `home-banner-slide${index === 0 ? ' is-active' : ''}`;
@@ -334,7 +338,7 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
 
     globalHomeCategories = categories;
 
-    const limit = 8;
+    const limit = 7;
     const visibleCategories = categories.slice(0, limit);
     const hiddenCategories = categories.slice(limit);
     const expandedRequested = getHomeCategoryExpandedState();
@@ -369,13 +373,17 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
                         </a>
                     `;
                 }).join('')}
+                ${hasMore ? `
+                    <button type="button" class="home-category-item home-category-toggle${expanded ? ' is-expanded' : ''}" data-category-toggle aria-expanded="${expanded ? 'true' : 'false'}">
+                        <div class="home-category-icon" style="background: rgba(255, 255, 255, 0.08); color: #eef4ff;">
+                            ${svgIcon(expanded ? 'chevron-up' : 'chevron-down')}
+                        </div>
+                        <span class="home-category-label">${expanded ? '접기' : `더보기`}</span>
+                        ${expanded ? '' : `<span class="home-category-count">+${hiddenCategories.length}</span>`}
+                    </button>
+                ` : ''}
             </div>
             ${hasMore ? `
-                <div class="home-category-toggle-row">
-                    <button type="button" class="home-category-toggle" data-category-toggle>
-                        ${expanded ? '접기' : `더보기 +${hiddenCategories.length}`}
-                    </button>
-                </div>
                 <div class="home-category-grid home-category-grid-extra home-category-extra"${expanded ? '' : ' hidden'}>
                     ${extraCategories.map((item, index) => {
                         const meta = resolveHomeCategoryMeta(item.name, index + visibleCategories.length);
@@ -502,8 +510,9 @@ async function initBanners() {
         prevId: 'homeBottomBannerPrev',
         nextId: 'homeBottomBannerNext',
         fallbackLabel: '하단 배너',
-        emptyMessage: '하단 배너를 준비 중입니다.',
+        emptyMessage: '',
         emptyAlt: '하단 배너 준비 중',
+        showEmptyState: false,
         intervalMs: 9000,
     });
 }
