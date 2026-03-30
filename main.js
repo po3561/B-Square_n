@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const currentCategory = getCurrentHomeCategory();
     const allGrid = document.getElementById('allClassGrid');
 
+    syncHomeCuratedVisibility();
+
     if (allGrid && !allGrid.children.length) {
         allGrid.innerHTML = '<p class="empty-state">클래스 정보를 불러오는 중...</p>';
     }
@@ -12,6 +14,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         initMainPage(currentCategory),
         initBanners(),
     ]);
+
+    syncHomeCuratedVisibility();
 
     window.addEventListener('bsq_sync', (e) => {
         console.log('[BSQ Sync] Data refresh requested:', e.detail);
@@ -78,6 +82,20 @@ function setHomeCategoryExpandedState(expanded) {
     try {
         localStorage.setItem('bsq.home.categories.expanded', expanded ? '1' : '0');
     } catch { }
+}
+
+function syncHomeCuratedVisibility() {
+    const wrapper = document.querySelector('.curated-sections-dark');
+    if (!wrapper) return;
+
+    const sections = [document.getElementById('popularSection'), document.getElementById('recommendSection')].filter(Boolean);
+    const hasVisibleSection = sections.some((section) => {
+        const style = window.getComputedStyle(section);
+        return style.display !== 'none' && style.visibility !== 'hidden';
+    });
+
+    wrapper.hidden = !hasVisibleSection;
+    wrapper.classList.toggle('is-empty', !hasVisibleSection);
 }
 
 const HOME_CATEGORY_ACCENTS = ['#ff5a5f', '#ffaa00', '#00c3a0', '#00a8ff', '#9c27b0'];
@@ -287,7 +305,9 @@ function scheduleHomeRefresh(syncType = '') {
             initMainPage(activeCategory, shouldForceRefresh),
             initBanners(),
             renderHomeCategoryMenu(activeCategory),
-        ]).catch((error) => console.warn('[BSQ Sync] refresh failed:', error));
+        ])
+            .catch((error) => console.warn('[BSQ Sync] refresh failed:', error))
+            .finally(() => syncHomeCuratedVisibility());
     }, shouldForceRefresh ? 50 : 120);
 }
 

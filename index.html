@@ -305,6 +305,11 @@
             gap: 1.1rem;
         }
 
+        body.home-page .curated-sections-dark.is-empty,
+        body.home-page .curated-sections-dark[hidden] {
+            display: none !important;
+        }
+
         body.home-page .card-grid,
         body.home-page .recommend-columns {
             display: grid;
@@ -948,7 +953,7 @@
         <section class="class-lists-section">
             <div class="section-inner">
                 <!-- 큐레이션 영역 -->
-                <div class="curated-sections-dark">
+                <div class="curated-sections-dark" hidden>
                     <article class="class-group popular-classes" id="popularSection" style="display:none;">
                         <h3 class="group-title" id="popularGroupTitle">지금 인기 있는</h3>
                         <div class="card-grid" id="popularClassGrid">
@@ -990,7 +995,7 @@
     </main>
 
     <script src="header.js?v=20260329_04" defer></script>
-    <script src="main.js?v=20260329_04" defer></script>
+    <script src="main.js?v=20260330_01" defer></script>
     <script src="dev_mode.js?v=20260329_04" defer></script>
 </body>
 
