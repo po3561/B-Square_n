@@ -221,7 +221,7 @@ body,
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.35rem 0.25rem 0.35rem 0.85rem;
+  padding: 0.35rem 0 0.35rem 0.85rem;
   border-radius: var(--pill-radius);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.09);

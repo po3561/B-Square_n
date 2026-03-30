@@ -412,7 +412,7 @@ select,
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     border-radius: var(--btn-radius);
-    padding: 0.5rem 1.2rem;
+    padding: 0.5rem 0 0.5rem 1.2rem;
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
