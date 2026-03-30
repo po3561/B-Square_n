@@ -2596,3 +2596,138 @@ body {
         font-size: 0.94rem;
     }
 }
+
+/* =========================================================
+   Mypage readability pass
+   - page width tightened so content has side breathing room
+   - main content gets a small inner gutter
+   - card spacing stays calm and readable
+   ========================================================= */
+.mypage-page .mypage-layout {
+    width: min(calc(100% - clamp(2rem, 4vw, 4rem)), 1320px);
+    margin: clamp(1rem, 2vw, 2rem) auto clamp(2rem, 4vw, 4rem);
+    gap: clamp(1rem, 1.2vw, 1.25rem);
+}
+
+.mypage-page .mypage-sidebar {
+    position: sticky;
+    top: 96px;
+    align-self: start;
+    width: min(300px, 100%);
+}
+
+.mypage-page .mypage-content {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: clamp(0.55rem, 0.95vw, 0.9rem);
+    gap: 1rem;
+}
+
+.mypage-page .mypage-hero,
+.mypage-page .mypage-panel-card,
+.mypage-page .commerce-shell,
+.mypage-page .commerce-hero,
+.mypage-page .tab-header-row,
+.mypage-page .class-section,
+.mypage-page .coupon-claim-card,
+.mypage-page .security-card,
+.mypage-page .sub-card,
+.mypage-page .chat-manage-card,
+.mypage-page .friends-panel {
+    border-radius: 24px;
+}
+
+.mypage-page .dashboard-stats {
+    gap: 1rem;
+}
+
+.mypage-page .dashboard-quick-links {
+    gap: 0.9rem;
+}
+
+.mypage-page .mypage-panel-grid {
+    gap: 1rem;
+}
+
+.mypage-page .my-class-list {
+    gap: 0.9rem;
+}
+
+.mypage-page .mypage-tab {
+    padding-bottom: 0.25rem;
+}
+
+.mypage-page .tab-title {
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 992px) {
+    .mypage-page .mypage-sidebar {
+        position: static;
+        width: 100%;
+    }
+
+    .mypage-page .mypage-content {
+        padding: 0.35rem 0.35rem 0;
+    }
+
+    .mypage-page .mypage-layout {
+        width: min(calc(100% - 1rem), 1320px);
+    }
+}
+
+@media (max-width: 640px) {
+    .mypage-page .mypage-layout {
+        margin-top: 0.8rem;
+        width: min(calc(100% - 0.8rem), 1320px);
+    }
+
+    .mypage-page .mypage-hero,
+    .mypage-page .mypage-panel-card,
+    .mypage-page .commerce-shell,
+    .mypage-page .commerce-hero,
+    .mypage-page .tab-header-row,
+    .mypage-page .class-section,
+    .mypage-page .coupon-claim-card,
+    .mypage-page .security-card,
+    .mypage-page .sub-card,
+    .mypage-page .chat-manage-card,
+    .mypage-page .friends-panel {
+        border-radius: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .mypage-page .profile-summary {
+        padding: 1rem 1rem 0.85rem;
+        gap: 0.75rem;
+    }
+
+    .mypage-page .profile-img-placeholder {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+    }
+
+    .mypage-page .profile-summary h3 {
+        font-size: 1.05rem;
+    }
+
+    .mypage-page .mypage-nav {
+        padding: 0.85rem;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+
+    .mypage-page .nav-btn {
+        min-height: 40px;
+        padding: 0.72rem 0.75rem;
+        font-size: 0.78rem;
+    }
+
+    .mypage-page .nav-btn.bordered {
+        margin-top: 0;
+    }
+}

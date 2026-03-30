@@ -13,6 +13,7 @@
 
 <body class="mypage-page">
     <div class="mypage-layout">
+        <!-- Sidebar: profile summary + primary mypage navigation -->
         <aside class="mypage-sidebar">
             <div class="profile-summary">
                 <div class="profile-img-placeholder" id="profileImg">👤</div>
@@ -34,8 +35,10 @@
 
         </aside>
 
+        <!-- Main content: dashboard summary and tab panels -->
         <main class="mypage-content">
             <div id="mypageNotice" class="mypage-notice-stack"></div>
+            <!-- Hero: page summary + quick actions -->
             <section class="mypage-hero" aria-label="마이페이지 요약">
                 <div class="mypage-hero-copy">
                     <p class="page-eyebrow">My Dashboard</p>
@@ -48,6 +51,7 @@
                     <button class="hero-action-btn" type="button" data-open-tab="tabProfile">프로필 설정</button>
                 </div>
             </section>
+            <!-- Dashboard: stats + shortcuts + recent activity -->
             <section id="tabDashboard" class="mypage-tab active">
                 <h2 class="tab-title">나의 대시보드</h2>
                 <div id="dashboardStats" class="dashboard-stats">
@@ -121,6 +125,7 @@
                 </div>
             </section>
 
+            <!-- Classes tab -->
             <section id="tabClasses" class="mypage-tab">
                 <div class="tab-header-row">
                     <h2 class="tab-title" style="margin-bottom:0;">나의 클래스 현황</h2>
@@ -141,6 +146,7 @@
                 </div>
             </section>
 
+            <!-- Coupons tab -->
             <section id="tabCoupons" class="mypage-tab">
                 <div class="commerce-shell">
                     <div class="commerce-hero">
@@ -189,6 +195,7 @@
                 </div>
             </section>
 
+            <!-- Cart tab -->
             <section id="tabCart" class="mypage-tab">
                 <div class="commerce-shell">
                     <div class="commerce-hero">
@@ -228,6 +235,7 @@
                 </div>
             </section>
 
+            <!-- Profile tab -->
             <section id="tabProfile" class="mypage-tab">
                 <h2 class="tab-title">프로필 설정</h2>
                 <form id="profileForm" class="mypage-form">
@@ -263,6 +271,7 @@
 
                     <div class="input-group full-width">
                         <label>나의 선호 카테고리 (중복 선택 가능)</label>
+                        <!-- Category chips: edit here when adding/removing interests -->
                         <div class="category-chips" id="categoryChips">
                             <button type="button" class="category-chip" data-category="요리">🍳 요리</button>
                             <button type="button" class="category-chip" data-category="공예">🛠 공예</button>
@@ -281,6 +290,7 @@
                 </form>
             </section>
 
+            <!-- Security tab -->
             <section id="tabSecurity" class="mypage-tab">
                 <h2 class="tab-title">보안 및 결제 정보</h2>
 
@@ -326,6 +336,7 @@
                 </div>
             </section>
 
+            <!-- Friends tab -->
             <section id="tabFriends" class="mypage-tab">
                 <h2 class="tab-title">친구</h2>
 
@@ -348,6 +359,7 @@
                 </div>
             </section>
 
+            <!-- Chat / subscription tab -->
             <section id="tabChatSub" class="mypage-tab">
                 <h2 class="tab-title">채팅 및 구독 관리</h2>
 
@@ -361,6 +373,7 @@
                 </div>
             </section>
 
+            <!-- Class editor tab -->
             <section id="tabEditClass" class="mypage-tab">
                 <h2 class="tab-title">클래스 정보 수정</h2>
                 <form id="editClassForm" class="mypage-form">
