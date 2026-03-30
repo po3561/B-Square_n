@@ -22,12 +22,14 @@
 
     <main class="class-list-main">
         <div class="section-inner">
+            <!-- 상단 요약 히어로: 제목 + 핵심 수치 -->
             <section class="class-list-hero" aria-label="클래스 탐색 요약">
                 <div class="class-list-hero-copy">
                     <p class="page-eyebrow">Class Explorer</p>
                     <h1>원하는 클래스를 더 빠르게 찾으세요</h1>
                     <p>카테고리, 검색, 정렬, 찜하기를 한 화면에 모아 더 읽기 쉬운 목록으로 정리했습니다.</p>
                 </div>
+                <!-- 전체 / 카테고리 / 선택 카테고리 수치 -->
                 <div class="class-list-hero-stats" aria-label="클래스 목록 요약">
                     <div class="hero-metric">
                         <strong id="heroClassTotal">0</strong>
@@ -44,9 +46,11 @@
                 </div>
             </section>
 
+            <!-- 본문 레이아웃: 좌측 카테고리 + 우측 목록 -->
             <div class="index-layout">
                 <!-- 좌측 사이드바 카테고리 -->
                 <aside class="sidebar-nav">
+                    <!-- 카테고리 필터 -->
                     <nav class="category-sidebar" id="categoryFilter">
                         <h3 class="sidebar-title">카테고리</h3>
                         <ul>
@@ -67,6 +71,7 @@
 
                 <!-- 메인 콘텐츠 영역 -->
                 <div class="content-area">
+                    <!-- 검색 / 정렬 / 전체 카드 그리드 -->
                     <section class="class-lists-section class-page-overrides">
                         <div class="class-grid-header">
                             <div class="header-copy">
@@ -98,7 +103,7 @@
         </div>
     </main>
 
-    <!-- Scripts -->
+    <!-- Scripts: 목록 데이터 / 공통 셸 / 개발 모드 -->
     <script src="class_list.js?v=20260329_04" defer></script>
     <script src="../header.js?v=20260329_04" defer></script>
     <script src="../dev_mode.js?v=20260329_04" defer></script>

@@ -296,6 +296,11 @@
                 { url: '/api/user/coupons' },
             ]);
             commerceState.wallet = normalizeWalletItems(response);
+            window.__BSQ_MYPAGE_CACHE__ = {
+                ...(window.__BSQ_MYPAGE_CACHE__ || {}),
+                wallet: commerceState.wallet,
+                updatedAt: Date.now(),
+            };
         } catch (error) {
             console.warn('[mypage] wallet load failed:', error);
             commerceState.wallet = [];
@@ -349,9 +354,19 @@
             ]);
             commerceState.cart = normalizeCartItems(response);
             setLocalCartItems(commerceState.cart);
+            window.__BSQ_MYPAGE_CACHE__ = {
+                ...(window.__BSQ_MYPAGE_CACHE__ || {}),
+                cart: commerceState.cart,
+                updatedAt: Date.now(),
+            };
         } catch (error) {
             console.warn('[mypage] cart load fallback:', error);
             commerceState.cart = normalizeCartItems(getLocalCartItems());
+            window.__BSQ_MYPAGE_CACHE__ = {
+                ...(window.__BSQ_MYPAGE_CACHE__ || {}),
+                cart: commerceState.cart,
+                updatedAt: Date.now(),
+            };
         }
 
         const compactMarkup = buildCartRender(commerceState.cart, true);
@@ -392,25 +407,29 @@
 
     async function refreshCommercePanels() {
         await Promise.all([loadCouponWallet(), loadCartItems()]);
+        syncPaymentSummaryFromCache?.();
     }
 
     function renderCreatedClasses(items) {
         const html = items.length
             ? items.map((cls) => `
-                <div class="my-class-card" id="card-${escapeHtml(cls.id)}">
-                    <div class="class-thumb ${!cls.image_url ? 'placeholder-orange' : ''}">
-                        ${cls.image_url ? `<img src="${escapeHtml(cls.image_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" alt="">` : ''}
+                <article class="my-class-card compact" id="card-${escapeHtml(cls.id)}">
+                    <div class="my-class-cover ${!cls.image_url ? 'placeholder-orange' : ''}">
+                        ${cls.image_url ? `<img src="${escapeHtml(cls.image_url)}" alt="${escapeHtml(cls.title || '클래스')}" loading="lazy">` : '<span>CLASS</span>'}
                     </div>
-                    <div class="class-info">
+                    <div class="my-class-body">
+                        <div class="my-class-head">
+                            <span class="commerce-badge accent">개설</span>
+                            <span class="commerce-badge">${escapeHtml(cls.class_type || 'VOD')}</span>
+                        </div>
                         <h4>${escapeHtml(cls.title || '제목 없음')}</h4>
-                        <p>${escapeHtml(cls.category || '미분류')} | ${escapeHtml(cls.class_type || 'VOD')}</p>
-                        <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
-                            <button class="btn-chat-link" onclick="openEditTab('${escapeHtml(cls.id)}')">정보 관리</button>
-                            <button class="btn-chat-link" style="background:rgba(255,255,255,0.05);" onclick="location.href='../class_view/class_view.html?id=${escapeHtml(cls.id)}'">미리보기</button>
-                            <button class="btn-chat-link subtle-danger" onclick="deleteMyClass('${escapeHtml(cls.id)}', '${escapeHtml(String(cls.title || '').replace(/'/g, "\\'"))}')">삭제</button>
+                        <p>${escapeHtml(cls.category || '미분류')}</p>
+                        <div class="my-class-actions">
+                            <a class="btn-chat-link" href="../class_view/class_view.html?id=${encodeURIComponent(cls.id)}#tabChat">클래스 채널</a>
+                            <a class="btn-chat-link subtle" href="../class_view/class_view.html?id=${encodeURIComponent(cls.id)}">메인화면</a>
                         </div>
                     </div>
-                </div>
+                </article>
             `).join('')
             : emptyState('아직 등록한 클래스가 없습니다.');
 
@@ -433,23 +452,28 @@
                         return '<span class="commerce-badge warm">정기 구독 중</span>';
                     }
                     return '';
-                }).join('');
+                }).filter(Boolean);
+                const hasPassBadges = passBadges.length > 0;
 
                 return `
-                    <div class="my-class-card">
-                        <div class="class-thumb ${!enroll.image_url ? 'placeholder-orange' : ''}">
-                            ${enroll.image_url ? `<img src="${escapeHtml(enroll.image_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" alt="">` : ''}
+                    <article class="my-class-card compact">
+                        <div class="my-class-cover ${!enroll.image_url ? 'placeholder-orange' : ''}">
+                            ${enroll.image_url ? `<img src="${escapeHtml(enroll.image_url)}" alt="${escapeHtml(enroll.title || '클래스')}" loading="lazy">` : '<span>CLASS</span>'}
                         </div>
-                        <div class="class-info">
-                            <h4 style="margin-bottom:4px;">${escapeHtml(enroll.title || '제목 없음')}</h4>
-                            <p style="font-size:0.9rem; color:#888; margin-bottom:8px;">${escapeHtml(enroll.category || '기타')} | 수강일 ${escapeHtml(formatDate(enroll.enrolled_at || enroll.created_at))}</p>
-                            <div style="margin-bottom:12px; display:flex; gap:8px; flex-wrap:wrap;">${passBadges}</div>
-                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                <button class="btn-chat-link" onclick="location.href='../class_view/class_view.html?id=${escapeHtml(enroll.class_id)}'">학습 페이지</button>
-                                <button class="btn-chat-link" style="background:rgba(255,255,255,0.05);" onclick="location.href='../class_view/class_view.html?id=${escapeHtml(enroll.class_id)}#tabChat'">채널</button>
+                        <div class="my-class-body">
+                            <div class="my-class-head">
+                                <span class="commerce-badge accent">${escapeHtml(enroll.category || '기타')}</span>
+                                <span class="commerce-badge">${escapeHtml(hasPassBadges ? '수강권' : '참여 중')}</span>
                             </div>
+                            <h4>${escapeHtml(enroll.title || '제목 없음')}</h4>
+                            <p>수강일 ${escapeHtml(formatDate(enroll.enrolled_at || enroll.created_at))}</p>
+                            <div class="my-class-actions">
+                                <a class="btn-chat-link" href="../class_view/class_view.html?id=${encodeURIComponent(enroll.class_id)}#tabChat">클래스 채널</a>
+                                <a class="btn-chat-link subtle" href="../class_view/class_view.html?id=${encodeURIComponent(enroll.class_id)}">메인화면</a>
+                            </div>
+                            <div class="my-class-tags">${passBadges.join('')}</div>
                         </div>
-                    </div>
+                    </article>
                 `;
             }).join('')
             : emptyState('수강 중인 클래스가 없습니다.');
@@ -586,7 +610,11 @@
             document.querySelectorAll('.nav-btn').forEach((button) => button.classList.remove('active'));
             document.querySelectorAll('.mypage-tab').forEach((tab) => tab.classList.remove('active'));
             document.querySelector('[data-target="tabDashboard"]')?.classList.add('active');
-            document.getElementById('tabEditClass')?.classList.add('active');
+            const editTab = document.getElementById('tabEditClass');
+            if (editTab) {
+                editTab.hidden = false;
+                editTab.classList.add('active');
+            }
         } catch (error) {
             showMypageNotice('error', '?? ?? ??', error.message || '?? ? ?? ??? ???.');
         }
@@ -680,4 +708,6 @@
     window.loadMyClasses();
     window.loadEnrolledClasses();
     refreshCommercePanels();
+    window.refreshMypageCommerce = refreshCommercePanels;
+    window.loadMypageCartState = loadCartItems;
 };

@@ -1,132 +1,176 @@
-﻿window.initChatSubTab = async function (userId) {
-    const chatList = document.getElementById('chatList');
-    const subCard = document.querySelector('.sub-card');
+function escapeHtml(value = '') {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
-    if (chatList) {
-        chatList.innerHTML = '<li class="loading-state">채팅 목록을 불러오는 중...</li>';
+window.initPaymentMethodsTab = async function (userId) {
+    const paymentMethodsList = document.getElementById('paymentMethodsList');
+    const addCardButton = document.getElementById('btnAddCard');
 
-        try {
-            let enrollments = [];
-            const bootCache = window.__BSQ_MYPAGE_CACHE__ || {};
-            if (bootCache.userId === userId && Array.isArray(bootCache.enrollments)) {
-                enrollments = bootCache.enrollments;
-            } else {
-                if (window.__BSQ_MYPAGE_BOOT_PROMISE__) {
-                    await window.__BSQ_MYPAGE_BOOT_PROMISE__;
-                }
-                const readyCache = window.__BSQ_MYPAGE_CACHE__ || {};
-                if (readyCache.userId === userId && Array.isArray(readyCache.enrollments)) {
-                    enrollments = readyCache.enrollments;
-                } else {
-                    const enrollRes = await window.BSQ.api(`/api/enrollments?user_id=${userId}`);
-                    enrollments = enrollRes?.success ? (enrollRes.data?.enrollments || enrollRes.data || []) : [];
-                    window.__BSQ_MYPAGE_CACHE__ = {
-                        ...(window.__BSQ_MYPAGE_CACHE__ || {}),
-                        userId,
-                        enrollments,
-                        updatedAt: Date.now(),
-                    };
-                }
-            }
-
-            if (!enrollments || enrollments.length === 0) {
-                chatList.innerHTML = '<li class="empty-state">참여 중인 채팅방이 없습니다.</li>';
-            } else {
-                chatList.innerHTML = enrollments.map((enroll) => `
-                    <li class="chat-list-item" data-chat-link="../class_view/class_view.html?id=${encodeURIComponent(enroll.class_id)}#tabChat">
-                        <div class="chat-item-thumb">
-                            ${enroll.image_url ? `<img src="${enroll.image_url}" alt="">` : '<span>💬</span>'}
-                        </div>
-                        <div class="chat-item-body">
-                            <strong>${enroll.title || '클래스'}</strong>
-                            <p>수강일 ${enroll.enrolled_at ? new Date(enroll.enrolled_at).toLocaleDateString('ko-KR') : '-'}</p>
-                        </div>
-                        <span class="chat-item-link">채팅 열기</span>
-                    </li>
-                `).join('');
-
-                chatList.querySelectorAll('[data-chat-link]').forEach((item) => {
-                    item.addEventListener('click', () => {
-                        location.href = item.dataset.chatLink;
-                    });
-                });
-
-                const dashChatCount = document.getElementById('dashChatCount');
-                if (dashChatCount) dashChatCount.textContent = `${enrollments.length}개`;
-            }
-        } catch (error) {
-            console.error('Chat list error:', error);
-            chatList.innerHTML = '<li class="empty-state">채팅 목록을 불러오지 못했습니다.</li>';
-        }
-    }
-
-    if (subCard) {
-        let level = 'Free';
-
+    async function loadUserProfile() {
         try {
             const res = await window.BSQ.api(`/api/users/${userId}`);
-            if (res?.success && res.data?.membership_level) {
-                level = res.data.membership_level;
-            }
-        } catch (e) {
-            console.warn('플랜 정보 로드 실패:', e);
+            return res?.success ? res.data : null;
+        } catch (error) {
+            console.warn('[tab_chat_sub] profile load failed:', error);
+            return null;
         }
-
-        subCard.innerHTML = `
-            <h3>구독 플랜 관리</h3>
-            <p style="color:var(--text-secondary,#888); font-size:0.9rem; margin-bottom:2rem;">원하는 플랜을 선택해 B-Square의 이용 범위를 조정할 수 있습니다.</p>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-                <div style="background:rgba(255,255,255,0.03); padding:1.5rem; border-radius:16px; border:2px solid ${level === 'Free' ? '#6e8efb' : 'rgba(255,255,255,0.1)'}; text-align:center;">
-                    <div style="font-size:2rem;">🆓</div>
-                    <h4 style="margin:0.5rem 0;">Free 플랜</h4>
-                    <p style="color:#888;font-size:0.9rem;">무료 / 입문용</p>
-                    <ul style="text-align:left; font-size:0.85rem; color:#aaa; list-style:none; padding:0; margin:1rem 0;">
-                        <li>기본 클래스 수강</li>
-                        <li>커뮤니티 참여</li>
-                        <li>무료 콘텐츠 확인</li>
-                    </ul>
-                    <button type="button" data-plan-target="Free" style="width:100%;padding:0.7rem;border-radius:10px;border:1px solid ${level === 'Free' ? '#6e8efb' : '#555'};background:${level === 'Free' ? 'linear-gradient(135deg,#6e8efb,#a777e3)' : 'transparent'};color:${level === 'Free' ? '#fff' : '#aaa'};cursor:pointer;font-weight:600;">
-                        ${level === 'Free' ? '이용 중' : '무료로 체험하기'}
-                    </button>
-                </div>
-                <div style="background:rgba(255,255,255,0.03); padding:1.5rem; border-radius:16px; border:2px solid ${level === 'Premium' ? '#ff8e53' : 'rgba(255,255,255,0.1)'}; text-align:center;">
-                    <div style="font-size:2rem;">⭐</div>
-                    <h4 style="margin:0.5rem 0;">Premium 플랜</h4>
-                    <p style="color:#888;font-size:0.9rem;">월 9,000원</p>
-                    <ul style="text-align:left; font-size:0.85rem; color:#aaa; list-style:none; padding:0; margin:1rem 0;">
-                        <li>모든 VOD 무제한 수강</li>
-                        <li>라이브 클래스 우선 입장</li>
-                        <li>1:1 문의 우선 응답</li>
-                        <li>전용 혜택 상시 제공</li>
-                    </ul>
-                    <button type="button" data-plan-target="Premium" style="width:100%;padding:0.7rem;border-radius:10px;border:1px solid ${level === 'Premium' ? '#ff8e53' : '#555'};background:${level === 'Premium' ? 'linear-gradient(135deg,#ff6b6b,#ff8e53)' : 'transparent'};color:${level === 'Premium' ? '#fff' : '#aaa'};cursor:pointer;font-weight:600;">
-                        ${level === 'Premium' ? '이용 중' : '프리미엄 시작하기'}
-                    </button>
-                </div>
-            </div>
-        `;
-
-        subCard.querySelectorAll('[data-plan-target]').forEach((button) => {
-            button.addEventListener('click', () => changePlan(button.dataset.planTarget));
-        });
     }
 
-    window.changePlan = async (newLevel) => {
-        if (confirm(`${newLevel === 'Premium' ? '프리미엄' : '무료'} 플랜으로 변경하시겠습니까?`)) {
-            try {
-                const res = await window.BSQ.api(`/api/users/${userId}`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ membership_level: newLevel }),
-                });
-                if (res?.success) {
-                    showMypageNotice?.('success', '구독 플랜 변경 완료', `${newLevel} 플랜으로 변경되었습니다.`);
-                    location.reload();
-                } else {
-                    throw new Error(res?.error || '변경에 실패했습니다.');
+    async function loadMethods() {
+        if (!paymentMethodsList) return;
+        paymentMethodsList.innerHTML = '<div class="empty-state compact">결제 수단을 불러오는 중...</div>';
+
+        try {
+            const [profile, methodsRes] = await Promise.all([
+                loadUserProfile(),
+                window.BSQ.api('/api/user-payment-methods'),
+            ]);
+
+            const methods = methodsRes?.success ? (methodsRes.data || []) : [];
+            const currentLevel = profile?.membership_level || 'Free';
+
+            const membershipCard = `
+                <article class="payment-membership-card">
+                    <div class="payment-membership-top">
+                        <span class="payment-membership-eyebrow">Membership</span>
+                        <strong class="payment-membership-level">${escapeHtml(currentLevel)}</strong>
+                    </div>
+                    <p>구독 플랜과 결제 수단을 한 곳에서 관리합니다.</p>
+                    <div class="payment-membership-actions">
+                        <button type="button" class="btn-secondary" data-plan-target="Free">Free</button>
+                        <button type="button" class="btn-primary" data-plan-target="Premium">Premium</button>
+                    </div>
+                </article>
+            `;
+
+            const methodForm = `
+                <form class="payment-method-form" id="paymentMethodForm">
+                    <div class="form-grid compact">
+                        <div class="input-group">
+                            <label for="paymentMethodLabel">수단 이름</label>
+                            <input type="text" id="paymentMethodLabel" placeholder="주결제 카드">
+                        </div>
+                        <div class="input-group">
+                            <label for="paymentMethodProvider">유형</label>
+                            <select id="paymentMethodProvider">
+                                <option value="card">카드</option>
+                                <option value="trans">계좌이체</option>
+                                <option value="wallet">간편결제</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="paymentMethodLast4">끝 4자리</label>
+                            <input type="text" id="paymentMethodLast4" placeholder="1234" maxlength="4">
+                        </div>
+                    </div>
+                    <div class="payment-method-form-actions">
+                        <label class="inline-choice"><input type="checkbox" id="paymentMethodDefault"> 기본 결제수단</label>
+                        <button type="submit" class="btn-submit">저장</button>
+                    </div>
+                </form>
+            `;
+
+            const methodsMarkup = methods.length
+                ? methods.map((method) => `
+                    <article class="payment-method-item ${method.is_default ? 'is-default' : ''}">
+                        <div>
+                            <strong>${escapeHtml(method.label || method.provider || '결제 수단')}</strong>
+                            <p>${escapeHtml(method.provider || 'card')} · ${escapeHtml(method.last4 ? `**** ${method.last4}` : '정보 없음')}</p>
+                        </div>
+                        <div class="payment-method-item-actions">
+                            <button type="button" class="btn-chat-link subtle" data-method-default="${escapeHtml(method.id)}">기본</button>
+                            <button type="button" class="btn-chat-link subtle-danger" data-method-delete="${escapeHtml(method.id)}">삭제</button>
+                        </div>
+                    </article>
+                `).join('')
+                : '<div class="empty-state compact">등록된 결제 수단이 없습니다.</div>';
+
+            paymentMethodsList.innerHTML = `${membershipCard}${methodForm}${methodsMarkup}`;
+
+            paymentMethodsList.querySelector('#paymentMethodForm')?.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const label = document.getElementById('paymentMethodLabel')?.value.trim();
+                const provider = document.getElementById('paymentMethodProvider')?.value || 'card';
+                const last4 = document.getElementById('paymentMethodLast4')?.value.trim();
+                const isDefault = document.getElementById('paymentMethodDefault')?.checked ? 1 : 0;
+
+                try {
+                    await window.BSQ.api('/api/user-payment-methods', {
+                        method: 'POST',
+                        body: JSON.stringify({ label, provider, last4, is_default: isDefault }),
+                    });
+                    showMypageNotice?.('success', '결제 수단 저장', '결제 수단이 저장되었습니다.');
+                    window.BSQ.triggerSync('payment_methods');
+                    loadMethods();
+                } catch (error) {
+                    showMypageNotice?.('error', '결제 수단 저장 실패', error.message || '저장에 실패했습니다.');
                 }
-            } catch (e) {
-                showMypageNotice?.('error', '구독 플랜 변경 실패', e.message);
-            }
+            });
+
+            paymentMethodsList.querySelectorAll('[data-method-default]').forEach((button) => {
+                button.addEventListener('click', async () => {
+                    try {
+                        await window.BSQ.api('/api/user-payment-methods', {
+                            method: 'PATCH',
+                            body: JSON.stringify({ id: button.dataset.methodDefault, is_default: 1 }),
+                        });
+                        window.BSQ.triggerSync('payment_methods');
+                        loadMethods();
+                    } catch (error) {
+                        showMypageNotice?.('error', '기본 결제수단 변경 실패', error.message || '변경 실패');
+                    }
+                });
+            });
+
+            paymentMethodsList.querySelectorAll('[data-method-delete]').forEach((button) => {
+                button.addEventListener('click', async () => {
+                    try {
+                        await window.BSQ.api(`/api/user-payment-methods?id=${encodeURIComponent(button.dataset.methodDelete)}`, {
+                            method: 'DELETE',
+                        });
+                        window.BSQ.triggerSync('payment_methods');
+                        loadMethods();
+                    } catch (error) {
+                        showMypageNotice?.('error', '결제 수단 삭제 실패', error.message || '삭제 실패');
+                    }
+                });
+            });
+
+            paymentMethodsList.querySelectorAll('[data-plan-target]').forEach((button) => {
+                button.addEventListener('click', async () => {
+                    const newLevel = button.dataset.planTarget;
+                    if (!confirm(`${newLevel === 'Premium' ? '프리미엄' : '무료'} 플랜으로 변경하시겠습니까?`)) return;
+                    try {
+                        const res = await window.BSQ.api(`/api/users/${userId}`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ membership_level: newLevel }),
+                        });
+                        if (!res?.success) throw new Error(res?.error || '변경에 실패했습니다.');
+                        showMypageNotice?.('success', '구독 플랜 변경 완료', `${newLevel} 플랜으로 변경되었습니다.`);
+                        window.BSQ.triggerSync('payment_methods');
+                        loadMethods();
+                    } catch (error) {
+                        showMypageNotice?.('error', '구독 플랜 변경 실패', error.message || '변경 실패');
+                    }
+                });
+            });
+        } catch (error) {
+            console.error('[tab_chat_sub] payment methods load failed:', error);
+            paymentMethodsList.innerHTML = '<div class="empty-state compact error">결제 수단을 불러오지 못했습니다.</div>';
         }
-    };
+    }
+
+    addCardButton?.addEventListener('click', () => {
+        document.getElementById('paymentMethodLabel')?.focus();
+    });
+
+    loadMethods();
 };
+
+// Legacy alias: keep older bootstrap calls working while the tab now behaves as payment-method management.
+window.initChatSubTab = window.initPaymentMethodsTab;

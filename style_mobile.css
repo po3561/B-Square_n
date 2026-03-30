@@ -698,6 +698,7 @@ option {
     transform: scale(1.15);
 }
 
+/* 홈 메인 카테고리 카드: 모바일 기본 배치 */
 .home-category-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -752,6 +753,7 @@ option {
     padding-top: 0.1rem;
 }
 
+/* 더보기 / 접기 카드 */
 .home-category-toggle {
     width: clamp(92px, 26vw, 132px);
     min-height: 84px;
@@ -770,6 +772,7 @@ option {
     font-weight: 700;
 }
 
+/* 클래스 목록 페이지 섹션 타이틀 */
 .group-title {
     font-size: 1.8rem;
     font-weight: 700;

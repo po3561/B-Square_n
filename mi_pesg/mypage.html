@@ -1,454 +1,623 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>마이페이지 | B-Square</title>
-    <link rel="stylesheet" href="../style_mobile.css?v=20260329_04" media="(max-width: 768px)">
-    <link rel="stylesheet" href="../style_pc.css?v=20260329_04" media="(min-width: 769px)">
-    <link rel="stylesheet" href="mypage.css?v=20260329_04">
-    <script src="../bsq_server.js?v=20260329_04" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="mypage.css?v=20260330_12">
+    <script src="../bsq_server.js?v=20260330_10" defer></script>
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
 </head>
-
-<body class="mypage-page">
-    <div class="mypage-layout">
-        <!-- Sidebar: profile summary + primary mypage navigation -->
-        <aside class="mypage-sidebar">
-            <div class="profile-summary">
-                <div class="profile-img-placeholder" id="profileImg">👤</div>
-                <h3 id="displayNickname">사용자님</h3>
-                <p id="displayEmail" style="font-size: 0.85rem; opacity: 0.7;">이메일을 불러오는 중...</p>
-                <p id="displayUsername" style="font-size: 0.85rem; opacity: 0.5; margin-top: 4px;">ID: -</p>
-            </div>
-
-            <nav class="mypage-nav" aria-label="마이페이지 주요 메뉴">
-                <button class="nav-btn active" data-target="tabDashboard" aria-current="page">대시보드</button>
-                <button class="nav-btn" data-target="tabClasses">수강 클래스</button>
-                <button class="nav-btn" data-target="tabCoupons">쿠폰 입력</button>
-                <button class="nav-btn" data-target="tabCart">장바구니</button>
-                <button class="nav-btn" data-target="tabFriends">친구</button>
-                <button class="nav-btn bordered" data-target="tabChatSub">채팅 및 구독 관리</button>
-                <button class="nav-btn" data-target="tabProfile">프로필</button>
-                <button class="nav-btn" data-target="tabSecurity">보안 및 결제</button>
-            </nav>
-
-        </aside>
-
-        <!-- Main content: dashboard summary and tab panels -->
-        <main class="mypage-content">
-            <div id="mypageNotice" class="mypage-notice-stack"></div>
-            <!-- Hero: page summary + quick actions -->
-            <section class="mypage-hero" aria-label="마이페이지 요약">
-                <div class="mypage-hero-copy">
-                    <p class="page-eyebrow">My Dashboard</p>
-                    <h1 class="mypage-hero-title">나의 활동을 한눈에 관리하세요</h1>
-                    <p class="mypage-hero-text">수강, 쿠폰, 장바구니, 친구, 채팅, 보안을 한 공간에서 빠르게 확인하고 바로 이동할 수 있습니다.</p>
-                </div>
-                <div class="mypage-hero-actions">
-                    <button class="hero-action-btn" type="button" data-open-tab="tabClasses">수강 클래스</button>
-                    <button class="hero-action-btn" type="button" data-open-tab="tabCoupons">쿠폰 입력</button>
-                    <button class="hero-action-btn" type="button" data-open-tab="tabProfile">프로필 설정</button>
-                </div>
-            </section>
-            <!-- Dashboard: stats + shortcuts + recent activity -->
-            <section id="tabDashboard" class="mypage-tab active">
-                <h2 class="tab-title">나의 대시보드</h2>
-                <div id="dashboardStats" class="dashboard-stats">
-                    <article class="stat-card dashboard-stat-card">
-                        <span class="dashboard-stat-icon">🎫</span>
-                        <h4 class="dashboard-stat-title">보유 수강권</h4>
-                        <p id="dashPassCount" class="dashboard-stat-value">0개</p>
-                    </article>
-                    <article class="stat-card dashboard-stat-card">
-                        <span class="dashboard-stat-icon">🎓</span>
-                        <h4 class="dashboard-stat-title">수강 중 클래스</h4>
-                        <p id="dashClassCount" class="dashboard-stat-value">0개</p>
-                    </article>
-                    <article class="stat-card dashboard-stat-card">
-                        <span class="dashboard-stat-icon">💬</span>
-                        <h4 class="dashboard-stat-title">참여 중 채팅</h4>
-                        <p id="dashChatCount" class="dashboard-stat-value">0개</p>
-                    </article>
-                </div>
-
-                <div class="dashboard-quick-links">
-                    <button class="btn-primary dashboard-action" type="button"
-                        onclick="location.href='../community/community.html'">채팅방 바로가기</button>
-                    <button class="btn-secondary dashboard-action" type="button"
-                        onclick="location.href='../create_class/create_class.html'">클래스 개설</button>
-                    <button class="btn-secondary mypage-tab-shortcut dashboard-action" type="button" data-open-tab="tabCart">장바구니</button>
-                </div>
-
-                <div class="mypage-panel-grid">
-                    <section class="mypage-panel-card">
-                        <div class="mypage-panel-head">
-                            <div>
-                                <p class="mypage-panel-eyebrow">Coupon Wallet</p>
-                                <h3>보유 쿠폰</h3>
-                            </div>
-                            <button class="mypage-inline-link mypage-tab-shortcut" type="button"
-                                data-open-tab="tabCoupons">쿠폰 등록</button>
+<body class="mypage-page" data-page="mypage" data-auth-state="loading">
+    <main class="mypage-shell">
+        <div class="mypage-layout">
+            <!-- Sidebar: profile summary + quick navigation -->
+            <aside class="mypage-sidebar" aria-label="마이페이지 사이드바">
+                <section class="profile-summary" aria-label="사용자 정보">
+                    <div class="profile-summary-top">
+                        <div class="profile-img-placeholder" id="profileImg" aria-hidden="true">👤</div>
+                        <div class="profile-actions-stack">
+                            <button type="button" id="guestLoginButton" class="profile-mini-btn">로그인</button>
+                            <button type="button" id="logoutButton" class="profile-mini-btn subtle">로그아웃</button>
+                            <button type="button" id="operatorModeToggle" class="profile-mini-btn subtle" hidden>일반 모드</button>
                         </div>
-                        <div id="dashboardCouponWallet" class="mypage-list-stack">
-                            <div class="empty-state compact">보유 쿠폰을 불러오는 중입니다.</div>
+                    </div>
+                    <h3 id="displayNickname">사용자님</h3>
+                    <div class="profile-meta-list" aria-label="계정 요약">
+                        <div class="profile-meta-item">
+                            <span>이름</span>
+                            <strong id="displayName">-</strong>
+                        </div>
+                        <div class="profile-meta-item">
+                            <span>이메일</span>
+                            <strong id="displayEmail">로그인 후 확인할 수 있습니다.</strong>
+                        </div>
+                        <div class="profile-meta-item">
+                            <span>ID</span>
+                            <strong id="displayUsername">-</strong>
+                        </div>
+                    </div>
+                </section>
+                <nav class="mypage-nav" aria-label="마이페이지 탐색">
+                    <button type="button" class="nav-btn active" data-target="tabDashboard">
+                        <span class="nav-icon"><i class="fa-solid fa-table-columns"></i></span>
+                        <span class="nav-label">대시보드</span>
+                    </button>
+                    <button type="button" class="nav-btn" data-target="tabClasses">
+                        <span class="nav-icon"><i class="fa-solid fa-layer-group"></i></span>
+                        <span class="nav-label">수강 클래스</span>
+                    </button>
+                    <button type="button" class="nav-btn" data-target="tabPayment">
+                        <span class="nav-icon"><i class="fa-solid fa-wallet"></i></span>
+                        <span class="nav-label">결제관리</span>
+                    </button>
+                    <button type="button" class="nav-btn" data-target="tabProfile">
+                        <span class="nav-icon"><i class="fa-solid fa-user-gear"></i></span>
+                        <span class="nav-label">프로필</span>
+                    </button>
+                    <button type="button" class="nav-btn" data-target="tabSecurity">
+                        <span class="nav-icon"><i class="fa-solid fa-shield-halved"></i></span>
+                        <span class="nav-label">보안/설정</span>
+                    </button>
+                    <a class="nav-btn nav-link" href="../community/community.html">
+                        <span class="nav-icon"><i class="fa-solid fa-comments"></i></span>
+                        <span class="nav-label">커뮤니티</span>
+                    </a>
+                    <a class="nav-btn nav-link" href="../class/class_list.html">
+                        <span class="nav-icon"><i class="fa-solid fa-compass"></i></span>
+                        <span class="nav-label">클래스 목록</span>
+                    </a>
+                    <button type="button" class="nav-btn" id="sessionNavButton" data-action="session">
+                        <span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
+                        <span class="nav-label">로그아웃</span>
+                    </button>
+                </nav>
+            </aside>
+            <section class="mypage-content">
+                <div id="mypageNotice" class="mypage-notice-stack" aria-live="polite"></div>
+
+                <section id="guestGate" class="guest-gate" hidden>
+                    <div>
+                        <p class="page-eyebrow">Guest Mode</p>
+                        <h1 class="mypage-hero-title">로그인 후 내 활동을 확인할 수 있습니다</h1>
+                        <p class="mypage-hero-text">수강, 결제, 프로필, 설정을 한곳에서 이어서 관리하세요.</p>
+                    </div>
+                    <div class="guest-gate-actions">
+                        <button type="button" class="btn-primary" id="guestGateLoginButton">로그인하기</button>
+                    </div>
+                </section>
+
+                <section class="mypage-hero" aria-label="마이페이지 요약">
+                    <div class="mypage-hero-copy">
+                        <p class="page-eyebrow">My Dashboard</p>
+                        <h1 class="mypage-hero-title">나의 활동을 한눈에 관리하세요</h1>
+                        <p class="mypage-hero-text">수강권, 클래스, 친구, 장바구니, 결제를 한 공간에 정리해 빠르게 이동할 수 있습니다.</p>
+                    </div>
+                    <div class="mypage-hero-actions">
+                        <button class="hero-action-btn" type="button" data-open-tab="tabClasses">수강 클래스</button>
+                        <button class="hero-action-btn" type="button" data-open-tab="tabPayment">결제관리</button>
+                        <button class="hero-action-btn" type="button" data-open-tab="tabProfile">프로필 설정</button>
+                    </div>
+                </section>
+
+                <!-- Dashboard: summary cards + cart checkout -->
+                <section id="tabDashboard" class="mypage-tab active" aria-labelledby="dashboardTitle">
+                    <div class="tab-header-row">
+                        <div>
+                            <p class="mypage-panel-eyebrow">Overview</p>
+                            <h2 class="tab-title" id="dashboardTitle">나의 대시보드</h2>
+                        </div>
+                        <button type="button" class="tab-header-cta" data-open-tab="tabPayment">결제관리 바로가기</button>
+                    </div>
+
+                    <div class="dashboard-summary-grid" aria-label="핵심 요약">
+                        <article class="dashboard-stat-card dashboard-accordion-card" data-accordion="pass">
+                            <div class="dashboard-stat-top">
+                                <div>
+                                    <span class="dashboard-stat-icon">🎫</span>
+                                    <h3 class="dashboard-stat-title">내 보유 총 수강권</h3>
+                                </div>
+                                <strong class="dashboard-stat-value" id="dashPassCount">0개</strong>
+                            </div>
+                            <button type="button" class="dashboard-summary-toggle" data-accordion-toggle="pass" aria-expanded="false">탭 열기</button>
+                            <div class="dashboard-accordion-body" id="dashboardPassList">
+                                <div class="empty-state compact">수강권 정보를 불러오는 중입니다.</div>
+                            </div>
+                        </article>
+
+                        <article class="dashboard-stat-card dashboard-accordion-card" data-accordion="class">
+                            <div class="dashboard-stat-top">
+                                <div>
+                                    <span class="dashboard-stat-icon">🎓</span>
+                                    <h3 class="dashboard-stat-title">수강 중인 클래스</h3>
+                                </div>
+                                <strong class="dashboard-stat-value" id="dashClassCount">0개</strong>
+                            </div>
+                            <button type="button" class="dashboard-summary-toggle" data-accordion-toggle="class" aria-expanded="false">탭 열기</button>
+                            <div class="dashboard-accordion-body">
+                                <div id="dashboardEnrolledClasses" class="my-class-list">
+                                    <div class="empty-state">수강 정보를 불러오는 중입니다.</div>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="dashboard-stat-card dashboard-accordion-card" data-accordion="friend">
+                            <div class="dashboard-stat-top">
+                                <div>
+                                    <span class="dashboard-stat-icon">👥</span>
+                                    <h3 class="dashboard-stat-title">내 친구</h3>
+                                </div>
+                                <strong class="dashboard-stat-value" id="dashFriendCount">0명</strong>
+                            </div>
+                            <button type="button" class="dashboard-summary-toggle" data-accordion-toggle="friend" aria-expanded="false">탭 열기</button>
+                            <div class="dashboard-accordion-body" id="dashboardFriendsPanel">
+                                <div class="friends-panel friends-panel-pending">
+                                    <div class="friends-panel-head">
+                                        <h3>받은 친구 요청 <span id="pendingCount">0</span></h3>
+                                    </div>
+                                    <div id="pendingFriendList" class="friends-panel-body">
+                                        <p class="friends-placeholder">요청이 없습니다.</p>
+                                    </div>
+                                </div>
+                                <div class="friends-panel">
+                                    <div class="friends-panel-head friends-panel-head-inline">
+                                        <h3>내 친구 <span id="friendCount">0</span></h3>
+                                        <button type="button" class="btn-chat-link" data-open-tab="tabDashboard" data-scroll-target="dashboardFriendsPanel">커뮤니티 가기</button>
+                                    </div>
+                                    <div id="friendListArea" class="friends-panel-body">
+                                        <p class="friends-placeholder">친구 목록을 불러오는 중입니다.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <section class="dashboard-commerce-shell" id="dashboardCartPanel" aria-label="장바구니 요약">
+                        <div class="tab-header-row">
+                            <div>
+                                <p class="mypage-panel-eyebrow">Checkout</p>
+                                <h2 class="tab-title">장바구니와 결제</h2>
+                            </div>
+                            <button type="button" class="tab-header-cta" data-open-tab="tabPayment" data-scroll-target="cartItemList">전체 보기</button>
+                        </div>
+
+                        <div class="dashboard-commerce-grid">
+                            <section class="mypage-panel-card dashboard-commerce-list">
+                                <div class="mypage-panel-head">
+                                    <div>
+                                        <p class="mypage-panel-eyebrow">Preview</p>
+                                        <h3>내 장바구니</h3>
+                                    </div>
+                                </div>
+                                <div id="dashboardCartItems" class="mypage-list-stack">
+                                    <div class="empty-state compact">장바구니를 불러오는 중입니다.</div>
+                                </div>
+                            </section>
+
+                            <section class="mypage-panel-card dashboard-payment-summary">
+                                <div class="mypage-panel-head">
+                                    <div>
+                                        <p class="mypage-panel-eyebrow">Summary</p>
+                                        <h3>결제 요약</h3>
+                                    </div>
+                                </div>
+                                <div class="payment-summary-list">
+                                    <div class="payment-summary-row">
+                                        <span>장바구니 총수량</span>
+                                        <strong id="paymentSummaryCount">0개</strong>
+                                    </div>
+                                    <div class="payment-summary-row">
+                                        <span>소계</span>
+                                        <strong id="paymentSummarySubtotal">0원</strong>
+                                    </div>
+                                    <div class="payment-summary-row">
+                                        <span>쿠폰 할인</span>
+                                        <strong id="paymentSummaryDiscount">0원</strong>
+                                    </div>
+                                    <div class="payment-summary-row payment-summary-total">
+                                        <span>최종 총합계</span>
+                                        <strong id="paymentSummaryTotal">0원</strong>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-primary btn-submit" id="btnCheckoutNow">한번에 결제하기</button>
+                            </section>
                         </div>
                     </section>
-                    <section class="mypage-panel-card">
-                        <div class="mypage-panel-head">
-                            <div>
-                                <p class="mypage-panel-eyebrow">Cart</p>
-                                <h3>장바구니</h3>
+                </section>
+
+                <!-- Classes: my classes / enrolled classes / banner -->
+                <section id="tabClasses" class="mypage-tab" aria-labelledby="classesTitle">
+                    <div class="class-banner-shell">
+                        <div class="banner-inner home-bottom-banner-inner class-banner-inner">
+                            <div class="home-bottom-banner-track class-banner-track" id="classTabBannerTrack">
+                                <div class="home-banner-slide is-active">
+                                    <div class="class-banner-fallback">
+                                        <span class="banner-eyebrow">Explore more</span>
+                                        <h2>커뮤니티에서 질문하고, 클래스에서 바로 시작하세요.</h2>
+                                        <p>수강 흐름과 실시간 소통을 끊지 않고 이어가도록 설계했습니다.</p>
+                                    </div>
+                                </div>
                             </div>
-                            <button class="mypage-inline-link mypage-tab-shortcut" type="button"
-                                data-open-tab="tabCart">전체 보기</button>
+                            <div class="home-bottom-banner-overlay class-banner-overlay">
+                                <span class="banner-eyebrow">Explore more</span>
+                                <h2>커뮤니티에서 질문하고, 클래스에서 바로 시작하세요.</h2>
+                                <p>수강 흐름과 실시간 소통을 끊지 않고 이어가도록 설계했습니다.</p>
+                            </div>
+                            <div class="banner-actions class-banner-actions">
+                                <a class="banner-link" href="../community/community.html">커뮤니티 둘러보기</a>
+                                <a class="banner-link subtle" href="../class/class_list.html">전체 클래스 보기</a>
+                            </div>
                         </div>
-                        <div id="dashboardCartItems" class="mypage-list-stack">
-                            <div class="empty-state compact">장바구니를 불러오는 중입니다.</div>
+                    </div>
+
+                    <div class="tab-header-row">
+                        <div>
+                            <p class="mypage-panel-eyebrow">Class Explorer</p>
+                            <h2 class="tab-title" id="classesTitle">수강 클래스</h2>
+                        </div>
+                        <button type="button" class="tab-header-cta" onclick="location.href='../class/class_list.html'">클래스 탐색</button>
+                    </div>
+
+                    <section class="class-section">
+                        <div class="section-head-simple">
+                            <h3>수강 중인 클래스</h3>
+                        </div>
+                        <div class="my-class-list" id="tabEnrolledClasses">
+                            <div class="empty-state">수강 정보를 불러오는 중입니다.</div>
                         </div>
                     </section>
-                </div>
 
-                <h3 style="margin-bottom: 1rem;">수강 중인 클래스</h3>
-                <div class="my-class-list" id="dashboardEnrolledClasses">
-                    <div class="empty-state">수강 정보를 불러오는 중입니다.</div>
-                </div>
+                    <section class="class-section">
+                        <div class="section-head-simple">
+                            <h3>내가 개설한 클래스</h3>
+                        </div>
+                        <div class="my-class-list" id="tabCreatedClasses">
+                            <div class="empty-state">아직 등록된 클래스가 없습니다.</div>
+                        </div>
+                    </section>
+                </section>
 
-                <h3 style="margin-top: 2rem; margin-bottom: 1rem;">내가 등록(개설)한 클래스</h3>
-                <div class="my-class-list" id="dashboardCreatedClasses">
-                    <div class="empty-state">아직 등록된 클래스가 없습니다.</div>
-                </div>
-
-                <h3 style="margin-top: 2rem; margin-bottom: 1rem;">최근 수강 클래스</h3>
-                <div class="my-class-list" id="dashRecentClass">
-                    <div class="empty-state">최근 수강 내역을 불러오는 중입니다.</div>
-                </div>
-            </section>
-
-            <!-- Classes tab -->
-            <section id="tabClasses" class="mypage-tab">
-                <div class="tab-header-row">
-                    <h2 class="tab-title" style="margin-bottom:0;">나의 클래스 현황</h2>
-                    <button class="btn-primary tab-header-cta"
-                        onclick="location.href='../class/class_list.html'">수강권 구매하기</button>
-                </div>
-                <div class="class-section">
-                    <h3>수강 중인 클래스</h3>
-                    <div class="my-class-list" id="tabEnrolledClasses">
-                        <div class="empty-state">요청하신 클래스를 불러오는 중입니다...</div>
-                    </div>
-                </div>
-                <div class="class-section" style="margin-top: 2rem;">
-                    <h3>내가 등록(개설)한 클래스</h3>
-                    <div class="my-class-list" id="tabCreatedClasses">
-                        <div class="empty-state">아직 등록된 클래스가 없습니다.</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Coupons tab -->
-            <section id="tabCoupons" class="mypage-tab">
-                <div class="commerce-shell">
-                    <div class="commerce-hero">
+                <!-- Payment management: cart, methods, history -->
+                <section id="tabPayment" class="mypage-tab" aria-labelledby="paymentTitle">
+                    <div class="tab-header-row">
                         <div>
-                            <p class="commerce-eyebrow">Coupon Claim</p>
-                            <h2 class="tab-title commerce-title">쿠폰 입력</h2>
-                            <p class="commerce-copy">이벤트 쿠폰 코드를 등록하면 내 쿠폰함에 바로 반영됩니다.</p>
+                            <p class="mypage-panel-eyebrow">Checkout Center</p>
+                            <h2 class="tab-title" id="paymentTitle">결제관리</h2>
                         </div>
+                        <button type="button" class="tab-header-cta" id="btnRefreshCart">새로고침</button>
                     </div>
-                    <div class="coupon-claim-card">
-                        <label for="mypageCouponCode" class="commerce-label">쿠폰 코드</label>
-                        <div class="coupon-claim-row">
-                            <input type="text" id="mypageCouponCode" class="commerce-input"
-                                placeholder="BSQSPRING2026">
-                            <button type="button" class="btn-primary" id="btnClaimCoupon">쿠폰 등록</button>
-                        </div>
-                        <p id="mypageCouponClaimMessage" class="commerce-message"></p>
-                    </div>
-                    <div class="commerce-split-grid">
-                        <section class="mypage-panel-card">
-                            <div class="mypage-panel-head">
-                                <div>
-                                    <p class="mypage-panel-eyebrow">Owned Coupons</p>
-                                    <h3>내 쿠폰함</h3>
-                                </div>
-                                <button type="button" class="mypage-inline-link" id="btnRefreshCouponWallet">새로고침</button>
-                            </div>
-                            <div id="couponWalletList" class="mypage-list-stack">
-                                <div class="empty-state compact">쿠폰을 불러오는 중입니다.</div>
-                            </div>
-                        </section>
-                        <section class="mypage-panel-card">
-                            <div class="mypage-panel-head">
-                                <div>
-                                    <p class="mypage-panel-eyebrow">Guide</p>
-                                    <h3>사용 안내</h3>
-                                </div>
-                            </div>
-                            <div class="coupon-guide-list">
-                                <div class="coupon-guide-item">발행된 이벤트 쿠폰은 모든 클래스에서 사용할 수 있습니다.</div>
-                                <div class="coupon-guide-item">사용 기간과 최소 결제 금액은 쿠폰 상세 정보에 따라 달라집니다.</div>
-                                <div class="coupon-guide-item">클래스 이용 쿠폰은 결제 화면에서 그대로 입력할 수 있습니다.</div>
-                            </div>
-                        </section>
-                    </div>
-                </div>
-            </section>
 
-            <!-- Cart tab -->
-            <section id="tabCart" class="mypage-tab">
-                <div class="commerce-shell">
-                    <div class="commerce-hero">
+                    <section class="commerce-shell">
+                        <article class="commerce-hero">
+                            <span class="commerce-label">Coupon Claim</span>
+                            <h3 class="commerce-title">쿠폰 입력</h3>
+                            <p class="commerce-copy">이벤트 쿠폰을 등록하고 장바구니 결제에 바로 연결하세요.</p>
+                            <div class="coupon-claim-row">
+                                <input type="text" id="mypageCouponCode" class="commerce-input" placeholder="BSQSPRING2026">
+                                <button type="button" class="btn-primary" id="btnClaimCoupon">쿠폰 등록</button>
+                            </div>
+                            <p id="mypageCouponClaimMessage" class="commerce-message"></p>
+                        </article>
+
+                        <div class="commerce-split-grid">
+                            <section class="mypage-panel-card">
+                                <div class="mypage-panel-head">
+                                    <div>
+                                        <p class="mypage-panel-eyebrow">Wallet</p>
+                                        <h3>보유 쿠폰</h3>
+                                    </div>
+                                    <button type="button" class="mypage-inline-link" id="btnRefreshCouponWallet">새로고침</button>
+                                </div>
+                                <div id="couponWalletList" class="mypage-list-stack">
+                                    <div class="empty-state compact">쿠폰을 불러오는 중입니다.</div>
+                                </div>
+                            </section>
+
+                            <section class="mypage-panel-card">
+                                <div class="mypage-panel-head">
+                                    <div>
+                                        <p class="mypage-panel-eyebrow">Cart</p>
+                                        <h3>장바구니 리스트</h3>
+                                    </div>
+                                </div>
+                                <div id="cartItemList" class="mypage-list-stack">
+                                    <div class="empty-state compact">장바구니를 불러오는 중입니다.</div>
+                                </div>
+                            </section>
+                        </div>
+
+                        <section class="payment-grid">
+                            <article class="mypage-panel-card">
+                                <div class="mypage-panel-head">
+                                    <div>
+                                        <p class="mypage-panel-eyebrow">Payment</p>
+                                        <h3>결제 수단 / 멤버십</h3>
+                                    </div>
+                                </div>
+                                <div id="paymentMethodsList" class="payment-methods-list">
+                                    <div class="empty-state compact">등록된 결제 수단이 없습니다.</div>
+                                </div>
+                                <button type="button" class="btn-secondary" id="btnAddCard">+ 새 카드 등록</button>
+                            </article>
+
+                            <article class="mypage-panel-card">
+                                <div class="mypage-panel-head">
+                                    <div>
+                                        <p class="mypage-panel-eyebrow">History</p>
+                                        <h3>결제 내역</h3>
+                                    </div>
+                                </div>
+                                <div id="paymentHistoryList" class="payment-history-list">
+                                    <div class="empty-state compact">결제 내역을 불러오는 중입니다.</div>
+                                </div>
+                            </article>
+                        </section>
+                    </section>
+                </section>
+
+                <!-- Profile: editable personal information -->
+                <section id="tabProfile" class="mypage-tab" aria-labelledby="profileTitle">
+                    <div class="tab-header-row">
                         <div>
-                            <p class="commerce-eyebrow">Wallet + Cart</p>
-                            <h2 class="tab-title commerce-title">장바구니</h2>
-                            <p class="commerce-copy">보유 쿠폰, 장바구니, 그리고 저장된 콘텐츠를 한 곳에서 확인합니다.</p>
+                            <p class="mypage-panel-eyebrow">Profile</p>
+                            <h2 class="tab-title" id="profileTitle">프로필 설정</h2>
                         </div>
                     </div>
-                    <div class="commerce-stack">
-                        <section class="mypage-panel-card">
-                            <div class="mypage-panel-head">
-                                <div>
-                                    <p class="mypage-panel-eyebrow">Coupon Wallet</p>
-                                    <h3>보유 중인 쿠폰</h3>
-                                </div>
-                                <button class="mypage-inline-link mypage-tab-shortcut" type="button"
-                                    data-open-tab="tabCoupons">쿠폰 입력으로 이동</button>
+
+                    <form id="profileForm" class="mypage-form">
+                        <div class="profile-upload-wrapper">
+                            <div class="profile-image-container" id="profileImagePreview">
+                                <span class="placeholder-icon">👤</span>
                             </div>
-                            <div id="cartCouponWallet" class="mypage-list-stack">
-                                <div class="empty-state compact">보유 쿠폰 불러오는 중입니다.</div>
+                            <div class="profile-image-actions">
+                                <label for="profileImage" class="btn-image-upload">사진 변경</label>
+                                <input type="file" id="profileImage" accept="image/*" hidden>
+                                <p class="upload-tip">권장 사이즈 400x400px</p>
                             </div>
-                        </section>
-                        <section class="mypage-panel-card">
-                            <div class="mypage-panel-head">
-                                <div>
-                                    <p class="mypage-panel-eyebrow">Saved Items</p>
-                                    <h3>저장한 클래스 / 콘텐츠</h3>
-                                </div>
-                                <button type="button" class="mypage-inline-link" id="btnRefreshCart">새로고침</button>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="profileName">이름</label>
+                                <input type="text" id="profileName" placeholder="이름을 입력하세요" autocomplete="name" required>
                             </div>
-                            <div id="cartItemList" class="mypage-list-stack">
-                                <div class="empty-state compact">장바구니를 불러오는 중입니다.</div>
+                            <div class="input-group">
+                                <label for="profilePhone">휴대전화</label>
+                                <input type="tel" id="profilePhone" placeholder="010-0000-0000" autocomplete="tel" required>
                             </div>
-                        </section>
-                    </div>
-                </div>
-            </section>
+                            <div class="input-group">
+                                <label for="profileUsername">아이디 (변경 불가)</label>
+                                <input type="text" id="profileUsername" autocomplete="username" readonly>
+                            </div>
+                            <div class="input-group">
+                                <label for="profileSns">SNS 링크 (인스타그램)</label>
+                                <input type="url" id="profileSns" placeholder="@your_id" autocomplete="url">
+                            </div>
+                        </div>
 
-            <!-- Profile tab -->
-            <section id="tabProfile" class="mypage-tab">
-                <h2 class="tab-title">프로필 설정</h2>
-                <form id="profileForm" class="mypage-form">
-                    <div class="profile-upload-wrapper">
-                        <div class="profile-image-container" id="profileImagePreview">
-                            <span class="placeholder-icon">👤</span>
+                        <div class="input-group">
+                            <label for="profileReferrerCode">추천인 코드</label>
+                            <input type="text" id="profileReferrerCode" placeholder="추천인 코드를 입력하세요" autocomplete="off">
                         </div>
-                        <div class="profile-image-actions">
-                            <label for="profileImage" class="btn-image-upload">사진 변경</label>
-                            <input type="file" id="profileImage" accept="image/*" hidden>
-                            <p class="upload-tip">권장 사이즈 400x400px</p>
-                        </div>
-                    </div>
 
-                    <div class="form-grid">
-                        <div class="input-group">
-                            <label>이름</label>
-                            <input type="text" id="profileName" placeholder="이름을 입력하세요" autocomplete="name" required>
+                        <div class="input-group full-width">
+                            <label>나의 선호 카테고리 (중복 선택 가능)</label>
+                            <div class="category-chips" id="categoryChips">
+                                <button type="button" class="category-chip" data-category="요리">🍳 요리</button>
+                                <button type="button" class="category-chip" data-category="공예">🛠 공예</button>
+                                <button type="button" class="category-chip" data-category="스포츠">🏅 스포츠</button>
+                                <button type="button" class="category-chip" data-category="디자인">✏ 디자인</button>
+                                <button type="button" class="category-chip" data-category="음악">🎵 음악</button>
+                                <button type="button" class="category-chip" data-category="베이킹">🧁 베이킹</button>
+                                <button type="button" class="category-chip" data-category="사진">📷 사진</button>
+                                <button type="button" class="category-chip" data-category="영상">🎬 영상</button>
+                                <button type="button" class="category-chip" data-category="아트">🎨 아트</button>
+                                <button type="button" class="category-chip" data-category="개발">💻 개발</button>
+                                <button type="button" class="category-chip" data-category="언어">🗣 언어</button>
+                            </div>
                         </div>
-                        <div class="input-group">
-                            <label>아이디 (변경 불가)</label>
-                            <input type="text" id="profileUsername" autocomplete="username" readonly>
-                        </div>
-                        <div class="input-group">
-                            <label>휴대전화</label>
-                            <input type="tel" id="profilePhone" placeholder="010-0000-0000" autocomplete="tel" required>
-                        </div>
-                        <div class="input-group">
-                            <label>SNS 링크 (인스타그램)</label>
-                            <input type="url" id="profileSns" placeholder="@your_id" autocomplete="url">
-                        </div>
-                    </div>
 
-                    <div class="input-group full-width">
-                        <label>나의 선호 카테고리 (중복 선택 가능)</label>
-                        <!-- Category chips: edit here when adding/removing interests -->
-                        <div class="category-chips" id="categoryChips">
-                            <button type="button" class="category-chip" data-category="요리">🍳 요리</button>
-                            <button type="button" class="category-chip" data-category="공예">🛠 공예</button>
-                            <button type="button" class="category-chip" data-category="스포츠">🏅 스포츠</button>
-                            <button type="button" class="category-chip" data-category="뷰티">💄 뷰티</button>
-                            <button type="button" class="category-chip" data-category="디자인">✏ 디자인</button>
-                            <button type="button" class="category-chip" data-category="음악">🎵 음악</button>
-                            <button type="button" class="category-chip" data-category="베이킹">🧁 베이킹</button>
-                            <button type="button" class="category-chip" data-category="사진">📷 사진</button>
-                            <button type="button" class="category-chip" data-category="영상">🎬 영상</button>
-                            <button type="button" class="category-chip" data-category="아트">🎨 아트</button>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-submit">기본 정보 저장</button>
-                </form>
-            </section>
-
-            <!-- Security tab -->
-            <section id="tabSecurity" class="mypage-tab">
-                <h2 class="tab-title">보안 및 결제 정보</h2>
-
-                <div class="security-card">
-                    <h3>비밀번호 변경</h3>
-                    <form id="passwordForm" class="mypage-form">
-                        <div class="input-group">
-                            <label>새 비밀번호</label>
-                            <input type="password" id="newPassword" placeholder="새 비밀번호 (6자리 이상)" autocomplete="new-password" required minlength="6">
-                        </div>
-                        <div class="input-group">
-                            <label>비밀번호 확인</label>
-                            <input type="password" id="confirmPassword" placeholder="비밀번호를 다시 입력하세요" autocomplete="new-password" required minlength="6">
-                        </div>
-                        <button type="submit" class="btn-submit" style="width: auto; padding: 0.8rem 2rem;">비밀번호 변경하기</button>
+                        <button type="submit" class="btn-submit">기본 정보 저장</button>
                     </form>
-                </div>
+                </section>
 
-                <div class="security-card" style="margin-top: 2rem;">
-                    <h3>보안 설정</h3>
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem 0; border-bottom:1px solid var(--glass-border);">
+                <!-- Security & settings: password, MFA, language, theme -->
+                <section id="tabSecurity" class="mypage-tab" aria-labelledby="securityTitle">
+                    <div class="tab-header-row">
                         <div>
-                            <p style="font-weight:600;">2단계 인증 (MFA)</p>
-                            <p style="font-size:0.85rem; color:var(--text-secondary);">로그인 추가 인증을 진행합니다.</p>
+                            <p class="mypage-panel-eyebrow">Security & Settings</p>
+                            <h2 class="tab-title" id="securityTitle">보안 및 설정</h2>
                         </div>
-                        <input type="checkbox" id="mfaToggle" style="width:40px; height:20px; cursor:pointer;">
                     </div>
-                </div>
 
-                <div class="security-card" style="margin-top: 2rem;">
-                    <h3>결제 수단 관리</h3>
-                    <div id="paymentMethodsList" style="display:flex; flex-direction:column; gap:10px;">
-                        <p style="color:var(--text-secondary); text-align:center; padding:2rem 0;">등록된 결제 수단이 없습니다.</p>
-                    </div>
-                    <button type="button" class="btn-secondary" id="btnAddCard" style="width:100%; margin-top:1rem;">+ 새 카드 등록</button>
-                </div>
+                    <div class="mypage-panel-grid">
+                        <section class="security-card">
+                            <h3>비밀번호 변경</h3>
+                            <form id="passwordForm" class="mypage-form">
+                                <div class="input-group">
+                                    <label for="newPassword">새 비밀번호</label>
+                                    <input type="password" id="newPassword" placeholder="새 비밀번호 (6자리 이상)" autocomplete="new-password" required minlength="6">
+                                </div>
+                                <div class="input-group">
+                                    <label for="confirmPassword">비밀번호 확인</label>
+                                    <input type="password" id="confirmPassword" placeholder="비밀번호를 다시 입력하세요" autocomplete="new-password" required minlength="6">
+                                </div>
+                                <button type="submit" class="btn-submit">비밀번호 변경하기</button>
+                            </form>
+                        </section>
 
-                <div class="security-card" style="margin-top: 2rem;">
-                    <h3>결제 내역</h3>
-                    <div id="paymentHistoryList" class="payment-history-list">
-                        <p style="color:var(--text-secondary); text-align:center; padding:2rem 0;">결제 내역을 불러오는 중입니다...</p>
-                    </div>
-                </div>
-            </section>
+                        <section class="security-card">
+                            <h3>계정 및 설정</h3>
+                            <div class="settings-stack">
+                                <div class="settings-row">
+                                    <div>
+                                        <strong>2단계 인증 (MFA)</strong>
+                                        <p>로그인 추가 인증을 진행합니다.</p>
+                                    </div>
+                                    <label class="settings-switch">
+                                        <input type="checkbox" id="mfaToggle">
+                                        <span></span>
+                                    </label>
+                                </div>
 
-            <!-- Friends tab -->
-            <section id="tabFriends" class="mypage-tab">
-                <h2 class="tab-title">친구</h2>
+                                <div class="settings-row">
+                                    <div>
+                                        <strong>언어 설정</strong>
+                                        <p>한국어, 영어, 일본어, 중국어를 지원합니다.</p>
+                                    </div>
+                                    <select id="languageSelect" class="settings-select" aria-label="언어 설정">
+                                        <option value="ko">한국어</option>
+                                        <option value="en">English</option>
+                                        <option value="ja">日本語</option>
+                                        <option value="zh">中文</option>
+                                    </select>
+                                </div>
 
-                <div class="friends-panel friends-panel-pending">
-                    <div class="friends-panel-head">
-                        <h3><i class="fa-solid fa-bell"></i> 받은 친구 요청 <span id="pendingCount">0</span></h3>
+                                <div class="settings-row">
+                                    <div>
+                                        <strong>테마</strong>
+                                        <p>화이트 / 다크 / 시스템 모드를 선택합니다.</p>
+                                    </div>
+                                    <select id="themeSelect" class="settings-select" aria-label="테마 설정">
+                                        <option value="system">시스템</option>
+                                        <option value="dark">다크</option>
+                                        <option value="light">화이트</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </section>
                     </div>
-                    <div id="pendingFriendList" class="friends-panel-body">
-                        <p class="friends-placeholder">요청이 없습니다.</p>
-                    </div>
-                </div>
+                </section>
 
-                <div class="friends-panel">
-                    <div class="friends-panel-head">
-                        <h3><i class="fa-solid fa-user-group"></i> 내 친구 <span id="friendCount">0</span></h3>
+                <section id="tabEditClass" class="mypage-tab" aria-labelledby="editTitle" hidden>
+                    <div class="tab-header-row">
+                        <div>
+                            <p class="mypage-panel-eyebrow">Class Editor</p>
+                            <h2 class="tab-title" id="editTitle">클래스 정보 수정</h2>
+                        </div>
                     </div>
-                    <div id="friendListArea" class="friends-panel-body">
-                        <p class="friends-placeholder">친구 목록을 불러오는 중입니다.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Chat / subscription tab -->
-            <section id="tabChatSub" class="mypage-tab">
-                <h2 class="tab-title">채팅 및 구독 관리</h2>
-
-                <div class="chat-manage-card">
-                    <h3>진행 중인 채팅</h3>
-                    <ul class="chat-list" id="chatList"></ul>
-                </div>
-
-                <div class="sub-card" style="margin-top: 2rem;">
-                    <div class="loader">구독 정보를 불러오는 중입니다...</div>
-                </div>
-            </section>
-
-            <!-- Class editor tab -->
-            <section id="tabEditClass" class="mypage-tab">
-                <h2 class="tab-title">클래스 정보 수정</h2>
-                <form id="editClassForm" class="mypage-form">
-                    <input type="hidden" id="editClassId">
-                    <div class="input-group">
-                        <label>클래스 제목</label>
-                        <input type="text" id="editClassTitle" required>
-                    </div>
-                    <div class="input-group">
-                        <label>카테고리</label>
-                        <select id="editClassCategory" required>
-                            <option value="요리">🍳 요리</option>
-                            <option value="공예">🛠 공예</option>
-                            <option value="스포츠">🏅 스포츠</option>
-                            <option value="뷰티">💄 뷰티</option>
-                            <option value="디자인">✏ 디자인</option>
-                            <option value="음악">🎵 음악</option>
-                            <option value="베이킹">🧁 베이킹</option>
-                            <option value="사진">📷 사진</option>
-                            <option value="영상">🎬 영상</option>
-                            <option value="아트">🎨 아트</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>클래스 요약</label>
-                        <input type="text" id="editClassSummary" required>
-                    </div>
-                    <div class="input-group">
-                        <label>상세 설명</label>
-                        <textarea id="editClassDescription" rows="5" required></textarea>
-                    </div>
-                    <div class="input-group">
-                        <label>가격</label>
-                        <input type="number" id="editClassPrice" required>
-                    </div>
-                    <div class="input-group">
-                        <label>할인율 (%)</label>
-                        <input type="number" id="editClassDiscount" placeholder="0" min="0" max="100">
-                    </div>
-                    <div class="input-group">
-                        <label>쿠폰 발행</label>
-                        <div class="edit-inline-options">
+                    <form id="editClassForm" class="mypage-form">
+                        <input type="hidden" id="editClassId">
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="editClassTitle">클래스 제목</label>
+                                <input type="text" id="editClassTitle" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="editClassCategory">카테고리</label>
+                                <select id="editClassCategory" required></select>
+                            </div>
+                            <div class="input-group">
+                                <label for="editClassSummary">클래스 요약</label>
+                                <input type="text" id="editClassSummary" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="editClassPrice">가격</label>
+                                <input type="number" id="editClassPrice" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="editClassDescription">상세 설명</label>
+                            <textarea id="editClassDescription" rows="5" required></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label for="editClassDiscount">할인율 (%)</label>
+                            <input type="number" id="editClassDiscount" placeholder="0" min="0" max="100">
+                        </div>
+                        <div class="input-group">
                             <label class="inline-choice">
                                 <input type="checkbox" id="editClassCoupon"> 쿠폰을 발행하기
                             </label>
                         </div>
-                    </div>
-                    <div class="input-group">
-                        <label>클래스 유형</label>
-                        <div class="edit-inline-options">
-                            <label class="inline-choice">
-                                <input type="radio" name="editClassType" value="VOD" checked> VOD (녹화 강의)
-                            </label>
-                            <label class="inline-choice">
-                                <input type="radio" name="editClassType" value="LIVE"> LIVE (실시간 강의)
-                            </label>
+                        <div class="input-group">
+                            <label>클래스 유형</label>
+                            <div class="edit-inline-options">
+                                <label class="inline-choice">
+                                    <input type="radio" name="editClassType" value="VOD" checked> VOD
+                                </label>
+                                <label class="inline-choice">
+                                    <input type="radio" name="editClassType" value="LIVE"> LIVE
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                    <div class="edit-class-actions">
-                        <button type="submit" class="btn-submit">정보 수정 완료</button>
-                        <button type="button" class="btn-secondary btn-secondary--soft"
-                            onclick="document.querySelector('[data-target=tabDashboard]').click()">취소</button>
-                    </div>
-            </form>
+                        <div class="edit-class-actions">
+                            <button type="submit" class="btn-submit">정보 수정 완료</button>
+                            <button type="button" class="btn-secondary" data-open-tab="tabDashboard">취소</button>
+                        </div>
+                    </form>
+                </section>
+            </section>
+        </div>
+</main>
+
+    <!-- Checkout modal: cart preview + final payment -->
+    <div class="checkout-modal" id="checkoutModal" hidden>
+        <div class="checkout-modal-backdrop" data-close-checkout></div>
+        <section class="checkout-modal-card" role="dialog" aria-modal="true" aria-labelledby="checkoutModalTitle">
+            <header class="checkout-modal-head">
+                <div>
+                    <p class="mypage-panel-eyebrow">Checkout Preview</p>
+                    <h3 id="checkoutModalTitle">장바구니 결제</h3>
+                </div>
+                <button type="button" class="icon-btn" data-close-checkout aria-label="닫기">×</button>
+            </header>
+
+            <div id="checkoutModalList" class="checkout-modal-list">
+                <div class="empty-state compact">장바구니를 불러오는 중입니다.</div>
+            </div>
+
+            <div class="checkout-modal-summary">
+                <div class="checkout-summary-row">
+                    <span>항목 수</span>
+                    <strong id="checkoutModalCount">0개</strong>
+                </div>
+                <div class="checkout-summary-row">
+                    <span>소계</span>
+                    <strong id="checkoutModalSubtotal">0원</strong>
+                </div>
+                <div class="checkout-summary-row">
+                    <span>할인</span>
+                    <strong id="checkoutModalDiscount">0원</strong>
+                </div>
+                <div class="checkout-summary-row checkout-summary-total">
+                    <span>최종 결제금액</span>
+                    <strong id="checkoutModalTotal">0원</strong>
+                </div>
+
+                <div class="checkout-modal-form">
+                    <label class="input-group">
+                        <span>쿠폰 코드</span>
+                        <input type="text" id="checkoutCouponCode" placeholder="쿠폰 코드를 입력하세요">
+                    </label>
+                    <label class="input-group">
+                        <span>결제 수단</span>
+                        <select id="checkoutPaymentMethod">
+                            <option value="card">카드</option>
+                            <option value="trans">계좌이체</option>
+                            <option value="free">무료</option>
+                        </select>
+                    </label>
+                </div>
+                <p id="checkoutModalMessage" class="commerce-message"></p>
+            </div>
+
+            <footer class="checkout-modal-actions">
+                <button type="button" class="btn-secondary" data-close-checkout>취소</button>
+                <button type="button" class="btn-primary" id="checkoutSubmit">결제하기</button>
+            </footer>
         </section>
-        </main>
     </div>
 
-    <script src="mypage.js?v=20260329_04" defer></script>
-    <script src="tab_profile.js?v=20260329_04" defer></script>
-    <script src="tab_classes.js?v=20260329_04" defer></script>
-    <script src="tab_security.js?v=20260329_04" defer></script>
-    <script src="tab_chat_sub.js?v=20260329_04" defer></script>
-    <script src="../header.js?v=20260329_04" defer></script>
-    <script src="../dev_mode.js?v=20260329_04" defer></script>
+    <script src="mypage.js?v=20260330_15" defer></script>
+    <script src="tab_profile.js?v=20260330_10" defer></script>
+    <script src="tab_classes.js?v=20260330_11" defer></script>
+    <script src="tab_security.js?v=20260330_10" defer></script>
+    <script src="tab_chat_sub.js?v=20260330_11" defer></script>
+    <script src="../header.js?v=20260330_10" defer></script>
+    <script src="../dev_mode.js?v=20260330_09" defer></script>
 </body>
-
 </html>

@@ -1,5 +1,31 @@
-﻿window.initSecurityTab = function (userId) {
+window.initSecurityTab = function (userId) {
     const passwordForm = document.getElementById('passwordForm');
+    const mfaToggle = document.getElementById('mfaToggle');
+    const languageSelect = document.getElementById('languageSelect');
+    const themeSelect = document.getElementById('themeSelect');
+
+    async function loadSecurityState() {
+        try {
+            const res = await window.BSQ.api(`/api/users/${userId}`);
+            if (!res?.success || !res.data) return;
+
+            if (mfaToggle) mfaToggle.checked = !!res.data.mfa_active;
+            if (languageSelect) {
+                languageSelect.value = res.data.preferred_language || localStorage.getItem('bsq_language') || 'ko';
+            }
+            if (themeSelect) {
+                themeSelect.value = res.data.preferred_theme || localStorage.getItem('bsq_theme') || 'dark';
+            }
+            window.BSQ.applyPreferences?.({
+                language: languageSelect?.value || res.data.preferred_language || 'ko',
+                theme: themeSelect?.value || res.data.preferred_theme || 'dark',
+            });
+        } catch (error) {
+            console.warn('[tab_security] state load failed:', error);
+            if (languageSelect) languageSelect.value = localStorage.getItem('bsq_language') || 'ko';
+            if (themeSelect) themeSelect.value = localStorage.getItem('bsq_theme') || 'dark';
+        }
+    }
 
     if (passwordForm) {
         passwordForm.onsubmit = async (e) => {
@@ -34,14 +60,7 @@
         };
     }
 
-    const mfaToggle = document.getElementById('mfaToggle');
     if (mfaToggle) {
-        window.BSQ.api(`/api/users/${userId}`).then(res => {
-            if (res?.success && res.data) {
-                mfaToggle.checked = !!res.data.mfa_active;
-            }
-        }).catch(() => {});
-
         mfaToggle.onchange = async (e) => {
             try {
                 await window.BSQ.api(`/api/users/${userId}`, {
@@ -60,6 +79,45 @@
         };
     }
 
+    async function persistPreferences(payload) {
+        const updates = {};
+        if (payload.preferred_language) updates.preferred_language = payload.preferred_language;
+        if (payload.preferred_theme) updates.preferred_theme = payload.preferred_theme;
+
+        if (Object.keys(updates).length) {
+            await window.BSQ.api(`/api/users/${userId}`, {
+                method: 'PUT',
+                body: JSON.stringify(updates),
+            });
+        }
+
+        if (updates.preferred_language) localStorage.setItem('bsq_language', updates.preferred_language);
+        if (updates.preferred_theme) localStorage.setItem('bsq_theme', updates.preferred_theme);
+        window.BSQ.applyPreferences?.({
+            language: updates.preferred_language || languageSelect?.value,
+            theme: updates.preferred_theme || themeSelect?.value,
+        });
+    }
+
+    languageSelect?.addEventListener('change', async () => {
+        try {
+            await persistPreferences({ preferred_language: languageSelect.value });
+            showMypageNotice?.('success', '언어 설정 저장', '언어 설정이 저장되었습니다.');
+        } catch (error) {
+            showMypageNotice?.('error', '언어 설정 실패', error.message || '언어 저장에 실패했습니다.');
+        }
+    });
+
+    themeSelect?.addEventListener('change', async () => {
+        try {
+            await persistPreferences({ preferred_theme: themeSelect.value });
+            showMypageNotice?.('success', '테마 저장 완료', '테마가 저장되었습니다.');
+        } catch (error) {
+            showMypageNotice?.('error', '테마 설정 실패', error.message || '테마 저장에 실패했습니다.');
+        }
+    });
+
+    loadSecurityState();
     loadPaymentHistory(userId);
 };
 
@@ -70,29 +128,30 @@ async function loadPaymentHistory(userId) {
     try {
         let enrollments = [];
         const bootCache = window.__BSQ_MYPAGE_CACHE__ || {};
-        if (bootCache.userId === userId && Array.isArray(bootCache.enrollments)) {
-            enrollments = bootCache.enrollments;
-        } else {
-            if (window.__BSQ_MYPAGE_BOOT_PROMISE__) {
-                await window.__BSQ_MYPAGE_BOOT_PROMISE__;
-            }
+        if (bootCache.userId === userId && Array.isArray(bootCache.payments)) {
+            enrollments = bootCache.payments;
+        } else if (window.__BSQ_MYPAGE_BOOT_PROMISE__) {
+            await window.__BSQ_MYPAGE_BOOT_PROMISE__;
             const readyCache = window.__BSQ_MYPAGE_CACHE__ || {};
-            if (readyCache.userId === userId && Array.isArray(readyCache.enrollments)) {
-                enrollments = readyCache.enrollments;
+            if (readyCache.userId === userId && Array.isArray(readyCache.payments)) {
+                enrollments = readyCache.payments;
             } else {
                 const res = await window.BSQ.api(`/api/enrollments?user_id=${userId}`);
                 enrollments = res?.success ? (res.data?.enrollments || res.data || []) : [];
                 window.__BSQ_MYPAGE_CACHE__ = {
                     ...(window.__BSQ_MYPAGE_CACHE__ || {}),
                     userId,
-                    enrollments,
+                    payments: enrollments,
                     updatedAt: Date.now(),
                 };
             }
+        } else {
+            const res = await window.BSQ.api(`/api/enrollments?user_id=${userId}`);
+            enrollments = res?.success ? (res.data?.enrollments || res.data || []) : [];
         }
 
         if (!enrollments || enrollments.length === 0) {
-            historyList.innerHTML = '<p style="color:var(--text-secondary); text-align:center; padding:2rem 0;">결제 내역이 없습니다.</p>';
+            historyList.innerHTML = '<p class="empty-state compact">결제 내역이 없습니다.</p>';
             return;
         }
 
@@ -105,7 +164,7 @@ async function loadPaymentHistory(userId) {
                 })
                 : '-';
 
-            const amount = Number(info.amount || 0);
+            const amount = Number(info.amount || info.final_amount || 0);
             const amountText = amount === 0 ? '무료' : `${amount.toLocaleString()}원`;
 
             const statusMap = {
@@ -124,20 +183,20 @@ async function loadPaymentHistory(userId) {
             const payMethod = payMethodMap[info.pay_method] || info.pay_method || '무료';
 
             return `
-                <div style="background:rgba(255,255,255,0.03); padding:1rem; border-radius:12px; border:1px solid var(--glass-border,rgba(255,255,255,0.1)); display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div>
-                        <p style="font-weight:600;">${info.title || info.class_id}</p>
-                        <p style="font-size:0.8rem; color:#888;">${date} · ${payMethod}</p>
+                <article class="payment-history-item">
+                    <div class="payment-history-head">
+                        <div class="payment-history-title">
+                            <strong>${info.title || info.class_title || info.class_id}</strong>
+                            <p class="payment-history-meta">${date} · ${payMethod}</p>
+                        </div>
+                        <strong class="payment-history-amount">${amountText}</strong>
                     </div>
-                    <div style="text-align:right;">
-                        <span style="font-weight:700;">${amountText}</span><br>
-                        <span style="font-size:0.8rem; color:${status.color};">${status.label}</span>
-                    </div>
-                </div>
+                    <span class="payment-history-state state-${info.status || 'paid'}">${status.label}</span>
+                </article>
             `;
         }).join('');
     } catch (err) {
         console.error('Payment history load error:', err);
-        historyList.innerHTML = '<p style="color:#ef4444; text-align:center; padding:2rem 0;">결제 내역을 불러오지 못했습니다.</p>';
+        historyList.innerHTML = '<p class="empty-state compact error">결제 내역을 불러오지 못했습니다.</p>';
     }
 }

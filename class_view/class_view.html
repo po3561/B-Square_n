@@ -28,12 +28,13 @@
     <!-- header.js가 헤더/푸터/Drawer/BottomNav를 동적으로 삽입 -->
 
     <main class="view-container">
-        <!-- Premium Hero Section -->
+        <!-- 상단 히어로: 이미지 슬라이더 + 클래스 요약 패널 -->
         <section class="premium-hero">
             <div class="hero-bg-wrapper">
                 <div class="hero-overlay"></div>
             </div>
             <div class="hero-content-wrapper hero-split-layout">
+                <!-- 좌측: 대표 이미지 슬라이더 -->
                 <div class="hero-slider-area">
                     <div class="slider-section">
                         <div class="slider-wrapper" id="imageSlider">
@@ -46,6 +47,7 @@
                         <div class="slider-counter">1 / 1</div>
                     </div>
                 </div>
+                <!-- 우측: 제목 / 가격 / CTA / 신뢰 배지 -->
                 <div class="hero-brief-panel">
                     <div class="hero-eyebrow-row">
                         <p class="hero-badge">수업 한눈에 보기</p>
@@ -87,6 +89,7 @@
             </div>
         </section>
 
+        <!-- 본문: 탭 콘텐츠 + 우측 고정 사이드바 -->
         <div class="view-grid">
             <div class="view-main-content">
                 <!-- 상단 탭 메뉴 -->
@@ -100,7 +103,7 @@
                         style="display:none; color: var(--accent-color);">수정</button>
                 </div>
 
-                <!-- TAB: Intro -->
+                <!-- TAB: Intro / 상세 소개 -->
                 <div id="tabIntro" class="tab-content active">
                     <section class="content-card">
                         <!-- 소개 -->
@@ -131,7 +134,7 @@
                     </section>
                 </div>
 
-                <!-- TAB: Notice -->
+                <!-- TAB: Notice / 공지사항 -->
                 <div id="tabNotice" class="tab-content">
                     <section class="content-card">
                         <div class="section-toolbar section-toolbar-between">
@@ -149,7 +152,7 @@
                     </section>
                 </div>
 
-                <!-- TAB: Curriculum -->
+                <!-- TAB: Curriculum / 커리큘럼 -->
                 <div id="tabCurriculum" class="tab-content">
                     <section class="content-card">
                         <div class="section-toolbar section-toolbar-between curriculum-header-row">
@@ -165,7 +168,7 @@
                     </section>
                 </div>
 
-                <!-- TAB: Review -->
+                <!-- TAB: Review / 후기 -->
                 <div id="tabReview" class="tab-content">
                     <section class="content-card">
                         <div class="review-header-minimal section-toolbar section-toolbar-between">
@@ -195,7 +198,7 @@
                     </section>
                 </div>
 
-                <!-- TAB: Chat (Class Channel) -->
+                <!-- TAB: Chat / 클래스 전용 채팅 -->
                 <div id="tabChat" class="tab-content chat-tab-wrapper">
                     <div class="chat-tab-inner">
                         <div class="chat-container">
@@ -352,7 +355,7 @@
                     </div>
                 </div>
 
-                <!-- TAB: Edit (강사 전용) -->
+                <!-- TAB: Edit / 강사 전용 수정 탭 -->
                 <div id="tabEdit" class="tab-content">
                     <section class="content-card">
                         <div class="edit-tab-container" id="editTabContainer">
@@ -362,10 +365,9 @@
                 </div>
             </div>
 
-            <!-- Sticky Sidebar -->
+            <!-- 우측 고정 사이드바: 가격 / 혜택 / 수강 시작 -->
             <aside class="view-sidebar">
                 <div class="sticky-card-premium">
-                    <!-- 사이드바 박스 제거 (요청사항) -->
                     <h2 class="side-main-title" id="sidebarTitle">클래스 제목</h2>
                     <div class="side-category-line">
                         <span id="sidebarCategory">카테고리</span>
@@ -405,7 +407,7 @@
         </div>
     </main>
 
-    <!-- Toast Container -->
+    <!-- 토스트 / 결제 / 모달 -->
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- Payment Loading Overlay -->
@@ -667,7 +669,7 @@
         </div>
     </div>
 
-    <!-- Scripts Load -->
+    <!-- Scripts Load: 각 탭 모듈 + 공통 셸 -->
     <script src="../community/sync_bridge.js?v=20260329_04"></script>
     <script src="view_intro.js?v=20260329_04"></script>
     <script src="view_curriculum.js?v=20260329_04"></script>

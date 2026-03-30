@@ -439,7 +439,8 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
 
     globalHomeCategories = categories;
 
-    const limit = 9;
+    // 홈 상단에는 11개까지 먼저 보여주고, 나머지는 더보기로 숨김
+    const limit = 11;
     const visibleCategories = categories.slice(0, limit);
     const hiddenCategories = categories.slice(limit);
     const expandedRequested = getHomeCategoryExpandedState();
@@ -596,6 +597,7 @@ async function initBanners() {
     const mainBanners = normalizeBannerItems(settings?.banners || [], '메인 배너');
     const bottomBanners = normalizeBannerItems(settings?.bottom_banners || [], '하단 배너');
 
+    // 메인 배너: 자동 넘김 + 카운터 + 재생/일시정지 + 간격 조절
     renderBannerCarousel('main', mainBanners, {
         trackId: 'homeMainBannerTrack',
         prevId: 'homeMainBannerPrev',
@@ -610,6 +612,7 @@ async function initBanners() {
         intervalOptions: [4000, 6000, 8000],
     });
 
+    // 하단 배너: 커뮤니티 / 클래스 이동용 CTA 캐러셀
     renderBannerCarousel('bottom', bottomBanners, {
         trackId: 'homeBottomBannerTrack',
         dotsId: 'homeBottomBannerDots',

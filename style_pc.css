@@ -406,6 +406,7 @@ select,
     gap: 1.8rem;
 }
 
+/* 헤더 검색바: 데스크톱 전용 입력 + 버튼 */
 .search-bar {
     display: flex;
     align-items: center;
@@ -550,12 +551,16 @@ option {
     font-weight: 800;
 }
 
-/* 2-2. Main Page Category Grid (Horizontal & Premium) */
+/* 2-2. Main Page Category Grid (Horizontal & Premium)
+   - 홈 상단 카테고리 카드 배치
+   - desktop에서는 6열 기준
+*/
 .category-grid {
     margin-top: 3rem;
     padding: 0 1rem;
 }
 
+/* 홈 메인 카테고리 카드 본체 */
 .home-category-grid {
     display: grid !important;
     grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
@@ -570,6 +575,7 @@ option {
     grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
 }
 
+/* 카테고리 카드 스타일 */
 .home-category-item {
     display: flex !important;
     flex-direction: column !important;
@@ -615,6 +621,7 @@ option {
     padding-top: 0.1rem !important;
 }
 
+/* 더보기 / 접기 카드 */
 .home-category-toggle {
     width: clamp(120px, 14vw, 158px) !important;
     min-height: 92px !important;
@@ -647,6 +654,7 @@ option {
     font-size: 0.86rem !important;
 }
 
+/* 사이드바 카테고리 리스트(클래스 목록 페이지) */
 .category-sidebar li a {
     display: flex;
     align-items: center;

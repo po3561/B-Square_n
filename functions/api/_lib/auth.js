@@ -138,6 +138,10 @@ export async function getCurrentUser(context) {
       role: 'super_admin',
       operator_seq: 1,
       membership_level: 'Admin',
+      preferred_language: 'ko',
+      preferred_theme: 'dark',
+      mfa_active: 0,
+      referrer_code: null,
     });
 
     return {
@@ -164,6 +168,10 @@ export async function getCurrentUser(context) {
       u.role,
       u.operator_seq,
       u.membership_level,
+      u.preferred_language,
+      u.preferred_theme,
+      u.mfa_active,
+      u.referrer_code,
       u.birth_year,
       u.birth_month,
       u.birth_day,
@@ -187,6 +195,10 @@ export async function getCurrentUser(context) {
     role: session.role,
     operator_seq: session.operator_seq,
     membership_level: session.membership_level,
+    preferred_language: session.preferred_language,
+    preferred_theme: session.preferred_theme,
+    mfa_active: session.mfa_active,
+    referrer_code: session.referrer_code,
     birth_year: session.birth_year,
     birth_month: session.birth_month,
     birth_day: session.birth_day,

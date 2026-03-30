@@ -9,7 +9,7 @@
   const scriptDir = scriptTag ? scriptTag.src.substring(0, scriptTag.src.lastIndexOf('/') + 1) : '';
   
   // Use scriptDir for absolute-like relative paths for CSS dynamic injection
-  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260330_06';
+  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260330_10';
 
   const homePrefix = currentPath.split('/').length > 2 ? '../' : './';
   const prefix = homePrefix;
@@ -103,6 +103,7 @@
     return `
       <header class="site-header" id="bsqHeader">
         <div class="header-inner">
+          <!-- 좌측: 햄버거 버튼 / 로고 -->
           <div class="header-left">
             <button class="btn-hamburger mobile-only-flex" id="btnHamburger" aria-label="메뉴 열기">
               <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
@@ -115,6 +116,7 @@
             </h1>
           </div>
 
+          <!-- 중앙: 데스크톱 상단 메뉴 -->
           <nav class="main-nav desktop-only-flex" aria-label="주요 메뉴">
             <ul>
               ${NAV_ITEMS.map((item) => `
@@ -125,7 +127,9 @@
             </ul>
           </nav>
 
+          <!-- 우측: 검색창 / 로그인 -->
           <div class="header-right header-utils">
+            <!-- 검색창: 엔터 또는 검색 버튼으로 클래스 목록 검색 -->
             <div class="search-bar desktop-only-flex">
               <input
                 type="text"
@@ -149,6 +153,7 @@
           <h2 class="drawer-title">B-Square</h2>
           <button class="drawer-close" id="drawerClose" type="button">닫기</button>
         </div>
+        <!-- 모바일 드로어 메뉴 -->
         <nav class="drawer-nav" aria-label="모바일 메뉴">
           <a href="${homePrefix}index.html" class="drawer-nav-item${activeNav === 'home' ? ' active' : ''}">홈</a>
           <a href="${prefix}class/class_list.html" class="drawer-nav-item${activeNav === 'class' ? ' active' : ''}">클래스</a>
@@ -178,6 +183,7 @@
       <footer class="site-footer" id="bsqFooter">
         <div class="footer-inner">
           <div class="footer-grid">
+            <!-- 푸터 왼쪽: 고객센터 / 소셜 -->
             <section class="footer-support">
               <h3 class="footer-support-title">고객센터</h3>
               <p class="footer-support-hours" id="footerSupportHours">오전 10시 ~ 오후 6시 (주말, 공휴일 제외)</p>
@@ -193,6 +199,7 @@
               </div>
             </section>
 
+            <!-- 푸터 가운데: 정책 / 링크 컬럼 -->
             <div class="footer-links-grid">
               <section class="footer-link-column">
                 <h4>공지사항</h4>
@@ -222,6 +229,7 @@
             </div>
           </div>
 
+          <!-- 푸터 하단: 법적 링크 / 사업자 정보 -->
           <div class="footer-bottom">
             <div class="footer-legal-links" aria-label="바로가기">
               <a href="${homePrefix}terms_use.html">이용약관</a>

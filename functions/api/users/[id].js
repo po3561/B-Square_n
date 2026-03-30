@@ -99,7 +99,8 @@ async function loadMemberDetail(db, userId) {
     SELECT
       id, email, name, username, phone, profile_image_url, role, membership_level,
       birth_year, birth_month, birth_day, gender, nationality, sns_link,
-      preferred_category, operator_seq, role_updated_by, role_updated_at,
+      preferred_category, preferred_language, preferred_theme, mfa_active,
+      operator_seq, role_updated_by, role_updated_at,
       is_blacklisted, blacklisted_at, blacklisted_by, blacklist_reason,
       referrer_code, created_at, updated_at
     FROM users
@@ -476,6 +477,9 @@ export async function onRequestPut(context) {
       'profile_image_url',
       'sns_link',
       'preferred_category',
+      'preferred_language',
+      'preferred_theme',
+      'referrer_code',
       'birth_year',
       'birth_month',
       'birth_day',
@@ -488,9 +492,26 @@ export async function onRequestPut(context) {
         if (!canEditSelf && !canManageMembers) {
           return json(request, env, { success: false, error: '수정 권한이 없습니다.' }, { status: 403 });
         }
+        const nextValue = typeof body[field] === 'string' ? body[field].trim() : body[field];
         updates.push(`${field} = ?`);
-        values.push(body[field]);
+        values.push(nextValue === '' ? null : nextValue);
       }
+    }
+
+    if (body.mfa_active !== undefined) {
+      if (!canEditSelf && !canManageMembers) {
+        return json(request, env, { success: false, error: '수정 권한이 없습니다.' }, { status: 403 });
+      }
+      updates.push('mfa_active = ?');
+      values.push(normalizeBoolean(body.mfa_active) ? 1 : 0);
+    }
+
+    if (body.membership_level !== undefined) {
+      if (!canEditSelf && !canManageMembers) {
+        return json(request, env, { success: false, error: '수정 권한이 없습니다.' }, { status: 403 });
+      }
+      updates.push('membership_level = ?');
+      values.push(normalizeText(body.membership_level));
     }
 
     let blacklistNoop = false;

@@ -13,6 +13,9 @@
     let _sessionBootstrapPromise = null;
     const OPERATOR_MODE_KEY = 'bsq_operator_view_mode';
     const OPERATOR_GHOST_TOKEN = 'OPERATOR_GHOST';
+    const THEME_STORAGE_KEY = 'bsq_theme';
+    const LANGUAGE_STORAGE_KEY = 'bsq_language';
+    const SUPPORTED_LANGUAGES = new Set(['ko', 'en', 'ja', 'zh']);
     // ==================================================
     // API 베이스 URL 자동 감지 및 자격 서버 연동
     // ==================================================
@@ -237,6 +240,66 @@
         }));
     }
 
+    function normalizeLanguage(value) {
+        const candidate = normalizeRequestBody(value);
+        const lang = String(candidate || '').trim().toLowerCase();
+        return SUPPORTED_LANGUAGES.has(lang) ? lang : '';
+    }
+
+    function resolveThemeName(value) {
+        const theme = String(value || '').trim().toLowerCase();
+        if (theme === 'light' || theme === 'dark') return theme;
+        if (theme === 'system') {
+            try {
+                if (window.matchMedia?.('(prefers-color-scheme: light)').matches) {
+                    return 'light';
+                }
+            } catch {
+                // ignore system theme detection failures
+            }
+            return 'dark';
+        }
+        return '';
+    }
+
+    function applyPreferences({ theme, language, persistStorage = true } = {}) {
+        if (typeof document === 'undefined') return null;
+
+        const root = document.documentElement;
+        const storedTheme = localStorage.getItem(THEME_STORAGE_KEY) || 'dark';
+        const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'ko';
+
+        const requestedTheme = theme === undefined || theme === null ? '' : String(theme).trim().toLowerCase();
+        const requestedLanguage = language === undefined || language === null ? '' : String(language).trim().toLowerCase();
+
+        const languageValue = normalizeLanguage(requestedLanguage) || normalizeLanguage(storedLanguage) || 'ko';
+        const themeChoice = requestedTheme || storedTheme || 'dark';
+        const resolvedTheme = resolveThemeName(themeChoice) || 'dark';
+
+        root.dataset.theme = resolvedTheme;
+        root.dataset.language = languageValue;
+        root.lang = languageValue;
+
+        if (document.body) {
+            document.body.dataset.theme = resolvedTheme;
+            document.body.dataset.language = languageValue;
+        }
+
+        if (persistStorage) {
+            if (requestedTheme) localStorage.setItem(THEME_STORAGE_KEY, themeChoice);
+            if (requestedLanguage) localStorage.setItem(LANGUAGE_STORAGE_KEY, languageValue);
+        }
+
+        window.__BSQ_PREFERENCES__ = {
+            theme: themeChoice,
+            resolvedTheme,
+            language: languageValue,
+            updatedAt: Date.now(),
+        };
+
+        return window.__BSQ_PREFERENCES__;
+    }
+
     function fixImageUrls(data) {
         if (!data) return data;
         if (typeof data === 'string') {
@@ -417,6 +480,10 @@
         }
 
         updateConnectionHub();
+        applyPreferences({
+            theme: _session?.user?.preferred_theme || undefined,
+            language: _session?.user?.preferred_language || undefined,
+        });
         emitSessionEvent('session-check');
         return _session;
     }
@@ -429,6 +496,7 @@
         clearOperatorViewGlobals();
         _session = null;
         updateConnectionHub();
+        applyPreferences();
         emitSessionEvent('logout');
         return result;
     }
@@ -488,6 +556,8 @@
         if (!_isWrangler) {
             console.log(`[BSQ Server] Booting API shell with base ${API_BASE_LABEL}`);
         }
+
+        applyPreferences();
 
         if (!_readyResolved) {
             _readyResolved = true;
@@ -619,6 +689,7 @@
 
     // ---- 공개 API ----
     seedSessionFromStorage();
+    applyPreferences();
     void ensureSessionBootstrapPromise().catch((error) => {
         console.warn('[BSQ Server] Session bootstrap failed:', error);
     });
@@ -641,6 +712,9 @@
 
         // D1 API 호출
         api: apiCall,
+
+        // 사용자 환경설정
+        applyPreferences,
 
         // 로그인 관련
         login,

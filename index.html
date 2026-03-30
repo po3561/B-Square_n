@@ -11,6 +11,12 @@
     <link rel="stylesheet" href="style_pc.css?v=20260330_06" media="(min-width: 769px)">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* HOME PAGE
+           - 헤더 아래 메인 배너
+           - 배너 아래 카테고리 메뉴
+           - 클래스 목록 / 하단 배너
+           - 모바일 대응 오버라이드
+        */
         body.home-page {
             background:
                 radial-gradient(circle at 12% 0%, rgba(120, 149, 255, 0.16), transparent 28%),
@@ -40,6 +46,7 @@
             padding: 0 0.35rem;
         }
 
+        /* 메인 배너 / 카테고리 / 하단 배너 공통 유리 질감 */
         body.home-page .main-ad-banner.home-main-banner,
         body.home-page .home-category-panel,
         body.home-page .bottom-banner-section .banner-inner {
@@ -50,6 +57,7 @@
             -webkit-backdrop-filter: blur(24px);
         }
 
+        /* 메인 배너: 실제 이미지가 들어가는 스테이지 */
         body.home-page .main-ad-banner.home-main-banner {
             border-radius: 30px;
             padding: clamp(0.48rem, 0.8vw, 0.7rem);
@@ -176,6 +184,7 @@
             outline-offset: 3px;
         }
 
+        /* 카테고리 패널: 배너 아래 아이콘 메뉴 */
         body.home-page .home-category-panel {
             display: flex;
             flex-direction: column;
@@ -200,6 +209,7 @@
             font-size: 0.95rem;
         }
 
+        /* JS가 카테고리 카드를 주입하는 래퍼 */
         body.home-page .home-category-shell {
             height: 100%;
             display: flex;
@@ -221,6 +231,7 @@
             grid-template-columns: repeat(6, minmax(0, 1fr));
         }
 
+        /* 카테고리 카드 */
         body.home-page .home-category-item {
             display: flex;
             flex-direction: column;
@@ -275,6 +286,7 @@
             font-weight: 700;
         }
 
+        /* 더보기 / 접기 */
         body.home-page .home-category-toggle-row {
             display: flex;
             justify-content: center;
@@ -302,6 +314,7 @@
             display: none !important;
         }
 
+        /* 하단 배너: 푸터 바로 위 CTA */
         body.home-page .bottom-banner-section {
             margin-top: 1rem;
             padding: 0;
@@ -361,6 +374,7 @@
             align-self: end;
         }
 
+        /* 배너 자동넘김 / 재생 / 간격 컨트롤 */
         body.home-page .home-banner-controls {
             position: absolute;
             right: 1rem;
@@ -442,6 +456,7 @@
             min-height: 112px;
         }
 
+        /* 전체 클래스 목록 / 추천 영역 */
         body.home-page .class-lists-section {
             padding: 0;
         }
@@ -1172,8 +1187,10 @@
     <!-- header.js가 헤더/푸터/Drawer/BottomNav를 동적 삽입합니다 -->
 
     <main class="main-content">
+        <!-- 홈 상단: 배경형 메인 배너 + 카테고리 메뉴 -->
         <section class="hero-section">
             <div class="hero-inner">
+                <!-- 메인 배너: 이미지 / 자동넘김 / 최소 제어 -->
                 <article class="main-ad-banner home-main-banner">
                     <div class="home-banner-stage" id="homeMainBannerStage" aria-label="메인 배너">
                         <div class="home-banner-track" id="homeMainBannerTrack"></div>
@@ -1191,16 +1208,20 @@
                     </div>
                 </article>
 
+                <!-- 카테고리 패널: 11개 먼저 노출하고 나머지는 더보기 -->
                 <aside class="home-category-panel">
                     <div>
                         <span class="hero-eyebrow">카테고리 탐색</span>
-
+                        <h2>분야를 선택하세요</h2>
+                        <p>인기·신규·관심사별로 바로 찾을 수 있습니다.</p>
                     </div>
+                    <!-- JS가 카테고리 카드들을 렌더링 -->
                     <nav class="category-grid" aria-label="메인 카테고리"></nav>
                 </aside>
             </div>
         </section>
 
+        <!-- 클래스 추천 / 전체 목록 영역 -->
         <section class="class-lists-section">
             <div class="section-inner">
                 <!-- 큐레이션 영역 -->
@@ -1230,6 +1251,7 @@
             </div>
         </section>
 
+        <!-- 하단 배너: 푸터 직전 CTA -->
         <section class="bottom-banner-section">
             <div class="banner-inner home-bottom-banner-inner">
                 <div class="home-bottom-banner-track" id="homeBottomBannerTrack"></div>
@@ -1253,6 +1275,7 @@
         </section>
     </main>
 
+    <!-- 공통 셸 / 홈 데이터 / 개발 모드 -->
     <script src="header.js?v=20260330_06" defer></script>
     <script src="main.js?v=20260330_06" defer></script>
     <script src="dev_mode.js?v=20260330_04" defer></script>

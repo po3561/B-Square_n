@@ -3,6 +3,7 @@
     const categoryChips = document.getElementById('categoryChips');
     const profileImageInput = document.getElementById('profileImage');
     const profileImagePreview = document.getElementById('profileImagePreview');
+    const profileReferrerCode = document.getElementById('profileReferrerCode');
 
     if (!profileForm) return;
 
@@ -148,11 +149,13 @@
                 const phoneEl = document.getElementById('profilePhone');
                 const usernameEl = document.getElementById('profileUsername');
                 const snsEl = document.getElementById('profileSns');
+                const referrerEl = document.getElementById('profileReferrerCode');
 
                 if (nameEl) nameEl.value = data.name || '';
                 if (phoneEl) phoneEl.value = data.phone || '';
                 if (usernameEl) usernameEl.value = data.username || '';
                 if (snsEl) snsEl.value = data.sns_link || '';
+                if (referrerEl) referrerEl.value = data.referrer_code || '';
 
                 selectedCategories = String(data.preferred_category || '')
                     .split(',')
@@ -207,6 +210,7 @@
                 name: document.getElementById('profileName')?.value || '',
                 phone: document.getElementById('profilePhone')?.value || '',
                 sns_link: document.getElementById('profileSns')?.value || '',
+                referrer_code: document.getElementById('profileReferrerCode')?.value || '',
                 preferred_category: activeChips.join(', '),
             };
 
@@ -241,7 +245,9 @@
     function updateSidebarUI(name, username) {
         const nicknameEl = document.getElementById('displayNickname');
         const usernameEl = document.getElementById('displayUsername');
-        if (nicknameEl) nicknameEl.textContent = (name || '사용자') + ' 님';
+        const displayLabel = name || '사용자';
+        if (nicknameEl) nicknameEl.textContent = displayLabel + ' 님';
+        if (document.getElementById('displayName')) document.getElementById('displayName').textContent = displayLabel;
         if (usernameEl) usernameEl.textContent = 'ID: ' + (username || '-');
     }
 

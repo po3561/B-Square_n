@@ -185,6 +185,10 @@ export async function ensureAuthSchema(db) {
       username TEXT UNIQUE,
       sns_link TEXT,
       preferred_category TEXT,
+      preferred_language TEXT,
+      preferred_theme TEXT,
+      mfa_active INTEGER DEFAULT 0,
+      referrer_code TEXT,
       profile_image_url TEXT,
       birth_year TEXT,
       birth_month TEXT,
@@ -208,6 +212,10 @@ export async function ensureAuthSchema(db) {
   await addColumnIfMissing(db, 'users', 'username TEXT UNIQUE');
   await addColumnIfMissing(db, 'users', 'sns_link TEXT');
   await addColumnIfMissing(db, 'users', 'preferred_category TEXT');
+  await addColumnIfMissing(db, 'users', 'preferred_language TEXT');
+  await addColumnIfMissing(db, 'users', 'preferred_theme TEXT');
+  await addColumnIfMissing(db, 'users', 'mfa_active INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'users', 'referrer_code TEXT');
   await addColumnIfMissing(db, 'users', 'profile_image_url TEXT');
   await addColumnIfMissing(db, 'users', 'birth_year TEXT');
   await addColumnIfMissing(db, 'users', 'birth_month TEXT');
@@ -1616,6 +1624,28 @@ export async function ensureCommerceSchema(db) {
   await addColumnIfMissing(db, 'user_cart_items', 'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP');
 
   await db.prepare(`
+    CREATE TABLE IF NOT EXISTS user_payment_methods (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      label TEXT,
+      provider TEXT DEFAULT 'card',
+      last4 TEXT,
+      is_default INTEGER DEFAULT 0,
+      metadata TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+  await addColumnIfMissing(db, 'user_payment_methods', 'user_id TEXT');
+  await addColumnIfMissing(db, 'user_payment_methods', 'label TEXT');
+  await addColumnIfMissing(db, 'user_payment_methods', "provider TEXT DEFAULT 'card'");
+  await addColumnIfMissing(db, 'user_payment_methods', 'last4 TEXT');
+  await addColumnIfMissing(db, 'user_payment_methods', 'is_default INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'user_payment_methods', 'metadata TEXT');
+  await addColumnIfMissing(db, 'user_payment_methods', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+  await addColumnIfMissing(db, 'user_payment_methods', 'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+
+  await db.prepare(`
     CREATE TABLE IF NOT EXISTS settlement_info (
       id TEXT PRIMARY KEY,
       company_name TEXT,
@@ -1763,6 +1793,7 @@ export async function ensureCommerceSchema(db) {
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_user_coupon_wallet_user_status ON user_coupon_wallet(user_id, status, claimed_at)`).run();
   await db.prepare(`DROP INDEX IF EXISTS idx_user_cart_items_unique`).run();
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_user_cart_items_user_class ON user_cart_items(user_id, class_id)`).run();
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_user_payment_methods_user_default ON user_payment_methods(user_id, is_default, updated_at)`).run();
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_settlement_batches_period ON settlement_batches(period_year, period_month, instructor_id)`).run();
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_settlement_batch_items_batch ON settlement_batch_items(batch_id, class_id)`).run();
 
