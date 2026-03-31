@@ -247,7 +247,10 @@ function renderBannerCarousel(kind, items, options = {}) {
         const slideClass = `home-banner-slide${index === 0 ? ' is-active' : ''}`;
         const content = item.imgUrl
             ? `<img src="${escapeHtml(item.imgUrl)}" alt="${escapeHtml(item.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async">`
-            : `<div class="home-banner-empty">${escapeHtml(options.emptyMessage || `${options.fallbackLabel}를 준비 중입니다.`)}</div>`;
+            : `<div class="home-banner-empty">
+                    <span class="home-banner-brand">B-Square</span>
+                    <span class="home-banner-note">${escapeHtml(options.emptyMessage || `${options.fallbackLabel}를 준비 중입니다.`)}</span>
+               </div>`;
         if (item.linkUrl) {
             return `
                 <div class="${slideClass}" data-banner-index="${index}" aria-hidden="${index === 0 ? 'false' : 'true'}">
@@ -439,22 +442,8 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
 
     globalHomeCategories = categories;
 
-    // 홈 상단에는 11개까지 먼저 보여주고, 나머지는 더보기로 숨김
-    const limit = 11;
-    const visibleCategories = categories.slice(0, limit);
-    const hiddenCategories = categories.slice(limit);
-    const expandedRequested = getHomeCategoryExpandedState();
-    const needsAutoExpand = currentCategory !== 'all' && hiddenCategories.some((item) => String(item.name || '').trim() === currentCategory);
-    const expanded = expandedRequested || needsAutoExpand;
-    const extraCategories = expanded ? hiddenCategories : [];
-    const hasMore = hiddenCategories.length > 0;
-
-    if (needsAutoExpand && !expandedRequested) {
-        setHomeCategoryExpandedState(true);
-    }
-
     nav.innerHTML = `
-        <div class="home-category-shell" data-home-category-shell data-expanded="${expanded ? 'true' : 'false'}">
+        <div class="home-category-shell" data-home-category-shell data-expanded="true">
             <div class="home-category-grid home-category-grid-primary">
                 <a href="#" class="home-category-item${currentCategory === 'all' ? ' is-active' : ''}" data-cat="all">
                     <div class="home-category-icon" style="background:#f5f5f5;">
@@ -463,7 +452,7 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
                     <span class="home-category-name">전체</span>
                     <span class="home-category-count">${globalAllClasses.length || 0}</span>
                 </a>
-                ${visibleCategories.map((item, index) => {
+                ${categories.map((item, index) => {
                     const meta = resolveHomeCategoryMeta(item.name, index);
                     return `
                         <a href="#" class="home-category-item${currentCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">
@@ -473,36 +462,9 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
                             <span class="home-category-name">${escapeHtml(item.name)}</span>
                             <span class="home-category-count">${Number(item.class_count || 0)}</span>
                         </a>
-                    `;
+                        `;
                 }).join('')}
             </div>
-            ${hasMore ? `
-                <div class="home-category-toggle-row">
-                    <button type="button" class="home-category-item home-category-toggle${expanded ? ' is-expanded' : ''}" data-category-toggle aria-expanded="${expanded ? 'true' : 'false'}">
-                        <div class="home-category-icon" style="background: rgba(255, 255, 255, 0.08); color: #eef4ff;">
-                            ${svgIcon(expanded ? 'chevron-up' : 'chevron-down')}
-                        </div>
-                        <span class="home-category-label">${expanded ? '접기' : '더보기'}</span>
-                        ${expanded ? '' : `<span class="home-category-count">+${hiddenCategories.length}</span>`}
-                    </button>
-                </div>
-            ` : ''}
-            ${hasMore ? `
-                <div class="home-category-grid home-category-grid-extra home-category-extra"${expanded ? '' : ' hidden'}>
-                    ${extraCategories.map((item, index) => {
-                        const meta = resolveHomeCategoryMeta(item.name, index + visibleCategories.length);
-                        return `
-                            <a href="#" class="home-category-item${currentCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">
-                                <div class="home-category-icon" style="background:${meta.accent}15; color:${meta.accent};">
-                                    ${svgIcon(meta.icon)}
-                                </div>
-                                <span class="home-category-name">${escapeHtml(item.name)}</span>
-                                <span class="home-category-count">${Number(item.class_count || 0)}</span>
-                            </a>
-                        `;
-                    }).join('')}
-                </div>
-            ` : ''}
         </div>
     `;
 
