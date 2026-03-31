@@ -36,7 +36,7 @@
             <div class="hero-bg-wrapper">
                 <div class="hero-overlay"></div>
             </div>
-            <div class="hero-content-wrapper hero-split-layout">
+            <div class="hero-content-wrapper hero-full-slider">
                 <!-- 좌측: 대표 이미지 슬라이더 -->
                 <div class="hero-slider-area">
                     <div class="slider-section">
@@ -48,45 +48,6 @@
                         <button class="slider-btn prev" type="button" aria-label="이전 이미지"></button>
                         <button class="slider-btn next" type="button" aria-label="다음 이미지"></button>
                         <div class="slider-counter">1 / 1</div>
-                    </div>
-                </div>
-                <!-- 우측: 제목 / 가격 / CTA / 신뢰 배지 -->
-                <div class="hero-brief-panel">
-                    <div class="hero-eyebrow-row">
-                        <p class="hero-badge">수업 한눈에 보기</p>
-                        <span id="heroFormatChip" class="hero-format-chip">추천 클래스</span>
-                    </div>
-                    <span id="viewCategory" class="hero-kicker">카테고리</span>
-                    <h1 id="viewTitle" class="hero-title">클래스 제목</h1>
-                    <p id="heroSummary" class="hero-summary">클래스의 핵심 장점과 수강 포인트를 한눈에 보여줍니다.</p>
-                    <div class="hero-quick-stats" aria-label="클래스 핵심 정보">
-                        <article class="hero-stat-card">
-                            <span class="hero-stat-label">강사</span>
-                            <strong id="heroInstructor">-</strong>
-                        </article>
-                        <article class="hero-stat-card">
-                            <span class="hero-stat-label">가격</span>
-                            <strong id="heroPriceSummary">0원</strong>
-                        </article>
-                        <article class="hero-stat-card">
-                            <span class="hero-stat-label">구성</span>
-                            <strong id="heroOfferSummary">단일 수강권</strong>
-                        </article>
-                    </div>
-                    <div class="hero-meta hero-rating-line">
-                        <span id="heroAvgStars">★</span>
-                        <span id="heroAvgRating">0.0</span>
-                        <span>·</span>
-                        <span>후기 <strong id="heroReviewCount">0</strong>개</span>
-                    </div>
-                    <div class="hero-cta-row">
-                        <button type="button" class="btn-cta-start" id="btnGoToClass">소개 보기</button>
-                        <button type="button" class="btn-cta-secondary" id="btnAddToCart">장바구니 담기</button>
-                    </div>
-                    <div class="hero-trust-row" aria-label="수강 안내">
-                        <span>즉시 채팅</span>
-                        <span>후기 확인</span>
-                        <span>안전 결제</span>
                     </div>
                 </div>
             </div>
@@ -371,39 +332,58 @@
             <!-- 우측 고정 사이드바: 가격 / 혜택 / 수강 시작 -->
             <aside class="view-sidebar">
                 <div class="sticky-card-premium">
-                    <h2 class="side-main-title" id="sidebarTitle">클래스 제목</h2>
-                    <div class="side-category-line">
-                        <span id="sidebarCategory">카테고리</span>
-                        <span>|</span>
-                        <span>후기</span>
+                    <div class="side-eyebrow">
+                        <span class="hero-badge" style="margin-bottom:0;">수업 한눈에 보기</span>
+                        <span id="heroFormatChip" class="hero-format-chip" style="margin-left: 8px;">MONTHLY</span>
                     </div>
+                    
+                    <span id="viewCategory" class="hero-kicker" style="margin-top: 1rem; display: block; font-size: 0.9rem; color: var(--text-secondary);">카테고리</span>
+                    <h2 class="side-main-title" id="viewTitleSide">클래스 제목</h2>
+                    
+                    <p id="heroSummarySide" class="hero-summary" style="font-size: 0.95rem; color: #888; margin-bottom: 1.5rem; line-height: 1.5;">클래스의 핵심 장점과 수강 포인트를 한눈에 보여줍니다.</p>
+
+                    <div class="side-quick-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">강사</span>
+                            <strong id="heroInstructorSide" class="stat-value">-</strong>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">가격</span>
+                            <strong id="heroPriceSummarySide" class="stat-value">50,000원 / 월</strong>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">구성</span>
+                            <strong id="heroOfferSummarySide" class="stat-value">1회 · 2회 · 월정액</strong>
+                        </div>
+                    </div>
+
                     <div class="side-review-line">
-                        <span class="side-stars" id="sideAvgStars">★</span>
-                        <span class="side-rating" id="sideAvgRating">0.0</span>
-                        <span class="side-review-count">(후기 <span id="sideReviewCount">0</span>개)</span>
+                        <span class="side-stars">★</span>
+                        <span class="side-rating" id="heroAvgRatingSide">0.0</span>
+                        <span class="side-review-count">· 후기 <strong id="heroReviewCountSide">0</strong>개</span>
                     </div>
 
-                    <!-- 수강권 현황 표시 -->
-                    <div id="myPassStatus"
-                        style="display:none; padding: 12px; margin: 10px 0; background: rgba(76, 201, 240, 0.1); border: 1px solid rgba(76, 201, 240, 0.3); border-radius: 8px; color: #4cc9f0; font-weight: 600; text-align: center;">
-                        <div style="margin-bottom: 8px;">보유 중인 수강권 <span id="myPassCountVal">0</span>개</div>
-                        <button id="btnUsePass" type="button"
-                            style="width:100%; padding:8px; border-radius:6px; background:#4cc9f0; color:#fff; border:none; font-weight:700; cursor:pointer;">수강권 1회 사용하기</button>
+                    <!-- 수강권 구매 요약 (Image 3 요약) -->
+                    <div class="side-pass-summary" id="passSummaryArea">
+                        <!-- JS에서 동적으로 채워짐 -->
+                        <div class="pass-info-box">
+                            <span class="pass-label">보유 중인 수강권</span>
+                            <strong id="myPassCountVal" class="pass-count">0개</strong>
+                        </div>
                     </div>
 
-                    <!-- 수강권 구매 옵션 -->
-                    <div id="passOptionsContainer" style="display:none; margin: 15px 0;"></div>
-
-                    <div class="side-price-section">
-                        <span class="side-final-price" id="viewPrice">0원</span>
-                        <p class="side-installment" id="priceInstallment">월 0원 / 5개월 무이자</p>
-                    </div>
-                    <div class="incentive-badges">
-                        <div class="incentive-item timer">얼리버드 혜택</div>
-                        <div class="incentive-item coupon">쿠폰 적용 가능</div>
-                    </div>
                     <div class="sidebar-cta-area">
-                        <button class="btn-cta-start" id="btnEnroll" type="button">지금 바로 시작하기</button>
+                        <div class="cta-primary-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <button class="btn-cta-start" id="btnGoToClassSide" type="button" style="padding: 0.8rem;">소개 보기</button>
+                            <button class="btn-cta-secondary" id="btnAddToCartSide" type="button" style="padding: 0.8rem;">장바구니 담기</button>
+                        </div>
+                        <button class="btn-cta-start" id="btnEnroll" type="button" style="margin-top: 10px; background: #222; border: 1px solid #444; box-shadow: none;">지금 바로 시작하기</button>
+                    </div>
+
+                    <div class="hero-trust-row" aria-label="수강 안내" style="margin-top: 2rem; display: flex; justify-content: space-between; font-size: 0.8rem; color: #666;">
+                        <span>즉시 채팅</span>
+                        <span>후기 확인</span>
+                        <span>안전 결제</span>
                     </div>
                 </div>
             </aside>
