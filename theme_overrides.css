@@ -816,6 +816,48 @@ html[data-theme="light"] body.home-page .home-category-item.is-active {
   border-color: rgba(79, 111, 255, 0.18) !important;
 }
 
+/* Home category rail: square edge, background-matched fade */
+body.home-page .home-category-panel {
+  position: relative;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: clamp(0.45rem, 0.85vw, 0.8rem) 0 0 !important;
+  overflow: hidden;
+}
+
+body.home-page .home-category-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(5, 7, 11, 0) 0%, rgba(5, 7, 11, 1) 40%);
+  filter: none;
+  opacity: 1;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.home-page .home-category-panel > div,
+body.home-page .home-category-shell,
+body.home-page .home-category-grid,
+body.home-page .home-category-extra-wrap {
+  position: relative;
+  z-index: 1;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.home-page .home-category-shell {
+  border-radius: 0 !important;
+}
+
+html[data-theme="light"] body.home-page .home-category-panel::before {
+  background: linear-gradient(180deg, rgba(247, 251, 255, 0) 0%, rgba(247, 251, 255, 1) 40%);
+  filter: none;
+  opacity: 1;
+}
+
 /* Home hero and category rail, tuned for the requested full-bleed look */
 body.home-page {
   overflow-x: clip;
