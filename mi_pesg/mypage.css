@@ -54,7 +54,7 @@
    2) Page Layout
    ========================================================= */
 .mypage-layout {
-    width: min(calc(100% - (var(--mp-page-gutter) * 2)), var(--mp-page-max));
+    width: min(calc(110% - (var(--mp-page-gutter) * 2)), var(--mp-page-max));
     margin: clamp(1rem, 2vw, 2rem) auto clamp(2rem, 4vw, 4rem);
     display: grid;
     grid-template-columns: 280px minmax(0, 1fr);
@@ -844,8 +844,15 @@
 }
 
 @keyframes mp-fade-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* =========================================================
@@ -916,16 +923,6 @@
 
 /* <= 768px */
 @media (max-width: 768px) {
-    /* Hide heavy global header for mypage only */
-    .mypage-page .site-header {
-        display: none;
-    }
-
-    .mypage-page .drawer-menu,
-    .mypage-page .drawer-overlay {
-        display: none !important;
-    }
-
     .mypage-layout {
         margin-top: 0.8rem;
     }
@@ -1069,7 +1066,7 @@
     padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
 }
 
-.mypage-layout > * {
+.mypage-layout>* {
     min-width: 0;
 }
 
@@ -1760,12 +1757,12 @@
     transition: transform 0.2s ease, background 0.2s ease;
 }
 
-.settings-switch input:checked + span {
+.settings-switch input:checked+span {
     background: rgba(158, 188, 255, 0.24);
     border-color: rgba(158, 188, 255, 0.3);
 }
 
-.settings-switch input:checked + span::after {
+.settings-switch input:checked+span::after {
     transform: translateX(1.2rem);
     background: #0b0f16;
 }
@@ -1947,14 +1944,6 @@
 }
 
 @media (max-width: 768px) {
-    body[data-page="mypage"] > header.site-header {
-        display: none !important;
-    }
-
-    body[data-page="mypage"] > .drawer-menu,
-    body[data-page="mypage"] > .drawer-overlay {
-        display: none !important;
-    }
 
     body[data-page="mypage"][data-auth-state="loading"] #guestLoginButton,
     body[data-page="mypage"][data-auth-state="loading"] #logoutButton,
