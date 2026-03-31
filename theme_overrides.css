@@ -287,6 +287,36 @@ html[data-theme="light"] body.home-page .home-category-toggle {
   color: var(--bsq-text) !important;
 }
 
+/* 추가 - 카드 시인성 개선 */
+html[data-theme="light"] body.home-page .class-card {
+  background: var(--bsq-surface) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06) !important;
+}
+html[data-theme="light"] body.home-page .title,
+html[data-theme="light"] body.home-page .price {
+  color: var(--bsq-text) !important;
+}
+html[data-theme="light"] body.home-page .card-summary,
+html[data-theme="light"] body.home-page .meta,
+html[data-theme="light"] body.home-page .card-topline,
+html[data-theme="light"] body.home-page .card-category,
+html[data-theme="light"] body.home-page .card-chip {
+  color: var(--bsq-text-muted) !important;
+}
+html[data-theme="light"] body.home-page .btn-bookmark {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  color: var(--bsq-text) !important;
+}
+html[data-theme="light"] body.home-page .badge-coupon,
+html[data-theme="light"] body.home-page .badge-discount {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  color: var(--bsq-text) !important;
+}
+
+
 html[data-theme="light"] body.home-page .home-bottom-banner-overlay,
 html[data-theme="light"] body.home-page .home-hero-copy,
 html[data-theme="light"] body.home-page .home-main-banner .banner-overlay,
