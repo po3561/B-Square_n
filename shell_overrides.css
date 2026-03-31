@@ -602,7 +602,7 @@ body,
 .ad-content { position: relative; z-index: 1; min-height: inherit; display: flex; align-items: flex-end; }
 .ad-content h2 { margin: 0; max-width: 12ch; font-size: clamp(1.8rem, 3.5vw, 3.2rem); line-height: 0.95; letter-spacing: -0.06em; color: #fff; }
 .hero-section .category-grid { margin-top: 0.9rem; padding: 0; background: transparent; border: 0; box-shadow: none; }
-.home-category-shell { width: 100%; padding: 1rem; border-radius: 28px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: var(--shadow-sm); }
+.home-category-shell { width: 100%; padding: 1rem; border-radius: 28px; background: transparent; border: 0; box-shadow: none; }
 .home-category-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.7rem; }
 .home-category-grid-primary,
 .home-category-grid-extra { grid-template-columns: repeat(6, minmax(0, 1fr)); }
@@ -642,8 +642,8 @@ body,
   background: rgba(158, 188, 255, 0.12);
 }
 .home-category-toggle {
-  width: clamp(120px, 14vw, 158px);
-  min-height: 92px;
+  width: 100%;
+  min-height: 104px;
   border-radius: 20px;
 }
 .home-category-count {

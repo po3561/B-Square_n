@@ -462,7 +462,6 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
                     ${svgIcon(meta.icon)}
                 </div>
                 <span class="home-category-name">${escapeHtml(item.name)}</span>
-                <span class="home-category-count">${Number(item.class_count || 0)}</span>
             </a>
         `;
     };
@@ -478,7 +477,6 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
                         ${svgIcon('spark')}
                     </div>
                     <span class="home-category-name">전체</span>
-                    <span class="home-category-count">${globalAllClasses.length || 0}</span>
                 </a>
                 ${visibleCategories.map((item, index) => renderCategoryCard(item, index)).join('')}
                 ${showMore ? `
@@ -487,7 +485,6 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
                             ${svgIcon(expanded ? 'chevron-up' : 'chevron-down')}
                         </div>
                         <span class="home-category-name">${expanded ? '접기' : '더보기'}</span>
-                        <span class="home-category-count">${expanded ? '' : '+' + moreCount}</span>
                     </button>
                 ` : ''}
             </div>
