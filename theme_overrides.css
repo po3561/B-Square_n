@@ -71,6 +71,7 @@ html[data-theme="light"] {
   --text-muted: var(--bsq-text-muted);
   --muted-text: var(--bsq-text-muted);
   --comm-accent-rgb: 65, 105, 255;
+  --page-stack-gap: clamp(1rem, 2vw, 2rem);
 }
 
 html[data-theme="dark"] {
@@ -148,6 +149,28 @@ body,
 .community-shell,
 .mypage-shell {
   color: var(--bsq-text);
+}
+
+/* Global page rhythm: keep top-level blocks separated */
+.main-content,
+.class-list-main,
+.view-container,
+.contact-main,
+.notice-main,
+.create-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--page-stack-gap);
+}
+
+.main-content > *,
+.class-list-main > *,
+.view-container > *,
+.contact-main > *,
+.notice-main > *,
+.create-content > * {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 /* Shared surface utilities */
@@ -848,9 +871,14 @@ body.home-page .home-category-extra-wrap {
   box-shadow: none !important;
 }
 
+body.home-page .home-category-panel,
+body.home-page .home-category-item,
+body.home-page .home-category-icon,
+body.home-page .home-category-toggle,
 body.home-page .home-category-shell {
   border-radius: 0 !important;
 }
+
 
 html[data-theme="light"] body.home-page .home-category-panel::before {
   background: linear-gradient(180deg, rgba(247, 251, 255, 0) 0%, rgba(247, 251, 255, 1) 40%);
