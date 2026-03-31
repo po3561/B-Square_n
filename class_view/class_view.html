@@ -122,7 +122,8 @@
                         <div class="section-toolbar section-toolbar-between curriculum-header-row">
                             <div class="section-title-group">
                                 <p class="section-eyebrow">Course map</p>
-                                <h3 class="section-title section-title-inline section-title-row" style="margin-bottom:0;">
+                                <h3 class="section-title section-title-inline section-title-row"
+                                    style="margin-bottom:0;">
                                     커리큘럼 <span id="chapCount" class="chap-count-inline">챕터 0개</span>
                                 </h3>
                             </div>
@@ -136,7 +137,8 @@
                 <div id="tabReview" class="tab-content">
                     <section class="content-card">
                         <div class="review-header-minimal section-toolbar section-toolbar-between">
-                            <h4 class="review-section-title">후기 <span class="review-count-badge" id="reviewTotalCount">0</span></h4>
+                            <h4 class="review-section-title">후기 <span class="review-count-badge"
+                                    id="reviewTotalCount">0</span></h4>
                             <p class="review-section-caption">실제 수강생의 경험을 확인해 보세요.</p>
                         </div>
                         <h4 class="review-subtitle">수강생 포토 후기</h4>
@@ -149,11 +151,11 @@
                             <div class="review-form-unlocked" id="reviewFormUnlocked" style="display:none;">
                                 <h4>후기 작성하기</h4>
                                 <div class="star-rating">
-                                    <input type="radio" name="rating" value="1" id="r1"><label for="r1">★</label>
-                                    <input type="radio" name="rating" value="2" id="r2"><label for="r2">★</label>
-                                    <input type="radio" name="rating" value="3" id="r3"><label for="r3">★</label>
-                                    <input type="radio" name="rating" value="4" id="r4"><label for="r4">★</label>
-                                    <input type="radio" name="rating" value="5" id="r5"><label for="r5">★</label>
+                                    <input type="radio" name="rating" value="1" id="r1"><label for="r1">⭐️</label>
+                                    <input type="radio" name="rating" value="2" id="r2"><label for="r2">⭐️</label>
+                                    <input type="radio" name="rating" value="3" id="r3"><label for="r3">⭐️</label>
+                                    <input type="radio" name="rating" value="4" id="r4"><label for="r4">⭐️</label>
+                                    <input type="radio" name="rating" value="5" id="r5"><label for="r5">⭐️</label>
                                 </div>
                                 <textarea id="reviewText" placeholder="수강 경험과 도움이 된 점을 자세히 남겨주세요."></textarea>
                                 <button id="btnSubmitReview" class="btn-submit-review">후기 등록</button>
@@ -169,7 +171,8 @@
                             <!-- 채팅 잠금 UI (비수강자) -->
                             <div class="chat-locked-overlay" id="chatLockedOverlay">
                                 <div class="chat-locked-card">
-                                    <span class="lock-emoji"><i class="fa-solid fa-lock" style="font-size:2.5rem;color:var(--accent-color);"></i></span>
+                                    <span class="lock-emoji"><i class="fa-solid fa-lock"
+                                            style="font-size:2.5rem;color:var(--accent-color);"></i></span>
                                     <h3>클래스 이용 채팅</h3>
                                     <p>수강 신청 후 클래스 채팅방에 참여할 수 있습니다.</p>
                                 </div>
@@ -187,8 +190,8 @@
                                                 </div>
                                             </div>
                                             <div class="chat-header-actions">
-                                                <button class="btn-header-icon" id="btnChatSearch" type="button" title="메시지 검색"><i
-                                                        class="fa-solid fa-magnifying-glass"></i></button>
+                                                <button class="btn-header-icon" id="btnChatSearch" type="button"
+                                                    title="메시지 검색"><i class="fa-solid fa-magnifying-glass"></i></button>
                                                 <button class="btn-header-icon" id="btnThemeToggle" title="테마 전환"><i
                                                         class="fa-solid fa-moon" id="themeIcon"></i></button>
                                                 <button class="btn-header-icon" id="btnChatInfo" title="채팅 정보"><i
@@ -252,7 +255,8 @@
 
 
                                         <!-- 하단으로 스크롤 버튼 -->
-                                        <button id="btnScrollBottom" class="btn-scroll-bottom" type="button" title="최신 메시지로 이동">
+                                        <button id="btnScrollBottom" class="btn-scroll-bottom" type="button"
+                                            title="최신 메시지로 이동">
                                             <span class="icon">⌄</span>
                                             <span class="badge" id="scrollBadge" style="display:none;">0</span>
                                         </button>
@@ -271,22 +275,23 @@
                                                 <span class="reply-icon">↩</span>
                                                 <span id="replyText" class="reply-preview-text"></span>
                                             </div>
-                                            <button id="btnReplyCancel" class="btn-reply-close" type="button" aria-label="답장 취소"></button>
+                                            <button id="btnReplyCancel" class="btn-reply-close" type="button"
+                                                aria-label="답장 취소"></button>
                                         </div>
 
                                         <!-- 입력 UI -->
                                         <div class="chat-input-area" id="chatInputArea">
                                             <div class="input-pill-wrapper">
-                                                <button class="btn-input-icon-pill" id="btnAttach" type="button" title="파일 첨부"><i
-                                                        class="fa-solid fa-paperclip"></i></button>
+                                                <button class="btn-input-icon-pill" id="btnAttach" type="button"
+                                                    title="파일 첨부"><i class="fa-solid fa-paperclip"></i></button>
                                                 <button class="btn-input-icon-pill" id="btnGathering" type="button"
                                                     title="모임 카드 보내기" style="display:none;"><i
                                                         class="fa-solid fa-calendar-check"></i></button>
                                                 <input type="file" id="fileInput" multiple hidden>
                                                 <textarea id="msgInput" placeholder="메시지를 입력하세요..." rows="1"
                                                     spellcheck="false"></textarea>
-                                                <button class="btn-input-icon-pill" id="btnEmoji" type="button" title="이모지"><i
-                                                        class="fa-regular fa-face-smile-wink"></i></button>
+                                                <button class="btn-input-icon-pill" id="btnEmoji" type="button"
+                                                    title="이모지"><i class="fa-regular fa-face-smile-wink"></i></button>
                                             </div>
                                             <button class="btn-send-pill" id="btnSend" type="button" title="메시지 전송">
                                                 <i class="fa-solid fa-paper-plane"></i>
@@ -308,7 +313,8 @@
                                 <aside class="comm-info-panel" id="commInfoPanel">
                                     <div class="info-panel-header">
                                         <h3 id="infoPanelTitle">채널 정보</h3>
-                                        <button class="btn-close-panel" id="btnClosePanel" type="button" title="닫기"></button>
+                                        <button class="btn-close-panel" id="btnClosePanel" type="button"
+                                            title="닫기"></button>
                                     </div>
                                     <div class="info-panel-body" id="infoPanelBody">
                                         <!-- 채팅 모듈에서 동적으로 채움 -->
@@ -336,11 +342,14 @@
                         <span class="hero-badge" style="margin-bottom:0;">수업 한눈에 보기</span>
                         <span id="heroFormatChip" class="hero-format-chip" style="margin-left: 8px;">MONTHLY</span>
                     </div>
-                    
-                    <span id="viewCategory" class="hero-kicker" style="margin-top: 1rem; display: block; font-size: 0.9rem; color: var(--text-secondary);">카테고리</span>
+
+                    <span id="viewCategory" class="hero-kicker"
+                        style="margin-top: 1rem; display: block; font-size: 0.9rem; color: var(--text-secondary);">카테고리</span>
                     <h2 class="side-main-title" id="viewTitleSide">클래스 제목</h2>
-                    
-                    <p id="heroSummarySide" class="hero-summary" style="font-size: 0.95rem; color: #888; margin-bottom: 1.5rem; line-height: 1.5;">클래스의 핵심 장점과 수강 포인트를 한눈에 보여줍니다.</p>
+
+                    <p id="heroSummarySide" class="hero-summary"
+                        style="font-size: 0.95rem; color: #888; margin-bottom: 1.5rem; line-height: 1.5;">클래스의 핵심 장점과 수강
+                        포인트를 한눈에 보여줍니다.</p>
 
                     <div class="side-quick-stats">
                         <div class="stat-item">
@@ -349,16 +358,16 @@
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">가격</span>
-                            <strong id="heroPriceSummarySide" class="stat-value">50,000원 / 월</strong>
+                            <strong id="heroPriceSummarySide" class="stat-value">월 50,000원</strong>
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">구성</span>
-                            <strong id="heroOfferSummarySide" class="stat-value">1회 · 2회 · 월정액</strong>
+                            <strong id="heroOfferSummarySide" class="stat-value">1회 · 월정액</strong>
                         </div>
                     </div>
 
                     <div class="side-review-line">
-                        <span class="side-stars">★</span>
+                        <span class="side-stars">⭐️</span>
                         <span class="side-rating" id="heroAvgRatingSide">0.0</span>
                         <span class="side-review-count">· 후기 <strong id="heroReviewCountSide">0</strong>개</span>
                     </div>
@@ -374,13 +383,18 @@
 
                     <div class="sidebar-cta-area">
                         <div class="cta-primary-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <button class="btn-cta-start" id="btnGoToClassSide" type="button" style="padding: 0.8rem;">소개 보기</button>
-                            <button class="btn-cta-secondary" id="btnAddToCartSide" type="button" style="padding: 0.8rem;">장바구니 담기</button>
+                            <button class="btn-cta-start" id="btnGoToClassSide" type="button"
+                                style="padding: 0.8rem;">소개 보기</button>
+                            <button class="btn-cta-secondary" id="btnAddToCartSide" type="button"
+                                style="padding: 0.8rem;">장바구니 담기</button>
                         </div>
-                        <button class="btn-cta-start" id="btnEnroll" type="button" style="margin-top: 10px; background: #222; border: 1px solid #444; box-shadow: none;">지금 바로 시작하기</button>
+                        <button class="btn-cta-start" id="btnEnroll" type="button"
+                            style="margin-top: 10px; background: #222; border: 1px solid #444; box-shadow: none;">지금 바로
+                            시작하기</button>
                     </div>
 
-                    <div class="hero-trust-row" aria-label="수강 안내" style="margin-top: 2rem; display: flex; justify-content: space-between; font-size: 0.8rem; color: #666;">
+                    <div class="hero-trust-row" aria-label="수강 안내"
+                        style="margin-top: 2rem; display: flex; justify-content: space-between; font-size: 0.8rem; color: #666;">
                         <span>즉시 채팅</span>
                         <span>후기 확인</span>
                         <span>안전 결제</span>
@@ -491,7 +505,8 @@
                     <p style="margin: 6px 0 0 0; font-size: 0.85rem; color: #888;">수강생 채팅에 일정 모임 카드를 바로 보낼 수 있습니다.</p>
                 </div>
                 <button class="btn-close-modal" id="btnGatheringClose" type="button"
-                    style="background:none; border:none; color:#aaa; font-size:1.4rem; cursor:pointer; padding:4px;" aria-label="닫기"></button>
+                    style="background:none; border:none; color:#aaa; font-size:1.4rem; cursor:pointer; padding:4px;"
+                    aria-label="닫기"></button>
             </div>
 
             <div class="modal-body" style="display:flex; flex-direction:column; gap:16px; padding:0;">
@@ -543,7 +558,8 @@
 
                 <div>
                     <label
-                        style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">상세 설명
+                        style="display:block; font-size: 0.85rem; color: #ccc; margin-bottom:6px; font-weight:600;">상세
+                        설명
                         (선택)</label>
                     <textarea id="gatheringDesc" placeholder="모임의 간단한 설명을 입력해 주세요."
                         style="width:100%; height:80px; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.95rem; font-family:inherit; resize:none;"></textarea>
@@ -585,7 +601,8 @@
             <div class="modal-header" style="border-bottom:none; padding: 2rem 2rem 1rem 2rem;">
                 <h3 id="cvTitle" style="font-size: 1.6rem; font-weight: 800;">제목</h3>
                 <button class="btn-close" id="btnCvClose" type="button"
-                    style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;" aria-label="닫기"></button>
+                    style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;"
+                    aria-label="닫기"></button>
             </div>
             <div
                 style="padding: 0 2rem 1.5rem; font-size: 0.9rem; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); display:flex; gap:15px;">
@@ -615,7 +632,8 @@
                     <div style="display:flex; gap:10px; margin-bottom: 2rem;">
                         <textarea id="cvCommentInput" placeholder="댓글을 입력하세요..."
                             style="flex:1; background:rgba(0,0,0,0.3); border:1px solid var(--border-color); border-radius:8px; padding:12px; color:#fff; resize:none; height:40px;"></textarea>
-                        <button id="btnCvSubmitComment" class="btn-submit" type="button" style="padding: 0 20px;">등록</button>
+                        <button id="btnCvSubmitComment" class="btn-submit" type="button"
+                            style="padding: 0 20px;">등록</button>
                     </div>
                     <div id="cvCommentsList" style="display:flex; flex-direction:column; gap:1rem;"></div>
                 </div>

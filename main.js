@@ -442,8 +442,36 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
 
     globalHomeCategories = categories;
 
+    const visibleLimit = 9;
+    const visibleCategories = categories.slice(0, visibleLimit);
+    const hiddenCategories = categories.slice(visibleLimit);
+    const expandedRequested = getHomeCategoryExpandedState();
+    const needsAutoExpand = currentCategory !== 'all'
+        && hiddenCategories.some((item) => String(item.name || '').trim() === currentCategory);
+    const expanded = expandedRequested || needsAutoExpand;
+
+    if (needsAutoExpand && !expandedRequested) {
+        setHomeCategoryExpandedState(true);
+    }
+
+    const renderCategoryCard = (item, index, activeCategory = currentCategory) => {
+        const meta = resolveHomeCategoryMeta(item.name, index);
+        return `
+            <a href="#" class="home-category-item${activeCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">
+                <div class="home-category-icon" style="background:${meta.accent}15; color:${meta.accent};">
+                    ${svgIcon(meta.icon)}
+                </div>
+                <span class="home-category-name">${escapeHtml(item.name)}</span>
+                <span class="home-category-count">${Number(item.class_count || 0)}</span>
+            </a>
+        `;
+    };
+
+    const moreCount = hiddenCategories.length;
+    const showMore = moreCount > 0;
+
     nav.innerHTML = `
-        <div class="home-category-shell" data-home-category-shell data-expanded="true">
+        <div class="home-category-shell" data-home-category-shell data-expanded="${expanded ? 'true' : 'false'}">
             <div class="home-category-grid home-category-grid-primary">
                 <a href="#" class="home-category-item${currentCategory === 'all' ? ' is-active' : ''}" data-cat="all">
                     <div class="home-category-icon" style="background:#f5f5f5;">
@@ -452,19 +480,24 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
                     <span class="home-category-name">전체</span>
                     <span class="home-category-count">${globalAllClasses.length || 0}</span>
                 </a>
-                ${categories.map((item, index) => {
-                    const meta = resolveHomeCategoryMeta(item.name, index);
-                    return `
-                        <a href="#" class="home-category-item${currentCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">
-                            <div class="home-category-icon" style="background:${meta.accent}15; color:${meta.accent};">
-                                ${svgIcon(meta.icon)}
-                            </div>
-                            <span class="home-category-name">${escapeHtml(item.name)}</span>
-                            <span class="home-category-count">${Number(item.class_count || 0)}</span>
-                        </a>
-                        `;
-                }).join('')}
+                ${visibleCategories.map((item, index) => renderCategoryCard(item, index)).join('')}
+                ${showMore ? `
+                    <button type="button" class="home-category-item home-category-toggle${expanded ? ' is-expanded' : ''}" data-category-toggle aria-expanded="${expanded ? 'true' : 'false'}">
+                        <div class="home-category-icon home-category-icon-toggle">
+                            ${svgIcon(expanded ? 'chevron-up' : 'chevron-down')}
+                        </div>
+                        <span class="home-category-name">${expanded ? '접기' : '더보기'}</span>
+                        <span class="home-category-count">${expanded ? '' : '+' + moreCount}</span>
+                    </button>
+                ` : ''}
             </div>
+            ${showMore ? `
+                <div class="home-category-extra-wrap" aria-hidden="${expanded ? 'false' : 'true'}">
+                    <div class="home-category-grid home-category-grid-extra">
+                        ${hiddenCategories.map((item, index) => renderCategoryCard(item, index + visibleLimit)).join('')}
+                    </div>
+                </div>
+            ` : ''}
         </div>
     `;
 
