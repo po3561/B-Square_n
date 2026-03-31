@@ -1,4 +1,5 @@
 ﻿import { json } from './http.js';
+import { normalizeLanguagePreference, normalizeThemePreference } from './preferences.js';
 
 const PASSWORD_SALT = '_bsq_salt_2024';
 export const MASTER_ADMIN_USER_ID = 'user_b7a935e26112';
@@ -138,8 +139,8 @@ export async function getCurrentUser(context) {
       role: 'super_admin',
       operator_seq: 1,
       membership_level: 'Admin',
-      preferred_language: 'ko',
-      preferred_theme: 'dark',
+      preferred_language: normalizeLanguagePreference('ko'),
+      preferred_theme: normalizeThemePreference('dark'),
       mfa_active: 0,
       referrer_code: null,
     });
@@ -195,8 +196,8 @@ export async function getCurrentUser(context) {
     role: session.role,
     operator_seq: session.operator_seq,
     membership_level: session.membership_level,
-    preferred_language: session.preferred_language,
-    preferred_theme: session.preferred_theme,
+    preferred_language: normalizeLanguagePreference(session.preferred_language),
+    preferred_theme: normalizeThemePreference(session.preferred_theme),
     mfa_active: session.mfa_active,
     referrer_code: session.referrer_code,
     birth_year: session.birth_year,

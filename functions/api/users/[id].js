@@ -1,6 +1,7 @@
 ﻿import { applyMasterAdminOverride, hashPassword, isAtLeastRole, isMasterAdminUserId, requireSession } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
 import { ensureAuthSchema, ensureClassesSchema, ensureOperationsSchema } from '../_lib/schema.js';
+import { normalizeLanguagePreference, normalizeThemePreference } from '../_lib/preferences.js';
 
 function buildBirthDate(user) {
   const parts = [user.birth_year, user.birth_month, user.birth_day].filter(Boolean);
@@ -492,7 +493,12 @@ export async function onRequestPut(context) {
         if (!canEditSelf && !canManageMembers) {
           return json(request, env, { success: false, error: '수정 권한이 없습니다.' }, { status: 403 });
         }
-        const nextValue = typeof body[field] === 'string' ? body[field].trim() : body[field];
+        let nextValue = typeof body[field] === 'string' ? body[field].trim() : body[field];
+        if (field === 'preferred_language') {
+          nextValue = normalizeLanguagePreference(nextValue);
+        } else if (field === 'preferred_theme') {
+          nextValue = normalizeThemePreference(nextValue);
+        }
         updates.push(`${field} = ?`);
         values.push(nextValue === '' ? null : nextValue);
       }

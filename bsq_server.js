@@ -15,7 +15,16 @@
     const OPERATOR_GHOST_TOKEN = 'OPERATOR_GHOST';
     const THEME_STORAGE_KEY = 'bsq_theme';
     const LANGUAGE_STORAGE_KEY = 'bsq_language';
-    const SUPPORTED_LANGUAGES = new Set(['ko', 'en', 'ja', 'zh']);
+    const SUPPORTED_LANGUAGES = new Set(['ko', 'en', 'ja', 'zh-CN']);
+    const LANGUAGE_ALIASES = new Map([
+        ['zh', 'zh-CN'],
+        ['zh-cn', 'zh-CN'],
+        ['cn', 'zh-CN'],
+        ['ko-kr', 'ko'],
+        ['en-us', 'en'],
+        ['en-gb', 'en'],
+        ['ja-jp', 'ja'],
+    ]);
     // ==================================================
     // API 베이스 URL 자동 감지 및 자격 서버 연동
     // ==================================================
@@ -242,8 +251,14 @@
 
     function normalizeLanguage(value) {
         const candidate = normalizeRequestBody(value);
-        const lang = String(candidate || '').trim().toLowerCase();
-        return SUPPORTED_LANGUAGES.has(lang) ? lang : '';
+        const raw = String(candidate || '').trim();
+        if (!raw) return '';
+
+        const lower = raw.toLowerCase();
+        const canonical = LANGUAGE_ALIASES.get(lower) || raw;
+        if (SUPPORTED_LANGUAGES.has(canonical)) return canonical;
+        if (SUPPORTED_LANGUAGES.has(lower)) return lower;
+        return '';
     }
 
     function resolveThemeName(value) {
@@ -270,32 +285,37 @@
         const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'ko';
 
         const requestedTheme = theme === undefined || theme === null ? '' : String(theme).trim().toLowerCase();
-        const requestedLanguage = language === undefined || language === null ? '' : String(language).trim().toLowerCase();
+        const requestedLanguage = language === undefined || language === null ? '' : String(language).trim();
 
         const languageValue = normalizeLanguage(requestedLanguage) || normalizeLanguage(storedLanguage) || 'ko';
-        const themeChoice = requestedTheme || storedTheme || 'dark';
-        const resolvedTheme = resolveThemeName(themeChoice) || 'dark';
+        const themeValue = resolveThemeName(requestedTheme) || resolveThemeName(storedTheme) || 'dark';
 
-        root.dataset.theme = resolvedTheme;
+        root.dataset.theme = themeValue;
         root.dataset.language = languageValue;
         root.lang = languageValue;
 
         if (document.body) {
-            document.body.dataset.theme = resolvedTheme;
+            document.body.dataset.theme = themeValue;
             document.body.dataset.language = languageValue;
         }
 
         if (persistStorage) {
-            if (requestedTheme) localStorage.setItem(THEME_STORAGE_KEY, themeChoice);
+            if (requestedTheme || storedTheme) localStorage.setItem(THEME_STORAGE_KEY, themeValue);
             if (requestedLanguage) localStorage.setItem(LANGUAGE_STORAGE_KEY, languageValue);
         }
 
         window.__BSQ_PREFERENCES__ = {
-            theme: themeChoice,
-            resolvedTheme,
+            theme: themeValue,
+            resolvedTheme: themeValue,
             language: languageValue,
             updatedAt: Date.now(),
         };
+
+        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+            window.dispatchEvent(new CustomEvent('bsq_preferences', {
+                detail: window.__BSQ_PREFERENCES__,
+            }));
+        }
 
         return window.__BSQ_PREFERENCES__;
     }
@@ -590,7 +610,12 @@
 
             // Title
             if (settings.site_name) {
-                document.title = settings.site_name + (document.title.includes('|') ? document.title.substring(document.title.indexOf(' |')) : ' | B-Square');
+                const currentTitle = document.title || '';
+                if (!currentTitle.includes(settings.site_name)) {
+                    document.title = currentTitle.includes('|')
+                        ? currentTitle
+                        : `${currentTitle || settings.site_name} | ${settings.site_name}`;
+                }
             }
 
             // Favicon

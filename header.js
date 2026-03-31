@@ -9,7 +9,7 @@
   const scriptDir = scriptTag ? scriptTag.src.substring(0, scriptTag.src.lastIndexOf('/') + 1) : '';
   
   // Use scriptDir for absolute-like relative paths for CSS dynamic injection
-  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260330_10';
+  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260331_02';
 
   const homePrefix = currentPath.split('/').length > 2 ? '../' : './';
   const prefix = homePrefix;

@@ -5,6 +5,17 @@
     const profileImagePreview = document.getElementById('profileImagePreview');
     const profileReferrerCode = document.getElementById('profileReferrerCode');
 
+    function syncStoredUserProfile(patch) {
+        try {
+            const raw = localStorage.getItem('bsq_user');
+            const current = raw ? JSON.parse(raw) : {};
+            const next = { ...(current || {}), ...(patch || {}) };
+            localStorage.setItem('bsq_user', JSON.stringify(next));
+        } catch (error) {
+            console.warn('[tab_profile] bsq_user sync failed:', error);
+        }
+    }
+
     if (!profileForm) return;
 
     const FALLBACK_PROFILE_CATEGORIES = [
@@ -225,6 +236,17 @@
             });
 
             if (res && res.success) {
+                if (res.data) {
+                    syncStoredUserProfile({
+                        name: res.data.name || updates.name,
+                        phone: res.data.phone || updates.phone,
+                        username: res.data.username || updates.username,
+                        sns_link: res.data.sns_link || updates.sns_link,
+                        referrer_code: res.data.referrer_code || updates.referrer_code,
+                        preferred_category: res.data.preferred_category || updates.preferred_category,
+                        profile_image_url: res.data.profile_image_url || updates.profile_image_url || '',
+                    });
+                }
                 showMypageNotice?.('success', '프로필 저장 완료', '프로필 정보가 안전하게 저장되었습니다.');
                 updateSidebarUI(updates.name, document.getElementById('profileUsername')?.value);
                 selectedCategories = activeChips.map((value) => String(value || '').trim()).filter(Boolean);

@@ -1,6 +1,7 @@
-﻿import { createSessionCookie, hashPassword } from '../_lib/auth.js';
+import { createSessionCookie, hashPassword } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
 import { ensureAuthSchema } from '../_lib/schema.js';
+import { normalizeLanguagePreference, normalizeThemePreference } from '../_lib/preferences.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -19,8 +20,8 @@ export async function onRequestPost(context) {
     const nationality = body?.nationality || 'local';
     const signup_path = body?.signup_path || null;
     const referrer_code = body?.referrer_code || null;
-    const preferred_language = body?.preferred_language || null;
-    const preferred_theme = body?.preferred_theme || null;
+    const preferred_language = normalizeLanguagePreference(body?.preferred_language || null, 'ko');
+    const preferred_theme = normalizeThemePreference(body?.preferred_theme || null, 'dark');
 
     if (!email || !password) {
       return json(request, env, { success: false, error: 'Email and password are required.' }, { status: 400 });

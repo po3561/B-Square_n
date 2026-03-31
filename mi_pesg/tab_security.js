@@ -4,6 +4,34 @@ window.initSecurityTab = function (userId) {
     const languageSelect = document.getElementById('languageSelect');
     const themeSelect = document.getElementById('themeSelect');
 
+    function syncStoredUserPreference(patch) {
+        try {
+            const raw = localStorage.getItem('bsq_user');
+            const current = raw ? JSON.parse(raw) : {};
+            const next = { ...(current || {}), ...(patch || {}) };
+            localStorage.setItem('bsq_user', JSON.stringify(next));
+        } catch (error) {
+            console.warn('[tab_security] bsq_user sync failed:', error);
+        }
+    }
+
+    function normalizeLanguageChoice(value) {
+        const raw = String(value || '').trim();
+        const lower = raw.toLowerCase();
+        if (!raw) return 'ko';
+        if (lower === 'zh' || lower === 'zh-cn' || raw === '中文') return 'zh-CN';
+        if (lower === 'en' || lower === 'en-us' || lower === 'english') return 'en';
+        if (lower === 'ja' || lower === 'ja-jp' || raw === '日本語') return 'ja';
+        return ['ko', 'en', 'ja', 'zh-CN'].includes(raw) ? raw : 'ko';
+    }
+
+    function normalizeThemeChoice(value) {
+        const raw = String(value || '').trim().toLowerCase();
+        if (raw === 'light' || raw === 'dark') return raw;
+        if (raw === 'system') return 'dark';
+        return 'dark';
+    }
+
     async function loadSecurityState() {
         try {
             const res = await window.BSQ.api(`/api/users/${userId}`);
@@ -11,19 +39,23 @@ window.initSecurityTab = function (userId) {
 
             if (mfaToggle) mfaToggle.checked = !!res.data.mfa_active;
             if (languageSelect) {
-                languageSelect.value = res.data.preferred_language || localStorage.getItem('bsq_language') || 'ko';
+                languageSelect.value = normalizeLanguageChoice(
+                    res.data.preferred_language || localStorage.getItem('bsq_language') || 'ko'
+                );
             }
             if (themeSelect) {
-                themeSelect.value = res.data.preferred_theme || localStorage.getItem('bsq_theme') || 'dark';
+                themeSelect.value = normalizeThemeChoice(
+                    res.data.preferred_theme || localStorage.getItem('bsq_theme') || 'dark'
+                );
             }
             window.BSQ.applyPreferences?.({
-                language: languageSelect?.value || res.data.preferred_language || 'ko',
-                theme: themeSelect?.value || res.data.preferred_theme || 'dark',
+                language: normalizeLanguageChoice(languageSelect?.value || res.data.preferred_language || 'ko'),
+                theme: normalizeThemeChoice(themeSelect?.value || res.data.preferred_theme || 'dark'),
             });
         } catch (error) {
             console.warn('[tab_security] state load failed:', error);
-            if (languageSelect) languageSelect.value = localStorage.getItem('bsq_language') || 'ko';
-            if (themeSelect) themeSelect.value = localStorage.getItem('bsq_theme') || 'dark';
+            if (languageSelect) languageSelect.value = normalizeLanguageChoice(localStorage.getItem('bsq_language') || 'ko');
+            if (themeSelect) themeSelect.value = normalizeThemeChoice(localStorage.getItem('bsq_theme') || 'dark');
         }
     }
 
@@ -81,21 +113,27 @@ window.initSecurityTab = function (userId) {
 
     async function persistPreferences(payload) {
         const updates = {};
-        if (payload.preferred_language) updates.preferred_language = payload.preferred_language;
-        if (payload.preferred_theme) updates.preferred_theme = payload.preferred_theme;
+        if (payload.preferred_language) updates.preferred_language = normalizeLanguageChoice(payload.preferred_language);
+        if (payload.preferred_theme) updates.preferred_theme = normalizeThemeChoice(payload.preferred_theme);
 
         if (Object.keys(updates).length) {
-            await window.BSQ.api(`/api/users/${userId}`, {
+            const res = await window.BSQ.api(`/api/users/${userId}`, {
                 method: 'PUT',
                 body: JSON.stringify(updates),
             });
+            if (res?.success && res.data) {
+                syncStoredUserPreference({
+                    preferred_language: normalizeLanguageChoice(res.data.preferred_language || updates.preferred_language),
+                    preferred_theme: normalizeThemeChoice(res.data.preferred_theme || updates.preferred_theme),
+                });
+            }
         }
 
         if (updates.preferred_language) localStorage.setItem('bsq_language', updates.preferred_language);
         if (updates.preferred_theme) localStorage.setItem('bsq_theme', updates.preferred_theme);
         window.BSQ.applyPreferences?.({
-            language: updates.preferred_language || languageSelect?.value,
-            theme: updates.preferred_theme || themeSelect?.value,
+            language: normalizeLanguageChoice(updates.preferred_language || languageSelect?.value),
+            theme: normalizeThemeChoice(updates.preferred_theme || themeSelect?.value),
         });
     }
 
