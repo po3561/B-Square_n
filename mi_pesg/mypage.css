@@ -54,7 +54,7 @@
    2) Page Layout
    ========================================================= */
 .mypage-layout {
-    width: min(calc(110% - (var(--mp-page-gutter) * 2)), var(--mp-page-max));
+    width: min(calc(100% - (var(--mp-page-gutter) * 2)), var(--mp-page-max));
     margin: clamp(1rem, 2vw, 2rem) auto clamp(2rem, 4vw, 4rem);
     display: grid;
     grid-template-columns: 280px minmax(0, 1fr);

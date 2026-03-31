@@ -1,4 +1,4 @@
-﻿/* Shared shell overrides - cohesive dark UI system */
+/* Shared shell overrides - cohesive dark UI system */
 
 :root {
   color-scheme: dark;
@@ -25,7 +25,7 @@
   --pill-radius: 999px;
   --comm-accent-rgb: 123, 140, 255;
   --container-width: 1400px;
-  --container-wide: 1520px;
+  --container-wide: 1400px;
   --page-gutter: clamp(1rem, 2.1vw, 2.25rem);
   --section-spacing: clamp(2rem, 4.25vw, 4.75rem);
   --shadow-xs: 0 8px 18px rgba(0, 0, 0, 0.12);
@@ -288,11 +288,11 @@ body,
 }
 
 .header-inner {
-  padding: 0.95rem 0;
+  padding: 1rem 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .header-left {
@@ -317,6 +317,10 @@ body,
 
 .logo-image {
   flex-shrink: 0;
+  height: clamp(30px, 3.8vw, 36px);
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
 }
 
 .logo-text {
@@ -330,7 +334,7 @@ body,
 .main-nav ul {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: clamp(0.2rem, 1vw, 2rem);
   flex-wrap: wrap;
 }
 
@@ -424,11 +428,12 @@ body,
 
 .user-profile-btn {
   min-height: 42px;
-  padding: 0.5rem 0.85rem;
-  background: rgba(255, 255, 255, 0.06);
+  padding: 0.4rem 1.1rem 0.4rem 0.45rem;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 999px;
   color: #fff;
-  gap: 0.55rem;
+  gap: 0.75rem;
   white-space: nowrap;
 }
 
@@ -823,7 +828,7 @@ body,
   .view-grid,
   .community-shell,
   .mypage-layout {
-    width: min(calc(100% - (var(--page-gutter) * 2)), var(--container-wide));
+    width: min(calc(100% - (var(--page-gutter) * 2)), 1400px);
   }
 }
 
