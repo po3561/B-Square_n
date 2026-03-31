@@ -14,6 +14,27 @@
   --bsq-success: #21c18b;
   --bsq-shadow: var(--shadow-md);
   --bsq-shadow-soft: var(--shadow-sm);
+
+  /* Legacy aliases used by older page-specific stylesheets */
+  --bg-card: var(--bsq-surface);
+  --bg-surface: var(--bsq-surface);
+  --bg-deep: var(--bsq-bg);
+  --surface-soft: var(--bsq-surface-2);
+  --surface-strong: var(--bsq-surface-3);
+  --border-color: var(--bsq-border);
+  --glass-border: var(--bsq-border);
+  --glass-blur: blur(18px) saturate(140%);
+  --accent-color: var(--bsq-primary);
+  --accent-strong: var(--bsq-primary-strong);
+  --card-radius: 24px;
+  --btn-radius: 16px;
+  --primary-font: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --text-color: var(--bsq-text);
+  --text-primary: var(--bsq-text);
+  --text-secondary: var(--bsq-text-muted);
+  --text-muted: var(--bsq-text-muted);
+  --muted-text: var(--bsq-text-muted);
+  --comm-accent-rgb: 123, 140, 255;
 }
 
 html[data-theme="light"] {
@@ -28,6 +49,28 @@ html[data-theme="light"] {
   --bsq-primary-strong: #2448d8;
   --bsq-shadow: 0 18px 48px rgba(15, 23, 42, 0.10);
   --bsq-shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.08);
+
+  --bg-color: #f4f7fb;
+  --card-bg: rgba(255, 255, 255, 0.94);
+  --bg-card: var(--bsq-surface);
+  --bg-surface: var(--bsq-surface);
+  --bg-deep: var(--bsq-bg);
+  --surface-soft: var(--bsq-surface-2);
+  --surface-strong: var(--bsq-surface-3);
+  --border-color: var(--bsq-border);
+  --glass-border: var(--bsq-border);
+  --glass-blur: blur(18px) saturate(140%);
+  --accent-color: var(--bsq-primary);
+  --accent-strong: var(--bsq-primary-strong);
+  --card-radius: 24px;
+  --btn-radius: 16px;
+  --primary-font: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --text-color: var(--bsq-text);
+  --text-primary: var(--bsq-text);
+  --text-secondary: var(--bsq-text-muted);
+  --text-muted: var(--bsq-text-muted);
+  --muted-text: var(--bsq-text-muted);
+  --comm-accent-rgb: 65, 105, 255;
 }
 
 html[data-theme="dark"] {
@@ -42,6 +85,28 @@ html[data-theme="dark"] {
   --bsq-primary-strong: #dbe8ff;
   --bsq-shadow: 0 22px 50px rgba(0, 0, 0, 0.28);
   --bsq-shadow-soft: 0 14px 28px rgba(0, 0, 0, 0.20);
+
+  --bg-color: #070b12;
+  --card-bg: rgba(18, 21, 30, 0.92);
+  --bg-card: var(--bsq-surface);
+  --bg-surface: var(--bsq-surface);
+  --bg-deep: var(--bsq-bg);
+  --surface-soft: var(--bsq-surface-2);
+  --surface-strong: var(--bsq-surface-3);
+  --border-color: var(--bsq-border);
+  --glass-border: var(--bsq-border);
+  --glass-blur: blur(18px) saturate(140%);
+  --accent-color: var(--bsq-primary);
+  --accent-strong: var(--bsq-primary-strong);
+  --card-radius: 24px;
+  --btn-radius: 16px;
+  --primary-font: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --text-color: var(--bsq-text);
+  --text-primary: var(--bsq-text);
+  --text-secondary: var(--bsq-text-muted);
+  --text-muted: var(--bsq-text-muted);
+  --muted-text: var(--bsq-text-muted);
+  --comm-accent-rgb: 123, 140, 255;
 }
 
 html[data-theme] {
@@ -455,4 +520,23 @@ html[data-theme="light"] .empty-inline,
 html[data-theme="light"] .chat-list-empty,
 html[data-theme="light"] .no-chat-inner {
   color: var(--bsq-text-muted) !important;
+}
+
+@media (max-width: 768px) {
+  :where(.notice-left-panel,
+         .notice-right-panel,
+         .create-content,
+         .content-card,
+         .mypage-sidebar,
+         .mypage-hero,
+         .mypage-panel-card,
+         .dashboard-stat-card,
+         .dashboard-commerce-shell,
+         .commerce-shell,
+         .commerce-hero,
+         .security-card,
+         .class-banner-shell,
+         .class-banner-inner) {
+    min-height: auto !important;
+  }
 }

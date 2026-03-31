@@ -98,6 +98,8 @@ function applyOperatorToggle(user, isOperatorEligible) {
 }
 
 function bindSidebarProfile(currentUser, { guest = false, isOperatorEligible = false } = {}) {
+    document.body.dataset.authState = guest ? 'guest' : 'member';
+
     const nickname = document.getElementById('displayNickname');
     const displayName = document.getElementById('displayName');
     const email = document.getElementById('displayEmail');
@@ -131,11 +133,15 @@ function bindSidebarProfile(currentUser, { guest = false, isOperatorEligible = f
         }
     }
 
-    if (guestLoginButton) guestLoginButton.hidden = !guest;
+    if (guestLoginButton) {
+        guestLoginButton.hidden = !guest;
+        guestLoginButton.style.display = guest ? 'inline-flex' : 'none';
+    }
     if (guestGateLoginButton) guestGateLoginButton.onclick = goLogin;
 
     if (logoutButton) {
         logoutButton.hidden = guest;
+        logoutButton.style.display = guest ? 'none' : 'inline-flex';
         logoutButton.onclick = async () => {
             if (window.handleGlobalLogout) {
                 await window.handleGlobalLogout();

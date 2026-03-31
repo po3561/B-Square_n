@@ -5,11 +5,7 @@
 
 :root {
     --bg-deep: var(--bg-color);
-    --card-bg: var(--card-bg);
     --accent-color: #ff4d4d;
-    --text-primary: var(--text-primary);
-    --text-secondary: var(--text-secondary);
-    --glass-border: var(--glass-border);
     --glass-blur: blur(15px) saturate(180%);
     --comm-bg: var(--bg-color);
     --comm-card-bg: var(--card-bg);
@@ -3356,5 +3352,227 @@ body.class-view-page .content-card {
     body.class-view-page .review-section-title,
     body.class-view-page .section-title-inline {
         font-size: 0.92rem;
+    }
+}
+
+/* Final compactness pass for the class detail page */
+body.class-view-page .view-grid {
+    gap: 1.25rem;
+    padding: 1.25rem 0 2rem;
+}
+
+body.class-view-page .view-tabs {
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    padding: 0.45rem 0.65rem 0;
+}
+
+body.class-view-page .content-card {
+    margin-bottom: 1.4rem;
+    padding: clamp(1rem, 1.6vw, 1.5rem);
+}
+
+body.class-view-page .intro-section {
+    margin: 1.5rem 0;
+}
+
+body.class-view-page .intro-divider {
+    margin: 2rem 0;
+}
+
+body.class-view-page .target-list {
+    gap: 0.9rem;
+}
+
+body.class-view-page .target-list li {
+    padding: 1rem 1.1rem;
+    border-radius: 14px;
+    gap: 12px;
+}
+
+body.class-view-page .view-sidebar .sticky-card-premium {
+    gap: 0.8rem;
+    padding: 1.1rem;
+}
+
+body.class-view-page .hero-quick-stats {
+    gap: 0.65rem;
+}
+
+body.class-view-page .hero-stat-card {
+    min-height: 0;
+}
+
+body.class-view-page .empty-state-card {
+    padding: 1.4rem 1rem;
+}
+
+@media (max-width: 768px) {
+    body.class-view-page .view-container {
+        max-width: calc(100vw - 0.75rem);
+        padding-bottom: 5.5rem;
+    }
+
+    body.class-view-page .premium-hero {
+        padding: 0.85rem 0 0.7rem;
+    }
+
+    body.class-view-page .hero-brief-panel,
+    body.class-view-page .content-card,
+    body.class-view-page .view-sidebar .sticky-card-premium {
+        border-radius: 20px;
+    }
+
+    body.class-view-page .hero-brief-panel {
+        padding: 0.95rem;
+        gap: 0.8rem;
+    }
+
+    body.class-view-page .content-card {
+        margin-bottom: 1rem;
+        padding: 0.95rem;
+    }
+
+    body.class-view-page .intro-section {
+        margin: 1.15rem 0;
+    }
+
+    body.class-view-page .intro-divider {
+        margin: 1.4rem 0;
+    }
+
+    body.class-view-page .target-list {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    body.class-view-page .target-list li {
+        padding: 0.9rem 1rem;
+    }
+
+    body.class-view-page .view-tabs {
+        gap: 0.35rem;
+        padding: 0.45rem 0.5rem;
+        border-radius: 18px;
+        margin-bottom: 1rem;
+    }
+
+    body.class-view-page .tab-btn {
+        min-height: 36px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.82rem;
+    }
+
+    body.class-view-page .view-sidebar .sticky-card-premium {
+        padding: 0.95rem;
+    }
+}
+
+@media (max-width: 430px) {
+    body.class-view-page .content-card {
+        padding: 0.9rem;
+    }
+
+    body.class-view-page .view-tabs {
+        gap: 0.3rem;
+        padding: 0.4rem 0.45rem;
+    }
+
+    body.class-view-page .tab-btn {
+        min-height: 34px;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 390px) {
+    body.class-view-page .view-container {
+        max-width: calc(100vw - 0.5rem);
+    }
+
+    body.class-view-page .premium-hero {
+        padding: 0.72rem 0 0.55rem;
+    }
+
+    body.class-view-page .hero-brief-panel,
+    body.class-view-page .content-card,
+    body.class-view-page .view-sidebar .sticky-card-premium {
+        padding: 0.8rem;
+        border-radius: 18px;
+    }
+
+    body.class-view-page .content-card {
+        margin-bottom: 0.9rem;
+    }
+
+    body.class-view-page .hero-title {
+        font-size: clamp(1.35rem, 8vw, 1.8rem);
+    }
+
+    body.class-view-page .hero-summary,
+    body.class-view-page .intro-summary,
+    body.class-view-page .review-section-caption {
+        font-size: 0.86rem;
+        line-height: 1.55;
+    }
+
+    body.class-view-page .view-tabs {
+        top: 66px;
+        gap: 0.25rem;
+        padding: 0.35rem 0.4rem;
+        border-radius: 16px;
+    }
+
+    body.class-view-page .tab-btn {
+        min-height: 32px;
+        padding: 0.42rem 0.6rem;
+        font-size: 0.74rem;
+    }
+
+    body.class-view-page .section-title-inline,
+    body.class-view-page .review-section-title {
+        font-size: 0.96rem;
+    }
+}
+
+@media (max-width: 220px) {
+    body.class-view-page .view-container {
+        max-width: calc(100vw - 0.2rem);
+        padding-bottom: 4rem;
+    }
+
+    body.class-view-page .premium-hero {
+        padding: 0.35rem 0 0.25rem;
+    }
+
+    body.class-view-page .hero-brief-panel,
+    body.class-view-page .content-card,
+    body.class-view-page .view-sidebar .sticky-card-premium {
+        padding: 0.65rem;
+        border-radius: 14px;
+    }
+
+    body.class-view-page .content-card {
+        margin-bottom: 0.75rem;
+    }
+
+    body.class-view-page .hero-summary,
+    body.class-view-page .intro-summary,
+    body.class-view-page .review-section-caption {
+        font-size: 0.76rem;
+        line-height: 1.45;
+    }
+
+    body.class-view-page .view-tabs {
+        top: 60px;
+        gap: 0.2rem;
+        padding: 0.3rem 0.35rem;
+        border-radius: 14px;
+    }
+
+    body.class-view-page .tab-btn {
+        min-height: 30px;
+        padding: 0.35rem 0.5rem;
+        font-size: 0.68rem;
     }
 }

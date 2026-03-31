@@ -59,6 +59,12 @@
     align-items: start;
 }
 
+.class-notice-container {
+    width: min(1300px, calc(100% - 4rem));
+    margin: 2rem auto 0;
+    padding: 0;
+}
+
 @media (max-width: 900px) {
     .notice-container {
         grid-template-columns: 1fr;
@@ -73,7 +79,7 @@
     border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
     border-radius: var(--card-radius, 20px);
     padding: 1.5rem;
-    min-height: 500px;
+    min-height: 0;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
@@ -82,6 +88,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 0.9rem;
+    flex-wrap: wrap;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--border-color);
@@ -97,6 +105,8 @@
     display: flex;
     gap: 10px;
     align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .search-input {
@@ -106,6 +116,7 @@
     padding: 8px 12px;
     border-radius: 8px;
     font-size: 0.9rem;
+    min-width: 220px;
 }
 
 .search-input:focus {
@@ -605,7 +616,9 @@
     }
 
     .notice-hero {
-        height: 160px;
+        height: auto;
+        min-height: 160px;
+        padding: 1.5rem 1rem;
         border-radius: 16px;
     }
 
@@ -617,6 +630,12 @@
     .notice-right-panel {
         padding: 1.2rem;
         border-radius: 16px;
+        min-height: 0;
+    }
+
+    .class-notice-container {
+        width: calc(100% - 2rem);
+        margin: 1.5rem auto 0;
     }
 
     .notice-list-header {
@@ -627,7 +646,7 @@
         grid-template-columns: 1fr;
         grid-gap: 8px;
         text-align: left;
-        padding: 1rem;
+        padding: 0.95rem 1rem;
         background: rgba(255, 255, 255, 0.02);
         border-radius: 12px;
         margin-bottom: 10px;
@@ -699,11 +718,13 @@
 
 @media (max-width: 480px) {
     .notice-main {
-        padding: 1rem 0.8rem;
+        padding: 1rem 0.75rem;
     }
 
     .notice-hero {
-        height: 130px;
+        height: auto;
+        min-height: 140px;
+        padding: 1.2rem 0.9rem;
         border-radius: 12px;
     }
 
@@ -723,10 +744,17 @@
 
     .header-actions {
         width: 100%;
+        justify-content: stretch;
+    }
+
+    .class-notice-container {
+        width: calc(100% - 1.5rem);
+        margin: 1.2rem auto 0;
     }
 
     .search-input {
         width: 100%;
+        min-width: 0;
     }
 
     .viewer-meta-info {
@@ -766,6 +794,11 @@
     .notice-left-panel,
     .notice-right-panel {
         padding: 1rem;
+        min-height: 0;
+    }
+
+    .class-notice-container {
+        width: calc(100% - 1.2rem);
     }
 
     .faq-question {
@@ -786,6 +819,11 @@
     .notice-left-panel,
     .notice-right-panel {
         padding: 0.8rem;
+        min-height: 0;
+    }
+
+    .class-notice-container {
+        width: calc(100% - 1rem);
     }
 
     .panel-header h2 {
@@ -799,5 +837,231 @@
     .btn-admin {
         padding: 6px 10px;
         font-size: 0.8rem;
+    }
+}
+
+/* Final compactness pass for content-density balance */
+.notice-left-panel,
+.notice-right-panel {
+    min-height: 0;
+    height: auto;
+}
+
+.notice-container {
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.95fr);
+    gap: 1.5rem;
+}
+
+.panel-header {
+    gap: 0.75rem;
+}
+
+.header-actions {
+    flex-wrap: wrap;
+}
+
+.search-input {
+    min-width: min(100%, 240px);
+}
+
+.notice-list-header,
+.notice-item {
+    grid-template-columns: 72px minmax(0, 1fr) 96px 96px 64px;
+}
+
+.notice-item {
+    padding: 12px 10px;
+}
+
+.item-title {
+    min-width: 0;
+}
+
+.faq-list {
+    gap: 10px;
+}
+
+.class-notice-container {
+    margin: 1.5rem auto 0 !important;
+    padding: 0 1.5rem !important;
+}
+
+@media (max-width: 900px) {
+    .notice-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .notice-main {
+        padding: 1.25rem 1rem;
+        min-height: auto;
+    }
+
+    .notice-hero {
+        height: auto;
+        min-height: 140px;
+        padding: 1.3rem 1rem;
+        border-radius: 16px;
+    }
+
+    .notice-left-panel,
+    .notice-right-panel {
+        padding: 1rem;
+        min-height: 0;
+        border-radius: 16px;
+    }
+
+    .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.85rem;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .search-input {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .notice-list-header {
+        display: none;
+    }
+
+    .notice-item {
+        grid-template-columns: 1fr;
+        gap: 0.45rem;
+        text-align: left;
+        padding: 0.95rem;
+        border-radius: 14px;
+    }
+
+    .item-meta-mobile {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .notice-filter-tabs {
+        gap: 6px;
+        padding: 3px;
+    }
+
+    .filter-tab {
+        padding: 7px 12px;
+    }
+
+    .faq-question {
+        padding: 0.95rem 1rem;
+    }
+
+    .faq-answer {
+        padding: 0 1rem 1rem;
+    }
+
+    .class-notice-container {
+        width: 100%;
+        padding: 0 1rem !important;
+        margin-top: 1.25rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .notice-main {
+        padding: 1rem 0.75rem;
+    }
+
+    .notice-hero {
+        min-height: 120px;
+        border-radius: 14px;
+    }
+
+    .hero-content h1 {
+        font-size: 1.55rem;
+    }
+
+    .hero-content p {
+        font-size: 0.92rem;
+    }
+
+    .viewer-meta-info {
+        padding: 0 1rem 0.9rem;
+    }
+
+    .modal-header-viewer {
+        padding: 1.2rem 1rem 0.75rem;
+    }
+
+    .viewer-body {
+        padding: 1rem;
+    }
+
+    .viewer-actions {
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 375px) {
+    .notice-main {
+        padding: 0.8rem 0.6rem;
+    }
+
+    .notice-hero {
+        min-height: 112px;
+    }
+
+    .hero-content h1 {
+        font-size: 1.35rem;
+    }
+
+    .notice-left-panel,
+    .notice-right-panel {
+        padding: 0.9rem;
+    }
+
+    .class-notice-container {
+        padding: 0 0.75rem !important;
+    }
+}
+
+@media (max-width: 320px) {
+    .notice-main {
+        padding: 0.7rem 0.45rem;
+    }
+
+    .notice-hero {
+        min-height: 104px;
+    }
+
+    .hero-content h1 {
+        font-size: 1.25rem;
+    }
+
+    .hero-content p {
+        font-size: 0.85rem;
+    }
+
+    .notice-left-panel,
+    .notice-right-panel {
+        padding: 0.75rem;
+    }
+
+    .panel-header h2 {
+        font-size: 1.15rem;
+    }
+
+    .search-input {
+        padding: 6px 8px;
+    }
+
+    .btn-admin {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .class-notice-container {
+        padding: 0 0.65rem !important;
     }
 }

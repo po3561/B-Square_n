@@ -2,10 +2,10 @@
 
 .create-layout {
     max-width: 1200px;
-    margin: 3rem auto;
+    margin: clamp(1.75rem, 3vw, 2.75rem) auto;
     display: flex;
-    gap: 3rem;
-    padding: 0 2rem;
+    gap: 2rem;
+    padding: 0 1.5rem;
     min-height: 80vh;
 }
 
@@ -16,7 +16,7 @@
 }
 
 .sidebar-title {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
     font-weight: 800;
     margin-bottom: 2rem;
     color: var(--text-primary);
@@ -25,7 +25,7 @@
 .create-steps {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.15rem;
     position: sticky;
     top: 120px;
 }
@@ -33,7 +33,7 @@
 .step-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.85rem;
     color: var(--text-secondary);
     opacity: 0.5;
     transition: all 0.3s ease;
@@ -65,7 +65,7 @@
 }
 
 .step-text {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
 }
 
@@ -75,7 +75,7 @@
     background: var(--card-bg, rgba(30, 30, 30, 0.4));
     backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
     -webkit-backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
-    padding: 2.5rem 3rem; /* Reduced from 4rem */
+    padding: 2.25rem 2.5rem;
     border-radius: 24px;
     border: 1px solid var(--glass-border);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
@@ -96,23 +96,23 @@
 }
 
 .section-title {
-    font-size: 1.8rem; /* Slightly reduced */
+    font-size: 1.65rem;
     font-weight: 800;
-    margin-bottom: 2rem; /* Reduced from 3rem */
+    margin-bottom: 1.75rem;
     color: var(--text-primary);
     line-height: 1.3;
 }
 
 /* 폼 요소 스타일 */
 .field-group {
-    margin-bottom: 1.8rem; /* Reduced from 2.5rem */
+    margin-bottom: 1.55rem;
     width: 100%;
 }
 
 .field-group label {
     display: block;
-    margin-bottom: 0.8rem; /* Reduced from 1rem */
-    font-size: 1.05rem;
+    margin-bottom: 0.7rem;
+    font-size: 0.98rem;
     font-weight: 600;
     color: var(--text-primary);
 }
@@ -140,13 +140,13 @@ input[type="number"] {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.5rem;
+    padding: 0.88rem 1.15rem;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     cursor: pointer;
     transition: all 0.3s;
-    min-height: 56px;
+    min-height: 50px;
 }
 
 .dropdown-selected:hover {
@@ -195,7 +195,7 @@ input[type="number"] {
 }
 
 .dropdown-item {
-    padding: 1rem 1.5rem;
+    padding: 0.88rem 1.15rem;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -223,17 +223,17 @@ input[type="number"] {
 .premium-input, 
 .premium-textarea {
     width: 100%;
-    padding: 1rem 1.2rem;
+    padding: 0.88rem 1rem;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--glass-border);
-    border-radius: 12px;
+    border-radius: 14px;
     color: var(--text-primary);
-    font-size: 1rem;
+    font-size: 0.96rem;
     transition: all 0.3s;
 }
 
 .premium-textarea {
-    min-height: 120px;
+    min-height: 112px;
     resize: none;
     overflow-y: auto;
     line-height: 1.6;
@@ -348,25 +348,25 @@ input[type="number"] {
 .create-actions {
     display: flex;
     justify-content: space-between;
-    margin-top: 3rem; /* Reduced from 4rem */
-    padding: 2rem 0;
+    margin-top: 2.5rem;
+    padding: 1.75rem 0;
     border-top: 1px solid var(--glass-border);
     width: 100%;
     gap: 15px;
 }
 
 .create-actions button {
-    padding: 1.2rem 3.5rem !important;
+    padding: 0.95rem 1.7rem !important;
     border-radius: 16px !important;
     font-weight: 800 !important;
-    font-size: 1.1rem !important;
+    font-size: 1rem !important;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     letter-spacing: -0.02em;
-    min-width: 160px;
+    min-width: 140px;
 }
 
 .btn-prev {
@@ -448,53 +448,56 @@ input[type="number"] {
     }
 
     .create-content {
-        padding: 2.5rem;
+        padding: 2.1rem 2rem;
     }
 }
 
 @media (max-width: 768px) {
     .create-layout {
-        margin: 1.5rem auto;
-        gap: 1.5rem;
-        padding: 0 1rem;
+        margin: 1.25rem auto;
+        gap: 1.25rem;
+        padding: 0 0.9rem;
     }
 
     .create-content {
-        padding: 2rem 1.5rem;
-        border-radius: 16px;
+        padding: 1.55rem 1.2rem;
+        border-radius: 18px;
     }
 
     .section-title {
-        font-size: 1.6rem;
-        margin-bottom: 2rem;
+        font-size: 1.45rem;
+        margin-bottom: 1.5rem;
     }
 
     .sidebar-title {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
         margin-bottom: 1rem;
     }
 
     .step-text {
-        font-size: 0.9rem;
+        font-size: 0.84rem;
+        line-height: 1.2;
     }
 
     .step-num {
-        width: 30px;
-        height: 30px;
-        font-size: 0.8rem;
+        width: 28px;
+        height: 28px;
+        font-size: 0.78rem;
     }
 
     .create-actions {
-        margin-top: 2rem;
+        margin-top: 1.75rem;
     }
 
     .create-actions button {
-        padding: 0.9rem 1.5rem;
-        font-size: 0.95rem;
+        padding: 0.85rem 1rem !important;
+        font-size: 0.92rem !important;
+        min-width: 0;
     }
 
     .image-upload-grid {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+        gap: 0.75rem;
     }
 
     .radio-group {
@@ -505,15 +508,15 @@ input[type="number"] {
 
 @media (max-width: 480px) {
     .create-content {
-        padding: 1.5rem 1rem;
+        padding: 1.35rem 1rem;
     }
 
     .section-title {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
     }
 
     .input-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
     }
 
     .create-actions {
@@ -523,51 +526,51 @@ input[type="number"] {
 
     .create-actions button {
         width: 100%;
-        padding: 0.9rem;
+        padding: 0.82rem 1rem !important;
     }
 }
 
 @media (max-width: 375px) {
     .create-layout {
-        padding: 0 0.8rem;
+        padding: 0 0.65rem;
     }
 
     .create-content {
-        padding: 1.2rem 0.8rem;
+        padding: 1.15rem 0.85rem;
     }
 
     .section-title {
-        font-size: 1.3rem;
+        font-size: 1.22rem;
     }
 
     .input-group label {
-        font-size: 1rem;
+        font-size: 0.92rem;
     }
 }
 
 @media (max-width: 320px) {
     .create-layout {
-        padding: 0 0.6rem;
+        padding: 0 0.5rem;
     }
 
     .create-content {
-        padding: 1rem 0.6rem;
+        padding: 1rem 0.7rem;
     }
 
     .section-title {
-        font-size: 1.2rem;
+        font-size: 1.12rem;
     }
 
     .input-group input,
     .input-group select,
     .input-group textarea {
-        padding: 0.8rem;
-        font-size: 0.9rem;
+        padding: 0.75rem 0.85rem;
+        font-size: 0.88rem;
     }
 
     .create-actions button {
-        padding: 0.8rem;
-        font-size: 0.9rem;
+        padding: 0.78rem 0.9rem !important;
+        font-size: 0.88rem !important;
     }
 }
 
@@ -1643,5 +1646,320 @@ input[type="number"] {
         padding: 0.8rem !important;
         font-size: 0.9rem !important;
         min-height: 40px !important;
+    }
+}
+
+/* Final compactness pass for the wizard layout */
+.create-layout {
+    margin: 1.25rem auto 3rem;
+    padding: 0 1.25rem;
+    gap: 1rem;
+    min-height: auto;
+}
+
+.create-sidebar {
+    width: min(300px, 30vw);
+}
+
+.create-steps {
+    gap: 0.5rem;
+}
+
+.step-item {
+    min-height: 52px;
+    padding: 0.8rem 0.9rem;
+}
+
+.step-num {
+    width: 32px;
+    height: 32px;
+    font-size: 0.82rem;
+}
+
+.step-text {
+    font-size: 0.92rem;
+}
+
+.create-form {
+    gap: 0.85rem;
+}
+
+.form-section {
+    padding: 1.15rem;
+    border-radius: 22px;
+}
+
+.step-header {
+    margin-bottom: 0.85rem;
+}
+
+.step-header h2 {
+    font-size: clamp(1.35rem, 2vw, 1.9rem);
+}
+
+.field-group {
+    margin-top: 0.85rem;
+    padding: 0.9rem 0.95rem;
+    border-radius: 18px;
+}
+
+.field-group label {
+    margin-bottom: 0.5rem;
+    font-size: 0.98rem;
+}
+
+.premium-input,
+.premium-textarea {
+    min-height: 46px;
+    border-radius: 16px;
+}
+
+.premium-textarea {
+    min-height: 110px;
+}
+
+.type-selection-grid,
+.price-type-grid {
+    gap: 0.75rem;
+}
+
+.type-card-content,
+.price-card-content {
+    min-height: 96px;
+    padding: 0.9rem;
+}
+
+.image-upload-grid {
+    gap: 0.8rem;
+}
+
+.upload-slot {
+    min-height: 154px;
+}
+
+.sub-instructor-list {
+    padding: 0.85rem;
+    gap: 8px;
+}
+
+.pass-options-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.curriculum-container {
+    gap: 0.85rem;
+}
+
+.chapter-item {
+    padding: 1rem;
+    border-radius: 20px;
+}
+
+.btn-add-chapter,
+.btn-prev,
+.btn-next,
+.btn-submit,
+.btn-secondary,
+.btn-primary {
+    min-height: 46px;
+    border-radius: 14px;
+}
+
+.create-actions {
+    margin-top: 2rem;
+    padding: 1.25rem 0;
+    gap: 12px;
+}
+
+.create-actions button {
+    padding: 1rem 2rem !important;
+    font-size: 1rem !important;
+    min-width: 140px;
+}
+
+.alert-box {
+    padding: 1rem 1.1rem;
+    gap: 10px;
+}
+
+.radio-group {
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.mobile-step-nav {
+    margin-bottom: 1.25rem;
+    padding: 1.25rem;
+}
+
+.mobile-nav-title {
+    font-size: 1.05rem;
+    margin-bottom: 1.1rem;
+}
+
+.mobile-nav-dots {
+    padding: 0 6px;
+    gap: 4px;
+}
+
+.nav-dot {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+}
+
+.mobile-nav-progress {
+    margin: 0 6px 1.1rem;
+}
+
+.mobile-nav-current {
+    font-size: 0.98rem;
+}
+
+.capacity-settings,
+.pricing-form-grid,
+.detailed-pass-options,
+.alert-box.info-alert {
+    margin-top: 1.25rem !important;
+    margin-bottom: 1.25rem !important;
+    padding: 1rem !important;
+}
+
+.pricing-form-grid,
+.capacity-grid {
+    gap: 14px !important;
+}
+
+.pass-sub-input {
+    padding-left: 0 !important;
+}
+
+@media (max-width: 640px) {
+    .create-layout {
+        margin-top: 0.75rem;
+        padding: 0 0.85rem;
+    }
+
+    .create-content {
+        padding-bottom: 0.25rem;
+    }
+
+    .form-section {
+        padding: 1rem;
+        border-radius: 20px;
+    }
+
+    .field-group {
+        padding: 0.85rem;
+    }
+
+    .image-upload-grid,
+    .type-selection-grid,
+    .price-type-grid,
+    .settlement-fields-grid,
+    .capacity-grid,
+    .pricing-form-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .upload-slot {
+        min-height: 140px;
+    }
+
+    .create-actions {
+        flex-direction: column;
+    }
+
+    .create-actions button {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 350px) {
+    .create-layout {
+        padding: 0 0.5rem !important;
+        gap: 0.85rem !important;
+    }
+
+    .mobile-step-nav {
+        padding: 1rem 0.45rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .mobile-nav-title {
+        font-size: 1rem !important;
+        margin-bottom: 0.9rem !important;
+    }
+
+    .mobile-nav-dots {
+        padding: 0 4px !important;
+        gap: 2px !important;
+    }
+
+    .nav-dot {
+        width: 20px !important;
+        height: 20px !important;
+        min-width: 20px !important;
+        font-size: 0.65rem !important;
+    }
+
+    .mobile-nav-progress {
+        margin: 0 4px 1rem !important;
+        height: 4px !important;
+    }
+
+    .mobile-nav-current {
+        font-size: 0.85rem !important;
+    }
+
+    .create-content {
+        padding: 0.85rem 0.45rem !important;
+    }
+
+    .form-section {
+        padding: 0.9rem;
+    }
+
+    .step-header h2 {
+        font-size: 1.15rem !important;
+    }
+
+    .field-group {
+        padding: 0.7rem !important;
+    }
+
+    .premium-input,
+    .premium-textarea {
+        padding: 0.7rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    .upload-slot {
+        min-height: 130px;
+    }
+
+    .create-actions {
+        gap: 8px !important;
+    }
+
+    .create-actions button {
+        padding: 0.75rem !important;
+        font-size: 0.9rem !important;
+        min-height: 40px !important;
+    }
+
+    .capacity-settings,
+    .pricing-form-grid,
+    .detailed-pass-options,
+    .alert-box.info-alert {
+        margin-top: 1rem !important;
+        margin-bottom: 1rem !important;
+        padding: 0.85rem !important;
+    }
+
+    .pricing-form-grid,
+    .capacity-grid {
+        gap: 12px !important;
     }
 }

@@ -181,7 +181,9 @@
                     console.warn(`[BSQ API] ${endpoint} warning:`, result.error, result.detail || '');
                     if (method !== 'GET') {
                         const warningText = [result.error, result.detail].filter(Boolean).join(' / ') || 'Request failed.';
-                        showOnScreenAlert(`[API] ${warningText}`);
+                if (method !== 'GET' || window.__BSQ_SHOW_API_ALERTS__ === true) {
+                    showOnScreenAlert(`[API] ${warningText}`);
+                }
                     }
                 } else if (result.data) {
                     result.data = fixImageUrls(result.data);
@@ -209,13 +211,21 @@
                     ? `API connection failed. Tried: ${triedBases}`
                     : `[BSQ API] ${error.message}`;
 
-                showOnScreenAlert(msg);
+                if (method !== 'GET' || window.__BSQ_SHOW_API_ALERTS__ === true) {
+                    showOnScreenAlert(msg);
+                } else {
+                    console.warn(msg);
+                }
                 return { success: false, error: error.message, tried_bases: candidateBases };
             }
         }
 
         const fallbackError = lastError || new Error('Unknown error');
-        showOnScreenAlert(`[BSQ API] ${fallbackError.message}`);
+        if (method !== 'GET' || window.__BSQ_SHOW_API_ALERTS__ === true) {
+            showOnScreenAlert(`[BSQ API] ${fallbackError.message}`);
+        } else {
+            console.warn(`[BSQ API] ${fallbackError.message}`);
+        }
         return { success: false, error: fallbackError.message };
     }
 
@@ -539,6 +549,10 @@
     // ==================================================
     function updateConnectionHub() {
         if (typeof document === 'undefined') return;
+        if (window.__BSQ_SHOW_CONNECTION_HUB__ !== true) {
+            document.getElementById('bsqConnectionHub')?.remove();
+            return;
+        }
         let hub = document.getElementById('bsqConnectionHub');
         if (!hub) {
             hub = document.createElement('div');

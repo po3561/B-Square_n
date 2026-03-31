@@ -85,7 +85,7 @@
    ========================================================= */
 .profile-summary {
     display: grid;
-    gap: 0.5rem;
+    gap: 0.42rem;
     text-align: left;
     padding: var(--mp-card-pad);
     border-radius: var(--mp-radius-lg);
@@ -96,21 +96,21 @@
 }
 
 .profile-img-placeholder {
-    width: clamp(70px, 18vw, 92px);
-    height: clamp(70px, 18vw, 92px);
-    border-radius: 18px;
+    width: clamp(64px, 14vw, 80px);
+    height: clamp(64px, 14vw, 80px);
+    border-radius: 16px;
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid var(--mp-border);
     display: grid;
     place-items: center;
-    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-size: clamp(1.35rem, 3.6vw, 1.9rem);
     color: var(--mp-text);
     overflow: hidden;
 }
 
 .profile-summary h3 {
     margin: 0.2rem 0 0;
-    font-size: clamp(1.05rem, 1.4vw, 1.3rem);
+    font-size: clamp(0.98rem, 1.25vw, 1.2rem);
     font-weight: 700;
 }
 
@@ -922,8 +922,7 @@
     }
 
     .mypage-page .drawer-menu,
-    .mypage-page .drawer-overlay,
-    .mypage-page .bottom-nav {
+    .mypage-page .drawer-overlay {
         display: none !important;
     }
 
@@ -1075,31 +1074,32 @@
 }
 
 .profile-summary-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 0.65rem;
 }
 
 .profile-actions-stack {
     display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
-    min-width: 7rem;
-    align-items: stretch;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: flex-start;
+    gap: 0.35rem;
+    min-width: 0;
 }
 
 .profile-mini-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 38px;
-    padding: 0.52rem 0.82rem;
+    min-height: 34px;
+    padding: 0.4rem 0.7rem;
     border-radius: 999px;
     border: 1px solid var(--mp-border);
     background: var(--mp-surface-soft);
     color: var(--mp-text);
-    font-size: var(--mp-body-sm);
+    font-size: clamp(0.72rem, 0.9vw, 0.82rem);
     font-weight: 700;
     white-space: nowrap;
 }
@@ -1112,14 +1112,14 @@
 .profile-meta-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.55rem;
-    margin-top: 0.35rem;
+    gap: 0.5rem;
+    margin-top: 0.3rem;
 }
 
 .profile-meta-item {
     display: grid;
     gap: 0.22rem;
-    padding: 0.75rem 0.85rem;
+    padding: 0.64rem 0.72rem;
     border-radius: var(--mp-radius-sm);
     border: 1px solid var(--mp-border);
     background: var(--mp-surface-soft);
@@ -1136,7 +1136,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: var(--mp-body);
+    font-size: clamp(0.84rem, 1vw, 0.96rem);
 }
 
 .profile-meta-item:last-child {
@@ -1952,9 +1952,21 @@
     }
 
     body[data-page="mypage"] > .drawer-menu,
-    body[data-page="mypage"] > .drawer-overlay,
-    body[data-page="mypage"] > nav.bottom-nav {
+    body[data-page="mypage"] > .drawer-overlay {
         display: none !important;
+    }
+
+    body[data-page="mypage"][data-auth-state="loading"] #guestLoginButton,
+    body[data-page="mypage"][data-auth-state="loading"] #logoutButton,
+    body[data-page="mypage"][data-auth-state="loading"] #operatorModeToggle,
+    body[data-page="mypage"][data-auth-state="member"] #guestLoginButton,
+    body[data-page="mypage"][data-auth-state="guest"] #logoutButton,
+    body[data-page="mypage"][data-auth-state="guest"] #operatorModeToggle {
+        display: none !important;
+    }
+
+    body[data-page="mypage"] .mypage-shell {
+        padding-bottom: calc(6.8rem + env(safe-area-inset-bottom));
     }
 
     .mypage-nav {
@@ -1971,8 +1983,8 @@
 
     .nav-btn {
         flex: 0 0 auto;
-        min-width: 88px;
-        padding: 0.7rem 0.65rem;
+        min-width: 78px;
+        padding: 0.66rem 0.6rem;
         justify-content: center;
     }
 
@@ -1980,8 +1992,32 @@
         font-size: 0.72rem;
     }
 
+    .profile-summary-top {
+        align-items: start;
+        gap: 0.55rem;
+    }
+
+    .profile-actions-stack {
+        justify-content: flex-end;
+        gap: 0.28rem;
+    }
+
+    .profile-mini-btn {
+        min-height: 32px;
+        padding: 0.36rem 0.62rem;
+        font-size: 0.7rem;
+    }
+
+    .profile-img-placeholder {
+        width: clamp(54px, 14vw, 68px);
+        height: clamp(54px, 14vw, 68px);
+        border-radius: 15px;
+        font-size: clamp(1.15rem, 3.6vw, 1.5rem);
+    }
+
     .profile-meta-list {
         grid-template-columns: 1fr;
+        gap: 0.42rem;
     }
 
     .profile-meta-item:last-child {
@@ -2046,8 +2082,8 @@
     .tab-header-cta,
     .btn-chat-link,
     .banner-link {
-        min-height: 38px;
-        font-size: 0.76rem;
+        min-height: 36px;
+        font-size: 0.74rem;
     }
 
     .class-banner-overlay h2 {
@@ -2136,7 +2172,7 @@
     .tab-header-cta,
     .banner-link {
         min-height: 34px;
-        padding: 0.45rem 0.55rem;
+        padding: 0.42rem 0.55rem;
     }
 
     .nav-btn {
