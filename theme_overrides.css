@@ -144,12 +144,13 @@ body {
   right: 0;
   width: 100% !important;
   z-index: 9999 !important;
-  background: rgba(7, 11, 18, 0.45) !important;
+  background: rgba(7, 11, 18, 0.5) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-bottom: none !important;
   transition: background 0.3s ease;
 }
+
 
 /* Ensure other pages have spacing for fixed header */
 body:not(.home-page) .main-content,
@@ -660,13 +661,16 @@ body.home-page .main-ad-banner.home-main-banner::before {
 body.home-page .home-banner-stage {
   border: 0 !important;
   border-radius: 0 !important;
-  min-height: clamp(550px, 45vw, 900px) !important;
+  aspect-ratio: none !important;
+  min-height: 800px !important;
   background:
     radial-gradient(circle at 12% 0%, rgba(80, 120, 255, 0.28), transparent 22%),
     radial-gradient(circle at 78% 100%, rgba(0, 195, 160, 0.16), transparent 24%),
     linear-gradient(180deg, rgba(6, 8, 13, 0.98), rgba(5, 7, 11, 0.98)) !important;
   box-shadow: none !important;
 }
+
+
 
 
 body.home-page .home-banner-stage::before {
@@ -678,9 +682,10 @@ body.home-page .home-banner-stage::before {
 }
 
 body.home-page .home-banner-stage::after {
-  height: clamp(72px, 12vw, 160px) !important;
-  background: linear-gradient(180deg, rgba(5, 7, 11, 0), rgba(5, 7, 11, 0.82)) !important;
+  height: 20% !important;
+  background: linear-gradient(180deg, rgba(5, 7, 11, 0), #05070b) !important;
 }
+
 
 body.home-page .home-banner-empty {
   min-height: 100%;

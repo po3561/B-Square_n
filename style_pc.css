@@ -207,7 +207,8 @@
     margin-top: 0.5rem;
 }
 
-.footer-company-name, .company-info strong {
+.footer-company-name,
+.company-info strong {
     color: var(--text-primary);
     display: block;
     margin-bottom: 1rem;
@@ -519,7 +520,6 @@ option {
     max-width: 1400px;
     /* 사이드바를 위해 조금 더 넓게 조정 */
     margin: 0 auto;
-    padding: 3rem 2rem;
 }
 
 .index-layout {
@@ -1017,14 +1017,15 @@ option {
 }
 
 .mini-class-card:hover {
-    background: rgba(0,0,0,0.03);
+    background: rgba(0, 0, 0, 0.03);
 }
 
 .mini-thumb {
     width: 70px;
     height: 70px;
     border-radius: 12px;
-    background: #ff7a00; /* 주황색 플레이스홀더 */
+    background: #ff7a00;
+    /* 주황색 플레이스홀더 */
     flex-shrink: 0;
 }
 
