@@ -279,6 +279,46 @@ export async function ensureAuthSchema(db) {
   await db.prepare('CREATE INDEX IF NOT EXISTS idx_social_accounts_user_last_login ON social_accounts(user_id, last_login_at)').run();
 
   await db.prepare(`
+    CREATE TABLE IF NOT EXISTS social_verifications (
+      id TEXT PRIMARY KEY,
+      token_hash TEXT UNIQUE NOT NULL,
+      purpose TEXT NOT NULL,
+      provider TEXT NOT NULL,
+      provider_user_id TEXT NOT NULL,
+      user_id TEXT,
+      provider_email TEXT,
+      email_verified INTEGER DEFAULT 0,
+      provider_name TEXT,
+      provider_nickname TEXT,
+      provider_avatar_url TEXT,
+      provider_locale TEXT,
+      return_to TEXT,
+      expires_at DATETIME NOT NULL,
+      used_at DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+  await addColumnIfMissing(db, 'social_verifications', 'token_hash TEXT');
+  await addColumnIfMissing(db, 'social_verifications', 'purpose TEXT');
+  await addColumnIfMissing(db, 'social_verifications', 'provider TEXT');
+  await addColumnIfMissing(db, 'social_verifications', 'provider_user_id TEXT');
+  await addColumnIfMissing(db, 'social_verifications', 'user_id TEXT');
+  await addColumnIfMissing(db, 'social_verifications', 'provider_email TEXT');
+  await addColumnIfMissing(db, 'social_verifications', 'email_verified INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'social_verifications', 'provider_name TEXT');
+  await addColumnIfMissing(db, 'social_verifications', 'provider_nickname TEXT');
+  await addColumnIfMissing(db, 'social_verifications', 'provider_avatar_url TEXT');
+  await addColumnIfMissing(db, 'social_verifications', 'provider_locale TEXT');
+  await addColumnIfMissing(db, 'social_verifications', 'return_to TEXT');
+  await addColumnIfMissing(db, 'social_verifications', 'expires_at DATETIME');
+  await addColumnIfMissing(db, 'social_verifications', 'used_at DATETIME');
+  await addColumnIfMissing(db, 'social_verifications', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+  await addColumnIfMissing(db, 'social_verifications', 'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+  await db.prepare('CREATE UNIQUE INDEX IF NOT EXISTS idx_social_verifications_token_hash ON social_verifications(token_hash)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_social_verifications_purpose_expires ON social_verifications(purpose, expires_at)').run();
+
+  await db.prepare(`
     CREATE TABLE IF NOT EXISTS password_reset_tokens (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,

@@ -193,7 +193,7 @@ export async function createSessionRecord(
     authProviderUserId = null,
   } = {},
 ) {
-  await db.prepare('DELETE FROM sessions WHERE user_id = ? AND expires_at < datetime("now")').bind(userId).run();
+  await db.prepare('DELETE FROM sessions WHERE user_id = ? AND unixepoch(expires_at) < unixepoch(\'now\')').bind(userId).run();
 
   const token = crypto.randomUUID() + '-' + crypto.randomUUID();
   const sessionId = 'sess_' + crypto.randomUUID().replace(/-/g, '').substring(0, 12);
@@ -271,7 +271,7 @@ export async function getCurrentUser(context) {
     FROM sessions s
     JOIN users u ON s.user_id = u.id
     WHERE s.token = ?
-      AND s.expires_at > datetime('now')
+      AND unixepoch(s.expires_at) > unixepoch('now')
   `;
 
   let session = null;
@@ -310,7 +310,7 @@ export async function getCurrentUser(context) {
       FROM sessions s
       JOIN users u ON s.user_id = u.id
       WHERE s.token = ?
-        AND s.expires_at > datetime('now')
+        AND unixepoch(s.expires_at) > unixepoch('now')
     `).bind(token).first();
 
     if (session) {

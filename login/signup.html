@@ -8,239 +8,100 @@
     <title>회원가입 | B-Square</title>
     <link rel="stylesheet" href="../style_mobile.css?v=20260331_02" media="(max-width: 768px)">
     <link rel="stylesheet" href="../style_pc.css?v=20260331_02" media="(min-width: 769px)">
-    <link rel="stylesheet" href="auth.css?v=20260401_01">
-    <script src="../bsq_server.js?v=20260331_02"></script>
+    <link rel="stylesheet" href="auth.css?v=20260401_02">
     <link rel="stylesheet" href="/theme_overrides.css?v=20260401_04">
     <script src="/i18n.js?v=20260331_01" defer></script>
 </head>
 
-<body class="auth-body">
-
-    <main class="auth-main">
-        <div class="auth-container">
-            <div class="auth-header">
-                <h1 class="logo">
-                    <a href="../index.html"><span class="logo-icon">🔷</span> B-Square</a>
-                </h1>
+<body class="auth-body auth-standalone auth-signup-page">
+    <main class="auth-screen">
+        <section class="auth-card auth-card--signup">
+            <div class="auth-brand">
+                <span class="auth-brand-mark" aria-hidden="true">◆</span>
+                <span>B-Square</span>
             </div>
 
-            <div class="step-indicator">
-                <div class="step-item active" id="stepIndicator1">약관동의</div>
-                <div class="step-item" id="stepIndicator2">회원정보 입력</div>
-                <div class="step-item" id="stepIndicator3">가입완료</div>
+            <h1 class="auth-title">회원가입</h1>
+            <p class="auth-subtitle">카카오, 네이버, 구글로 본인 인증을 먼저 진행한 뒤 가입 정보를 입력하세요.</p>
+
+            <div class="auth-banner" data-auth-banner hidden></div>
+
+            <section class="social-auth-shell social-auth-shell--signup" id="socialAuthSignup" data-social-auth
+                data-social-context="signup" data-social-return="signup.html" data-unavailable-mode="disable">
+                <div class="social-auth-list" data-social-auth-list></div>
+                <p class="social-auth-message" data-social-auth-message hidden></p>
+                <p class="social-auth-hint" data-social-auth-hint>본인 인증이 끝나면 아래 가입 정보를 바로 입력할 수 있습니다.</p>
+            </section>
+
+            <section class="social-verification-card" data-signup-verification hidden>
+                <p class="social-verification-card__eyebrow">본인 인증 완료</p>
+                <h2 class="social-verification-card__title" data-signup-provider></h2>
+                <p class="social-verification-card__summary" data-signup-summary></p>
+                <dl class="social-verification-card__list">
+                    <div>
+                        <dt>인증 이메일</dt>
+                        <dd data-signup-email></dd>
+                    </div>
+                    <div>
+                        <dt>인증 이름</dt>
+                        <dd data-signup-name></dd>
+                    </div>
+                </dl>
+            </section>
+
+            <form id="signupForm" class="auth-form">
+                <div class="input-group">
+                    <label for="signupNickname">닉네임</label>
+                    <div class="input-with-btn">
+                        <input type="text" id="signupNickname" name="username" autocomplete="nickname"
+                            placeholder="프로필에 표시될 닉네임" required>
+                        <button type="button" id="btnCheckNickname" class="btn-secondary">중복 확인</button>
+                    </div>
+                    <p id="nicknameStatusMsg" class="status-msg"></p>
+                </div>
+
+                <div class="input-group">
+                    <label for="signupEmail">이메일</label>
+                    <input type="email" id="signupEmail" name="email" autocomplete="email" placeholder="example@email.com"
+                        required>
+                </div>
+
+                <div class="input-group">
+                    <label for="signupName">이름</label>
+                    <input type="text" id="signupName" name="name" autocomplete="name" placeholder="이름을 입력해 주세요"
+                        required>
+                </div>
+
+                <div class="input-group">
+                    <label for="signupPhone">휴대폰 번호</label>
+                    <input type="tel" id="signupPhone" name="phone" autocomplete="tel" placeholder="010-0000-0000">
+                </div>
+
+                <div class="input-group">
+                    <label for="signupPassword">비밀번호</label>
+                    <input type="password" id="signupPassword" name="password" autocomplete="new-password"
+                        placeholder="8자 이상 입력해 주세요" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="signupPasswordConfirm">비밀번호 확인</label>
+                    <input type="password" id="signupPasswordConfirm" autocomplete="new-password"
+                        placeholder="비밀번호를 다시 입력해 주세요" required>
+                </div>
+
+                <button type="submit" id="btnSubmit" class="btn-submit">회원가입 완료</button>
+            </form>
+
+            <div class="auth-links auth-links--split">
+                <a href="login.html">로그인으로 돌아가기</a>
+                <a href="find_account.html">계정 찾기</a>
             </div>
-
-            <div id="signupSteps">
-                <section id="step1" class="auth-step active">
-                    <section class="social-auth-shell social-auth-shell-signup" id="socialAuthSignup" data-social-context="signup"
-                        data-unavailable-mode="disable">
-                        <div class="social-auth-copy">
-                            <p class="social-auth-eyebrow">빠른 가입</p>
-                            <h2 class="social-auth-title">기존 계정으로 바로 시작할 수 있습니다.</h2>
-                        </div>
-                        <div class="social-auth-list" data-social-auth-list></div>
-                        <p class="social-auth-message" data-social-auth-message hidden></p>
-                        <p class="social-auth-hint" data-social-auth-hint>소셜 로그인 상태를 확인하고 있습니다.</p>
-                    </section>
-
-                    <div class="social-auth-divider" aria-hidden="true">
-                        <span></span>
-                        <strong>또는 약관 동의 후 직접 가입</strong>
-                        <span></span>
-                    </div>
-
-                    <h2 class="section-title">약관동의</h2>
-                    <div class="terms-box">
-                        <div class="all-agree">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="chkAllAgree"> <strong>전체동의</strong>
-                            </label>
-                            <p class="all-agree-desc">마케팅 정보 수신 선택을 포함하여 모두 동의합니다.</p>
-                        </div>
-                        <div class="term-list">
-                            <div class="term-item">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" class="chk-term required" id="chkTerm1"> 이용약관 동의 <span
-                                        class="req-tag">(필수)</span>
-                                </label>
-                                <button type="button" class="btn-view-detail">자세히</button>
-                            </div>
-                            <div class="term-item">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" class="chk-term required" id="chkTerm2"> 개별 서비스 약관 <span
-                                        class="req-tag">(필수)</span>
-                                </label>
-                                <button type="button" class="btn-view-detail">자세히</button>
-                            </div>
-                            <div class="term-item">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" class="chk-term required" id="chkTerm3"> 개인정보 수집 및 이용 동의
-                                    <span class="req-tag">(필수)</span>
-                                </label>
-                                <button type="button" class="btn-view-detail">자세히</button>
-                            </div>
-                            <div class="term-item">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" class="chk-term" id="chkTermMark"> 마케팅 활용 및 정보 수신 동의 (선택)
-                                </label>
-                                <button type="button" class="btn-view-detail">자세히</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="btn-row">
-                        <button type="button" class="btn-cancel" onclick="location.href='login.html'">취소</button>
-                        <button type="button" id="btnNext1" class="btn-next">다음</button>
-                    </div>
-                </section>
-
-                <section id="step2" class="auth-step">
-                    <form id="infoForm">
-                        <div class="form-section">
-                            <h3 class="section-subtitle">계정 정보</h3>
-                            <div class="input-group">
-                                <label for="signupId">아이디</label>
-                                <div class="input-with-btn">
-                                    <input type="text" id="signupId" placeholder="4~16자리 영문+숫자 조합" required>
-                                    <button type="button" id="btnCheckId" class="btn-secondary">중복확인</button>
-                                </div>
-                                <p id="idStatusMsg" class="status-msg"></p>
-                            </div>
-                            <div class="input-group">
-                                <label for="signupPassword">비밀번호</label>
-                                <input type="password" id="signupPassword" placeholder="8~20자리 영문+숫자+특수문자 조합" required>
-                            </div>
-                            <div class="input-group">
-                                <label for="signupPasswordConfirm">비밀번호 확인</label>
-                                <input type="password" id="signupPasswordConfirm" placeholder="비밀번호를 한 번 더 입력해주세요"
-                                    required>
-                            </div>
-                        </div>
-
-                        <div class="form-section">
-                            <h3 class="section-subtitle">기본 정보</h3>
-                            <div class="input-group">
-                                <label for="signupName">이름 (실명)</label>
-                                <input type="text" id="signupName" placeholder="실명을 입력해주세요" required>
-                            </div>
-                            <div class="input-group">
-                                <label>생년월일</label>
-                                <div class="input-row birthday-row">
-                                    <input type="text" id="birthYear" placeholder="년(4자)" maxlength="4" required>
-                                    <input type="text" id="birthMonth" placeholder="월" maxlength="2" required>
-                                    <input type="text" id="birthDay" placeholder="일" maxlength="2" required>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label>성별</label>
-                                <div class="choice-group" id="genderChoice">
-                                    <button type="button" class="btn-choice active" data-value="M">남자</button>
-                                    <button type="button" class="btn-choice" data-value="F">여자</button>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label>이메일 주소</label>
-                                <div class="input-row email-row">
-                                    <input type="text" id="emailUser" placeholder="아이디" required style="flex:1.5;">
-                                    <span class="at-symbol">@</span>
-                                    <input type="text" id="emailDomain" placeholder="도메인" required style="flex:1.5;">
-                                    <select id="emailSelect" style="flex:1.2;">
-                                        <option value="">직접입력</option>
-                                        <option value="naver.com">naver.com</option>
-                                        <option value="gmail.com">gmail.com</option>
-                                        <option value="daum.net">daum.net</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="signupPhone">휴대폰 번호</label>
-                                <input type="tel" id="signupPhone" placeholder="010-0000-0000" required>
-                            </div>
-                        </div>
-
-                        <div class="form-section">
-                            <h3 class="section-subtitle">추가 정보</h3>
-                            <div class="input-group">
-                                <label>내국인 / 외국인</label>
-                                <div class="choice-group" id="nationalityChoice">
-                                    <button type="button" class="btn-choice active" data-value="local">내국인</button>
-                                    <button type="button" class="btn-choice" data-value="foreign">외국인</button>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label for="joinRoute">가입경로</label>
-                                <select id="joinRoute">
-                                    <option value="">가입경로 선택 (선택사항)</option>
-                                    <option value="portal">포털검색</option>
-                                    <option value="friend">지인추천</option>
-                                    <option value="pamphlet">팜플릿/브로셔</option>
-                                    <option value="ad">메신저/광고</option>
-                                    <option value="blog">카페/블로그</option>
-                                    <option value="seminar">세미나/행사</option>
-                                    <option value="official">교육청/공문</option>
-                                    <option value="etc">기타</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
-                                <label for="referrerCode">추천인 (선택사항)</label>
-                                <select id="referrerCode">
-                                    <option value="">추천인 선택 (선택사항)</option>
-                                    <optgroup>
-                                        <option value="aj001">aj001</option>
-                                        <option value="aj002">aj002</option>
-                                        <option value="aj003">aj003</option>
-                                        <option value="aj004">aj004</option>
-                                        <option value="aj005">aj005</option>
-                                        <option value="ab001">ab001</option>
-                                        <option value="ab002">ab002</option>
-                                        <option value="ab003">ab003</option>
-                                        <option value="ab004">ab004</option>
-                                        <option value="ab005">ab005</option>
-                                        <option value="ac001">ac001</option>
-                                        <option value="ac002">ac002</option>
-                                        <option value="ac003">ac003</option>
-                                        <option value="ac004">ac004</option>
-                                        <option value="ac005">ac005</option>
-                                        <option value="as001">as001</option>
-                                        <option value="as002">as002</option>
-                                        <option value="as003">as003</option>
-                                        <option value="as004">as004</option>
-                                        <option value="cs020">cs020</option>
-                                    </optgroup>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="btn-row">
-                            <button type="button" class="btn-cancel" onclick="showStep(1)">이전</button>
-                            <button type="submit" id="btnSubmit" class="btn-submit">회원가입 완료</button>
-                        </div>
-                    </form>
-                </section>
-
-                <section id="step3" class="auth-step">
-                    <div class="success-box">
-                        <div class="success-icon">🎉</div>
-                        <h2 class="success-title">가입이 완료되었습니다!</h2>
-                        <p class="success-desc">환영합니다! 이제 모든 서비스를 이용하실 수 있습니다.</p>
-                        <button type="button" class="btn-submit" onclick="location.href='login.html'">로그인하러 가기</button>
-                    </div>
-                </section>
-            </div>
-        </div>
+        </section>
     </main>
 
-    <div id="termsDetailModal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 id="modalTitle">약관 상세</h2>
-            <div id="modalBody">약관 내용을 여기에 표시합니다.</div>
-            <button type="button" id="btnCloseTerms" class="btn-submit"
-                style="width:100%; margin-top:1.5rem;">확인</button>
-        </div>
-    </div>
-
-    <script src="social_auth.js?v=20260401_01"></script>
-    <script src="auth.js?v=20260401_01"></script>
+    <script src="auth_api.js?v=20260401_02"></script>
+    <script src="social_auth.js?v=20260401_02"></script>
+    <script src="signup_page.js?v=20260401_03"></script>
 </body>
 
 </html>

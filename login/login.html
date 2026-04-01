@@ -8,61 +8,63 @@
     <title>로그인 | B-Square</title>
     <link rel="stylesheet" href="../style_mobile.css?v=20260331_02" media="(max-width: 768px)">
     <link rel="stylesheet" href="../style_pc.css?v=20260331_02" media="(min-width: 769px)">
-    <link rel="stylesheet" href="auth.css?v=20260401_01">
-    <script src="../bsq_server.js?v=20260331_02"></script>
+    <link rel="stylesheet" href="auth.css?v=20260401_02">
     <link rel="stylesheet" href="/theme_overrides.css?v=20260401_04">
     <script src="/i18n.js?v=20260331_01" defer></script>
 </head>
 
-<body class="auth-body">
-    <main class="auth-main">
-        <div class="auth-container">
-            <form id="loginForm" class="auth-form active">
-                <div class="input-group">
-                    <label for="loginUsername">로그인 아이디 (이메일)</label>
-                    <input type="text" id="loginUsername" placeholder="이메일 또는 아이디를 입력해주세요" required>
-                </div>
+<body class="auth-body auth-standalone auth-login-page">
+    <main class="auth-screen">
+        <section class="auth-card auth-card--login">
+            <div class="auth-brand">
+                <span class="auth-brand-mark" aria-hidden="true">◆</span>
+                <span>B-Square</span>
+            </div>
 
-                <div class="input-group">
-                    <label for="loginPassword">비밀번호</label>
-                    <input type="password" id="loginPassword" placeholder="비밀번호를 입력해주세요" required>
-                </div>
+            <h1 class="auth-title">로그인</h1>
+            <p class="auth-subtitle">카카오, 네이버, 구글로 빠르게 시작하거나 이메일과 비밀번호로 로그인하세요.</p>
 
-                <div class="login-utils">
-                    <label class="checkbox-label" for="chkSaveId">
-                        <input type="checkbox" id="chkSaveId"> 아이디 저장
-                    </label>
-                    <div class="find-links">
-                        <a href="find_account.html">아이디 찾기</a> |
-                        <a href="find_account.html#reset">비밀번호 찾기</a>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-submit">로그인</button>
-
-                <div class="auth-link">
-                    계정이 없으신가요? <a href="signup.html">회원가입하기</a>
-                </div>
-            </form>
+            <div class="auth-banner" data-auth-banner hidden></div>
 
             <section class="social-auth-shell" id="socialAuthLogin" data-social-auth data-social-context="login"
-                data-unavailable-mode="disable">
-                <div class="social-auth-divider" aria-hidden="true">
-                    <span></span>
-                    <strong>소셜 계정으로 시작</strong>
-                    <span></span>
-                </div>
+                data-social-return="../index.html" data-unavailable-mode="disable">
                 <div class="social-auth-list" data-social-auth-list></div>
                 <p class="social-auth-message" data-social-auth-message hidden></p>
                 <p class="social-auth-hint" data-social-auth-hint>카카오, 네이버, 구글 계정으로 빠르게 시작할 수 있습니다.</p>
             </section>
-        </div>
+
+            <button type="button" id="toggleEmailLogin" class="auth-toggle-button" aria-expanded="false">
+                다른 이메일로 로그인
+            </button>
+
+            <div id="emailLoginPanel" class="auth-form-panel" hidden>
+                <form id="loginForm" class="auth-form">
+                    <div class="input-group">
+                        <label for="loginEmail">이메일</label>
+                        <input type="email" id="loginEmail" name="email" autocomplete="email" placeholder="example@email.com"
+                            required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="loginPassword">비밀번호</label>
+                        <input type="password" id="loginPassword" name="password" autocomplete="current-password"
+                            placeholder="비밀번호를 입력해 주세요" required>
+                    </div>
+
+                    <button type="submit" class="btn-submit">로그인</button>
+                </form>
+            </div>
+
+            <div class="auth-links auth-links--split">
+                <a href="signup.html">회원가입하기</a>
+                <a href="find_account.html">계정 찾기</a>
+            </div>
+        </section>
     </main>
 
-    <script src="social_auth.js?v=20260401_01"></script>
-    <script src="auth_1.js?v=20260401_01"></script>
-    <script src="../header.js?v=20260401_07"></script>
-    <script src="../dev_mode.js?v=20260331_02"></script>
+    <script src="auth_api.js?v=20260401_02"></script>
+    <script src="social_auth.js?v=20260401_02"></script>
+    <script src="auth_1.js?v=20260401_02"></script>
 </body>
 
 </html>

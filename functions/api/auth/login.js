@@ -7,21 +7,21 @@ export async function onRequestPost(context) {
 
   try {
     const body = await request.json();
-    const username = (body?.username || '').trim();
+    const email = (body?.email || '').trim().toLowerCase();
     const password = body?.password || '';
 
-    if (!username || !password) {
-      return json(request, env, { success: false, error: 'Username and password are required.' }, { status: 400 });
+    if (!email || !password) {
+      return json(request, env, { success: false, error: 'Email and password are required.' }, { status: 400 });
+    }
+
+    if (!email.includes('@')) {
+      return json(request, env, { success: false, error: 'A valid email address is required.' }, { status: 400 });
     }
 
     await ensureAuthSchema(env.DB);
 
     let user;
-    if (username.includes('@')) {
-      user = await env.DB.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').bind(username).first();
-    } else {
-      user = await env.DB.prepare('SELECT * FROM users WHERE username = ?').bind(username).first();
-    }
+    user = await env.DB.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').bind(email).first();
 
     if (!user) {
       return json(request, env, { success: false, error: 'Invalid account credentials.' }, { status: 401 });

@@ -6,7 +6,7 @@
 
     if (!token) {
         alert('유효하지 않은 재설정 링크입니다.');
-        window.location.href = 'find_account.html#reset';
+        window.location.href = 'find_account.html?tab=email';
         return;
     }
 

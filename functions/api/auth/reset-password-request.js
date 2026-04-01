@@ -63,9 +63,15 @@ export async function onRequestPost(context) {
         message: 'If the email exists, a reset link has been sent.',
       };
 
+      const requestUrl = new URL(request.url);
+      const isLocalHost = /localhost|127\.0\.0\.1/i.test(requestUrl.hostname);
+      const allowDebugResetUrl = isLocalHost || String(env.DEBUG_RESET_URL || '').toLowerCase() === 'true';
+
       if (!emailSent) {
         payload.message = 'Email is not configured. Use the reset link below.';
-        payload.debug_reset_url = resetUrl;
+        if (allowDebugResetUrl) {
+          payload.debug_reset_url = resetUrl;
+        }
       }
 
       return json(request, env, payload);

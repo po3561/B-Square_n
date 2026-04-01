@@ -691,10 +691,10 @@
     }
 
     // ---- 로그인 관련 ----
-    async function login(username, password) {
+    async function login(email, password) {
         const result = await apiCall('/api/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ email, password })
         });
         if (result.success && result.token) {
             localStorage.setItem('bsq_token', result.token);

@@ -8,10 +8,10 @@ export async function onRequestGet(context) {
     await ensureAuthSchema(env.DB);
 
     const url = new URL(request.url);
-    const username = (url.searchParams.get('username') || '').trim();
+    const username = (url.searchParams.get('username') || url.searchParams.get('nickname') || '').trim();
 
     if (username.length < 2) {
-      return json(request, env, { success: false, error: 'Username must be at least 2 characters.' }, { status: 400 });
+      return json(request, env, { success: false, error: '닉네임은 2자 이상이어야 합니다.' }, { status: 400 });
     }
 
     const existing = await env.DB.prepare('SELECT id FROM users WHERE username = ?').bind(username).first();
@@ -20,12 +20,12 @@ export async function onRequestGet(context) {
       success: true,
       data: {
         available: !existing,
-        message: existing ? 'Username is already in use.' : 'Username is available.',
+        message: existing ? '이미 사용 중인 닉네임입니다.' : '사용 가능한 닉네임입니다.',
       },
     });
   } catch (err) {
     console.error('Check-username error:', err);
-    return json(request, env, { success: false, error: 'Username check failed.' }, { status: 500 });
+    return json(request, env, { success: false, error: '닉네임 확인에 실패했습니다.' }, { status: 500 });
   }
 }
 

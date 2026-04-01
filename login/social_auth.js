@@ -5,42 +5,57 @@
     {
       id: 'kakao',
       label: '카카오',
-      actionLabel: '카카오로 계속하기',
-      startPath: '/auth/kakao/start',
-      toneClass: 'social-btn--kakao',
       glyph: 'K',
+      toneClass: 'social-auth-provider--kakao',
+      startPath: '/auth/kakao/start',
+      action: {
+        login: '카카오로 로그인',
+        signup: '카카오로 본인 인증',
+        recovery: '카카오로 계정 확인',
+      },
     },
     {
       id: 'naver',
       label: '네이버',
-      actionLabel: '네이버로 계속하기',
-      startPath: '/auth/naver/start',
-      toneClass: 'social-btn--naver',
       glyph: 'N',
+      toneClass: 'social-auth-provider--naver',
+      startPath: '/auth/naver/start',
+      action: {
+        login: '네이버로 로그인',
+        signup: '네이버로 본인 인증',
+        recovery: '네이버로 계정 확인',
+      },
     },
     {
       id: 'google',
       label: '구글',
-      actionLabel: '구글로 계속하기',
-      startPath: '/auth/google/start',
-      toneClass: 'social-btn--google',
       glyph: 'G',
+      toneClass: 'social-auth-provider--google',
+      startPath: '/auth/google/start',
+      action: {
+        login: '구글로 로그인',
+        signup: '구글로 본인 인증',
+        recovery: '구글로 계정 확인',
+      },
     },
   ];
 
   const ERROR_MESSAGES = {
-    provider_unavailable: '소셜 로그인 환경이 아직 준비되지 않았습니다.',
-    callback_missing_code: '소셜 로그인 응답이 올바르지 않습니다.',
-    state_mismatch: '보안 검증에 실패했습니다. 다시 시도해주세요.',
-    state_expired: '로그인 시도가 만료되었습니다. 다시 시도해주세요.',
+    provider_unavailable: '현재 선택한 소셜 로그인은 준비 중입니다.',
+    callback_missing_code: '소셜 인증 정보를 받지 못했습니다. 다시 시도해 주세요.',
+    state_mismatch: '보안 검증에 실패했습니다. 다시 시도해 주세요.',
+    state_expired: '인증 시간이 만료되었습니다. 다시 시도해 주세요.',
     access_denied: '로그인이 취소되었습니다.',
-    consent_required: '계정 연결이 필요합니다. 다시 시도해주세요.',
-    login_required: '계정 선택이 필요합니다. 다시 시도해주세요.',
+    consent_required: '권한 동의가 필요합니다. 다시 시도해 주세요.',
+    login_required: '계정 선택이 필요합니다. 다시 시도해 주세요.',
     token_exchange_failed: '인증 서버와의 연결에 실패했습니다.',
-    user_info_failed: '사용자 정보를 불러오지 못했습니다.',
-    session_create_failed: '세션 생성에 실패했습니다.',
+    user_info_failed: '사용자 정보를 가져오지 못했습니다.',
+    session_create_failed: '서비스 세션 생성에 실패했습니다.',
     oauth_failed: '소셜 로그인 처리에 실패했습니다.',
     provider_error: '소셜 로그인 중 오류가 발생했습니다.',
+    account_exists: '이미 연결된 계정입니다. 이메일 로그인 또는 해당 소셜 계정으로 로그인해 주세요.',
+    signup_required: '소셜 인증은 완료되었습니다. 아래 정보 입력을 계속해 주세요.',
+    account_not_found: '연결된 계정을 찾지 못했습니다. 이메일 입력 또는 다른 소셜 계정을 시도해 주세요.',
   };
 
   function getBaseOrigin() {
@@ -51,12 +66,12 @@
     ];
 
     for (const candidate of candidates) {
-      const raw = String(candidate || '').trim();
-      if (!raw) continue;
+      const value = String(candidate || '').trim();
+      if (!value) continue;
       try {
-        return new URL(raw).origin;
+        return new URL(value).origin;
       } catch {
-        // keep trying
+        // continue
       }
     }
 
@@ -114,18 +129,18 @@
     if (!source) return null;
 
     if (Array.isArray(source)) {
-      return source.reduce((acc, item) => {
+      return source.reduce((accumulator, item) => {
         const providerId = String(item?.id || item?.provider || '').trim().toLowerCase();
-        if (!providerId) return acc;
-        acc[providerId] = normalizeProviderRecord(providerId, item);
-        return acc;
+        if (!providerId) return accumulator;
+        accumulator[providerId] = normalizeProviderRecord(providerId, item);
+        return accumulator;
       }, {});
     }
 
     if (typeof source === 'object') {
-      return Object.entries(source).reduce((acc, [providerId, item]) => {
-        acc[String(providerId).trim().toLowerCase()] = normalizeProviderRecord(providerId, item);
-        return acc;
+      return Object.entries(source).reduce((accumulator, [providerId, item]) => {
+        accumulator[String(providerId).trim().toLowerCase()] = normalizeProviderRecord(providerId, item);
+        return accumulator;
       }, {});
     }
 
@@ -145,18 +160,18 @@
         const providers = normalizeProviderPayload(result);
         if (providers) return providers;
       } catch (error) {
-        console.warn('[BSQ SocialAuth] provider config fetch failed:', endpoint, error);
+        console.warn('[BSQ SocialAuth] provider fetch failed:', endpoint, error);
       }
     }
 
-    return PROVIDERS.reduce((acc, provider) => {
-      acc[provider.id] = normalizeProviderRecord(provider.id, {
+    return PROVIDERS.reduce((accumulator, provider) => {
+      accumulator[provider.id] = normalizeProviderRecord(provider.id, {
         enabled: false,
         available: false,
         reason: '소셜 로그인 준비 중입니다.',
         start_url: provider.startPath,
       });
-      return acc;
+      return accumulator;
     }, {});
   }
 
@@ -191,6 +206,37 @@
     return providersCachePromise;
   }
 
+  function normalizeContext(value) {
+    const raw = String(value || '').trim().toLowerCase();
+    if (raw === 'signup' || raw === 'recovery') return raw;
+    return 'login';
+  }
+
+  function buildFallbackProviders() {
+    return PROVIDERS.reduce((accumulator, provider) => {
+      accumulator[provider.id] = normalizeProviderRecord(provider.id, {
+        enabled: false,
+        available: false,
+        reason: '소셜 로그인 준비 중입니다.',
+        start_url: provider.startPath,
+      });
+      return accumulator;
+    }, {});
+  }
+
+  function getDefaultReturnPath(context) {
+    if (context === 'signup') return '/login/signup.html';
+    if (context === 'recovery') return '/login/find_account.html';
+    return '/index.html';
+  }
+
+  function buildStartUrl(provider, context, returnTo) {
+    const url = new URL(provider.startPath, getBaseOrigin());
+    url.searchParams.set('flow', normalizeContext(context));
+    if (returnTo) url.searchParams.set('return_to', returnTo);
+    return url.toString();
+  }
+
   function readQueryError() {
     const url = new URL(window.location.href);
     const provider = String(url.searchParams.get('provider') || '').trim().toLowerCase();
@@ -210,11 +256,21 @@
     return { provider, code, message };
   }
 
-  function mapErrorMessage(info) {
+  function mapErrorMessage(info, context) {
     if (!info) return '';
+
     const providerLabel = PROVIDERS.find((item) => item.id === info.provider)?.label || '소셜 로그인';
-    const mapped = info.message || ERROR_MESSAGES[info.code] || ERROR_MESSAGES.provider_error;
-    return `${providerLabel}: ${mapped}`;
+    const mappedMessage = info.message || ERROR_MESSAGES[info.code] || ERROR_MESSAGES.provider_error;
+
+    if (context === 'signup' && info.code === 'signup_required') {
+      return '소셜 인증이 완료되었습니다. 아래 정보를 입력해 가입을 계속해 주세요.';
+    }
+
+    if (context === 'recovery' && info.code === 'account_not_found') {
+      return '연결된 계정을 찾지 못했습니다. 이메일로 찾기를 이용해 주세요.';
+    }
+
+    return `${providerLabel}: ${mappedMessage}`;
   }
 
   function setBanner(message, type = 'info') {
@@ -268,7 +324,11 @@
     target.textContent = message || '';
   }
 
-  function buildProviderButton(provider, record, unavailableMode) {
+  function setLoading(root, isLoading) {
+    root.classList.toggle('is-busy', Boolean(isLoading));
+  }
+
+  function buildProviderButton(provider, record, context, unavailableMode) {
     const isAvailable = record.available !== false && record.enabled !== false;
     if (unavailableMode === 'hide' && !isAvailable) {
       return null;
@@ -285,17 +345,24 @@
       <span class="social-auth-provider__icon" aria-hidden="true">${provider.glyph}</span>
       <span class="social-auth-provider__content">
         <span class="social-auth-provider__label">${provider.label}</span>
-        <span class="social-auth-provider__caption">${provider.actionLabel}</span>
+        <span class="social-auth-provider__caption">${provider.action[context] || provider.action.login}</span>
       </span>
       <span class="social-auth-provider__state">${isAvailable ? '연결 가능' : '준비 중'}</span>
     `;
 
     if (!isAvailable && record.reason) {
       button.title = record.reason;
-      button.setAttribute('aria-label', `${provider.actionLabel} - ${record.reason}`);
+      button.setAttribute('aria-label', `${provider.action[context] || provider.action.login} - ${record.reason}`);
     }
 
     return button;
+  }
+
+  function resolveContextAndReturnTo(root) {
+    const context = normalizeContext(root.dataset.socialContext || root.dataset.context || 'login');
+    const explicitReturn = String(root.dataset.socialReturn || root.dataset.returnTo || '').trim();
+    const returnTo = explicitReturn || getDefaultReturnPath(context);
+    return { context, returnTo };
   }
 
   function renderRoot(root, providers) {
@@ -303,6 +370,8 @@
     if (!list) return { rendered: 0, available: 0 };
 
     const unavailableMode = String(root.dataset.unavailableMode || 'disable').toLowerCase();
+    const { context, returnTo } = resolveContextAndReturnTo(root);
+
     list.replaceChildren();
 
     let rendered = 0;
@@ -316,7 +385,7 @@
         start_url: provider.startPath,
       });
 
-      const button = buildProviderButton(provider, record, unavailableMode);
+      const button = buildProviderButton(provider, record, context, unavailableMode);
       if (!button) continue;
 
       button.addEventListener('click', () => {
@@ -325,14 +394,16 @@
           return;
         }
 
-        setRootMessage(root, `${provider.label} 로그인으로 이동합니다.`, 'info');
+        setLoading(root, true);
+        setRootMessage(root, `${provider.label} 인증 화면으로 이동합니다.`, 'info');
+
         try {
           sessionStorage.setItem('bsq_social_last_provider', provider.id);
         } catch {
           // sessionStorage is optional
         }
 
-        window.location.assign(toAbsoluteUrl(button.dataset.startUrl || provider.startPath));
+        window.location.assign(buildStartUrl(provider, context, returnTo));
       });
 
       list.appendChild(button);
@@ -343,15 +414,20 @@
     return { rendered, available };
   }
 
-  async function initRoot(root, providers) {
+  async function initRoot(root) {
+    const { context } = resolveContextAndReturnTo(root);
     const queryError = readQueryError();
+
     if (queryError) {
-      setBanner(mapErrorMessage(queryError), 'error');
-      setRootMessage(root, mapErrorMessage(queryError), 'error');
+      const message = mapErrorMessage(queryError, context);
+      const state = queryError.code === 'signup_required' ? 'info' : (queryError.code === 'account_not_found' ? 'warning' : 'error');
+      setBanner(message, state);
+      setRootMessage(root, message, state);
       clearQueryParams();
     }
 
-    const { rendered, available } = renderRoot(root, providers);
+    const fallbackProviders = buildFallbackProviders();
+    const { rendered, available } = renderRoot(root, fallbackProviders);
 
     if (!rendered) {
       root.hidden = true;
@@ -359,28 +435,37 @@
     }
 
     if (available > 0) {
-      setRootHint(root, '카카오, 네이버, 구글 중 사용 가능한 계정으로 바로 시작할 수 있습니다.');
+      if (context === 'signup') {
+        setRootHint(root, '카카오, 네이버, 구글 인증을 마친 뒤 아래 가입 정보를 입력하세요.');
+      } else if (context === 'recovery') {
+        setRootHint(root, '소셜 계정으로 본인 확인 후 연결된 계정 복구를 진행할 수 있습니다.');
+      } else {
+        setRootHint(root, '카카오, 네이버, 구글 계정으로 빠르게 시작할 수 있습니다.');
+      }
     } else {
-      setRootHint(root, '현재는 준비 중입니다. 일반 로그인은 그대로 사용할 수 있습니다.');
+      setRootHint(root, '현재는 준비 중입니다. 이메일 로그인 또는 기존 계정 복구를 이용해 주세요.');
       if (!queryError) {
-        setRootMessage(root, '소셜 로그인 환경을 확인하는 중입니다.', 'warning');
+        setRootMessage(root, '소셜 로그인 설정을 확인하는 중입니다.', 'warning');
       }
     }
+
+    void loadProviders()
+      .then((resolvedProviders) => {
+        if (!root.isConnected) return;
+        renderRoot(root, resolvedProviders || fallbackProviders);
+      })
+      .catch(() => {
+        // keep fallback buttons visible
+      });
   }
 
   async function init(options = {}) {
     const roots = resolveRoots(options.root);
     if (!roots.length) return;
 
-    const providers = await loadProviders();
-
     for (const root of roots) {
-      await initRoot(root, providers);
+      await initRoot(root);
     }
-  }
-
-  async function bootstrap() {
-    return init();
   }
 
   window.BSQSocialAuth = {
@@ -392,8 +477,10 @@
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bootstrap);
+    document.addEventListener('DOMContentLoaded', () => {
+      void init();
+    });
   } else {
-    void bootstrap();
+    void init();
   }
 })();

@@ -41,6 +41,9 @@ export function createCorsHeaders(request, env, extra = {}) {
 export function json(request, env, payload, init = {}) {
   const headers = createCorsHeaders(request, env, {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-store, max-age=0',
+    Pragma: 'no-cache',
+    Vary: 'Origin',
     ...(init.headers || {}),
   });
 

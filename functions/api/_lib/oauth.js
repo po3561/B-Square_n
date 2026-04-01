@@ -9,6 +9,13 @@ import {
 } from './auth.js';
 import { ensureAuthSchema } from './schema.js';
 import { normalizeLanguagePreference, normalizeThemePreference } from './preferences.js';
+import {
+  buildSocialVerificationCookie,
+  clearSocialVerificationCookie,
+  createSocialVerification,
+  normalizeSocialPurpose,
+  sanitizeSocialVerificationRow,
+} from './social_verification.js';
 
 const PROVIDER_ORDER = ['kakao', 'naver', 'google'];
 const SYNTHETIC_EMAIL_DOMAIN = 'social.b-square.invalid';
@@ -222,8 +229,15 @@ export function listOAuthProviders(env, request) {
   }, {});
 }
 
-function buildLoginRedirectUrl(env, request, provider, code) {
-  const url = new URL(buildAppUrl(env, request, '/login/login.html'));
+function buildAuthRedirectUrl(env, request, provider, code, intent = 'login') {
+  const normalizedIntent = normalizeSocialPurpose(intent);
+  const targetPath = normalizedIntent === 'signup'
+    ? '/login/signup.html'
+    : normalizedIntent === 'recovery'
+      ? '/login/find_account.html'
+      : '/login/login.html';
+
+  const url = new URL(buildAppUrl(env, request, targetPath));
   if (provider) url.searchParams.set('provider', provider);
   if (code) url.searchParams.set('oauth_error', code);
   return url.toString();
@@ -278,10 +292,11 @@ async function parseSignedToken(token, env) {
   }
 }
 
-async function createStateToken(provider, returnTo, env) {
+async function createStateToken(provider, returnTo, env, intent = 'login') {
   return createSignedToken({
     provider,
     return_to: returnTo,
+    intent: normalizeSocialPurpose(intent),
     nonce: crypto.randomUUID(),
     issued_at: Date.now(),
     expires_at: Date.now() + STATE_TTL_MS,
@@ -292,6 +307,8 @@ async function parseStateToken(token, provider, env) {
   const payload = await parseSignedToken(token, env);
   if (payload.provider !== provider) throw new OAuthError('state_provider_mismatch', 'OAuth provider mismatch');
   if (!payload.return_to) throw new OAuthError('state_missing_return_to', 'Missing return target');
+  if (!payload.intent) payload.intent = 'login';
+  payload.intent = normalizeSocialPurpose(payload.intent);
   if (Number(payload.expires_at || 0) < Date.now()) throw new OAuthError('state_expired', 'OAuth state has expired');
   return payload;
 }
@@ -354,7 +371,6 @@ function clearLogoutNonceCookie(config, request, env) {
 
 function clearFlowCookies(config, request, env) {
   return [
-    clearSessionCookie(request, env),
     clearStateCookie(config, request, env),
     clearLogoutCookie(config, request, env),
   ].filter(Boolean);
@@ -490,15 +506,21 @@ function normalizeProviderProfile(config, payload) {
     const email = normalizeEmail(response?.email);
     const nickname = normalizeText(response?.nickname || response?.name);
     const name = normalizeText(response?.name || response?.nickname || email);
+    const emailVerified = Boolean(
+      response?.is_email_verified === true
+      || String(response?.is_email_verified).toLowerCase() === 'true'
+      || response?.email_verified === true
+      || String(response?.email_verified).toLowerCase() === 'true'
+    );
 
     return {
       provider: config.id,
       provider_user_id: String(response.id),
       name: name || `naver_${String(response.id).slice(-6)}`,
       nickname: nickname || name,
-      email,
+      email: emailVerified ? email : '',
       provider_email: email,
-      email_verified: Boolean(email),
+      email_verified: emailVerified,
       avatar_url: normalizeText(response?.profile_image),
       locale: normalizeText(response?.locale),
       raw: payload,
@@ -703,7 +725,72 @@ async function upsertSocialAccount(db, userId, profile) {
   return findSocialAccount(db, profile.provider, profile.provider_user_id);
 }
 
-async function resolveOAuthAccount(db, profile) {
+function verificationRowToProfile(row) {
+  if (!row) return null;
+  return {
+    provider: normalizeText(row.provider),
+    provider_user_id: normalizeText(row.provider_user_id),
+    email: normalizeText(row.provider_email),
+    provider_email: normalizeText(row.provider_email),
+    email_verified: Boolean(row.email_verified),
+    name: normalizeText(row.provider_name),
+    nickname: normalizeText(row.provider_nickname),
+    avatar_url: normalizeText(row.provider_avatar_url),
+    locale: normalizeText(row.provider_locale),
+  };
+}
+
+export async function attachSocialAccountFromVerification(db, userId, row) {
+  if (!row) return null;
+  if (row.user_id && row.user_id !== userId) {
+    throw new OAuthError('verification_user_mismatch', 'Verification is linked to another user');
+  }
+
+  const profile = verificationRowToProfile(row);
+  if (!profile?.provider || !profile?.provider_user_id) return null;
+
+  await upsertSocialAccount(db, userId, profile);
+  const user = await findUserById(db, userId);
+  if (user) {
+    await updateUserFromProfile(db, user, profile, {
+      allowEmailPromotion: false,
+    });
+  }
+  return profile;
+}
+
+async function resolveOAuthAccount(db, profile, {
+  allowCreate = true,
+  allowEmailLink = true,
+  allowEmailLookup = true,
+} = {}) {
+  const linkedAccount = await findSocialAccount(db, profile.provider, profile.provider_user_id);
+  let user = linkedAccount ? await findUserById(db, linkedAccount.user_id) : null;
+
+  if (!user && allowEmailLookup && profile.email_verified && profile.email) {
+    user = await findUserByEmail(db, profile.email);
+  }
+
+  if (!user && allowCreate) {
+    user = await createSocialUser(db, profile);
+  }
+
+  if (!user) {
+    return { user: null, linkedAccount: linkedAccount || null };
+  }
+
+  if (linkedAccount || allowEmailLink) {
+    await upsertSocialAccount(db, user.id, profile);
+  }
+
+  user = await updateUserFromProfile(db, user, profile, {
+    allowEmailPromotion: allowEmailLink && profile.email_verified,
+  });
+
+  return { user, linkedAccount: linkedAccount || null };
+}
+
+async function lookupOAuthAccount(db, profile) {
   const linkedAccount = await findSocialAccount(db, profile.provider, profile.provider_user_id);
   let user = linkedAccount ? await findUserById(db, linkedAccount.user_id) : null;
 
@@ -711,16 +798,7 @@ async function resolveOAuthAccount(db, profile) {
     user = await findUserByEmail(db, profile.email);
   }
 
-  if (!user) {
-    user = await createSocialUser(db, profile);
-  }
-
-  await upsertSocialAccount(db, user.id, profile);
-  user = await updateUserFromProfile(db, user, profile, {
-    allowEmailPromotion: profile.email_verified,
-  });
-
-  return { user };
+  return { user, linkedAccount };
 }
 
 function mapProviderError(code) {
@@ -741,18 +819,24 @@ async function clearServiceSession(request, env) {
 export async function handleOAuthStart(context, provider) {
   const { request, env } = context;
   const config = getProviderConfig(provider, env, request);
+  const requestUrl = new URL(request.url);
+  const intent = normalizeSocialPurpose(requestUrl.searchParams.get('flow') || requestUrl.searchParams.get('intent'));
 
   if (!config || !config.enabled) {
-    return buildRedirectResponse(buildLoginRedirectUrl(env, request, provider, 'provider_unavailable'));
+    return buildRedirectResponse(buildAuthRedirectUrl(env, request, provider, 'provider_unavailable', intent));
   }
 
-  const requestUrl = new URL(request.url);
   const returnTo = sanitizeReturnTo(
     requestUrl.searchParams.get('return_to') || requestUrl.searchParams.get('next'),
     env,
     request,
+    intent === 'signup'
+      ? '/login/signup.html'
+      : intent === 'recovery'
+        ? '/login/find_account.html'
+        : '/index.html',
   );
-  const stateToken = await createStateToken(config.id, returnTo, env);
+  const stateToken = await createStateToken(config.id, returnTo, env, intent);
 
   return buildRedirectResponse(buildProviderStartUrl(config, stateToken), [
     buildStateCookie(config, stateToken, request, env),
@@ -764,7 +848,7 @@ export async function handleOAuthCallback(context, provider) {
   const config = getProviderConfig(provider, env, request);
 
   if (!config || !config.enabled) {
-    return buildRedirectResponse(buildLoginRedirectUrl(env, request, provider, 'provider_unavailable'));
+    return buildRedirectResponse(buildAuthRedirectUrl(env, request, provider, 'provider_unavailable'));
   }
 
   await ensureAuthSchema(env.DB);
@@ -773,7 +857,7 @@ export async function handleOAuthCallback(context, provider) {
   const providerError = requestUrl.searchParams.get('error');
   if (providerError) {
     return buildRedirectResponse(
-      buildLoginRedirectUrl(env, request, provider, mapProviderError(providerError)),
+      buildAuthRedirectUrl(env, request, provider, mapProviderError(providerError)),
       clearFlowCookies(config, request, env),
     );
   }
@@ -784,14 +868,14 @@ export async function handleOAuthCallback(context, provider) {
 
   if (!code || !stateToken) {
     return buildRedirectResponse(
-      buildLoginRedirectUrl(env, request, provider, 'callback_missing_code'),
+      buildAuthRedirectUrl(env, request, provider, 'callback_missing_code'),
       clearFlowCookies(config, request, env),
     );
   }
 
   if (!stateCookie || stateCookie !== stateToken) {
     return buildRedirectResponse(
-      buildLoginRedirectUrl(env, request, provider, 'state_mismatch'),
+      buildAuthRedirectUrl(env, request, provider, 'state_mismatch'),
       clearFlowCookies(config, request, env),
     );
   }
@@ -801,11 +885,12 @@ export async function handleOAuthCallback(context, provider) {
     statePayload = await parseStateToken(stateToken, config.id, env);
   } catch (error) {
     return buildRedirectResponse(
-      buildLoginRedirectUrl(
+      buildAuthRedirectUrl(
         env,
         request,
         provider,
         error.code === 'state_expired' ? 'state_expired' : 'state_mismatch',
+        'login',
       ),
       clearFlowCookies(config, request, env),
     );
@@ -820,7 +905,94 @@ export async function handleOAuthCallback(context, provider) {
     const profile = normalizeProviderProfile(config, providerProfile);
     if (!profile.provider_user_id) throw new OAuthError('user_info_failed', 'Missing provider user id');
 
-    const { user } = await resolveOAuthAccount(env.DB, profile);
+    const intent = normalizeSocialPurpose(statePayload.intent);
+    const matched = await lookupOAuthAccount(env.DB, profile);
+
+    if (intent === 'signup') {
+      if (matched.user) {
+        return buildRedirectResponse(
+          buildAuthRedirectUrl(env, request, provider, 'account_exists', 'login'),
+          clearFlowCookies(config, request, env),
+        );
+      }
+
+      const verification = await createSocialVerification(env.DB, {
+        purpose: 'signup',
+        profile,
+        returnTo: statePayload.return_to,
+      });
+
+      return buildRedirectResponse(
+        sanitizeReturnTo(statePayload.return_to, env, request, '/login/signup.html'),
+        [
+          await buildSocialVerificationCookie(verification.token, request, env, 'signup'),
+          clearStateCookie(config, request, env),
+        ],
+      );
+    }
+
+    if (intent === 'recovery') {
+      if (!matched.user) {
+        return buildRedirectResponse(
+          buildAuthRedirectUrl(env, request, provider, 'account_not_found', 'recovery'),
+          clearFlowCookies(config, request, env),
+        );
+      }
+
+      const verification = await createSocialVerification(env.DB, {
+        purpose: 'recovery',
+        profile,
+        userId: matched.user.id,
+        returnTo: statePayload.return_to,
+      });
+
+      return buildRedirectResponse(
+        sanitizeReturnTo(statePayload.return_to, env, request, '/login/find_account.html'),
+        [
+          await buildSocialVerificationCookie(verification.token, request, env, 'recovery'),
+          clearStateCookie(config, request, env),
+        ],
+      );
+    }
+
+    if (!matched.user) {
+      const verification = await createSocialVerification(env.DB, {
+        purpose: 'signup',
+        profile,
+        returnTo: statePayload.return_to,
+      });
+
+      return buildRedirectResponse(
+        buildAuthRedirectUrl(env, request, provider, 'signup_required', 'signup'),
+        [
+          await buildSocialVerificationCookie(verification.token, request, env, 'signup'),
+          clearStateCookie(config, request, env),
+        ],
+      );
+    }
+
+    const { user } = await resolveOAuthAccount(env.DB, profile, {
+      allowCreate: false,
+      allowEmailLink: true,
+      allowEmailLookup: true,
+    });
+
+    if (!user) {
+      const verification = await createSocialVerification(env.DB, {
+        purpose: 'signup',
+        profile,
+        returnTo: statePayload.return_to,
+      });
+
+      return buildRedirectResponse(
+        buildAuthRedirectUrl(env, request, provider, 'signup_required', 'signup'),
+        [
+          await buildSocialVerificationCookie(verification.token, request, env, 'signup'),
+          clearStateCookie(config, request, env),
+        ],
+      );
+    }
+
     const session = await createSessionRecord(env.DB, user.id, {
       authProvider: profile.provider,
       authProviderUserId: profile.provider_user_id,
@@ -836,7 +1008,7 @@ export async function handleOAuthCallback(context, provider) {
   } catch (error) {
     const codeValue = error instanceof OAuthError ? error.code : 'oauth_failed';
     return buildRedirectResponse(
-      buildLoginRedirectUrl(env, request, provider, codeValue),
+      buildAuthRedirectUrl(env, request, provider, codeValue, statePayload?.intent || 'login'),
       clearFlowCookies(config, request, env),
     );
   }

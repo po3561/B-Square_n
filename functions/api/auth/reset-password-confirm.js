@@ -25,7 +25,7 @@ export async function onRequestPost(context) {
       FROM password_reset_tokens
       WHERE token_hash = ?
         AND used_at IS NULL
-        AND expires_at > datetime('now')
+        AND unixepoch(expires_at) > unixepoch('now')
       ORDER BY created_at DESC
       LIMIT 1
     `).bind(tokenHash).first();
