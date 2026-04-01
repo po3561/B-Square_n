@@ -136,6 +136,32 @@ body {
     stroke 180ms ease;
 }
 
+/* 1. Header always on top and fixed */
+.site-header {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100% !important;
+  z-index: 9999 !important;
+  background: rgba(7, 11, 18, 0.45) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  transition: background 0.3s ease;
+}
+
+/* Ensure other pages have spacing for fixed header */
+body:not(.home-page) .main-content,
+body:not(.home-page) .view-container,
+body:not(.home-page) .class-list-main,
+body:not(.home-page) .contact-main,
+body:not(.home-page) .notice-main,
+body:not(.home-page) .mypage-shell {
+  padding-top: 80px !important;
+}
+
+
 body,
 .site-header,
 .site-footer,
@@ -597,6 +623,15 @@ html[data-theme="light"] .no-chat-inner {
 /* Home page clean hero treatment */
 body.home-page .hero-section {
   position: relative;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+body.home-page .hero-inner {
+  width: 100% !important;
+  max-width: 100vw !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 body.home-page .main-ad-banner.home-main-banner {
@@ -606,6 +641,7 @@ body.home-page .main-ad-banner.home-main-banner {
   border-color: transparent !important;
   box-shadow: none !important;
   overflow: visible;
+  border-radius: 0 !important;
 }
 
 body.home-page .main-ad-banner.home-main-banner::before {
@@ -623,14 +659,15 @@ body.home-page .main-ad-banner.home-main-banner::before {
 
 body.home-page .home-banner-stage {
   border: 0 !important;
-  border-radius: clamp(24px, 2.2vw, 34px) !important;
-  min-height: clamp(260px, 28vw, 500px) !important;
+  border-radius: 0 !important;
+  min-height: clamp(550px, 45vw, 900px) !important;
   background:
     radial-gradient(circle at 12% 0%, rgba(80, 120, 255, 0.28), transparent 22%),
     radial-gradient(circle at 78% 100%, rgba(0, 195, 160, 0.16), transparent 24%),
     linear-gradient(180deg, rgba(6, 8, 13, 0.98), rgba(5, 7, 11, 0.98)) !important;
   box-shadow: none !important;
 }
+
 
 body.home-page .home-banner-stage::before {
   background:
@@ -688,17 +725,9 @@ body.home-page .home-category-panel {
 }
 
 body.home-page .home-category-panel::before {
-  content: "";
-  position: absolute;
-  inset: 4rem -4vw -2.5rem;
-  background:
-    radial-gradient(circle at 12% 0%, rgba(80, 120, 255, 0.14), transparent 34%),
-    radial-gradient(circle at 88% 0%, rgba(93, 225, 198, 0.12), transparent 28%),
-    linear-gradient(180deg, rgba(5, 7, 11, 0.02), rgba(5, 7, 11, 0.4) 34%, rgba(5, 7, 11, 0.5) 100%);
-  filter: blur(22px);
-  opacity: 0.92;
-  pointer-events: none;
+  display: none !important;
 }
+
 
 body.home-page .home-category-panel > div,
 body.home-page .home-category-shell,
