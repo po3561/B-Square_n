@@ -1233,14 +1233,97 @@
 
 .dashboard-summary-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--mp-gap);
+    align-items: stretch;
 }
 
 .dashboard-stat-card {
     background: var(--mp-surface);
     border-color: var(--mp-border);
     box-shadow: var(--mp-shadow-soft);
+}
+
+.dashboard-profile-card {
+    display: grid;
+    gap: 1rem;
+}
+
+.dashboard-profile-top {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.dashboard-profile-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, rgba(158, 188, 255, 0.18), rgba(255, 255, 255, 0.06));
+    border: 1px solid var(--mp-border);
+    font-size: 1.5rem;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.dashboard-profile-copy {
+    min-width: 0;
+    display: grid;
+    gap: 0.18rem;
+}
+
+.dashboard-profile-eyebrow {
+    margin: 0;
+    color: var(--mp-accent-strong);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.dashboard-profile-name {
+    margin: 0;
+    font-size: clamp(1.02rem, 1.3vw, 1.2rem);
+    line-height: 1.18;
+    letter-spacing: -0.03em;
+}
+
+.dashboard-profile-username {
+    margin: 0;
+    color: var(--mp-text-muted);
+    font-size: var(--mp-body-sm);
+}
+
+.dashboard-profile-meta {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.dashboard-profile-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.72rem 0.82rem;
+    border-radius: var(--mp-radius-sm);
+    border: 1px solid var(--mp-border);
+    background: var(--mp-surface-soft);
+}
+
+.dashboard-profile-row span {
+    color: var(--mp-text-dim);
+    font-size: var(--mp-body-sm);
+}
+
+.dashboard-profile-row strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--mp-text);
+    font-size: var(--mp-body-sm);
+    text-align: right;
 }
 
 .dashboard-stat-top {

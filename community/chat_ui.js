@@ -14,6 +14,8 @@ window.CommunityModules.ChatUI = (function () {
     let isSending = false;
     let currentPins = [];
     let messageCache = new Map();
+    let senderProfileCache = new Map();
+    let senderProfileRequests = new Map();
     let pollTimer = null;
     let lastMsgTimestamp = 0;
     let messageFeed = null;
@@ -52,6 +54,85 @@ window.CommunityModules.ChatUI = (function () {
         } catch {
             return fallback;
         }
+    }
+
+    function normalizeProfileData(profile) {
+        if (!profile || typeof profile !== 'object') return null;
+        const name = String(profile.name || profile.username || profile.display_name || '사용자').trim() || '사용자';
+        const avatar = String(profile.profile_image_url || profile.avatar_url || profile.profile_image || '').trim();
+        return {
+            ...profile,
+            name,
+            profile_image_url: avatar,
+            avatar_url: avatar,
+        };
+    }
+
+    function hasMessageAvatar(msgData) {
+        return !!String(
+            msgData?.user_avatar
+            || msgData?.sender_avatar
+            || msgData?.avatar_url
+            || msgData?.profile_image_url
+            || ''
+        ).trim();
+    }
+
+    function mergeMessageProfile(msgData, profile) {
+        const normalizedProfile = normalizeProfileData(profile);
+        if (!msgData || !normalizedProfile) return msgData;
+
+        const avatar = normalizedProfile.profile_image_url || normalizedProfile.avatar_url || '';
+        if (!avatar && !normalizedProfile.name) return msgData;
+
+        return {
+            ...msgData,
+            user_avatar: msgData.user_avatar || avatar,
+            sender_avatar: msgData.sender_avatar || avatar,
+            avatar_url: msgData.avatar_url || avatar,
+            profile_image_url: msgData.profile_image_url || avatar,
+            user_name: msgData.user_name || normalizedProfile.name || '',
+            sender_name: msgData.sender_name || normalizedProfile.name || '',
+        };
+    }
+
+    async function resolveSenderProfile(senderId) {
+        const key = String(senderId || '').trim();
+        if (!key) return null;
+
+        if (key === 'OPERATOR_GHOST') {
+            const operatorProfile = normalizeProfileData({
+                name: '운영자',
+                profile_image_url: '/assets/default-avatar.svg',
+            });
+            if (operatorProfile) senderProfileCache.set(key, operatorProfile);
+            return operatorProfile;
+        }
+
+        if (senderProfileCache.has(key)) {
+            return senderProfileCache.get(key);
+        }
+
+        if (senderProfileRequests.has(key)) {
+            return senderProfileRequests.get(key);
+        }
+
+        const pending = Promise.resolve(bridge()?.getUserProfile?.(key))
+            .then((profile) => {
+                const normalized = normalizeProfileData(profile);
+                if (normalized) senderProfileCache.set(key, normalized);
+                return normalized;
+            })
+            .catch((error) => {
+                console.warn('[chat_ui] sender profile load failed:', error);
+                return null;
+            })
+            .finally(() => {
+                senderProfileRequests.delete(key);
+            });
+
+        senderProfileRequests.set(key, pending);
+        return pending;
     }
 
     function normalizeIncomingMessage(row) {
@@ -128,6 +209,10 @@ window.CommunityModules.ChatUI = (function () {
             msgData?.reply_user || '',
             msgData?.is_pinned ? '1' : '0',
             msgData?.edited ? '1' : '0',
+            msgData?.user_avatar || '',
+            msgData?.sender_avatar || '',
+            msgData?.avatar_url || '',
+            msgData?.profile_image_url || '',
             msgData?.updated_at || '',
             msgData?.timestamp || msgData?.created_at || '',
             reactionEntries,
@@ -673,7 +758,7 @@ window.CommunityModules.ChatUI = (function () {
         if (searchBar) searchBar.style.display = 'none';
         const infoPanel = document.getElementById('commInfoPanel');
         if (infoPanel) {
-            setInfoPanelVisibility(false);
+            setInfoPanelVisibility(true);
             const infoPanelBody = document.getElementById('infoPanelBody');
             if (infoPanelBody) infoPanelBody.innerHTML = '';
         }
@@ -724,13 +809,12 @@ window.CommunityModules.ChatUI = (function () {
             localStorage.setItem('bsq_comm_last_type', String(roomType));
         } catch {}
 
-        const autoOpenInfoPanel = window.innerWidth >= 1025 || new URLSearchParams(location.search).get('panel') === 'info';
         loadMessages({ refreshAll: true, roomToken }).then((messages) => {
             if (roomToken !== roomOpenSeq || roomId !== currentRoomId || roomType !== currentRoomType) return;
             startMessageStream(messages || []);
         });
         loadPinnedMessages(roomToken);
-        if (autoOpenInfoPanel) setTimeout(() => renderInfoPanel(roomId, roomType, roomInfo), 0);
+        setTimeout(() => renderInfoPanel(roomId, roomType, roomInfo), 0);
     }
 
     function startMessageStream(seedMessages = []) {
@@ -749,6 +833,17 @@ window.CommunityModules.ChatUI = (function () {
             if (ts > lastMsgTimestamp) lastMsgTimestamp = ts;
             cacheMessage(normalized);
             renderMessage(normalized.id || normalized.key, normalized, true);
+
+            const currentUserId = window.__BSQ_DEV_MODE__ ? 'OPERATOR_GHOST' : (bridge()?.getUserId?.() || '');
+            const senderId = String(normalized.sender_id || normalized.user_id || '').trim();
+            if (senderId && senderId !== currentUserId && senderId !== 'OPERATOR_GHOST' && !hasMessageAvatar(normalized)) {
+                resolveSenderProfile(senderId).then((profile) => {
+                    if (!profile) return;
+                    const hydrated = mergeMessageProfile(normalized, profile);
+                    cacheMessage(hydrated);
+                    renderMessage(hydrated.id || hydrated.key, hydrated, true);
+                }).catch(() => {});
+            }
         }, {
             since: lastMsgTimestamp,
             seedMessages,
@@ -777,9 +872,36 @@ window.CommunityModules.ChatUI = (function () {
             if (roomToken !== roomOpenSeq || roomId !== currentRoomId || roomType !== currentRoomType) return [];
 
             if (res?.success && res.data) {
-                const messages = (Array.isArray(res.data) ? res.data : (res.data.messages || []))
+                const currentUserId = window.__BSQ_DEV_MODE__ ? 'OPERATOR_GHOST' : (bridge()?.getUserId?.() || '');
+                let messages = (Array.isArray(res.data) ? res.data : (res.data.messages || []))
                     .map(normalizeIncomingMessage)
                     .sort((a, b) => new Date(a.timestamp || a.created_at || 0) - new Date(b.timestamp || b.created_at || 0));
+
+                const avatarBySender = new Map();
+                messages.forEach((msg) => {
+                    const senderId = String(msg.sender_id || msg.user_id || '').trim();
+                    if (!senderId) return;
+                    if (hasMessageAvatar(msg)) {
+                        avatarBySender.set(senderId, true);
+                    }
+                });
+
+                const avatarTargets = Array.from(new Set(messages
+                    .map((msg) => String(msg.sender_id || msg.user_id || '').trim())
+                    .filter((senderId) => senderId
+                        && senderId !== currentUserId
+                        && senderId !== 'OPERATOR_GHOST'
+                        && !avatarBySender.get(senderId))));
+
+                if (avatarTargets.length) {
+                    await Promise.all(avatarTargets.map((senderId) => resolveSenderProfile(senderId)));
+                }
+
+                messages = messages.map((msg) => {
+                    const senderId = String(msg.sender_id || msg.user_id || '').trim();
+                    const profile = senderProfileCache.get(senderId);
+                    return profile ? mergeMessageProfile(msg, profile) : msg;
+                });
 
                 messages.forEach(msg => {
                     const msgId = msg.id || msg.key;
@@ -863,7 +985,7 @@ window.CommunityModules.ChatUI = (function () {
         const shouldStickToBottom = isMine || isNearBottom(container) || !container.children.length;
 
         let senderName = msgData.user_name || msgData.sender_name || '';
-        let senderAvatar = msgData.user_avatar || msgData.sender_avatar || '';
+        let senderAvatar = msgData.user_avatar || msgData.sender_avatar || msgData.avatar_url || msgData.profile_image_url || '';
 
         if (senderId === 'OPERATOR_GHOST') {
             senderName = '운영자';
@@ -880,7 +1002,7 @@ window.CommunityModules.ChatUI = (function () {
 
         const contentHtml = generateMessageContentHtml(normalizedId, msgData, currentUserId);
         const rowInnerHtml = `
-            ${!isMine ? `<div class="msg-avatar" style="${senderAvatar ? `background-image:url(${senderAvatar})` : ''}">${!senderAvatar ? '👤' : ''}</div>` : ''}
+            ${!isMine ? `<div class="msg-avatar"${senderAvatar ? ` style="background-image:url('${escapeHtml(senderAvatar)}')"` : ''}>${!senderAvatar ? '👤' : ''}</div>` : ''}
             <div class="msg-bubble-wrap">
                 ${!isMine && (currentRoomType === 'class' || currentRoomType === 'group') ? `<span class="msg-sender-name">${senderName}${instructorBadge}</span>` : ''}
                 <div class="msg-content-area">${contentHtml}</div>

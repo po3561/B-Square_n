@@ -1,24 +1,27 @@
 const FALLBACK_CLASS_CATEGORIES = [
-  { name: '라이프스타일', emoji: '✨' },
-  { name: '창작', emoji: '🎨' },
+  { name: '어도비', emoji: '🅰️' },
+  { name: '평생교육이용권', emoji: '🎟️' },
+  { name: 'AI 스킬업', emoji: '✨' },
+  { name: '창업·부업', emoji: '🏪' },
+  { name: '디지털 드로잉', emoji: '✏️' },
+  { name: '라이프스타일', emoji: '🌿' },
+  { name: '금융·재테크', emoji: '💰' },
+  { name: '디자인', emoji: '🎨' },
+  { name: '생산성', emoji: '📈' },
+  { name: '사진·영상', emoji: '🎬' },
   { name: '운동', emoji: '🏃' },
-  { name: '디지털', emoji: '💻' },
-  { name: '요리', emoji: '🍳' },
-  { name: '스포츠', emoji: '🏅' },
-  { name: '음악', emoji: '🎵' },
-  { name: '사진', emoji: '📷' },
-  { name: '영상', emoji: '🎬' },
-  { name: '공예', emoji: '🧵' },
   { name: '비즈니스', emoji: '💼' },
-  { name: '교육', emoji: '📚' },
-  { name: '힐링', emoji: '🪷' },
-  { name: '공연', emoji: '🎭' },
-  { name: '여행', emoji: '✈️' },
+  { name: '프로그래밍', emoji: '💻' },
+  { name: '제2 외국어', emoji: '🈯' },
+  { name: '마케팅', emoji: '📣' },
+  { name: '아이 교육', emoji: '👶' },
+  { name: '외국어 시험', emoji: '📝' },
+  { name: '부모 교육', emoji: '👨‍👩‍👧' },
 ];
 
 const CLASS_LIST_FETCH_LIMIT = 60;
 const CLASS_LIST_BOOKMARK_STORAGE_KEY = 'bsq.class-list.bookmarks';
-let reloadTimer = null;
+const CATEGORY_COLLAPSED_COUNT = 11;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -28,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentCategory: urlParams.get('cat') || 'all',
     currentSort: 'newest',
     searchQuery: '',
+    categoryMenuExpanded: false,
     bookmarkCounts: new Map(),
     bookmarkedIds: new Set(),
   };
@@ -58,14 +62,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       .replace(/'/g, '&#39;');
   }
 
-  function stripHtml(value = '') {
+  function normalizeText(value = '') {
     return String(value).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   }
 
   function truncateText(value = '', maxLength = 84) {
-    const text = stripHtml(value);
+    const text = normalizeText(value);
     if (!text) return '';
-    return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}…` : text;
+    return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;
+  }
+
+  function normalizeCategoryName(value = '') {
+    return String(value || '').trim();
   }
 
   function getEffectivePrice(cls) {
@@ -75,7 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function getClassSummary(cls) {
-    return truncateText(cls.summary || cls.short_description || cls.description || cls.intro || cls.content || '', 84);
+    return truncateText(cls.summary || cls.short_description || cls.description || cls.intro || cls.content || '', 86);
   }
 
   function normalizeBannerItems(items = [], fallbackLabel = '배너') {
@@ -165,6 +173,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     button.textContent = bookmarked ? '♥' : '♡';
   }
 
+  function getCategoryCount(name) {
+    const key = normalizeCategoryName(name);
+    if (!key || key === 'all') return state.allClasses.length;
+    return state.allClasses.reduce((count, cls) => {
+      return normalizeCategoryName(cls.category) === key ? count + 1 : count;
+    }, 0);
+  }
+
+  function buildCategoryItems() {
+    const merged = [];
+    const seen = new Set();
+    const pushItem = (item) => {
+      const name = normalizeCategoryName(item?.name);
+      if (!name || seen.has(name)) return;
+      seen.add(name);
+      merged.push({
+        name,
+        label: String(item?.label || name).trim(),
+        emoji: String(item?.emoji || '📚').trim() || '📚',
+      });
+    };
+
+    pushItem({ name: 'all', label: '전체', emoji: '✨' });
+
+    const primaryCategories = state.categories.length ? state.categories : FALLBACK_CLASS_CATEGORIES;
+    primaryCategories.forEach(pushItem);
+    FALLBACK_CLASS_CATEGORIES.forEach(pushItem);
+
+    return merged.map((item) => ({
+      ...item,
+      class_count: getCategoryCount(item.name),
+    }));
+  }
+
   function renderBannerCarousel(items = []) {
     const track = document.getElementById('classListBannerTrack');
     const dots = document.getElementById('classListBannerDots');
@@ -172,11 +214,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const next = document.getElementById('classListBannerNext');
     if (!track) return;
 
-    const banners = normalizeBannerItems(items, '하단 배너');
+    const banners = normalizeBannerItems(items, '배너');
     const slides = banners.length ? banners : [{
       imgUrl: '',
       linkUrl: '',
-      alt: '하단 배너 준비 중',
+      alt: '배너 준비 중',
     }];
 
     track.innerHTML = slides.map((item, index) => {
@@ -185,7 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ? `<img src="${escapeHtml(item.imgUrl)}" alt="${escapeHtml(item.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async">`
         : `<div class="home-banner-empty">
               <span class="home-banner-brand">B-Square</span>
-              <span class="home-banner-note">하단 배너를 준비 중입니다.</span>
+              <span class="home-banner-note">상단 배너를 준비 중입니다.</span>
            </div>`;
 
       if (item.linkUrl) {
@@ -208,8 +250,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).join('');
 
     const slideEls = Array.from(track.querySelectorAll('.home-banner-slide'));
-    let currentIndex = 0;
     const dotButtons = [];
+    let currentIndex = 0;
 
     const setActive = (nextIndex) => {
       if (!slideEls.length) return;
@@ -270,23 +312,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function updateListingHeroStats(activeCount = state.allClasses.length) {
-    const totalEl = document.getElementById('heroClassTotal');
-    const categoryEl = document.getElementById('heroCategoryTotal');
-    const activeEl = document.getElementById('heroActiveCategoryCount');
-
-    if (totalEl) totalEl.textContent = String(state.allClasses.length || 0);
-    if (categoryEl) categoryEl.textContent = String(state.categories.length || FALLBACK_CLASS_CATEGORIES.length || 0);
-    if (activeEl) activeEl.textContent = String(activeCount || 0);
-  }
-
   async function loadCategories() {
     try {
       const res = await window.BSQ.api('/api/class-categories', { cacheBust: false });
       if (res.success && Array.isArray(res.data) && res.data.length > 0) {
         state.categories = res.data
           .map((item) => ({
-            name: String(item.name || '').trim(),
+            name: normalizeCategoryName(item.name),
             emoji: String(item.emoji || '📚').trim() || '📚',
             class_count: Number(item.class_count || 0),
           }))
@@ -310,31 +342,54 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function renderCategorySidebar() {
+  function renderCategoryMenu() {
     const nav = document.getElementById('categoryFilter');
     if (!nav) return;
 
-    const items = [
-      { name: 'all', emoji: '📚', class_count: state.allClasses.length, label: '전체' },
-      ...state.categories.map((item) => ({
-        ...item,
-        label: item.name,
-      })),
-    ];
+    const items = buildCategoryItems();
+    const isExpanded = state.categoryMenuExpanded || items.length <= CATEGORY_COLLAPSED_COUNT;
+    const visibleItems = isExpanded ? items : items.slice(0, CATEGORY_COLLAPSED_COUNT);
+    const hasMore = items.length > CATEGORY_COLLAPSED_COUNT;
+
+    const tiles = visibleItems.map((item) => {
+      const isActive = state.currentCategory === item.name;
+      return `
+        <button type="button"
+                class="class-category-tile${isActive ? ' is-active' : ''}"
+                data-cat="${escapeHtml(item.name)}"
+                aria-pressed="${isActive ? 'true' : 'false'}"
+                title="${escapeHtml(item.label)}">
+          <span class="class-category-icon">${escapeHtml(item.emoji)}</span>
+          <span class="class-category-label">${escapeHtml(item.label)}</span>
+        </button>
+      `;
+    }).join('');
+
+    const toggleTile = hasMore ? `
+      <button type="button"
+              class="class-category-tile class-category-toggle"
+              data-action="toggle-categories"
+              aria-pressed="${state.categoryMenuExpanded ? 'true' : 'false'}"
+              title="${state.categoryMenuExpanded ? '접기' : '더보기'}">
+        <span class="class-category-icon">${state.categoryMenuExpanded ? '⌃' : '⌄'}</span>
+        <span class="class-category-label">${state.categoryMenuExpanded ? '접기' : '더보기'}</span>
+      </button>
+    ` : '';
 
     nav.innerHTML = `
-      <h3 class="sidebar-title">클래스 카테고리</h3>
-      <ul>
-        ${items.map((item) => `
-          <li class="${state.currentCategory === item.name ? 'active' : ''}">
-            <a href="#" data-cat="${escapeHtml(item.name)}"${state.currentCategory === item.name ? ' aria-current="page"' : ''}>
-              <span class="icon">${escapeHtml(item.emoji || '📚')}</span>
-              <span class="cat-label">${escapeHtml(item.label || item.name)}</span>
-              <span class="cat-count">${Number(item.class_count || 0)}</span>
-            </a>
-          </li>
-        `).join('')}
-      </ul>
+      <div class="class-category-panel">
+        <div class="class-category-panel-head">
+          <div>
+            <span class="banner-eyebrow">Categories</span>
+            <h2>카테고리</h2>
+          </div>
+          <p>원하는 분야를 빠르게 골라보세요.</p>
+        </div>
+        <div class="class-category-grid">
+          ${tiles}
+          ${toggleTile}
+        </div>
+      </div>
     `;
   }
 
@@ -361,8 +416,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   function filterClasses() {
     let items = [...state.allClasses];
     if (state.currentCategory !== 'all') {
-      items = items.filter((item) => String(item.category || '').trim() === state.currentCategory);
+      items = items.filter((item) => normalizeCategoryName(item.category) === state.currentCategory);
     }
+
     if (state.searchQuery) {
       const q = state.searchQuery.toLowerCase();
       items = items.filter((item) => {
@@ -377,6 +433,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return haystack.includes(q);
       });
     }
+
     return sortClasses(items);
   }
 
@@ -387,7 +444,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const filteredClasses = filterClasses();
     const countEl = document.getElementById('totalClassCount');
     if (countEl) countEl.textContent = `총 ${filteredClasses.length}개`;
-    updateListingHeroStats(filteredClasses.length);
 
     const titleEl = document.querySelector('.group-title');
     if (titleEl) titleEl.textContent = state.currentCategory === 'all' ? '전체 클래스 목록' : `${state.currentCategory} 클래스`;
@@ -395,7 +451,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (filteredClasses.length === 0) {
       grid.innerHTML = `
         <div class="empty-state" style="grid-column:1/-1; text-align:center; padding:4rem; color:#888;">
-          ${state.searchQuery ? `"${escapeHtml(state.searchQuery)}" 검색 결과가 없습니다.` : '해당 카테고리에 등록된 클래스가 없습니다.'}
+          ${state.searchQuery ? `"${escapeHtml(state.searchQuery)}" 검색결과가 없습니다.` : '해당 카테고리의 클래스가 없습니다.'}
         </div>
       `;
       return;
@@ -421,7 +477,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       return `
         <article class="class-card card-animate" style="animation-delay:${index * 0.05}s">
-          <a class="class-card-link" href="${href}" aria-label="${escapeHtml(cls.title || '클래스 이미지')} 상세 보기">
+          <a class="class-card-link" href="${href}" aria-label="${escapeHtml(cls.title || '클래스 상세 보기')}">
             <div class="card-thumbnail">
               <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(cls.title || '클래스 이미지')}" loading="lazy">
               <div class="card-badges">
@@ -462,11 +518,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   function bindEvents() {
     const categoryNav = document.getElementById('categoryFilter');
     categoryNav?.addEventListener('click', (event) => {
-      const link = event.target.closest('a[data-cat]');
-      if (!link) return;
+      const button = event.target.closest('button[data-cat], button[data-action="toggle-categories"]');
+      if (!button) return;
+
+      if (button.dataset.action === 'toggle-categories') {
+        event.preventDefault();
+        state.categoryMenuExpanded = !state.categoryMenuExpanded;
+        renderCategoryMenu();
+        return;
+      }
+
       event.preventDefault();
-      state.currentCategory = String(link.dataset.cat || 'all');
-      renderCategorySidebar();
+      state.currentCategory = String(button.dataset.cat || 'all');
+      state.categoryMenuExpanded = false;
+      renderCategoryMenu();
       renderClasses();
     });
 
@@ -483,7 +548,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       searchTimer = setTimeout(() => {
         state.searchQuery = String(event.target.value || '').trim();
         renderClasses();
-      }, 250);
+      }, 220);
     });
 
     const grid = document.getElementById('allClassGrid');
@@ -542,19 +607,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.addEventListener('bsq_sync', (event) => {
       const type = String(event.detail?.type || '');
       if (['create', 'edit', 'delete', 'class-categories', 'recommendations', 'site-settings'].includes(type)) {
-        clearTimeout(reloadTimer);
-        reloadTimer = setTimeout(() => {
-          reloadData();
-        }, 120);
+        reloadData();
       }
     });
   }
 
   async function reloadData() {
     await Promise.all([loadCategories(), loadClasses()]);
-    renderCategorySidebar();
+    renderCategoryMenu();
     renderClasses();
-    updateListingHeroStats(filterClasses().length);
     await loadHeroBanner();
   }
 

@@ -1,4 +1,4 @@
-﻿import { createSessionCookie, hashPassword } from '../_lib/auth.js';
+import { createSessionCookie, createSessionRecord, hashPassword } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
 import { ensureAuthSchema } from '../_lib/schema.js';
 
@@ -18,7 +18,7 @@ export async function onRequestPost(context) {
 
     let user;
     if (username.includes('@')) {
-      user = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(username).first();
+      user = await env.DB.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').bind(username).first();
     } else {
       user = await env.DB.prepare('SELECT * FROM users WHERE username = ?').bind(username).first();
     }
@@ -32,25 +32,15 @@ export async function onRequestPost(context) {
       return json(request, env, { success: false, error: 'Invalid account credentials.' }, { status: 401 });
     }
 
-    await env.DB.prepare('DELETE FROM sessions WHERE user_id = ? AND expires_at < datetime("now")').bind(user.id).run();
-
-    const token = crypto.randomUUID() + '-' + crypto.randomUUID();
-    const sessionId = 'sess_' + crypto.randomUUID().replace(/-/g, '').substring(0, 12);
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-
-    await env.DB.prepare(`
-      INSERT INTO sessions (id, user_id, token, expires_at)
-      VALUES (?, ?, ?, ?)
-    `).bind(sessionId, user.id, token, expiresAt).run();
-
+    const session = await createSessionRecord(env.DB, user.id);
     const { password_hash, ...safeUser } = user;
 
     return json(request, env, {
       success: true,
       data: { user: safeUser },
-      token,
+      token: session.token,
     }, {
-      headers: { 'Set-Cookie': createSessionCookie(token, request) },
+      headers: { 'Set-Cookie': createSessionCookie(session.token, request, env) },
     });
   } catch (err) {
     console.error('Login error:', err);

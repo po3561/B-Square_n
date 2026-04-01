@@ -1,4 +1,4 @@
-import { createSessionCookie, hashPassword } from '../_lib/auth.js';
+import { createSessionCookie, createSessionRecord, hashPassword } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
 import { ensureAuthSchema } from '../_lib/schema.js';
 import { normalizeLanguagePreference, normalizeThemePreference } from '../_lib/preferences.js';
@@ -32,7 +32,7 @@ export async function onRequestPost(context) {
 
     await ensureAuthSchema(env.DB);
 
-    const existing = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first();
+    const existing = await env.DB.prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?)').bind(email).first();
     if (existing) {
       return json(request, env, { success: false, error: 'Email already exists.' }, { status: 409 });
     }
@@ -47,40 +47,48 @@ export async function onRequestPost(context) {
     const password_hash = await hashPassword(password);
     const userId = 'user_' + crypto.randomUUID().replace(/-/g, '').substring(0, 12);
 
-    await env.DB.prepare(`
-      INSERT INTO users (
-        id, email, password_hash, name, phone, username,
-        birth_year, birth_month, birth_day, gender, nationality, signup_path,
-        referrer_code, preferred_language, preferred_theme, role
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'user')
-    `).bind(
-      userId, email, password_hash, name, phone, username,
-      birth_year, birth_month, birth_day,
-      gender, nationality, signup_path,
-      referrer_code, preferred_language, preferred_theme
-    ).run();
+    try {
+      await env.DB.prepare(`
+        INSERT INTO users (
+          id, email, password_hash, name, phone, username,
+          birth_year, birth_month, birth_day, gender, nationality, signup_path,
+          referrer_code, preferred_language, preferred_theme, role
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'user')
+      `).bind(
+        userId, email, password_hash, name, phone, username,
+        birth_year, birth_month, birth_day,
+        gender, nationality, signup_path,
+        referrer_code, preferred_language, preferred_theme
+      ).run();
+    } catch (insertError) {
+      const message = String(insertError?.message || '');
+      const isUnique = /unique constraint failed/i.test(message);
+      if (isUnique) {
+        if (/users\.email/i.test(message)) {
+          return json(request, env, { success: false, error: 'Email already exists.' }, { status: 409 });
+        }
+        if (/users\.username/i.test(message)) {
+          return json(request, env, { success: false, error: 'Username is already in use.' }, { status: 409 });
+        }
+        return json(request, env, { success: false, error: 'Account already exists.' }, { status: 409 });
+      }
+      throw insertError;
+    }
 
-    const token = crypto.randomUUID() + '-' + crypto.randomUUID();
-    const sessionId = 'sess_' + crypto.randomUUID().replace(/-/g, '').substring(0, 12);
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-
-    await env.DB.prepare(`
-      INSERT INTO sessions (id, user_id, token, expires_at)
-      VALUES (?, ?, ?, ?)
-    `).bind(sessionId, userId, token, expiresAt).run();
+    const session = await createSessionRecord(env.DB, userId);
 
     return json(request, env, {
       success: true,
       data: { userId, email, name, username },
-      token,
+      token: session.token,
     }, {
       status: 201,
-      headers: { 'Set-Cookie': createSessionCookie(token, request) },
+      headers: { 'Set-Cookie': createSessionCookie(session.token, request, env) },
     });
   } catch (err) {
     console.error('Register error:', err);
-    return json(request, env, { success: false, error: 'Registration failed.', detail: err.message }, { status: 500 });
+    return json(request, env, { success: false, error: 'Registration failed.' }, { status: 500 });
   }
 }
 

@@ -97,6 +97,51 @@ function applyOperatorToggle(user, isOperatorEligible) {
     };
 }
 
+function updateDashboardProfileCard(currentUser, { guest = false, isOperatorEligible = false } = {}) {
+    const avatarEl = document.getElementById('dashProfileAvatar');
+    const nameEl = document.getElementById('dashProfileName');
+    const usernameEl = document.getElementById('dashProfileUsername');
+    const emailEl = document.getElementById('dashProfileEmail');
+    const roleEl = document.getElementById('dashProfileRole');
+
+    const profile = currentUser || {};
+    const displayLabel = guest ? '로그인이 필요합니다' : (profile.name || profile.username || '사용자');
+    const usernameLabel = guest ? 'ID: -' : `ID: ${profile.username || profile.id || '-'}`;
+    const emailLabel = guest
+        ? '로그인 후 확인'
+        : (profile.email || '이메일 정보 없음');
+    const roleLabel = guest
+        ? '게스트'
+        : (profile.role || (isOperatorEligible ? '운영자' : '일반 회원'));
+
+    if (avatarEl) {
+        const imageUrl = String(profile.profile_image_url || '').trim();
+        if (imageUrl) {
+            avatarEl.style.backgroundImage = `url("${imageUrl.replace(/"/g, '%22')}")`;
+            avatarEl.style.backgroundSize = 'cover';
+            avatarEl.style.backgroundPosition = 'center';
+            avatarEl.textContent = '';
+        } else {
+            avatarEl.style.backgroundImage = '';
+            avatarEl.textContent = '👤';
+        }
+    }
+
+    if (nameEl) nameEl.textContent = guest ? '게스트 모드' : `${displayLabel} 님`;
+    if (usernameEl) usernameEl.textContent = usernameLabel;
+    if (emailEl) emailEl.textContent = emailLabel;
+    if (roleEl) roleEl.textContent = roleLabel;
+
+    window.__BSQ_MYPAGE_PROFILE_STATE__ = {
+        ...(window.__BSQ_MYPAGE_PROFILE_STATE__ || {}),
+        ...(profile || {}),
+        guest,
+        isOperatorEligible,
+    };
+}
+
+window.updateDashboardProfileCard = updateDashboardProfileCard;
+
 function bindSidebarProfile(currentUser, { guest = false, isOperatorEligible = false } = {}) {
     document.body.dataset.authState = guest ? 'guest' : 'member';
 
@@ -123,7 +168,7 @@ function bindSidebarProfile(currentUser, { guest = false, isOperatorEligible = f
 
     if (profileImg) {
         if (!guest && currentUser?.profile_image_url) {
-            profileImg.style.backgroundImage = `url(${currentUser.profile_image_url})`;
+            profileImg.style.backgroundImage = `url("${String(currentUser.profile_image_url).replace(/"/g, '%22')}")`;
             profileImg.style.backgroundSize = 'cover';
             profileImg.style.backgroundPosition = 'center';
             profileImg.textContent = '';
@@ -172,6 +217,7 @@ function bindSidebarProfile(currentUser, { guest = false, isOperatorEligible = f
     }
 
     applyOperatorToggle(currentUser, isOperatorEligible);
+    updateDashboardProfileCard(currentUser, { guest, isOperatorEligible });
 }
 
 function bindNav() {

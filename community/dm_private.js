@@ -40,6 +40,7 @@ window.CommunityModules.DM = (function () {
         const userId = bridge().getUserId();
 
         try {
+            const profile = normalizeProfile(await bridge()?.getUserProfile?.(userId));
             const clientId = `dm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
             const msgPayload = {
                 content,
@@ -47,6 +48,11 @@ window.CommunityModules.DM = (function () {
                 room_type: 'dm',
                 type,
                 client_id: clientId,
+                sender_id: userId,
+                user_name: profile?.name || '사용자',
+                sender_name: profile?.name || '사용자',
+                user_avatar: profile?.profile_image_url || '',
+                sender_avatar: profile?.profile_image_url || '',
             };
 
             if (replyTo) {
@@ -79,6 +85,13 @@ window.CommunityModules.DM = (function () {
             console.error('sendMessage error:', error);
             return null;
         }
+    }
+
+    function normalizeProfile(profile) {
+        if (!profile || typeof profile !== 'object') return null;
+        const name = String(profile.name || profile.username || '사용자').trim() || '사용자';
+        const avatar = String(profile.profile_image_url || profile.avatar_url || '').trim();
+        return { ...profile, name, profile_image_url: avatar, avatar_url: avatar };
     }
 
     async function editMessage(roomId, msgKey, newContent) {

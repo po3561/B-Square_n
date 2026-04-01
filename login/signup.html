@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -8,7 +8,7 @@
     <title>회원가입 | B-Square</title>
     <link rel="stylesheet" href="../style_mobile.css?v=20260331_02" media="(max-width: 768px)">
     <link rel="stylesheet" href="../style_pc.css?v=20260331_02" media="(min-width: 769px)">
-    <link rel="stylesheet" href="auth.css?v=20260331_02">
+    <link rel="stylesheet" href="auth.css?v=20260401_01">
     <script src="../bsq_server.js?v=20260331_02"></script>
     <link rel="stylesheet" href="/theme_overrides.css?v=20260401_04">
     <script src="/i18n.js?v=20260331_01" defer></script>
@@ -18,25 +18,37 @@
 
     <main class="auth-main">
         <div class="auth-container">
-            <!-- 헤더 로고 -->
             <div class="auth-header">
                 <h1 class="logo">
                     <a href="../index.html"><span class="logo-icon">🔷</span> B-Square</a>
                 </h1>
             </div>
 
-            <!-- 단계 표시기 -->
             <div class="step-indicator">
                 <div class="step-item active" id="stepIndicator1">약관동의</div>
                 <div class="step-item" id="stepIndicator2">회원정보 입력</div>
                 <div class="step-item" id="stepIndicator3">가입완료</div>
             </div>
 
-            <!-- 회원가입 단계 섹션 -->
             <div id="signupSteps">
-
-                <!-- 1단계: 약관동의 -->
                 <section id="step1" class="auth-step active">
+                    <section class="social-auth-shell social-auth-shell-signup" id="socialAuthSignup" data-social-context="signup"
+                        data-unavailable-mode="disable">
+                        <div class="social-auth-copy">
+                            <p class="social-auth-eyebrow">빠른 가입</p>
+                            <h2 class="social-auth-title">기존 계정으로 바로 시작할 수 있습니다.</h2>
+                        </div>
+                        <div class="social-auth-list" data-social-auth-list></div>
+                        <p class="social-auth-message" data-social-auth-message hidden></p>
+                        <p class="social-auth-hint" data-social-auth-hint>소셜 로그인 상태를 확인하고 있습니다.</p>
+                    </section>
+
+                    <div class="social-auth-divider" aria-hidden="true">
+                        <span></span>
+                        <strong>또는 약관 동의 후 직접 가입</strong>
+                        <span></span>
+                    </div>
+
                     <h2 class="section-title">약관동의</h2>
                     <div class="terms-box">
                         <div class="all-agree">
@@ -82,10 +94,8 @@
                     </div>
                 </section>
 
-                <!-- 2단계: 정보입력 -->
                 <section id="step2" class="auth-step">
                     <form id="infoForm">
-                        <!-- 계정정보 섹션 -->
                         <div class="form-section">
                             <h3 class="section-subtitle">계정 정보</h3>
                             <div class="input-group">
@@ -107,7 +117,6 @@
                             </div>
                         </div>
 
-                        <!-- 기본정보 섹션 -->
                         <div class="form-section">
                             <h3 class="section-subtitle">기본 정보</h3>
                             <div class="input-group">
@@ -149,7 +158,6 @@
                             </div>
                         </div>
 
-                        <!-- 추가정보 섹션 -->
                         <div class="form-section">
                             <h3 class="section-subtitle">추가 정보</h3>
                             <div class="input-group">
@@ -210,7 +218,6 @@
                     </form>
                 </section>
 
-                <!-- 3단계: 가입완료 -->
                 <section id="step3" class="auth-step">
                     <div class="success-box">
                         <div class="success-icon">🎉</div>
@@ -223,7 +230,6 @@
         </div>
     </main>
 
-    <!-- 약관 모달 -->
     <div id="termsDetailModal" class="modal-overlay">
         <div class="modal-content">
             <h2 id="modalTitle">약관 상세</h2>
@@ -233,8 +239,8 @@
         </div>
     </div>
 
-    <!-- 스크립트 로딩 -->
-    <script src="auth.js?v=20260331_02"></script>
+    <script src="social_auth.js?v=20260401_01"></script>
+    <script src="auth.js?v=20260401_01"></script>
 </body>
 
 </html>

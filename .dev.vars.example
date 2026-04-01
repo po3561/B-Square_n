@@ -1,0 +1,20 @@
+# Copy this file to .dev.vars or set the same names in Cloudflare Pages/Workers environment variables.
+
+APP_BASE_URL=https://b-square-web.pages.dev
+SESSION_SECRET=
+COOKIE_DOMAIN=
+COOKIE_SECURE=true
+
+KAKAO_JS_KEY=
+KAKAO_REST_API_KEY=
+KAKAO_CLIENT_SECRET=
+KAKAO_REDIRECT_URI=https://b-square-web.pages.dev/auth/kakao/callback
+KAKAO_LOGOUT_REDIRECT_URI=https://b-square-web.pages.dev/auth/kakao/logout
+
+NAVER_CLIENT_ID=
+NAVER_CLIENT_SECRET=
+NAVER_REDIRECT_URI=https://b-square-web.pages.dev/auth/naver/callback
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=https://b-square-web.pages.dev/auth/google/callback

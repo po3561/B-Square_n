@@ -22,18 +22,31 @@ window.CommunityModules.SyncBridge = (function () {
         }
     }
 
-    function normalizeMessage(row) {
-        if (!row) return row;
+      function normalizeMessage(row) {
+          if (!row) return row;
 
-        const normalized = { ...row };
-        const content = normalized.content || normalized.message || normalized.text || '';
-        normalized.content = content;
-        normalized.message = normalized.message || content;
-        normalized.text = normalized.text || content;
-        normalized.file_data = normalized.file_data || normalized.image_url || null;
-        normalized.reactions = parseMaybeJson(normalized.reactions, {}) || {};
-        normalized.reply_data = parseMaybeJson(normalized.reply_data, null);
-        normalized.edited = !!(normalized.edited || normalized.is_edited === 1 || normalized.is_edited === true);
+          const normalized = { ...row };
+          const content = normalized.content || normalized.message || normalized.text || '';
+          normalized.content = content;
+          normalized.message = normalized.message || content;
+          normalized.text = normalized.text || content;
+          normalized.file_data = normalized.file_data || normalized.image_url || null;
+          const avatar = normalized.user_avatar
+              || normalized.sender_avatar
+              || normalized.avatar_url
+              || normalized.profile_image_url
+              || normalized.target_avatar
+              || '';
+          const senderName = normalized.user_name || normalized.sender_name || normalized.name || normalized.target_name || '';
+          normalized.user_avatar = normalized.user_avatar || avatar;
+          normalized.sender_avatar = normalized.sender_avatar || avatar;
+          normalized.avatar_url = normalized.avatar_url || avatar;
+          normalized.profile_image_url = normalized.profile_image_url || avatar;
+          normalized.user_name = normalized.user_name || senderName;
+          normalized.sender_name = normalized.sender_name || senderName;
+          normalized.reactions = parseMaybeJson(normalized.reactions, {}) || {};
+          normalized.reply_data = parseMaybeJson(normalized.reply_data, null);
+          normalized.edited = !!(normalized.edited || normalized.is_edited === 1 || normalized.is_edited === true);
 
         if (normalized.reply_data && typeof normalized.reply_data === 'object') {
             normalized.reply_to = normalized.reply_to || normalized.reply_data.id || null;
@@ -77,14 +90,17 @@ window.CommunityModules.SyncBridge = (function () {
                 .join('|')
             : '';
 
-        return [
-            msg?.type || '',
-            msg?.content || '',
-            msg?.message || '',
-            msg?.text || '',
-            msg?.file_name || '',
-            msg?.file_size || '',
-            msg?.file_data ? 'file' : '',
+          return [
+              msg?.type || '',
+              msg?.content || '',
+              msg?.message || '',
+              msg?.text || '',
+              msg?.user_avatar || '',
+              msg?.sender_avatar || '',
+              msg?.profile_image_url || '',
+              msg?.file_name || '',
+              msg?.file_size || '',
+              msg?.file_data ? 'file' : '',
             msg?.gather_title || '',
             msg?.gather_time || '',
             msg?.gather_place || '',

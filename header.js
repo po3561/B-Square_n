@@ -9,7 +9,7 @@
   const scriptDir = scriptTag ? scriptTag.src.substring(0, scriptTag.src.lastIndexOf('/') + 1) : '';
   
   // Use scriptDir for absolute-like relative paths for CSS dynamic injection
-  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260401_03';
+  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260401_05';
 
   const homePrefix = currentPath.split('/').length > 2 ? '../' : './';
   const prefix = homePrefix;
@@ -438,12 +438,29 @@
   }
 
   window.handleGlobalLogout = async function () {
-    if (window.BSQ && window.BSQ.logout) {
-      await window.BSQ.logout();
+    const authProvider = String(window.BSQ?.session?.user?.auth_provider || window.BSQ?.userProfile?.auth_provider || '').trim().toLowerCase();
+
+    try {
+      if (window.BSQ && window.BSQ.logout) {
+        await window.BSQ.logout();
+      }
+    } catch (error) {
+      console.warn('[BSQ] Local logout failed:', error);
     }
+
     localStorage.removeItem(OP_MODE_KEY);
     delete window.__BSQ_OPERATOR_PROFILE__;
     window.__BSQ_DEV_MODE__ = false;
+
+    if (['kakao', 'naver', 'google'].includes(authProvider)) {
+      const nonce = crypto.randomUUID().replace(/-/g, '');
+      const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
+      const cookieName = `bsq_oauth_logout_nonce_${authProvider}`;
+      document.cookie = `${cookieName}=${nonce}; Path=/auth/${authProvider}/logout; SameSite=Strict; Max-Age=300${secureFlag}`;
+      window.location.href = `${prefix}auth/${authProvider}/logout?phase=start&nonce=${encodeURIComponent(nonce)}&return_to=${encodeURIComponent(homePrefix + 'index.html')}`;
+      return;
+    }
+
     window.location.href = homePrefix + 'index.html';
   };
 

@@ -1,4 +1,4 @@
-﻿import { clearSessionCookie, getCurrentUser, getSessionToken } from '../_lib/auth.js';
+import { clearSessionCookie, getCurrentUser, getSessionToken } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
 import { ensureAuthSchema } from '../_lib/schema.js';
 
@@ -16,7 +16,7 @@ export async function onRequestGet(context) {
     const current = await getCurrentUser(context);
     if (!current) {
       return json(request, env, { success: true, data: { session: null } }, {
-        headers: { 'Set-Cookie': clearSessionCookie(request) },
+        headers: { 'Set-Cookie': clearSessionCookie(request, env) },
       });
     }
 
@@ -47,7 +47,7 @@ export async function onRequestDelete(context) {
     }
 
     return json(request, env, { success: true, message: 'Logged out.' }, {
-      headers: { 'Set-Cookie': clearSessionCookie(request) },
+      headers: { 'Set-Cookie': clearSessionCookie(request, env) },
     });
   } catch (err) {
     console.error('Logout error:', err);

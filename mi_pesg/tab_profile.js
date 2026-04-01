@@ -175,10 +175,10 @@
                 await refreshCategoryChips(selectedCategories);
 
                 if (data.profile_image_url && profileImagePreview) {
-                    profileImagePreview.innerHTML = `<img src="${data.profile_image_url}" alt="Profile">`;
+                    profileImagePreview.innerHTML = `<img src="${escapeHtml(data.profile_image_url)}" alt="Profile">`;
                 }
 
-                updateSidebarUI(data.name, data.username);
+                updateSidebarUI(data);
             } else {
                 const defaultName = user?.email?.split('@')[0] || '사용자';
                 const nameEl = document.getElementById('profileName');
@@ -241,6 +241,7 @@
                         name: res.data.name || updates.name,
                         phone: res.data.phone || updates.phone,
                         username: res.data.username || updates.username,
+                        email: res.data.email || user?.email || '',
                         sns_link: res.data.sns_link || updates.sns_link,
                         referrer_code: res.data.referrer_code || updates.referrer_code,
                         preferred_category: res.data.preferred_category || updates.preferred_category,
@@ -248,7 +249,11 @@
                     });
                 }
                 showMypageNotice?.('success', '프로필 저장 완료', '프로필 정보가 안전하게 저장되었습니다.');
-                updateSidebarUI(updates.name, document.getElementById('profileUsername')?.value);
+                updateSidebarUI({
+                    ...(res.data || {}),
+                    ...updates,
+                    email: res.data?.email || user?.email || '',
+                });
                 selectedCategories = activeChips.map((value) => String(value || '').trim()).filter(Boolean);
             } else {
                 throw new Error(res?.error || '저장에 실패했습니다.');
@@ -264,13 +269,17 @@
         }
     };
 
-    function updateSidebarUI(name, username) {
+    function updateSidebarUI(profileOrName, username) {
+        const profile = profileOrName && typeof profileOrName === 'object'
+            ? profileOrName
+            : { name: profileOrName, username };
         const nicknameEl = document.getElementById('displayNickname');
         const usernameEl = document.getElementById('displayUsername');
-        const displayLabel = name || '사용자';
+        const displayLabel = profile.name || profile.username || '사용자';
         if (nicknameEl) nicknameEl.textContent = displayLabel + ' 님';
         if (document.getElementById('displayName')) document.getElementById('displayName').textContent = displayLabel;
-        if (usernameEl) usernameEl.textContent = 'ID: ' + (username || '-');
+        if (usernameEl) usernameEl.textContent = 'ID: ' + (profile.username || username || '-');
+        window.updateDashboardProfileCard?.(profile, { guest: false, isOperatorEligible: false });
     }
 
     loadProfile();

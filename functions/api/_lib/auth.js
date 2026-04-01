@@ -73,6 +73,8 @@ export function parseCookies(cookieHeader) {
   return cookies;
 }
 
+// cookie helpers will be extended below
+
 export function getSessionToken(request) {
   const cookies = parseCookies(request.headers.get('Cookie'));
   if (cookies.bsq_session) return cookies.bsq_session;
@@ -87,6 +89,67 @@ export function getSessionToken(request) {
   return null;
 }
 
+function parseBooleanEnv(value) {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  return null;
+}
+
+function getCookieDomain(env) {
+  const raw = String(env?.COOKIE_DOMAIN || '').trim();
+  if (!raw) return '';
+
+  try {
+    const url = raw.includes('://') ? new URL(raw) : new URL(`https://${raw}`);
+    return url.hostname;
+  } catch {
+    return raw.replace(/^\.+/, '').trim();
+  }
+}
+
+function shouldUseSecureCookies(request, env) {
+  const explicit = parseBooleanEnv(env?.COOKIE_SECURE);
+  if (explicit !== null) return explicit;
+
+  try {
+    const url = new URL(request.url);
+    if (url.protocol === 'https:') return true;
+  } catch {
+    // ignore URL parsing failures and fall back to forwarded proto
+  }
+
+  return String(request.headers.get('x-forwarded-proto') || '').toLowerCase() === 'https';
+}
+
+export function serializeCookie(name, value, request, env, options = {}) {
+  const parts = [`${name}=${value ?? ''}`];
+  const path = options.path || '/';
+  const maxAge = Number.isFinite(options.maxAge) ? Math.max(0, Math.floor(options.maxAge)) : null;
+  const sameSite = options.sameSite || 'Lax';
+
+  parts.push(`Path=${path}`);
+  if (options.httpOnly !== false) parts.push('HttpOnly');
+  if (sameSite) parts.push(`SameSite=${sameSite}`);
+  if (maxAge !== null) parts.push(`Max-Age=${maxAge}`);
+
+  const domain = options.domain || getCookieDomain(env);
+  if (domain) parts.push(`Domain=${domain}`);
+
+  if (options.secure ?? shouldUseSecureCookies(request, env)) {
+    parts.push('Secure');
+  }
+
+  return parts.join('; ');
+}
+
+export function clearCookie(name, request, env, options = {}) {
+  return serializeCookie(name, '', request, env, {
+    ...options,
+    maxAge: 0,
+  });
+}
+
 export async function hashPassword(password) {
   const encoder = new TextEncoder();
   const data = encoder.encode(password + PASSWORD_SALT);
@@ -96,32 +159,56 @@ export async function hashPassword(password) {
     .join('');
 }
 
-export function createSessionCookie(token, request) {
-  const url = new URL(request.url);
-  const parts = [
-    `bsq_session=${token}`,
-    'Path=/',
-    'HttpOnly',
-    'SameSite=Lax',
-    `Max-Age=${30 * 24 * 60 * 60}`,
-  ];
-
-  if (url.protocol === 'https:') parts.push('Secure');
-  return parts.join('; ');
+export function createSessionCookie(token, request, env) {
+  return serializeCookie('bsq_session', token, request, env, {
+    maxAge: 30 * 24 * 60 * 60,
+  });
 }
 
-export function clearSessionCookie(request) {
-  const url = new URL(request.url);
-  const parts = [
-    'bsq_session=',
-    'Path=/',
-    'HttpOnly',
-    'SameSite=Lax',
-    'Max-Age=0',
-  ];
+export function clearSessionCookie(request, env) {
+  return clearCookie('bsq_session', request, env);
+}
 
-  if (url.protocol === 'https:') parts.push('Secure');
-  return parts.join('; ');
+async function getLatestSocialProvider(db, userId) {
+  try {
+    const row = await db.prepare(`
+      SELECT provider, provider_user_id
+      FROM social_accounts
+      WHERE user_id = ?
+      ORDER BY datetime(COALESCE(last_login_at, linked_at, created_at)) DESC, datetime(COALESCE(updated_at, created_at)) DESC
+      LIMIT 1
+    `).bind(userId).first();
+    return row || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function createSessionRecord(
+  db,
+  userId,
+  {
+    ttlMs = 30 * 24 * 60 * 60 * 1000,
+    authProvider = null,
+    authProviderUserId = null,
+  } = {},
+) {
+  await db.prepare('DELETE FROM sessions WHERE user_id = ? AND expires_at < datetime("now")').bind(userId).run();
+
+  const token = crypto.randomUUID() + '-' + crypto.randomUUID();
+  const sessionId = 'sess_' + crypto.randomUUID().replace(/-/g, '').substring(0, 12);
+  const expiresAt = new Date(Date.now() + ttlMs).toISOString();
+
+  await db.prepare(`
+    INSERT INTO sessions (id, user_id, token, expires_at, auth_provider, auth_provider_user_id)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).bind(sessionId, userId, token, expiresAt, authProvider, authProviderUserId).run();
+
+  return {
+    id: sessionId,
+    token,
+    expires_at: expiresAt,
+  };
 }
 
 export async function getCurrentUser(context) {
@@ -155,11 +242,13 @@ export async function getCurrentUser(context) {
     };
   }
 
-  const session = await env.DB.prepare(`
+  const queryWithAuthProvider = `
     SELECT
       s.id AS session_id,
       s.token,
       s.expires_at,
+      s.auth_provider,
+      s.auth_provider_user_id,
       u.id,
       u.email,
       u.name,
@@ -167,6 +256,7 @@ export async function getCurrentUser(context) {
       u.phone,
       u.profile_image_url,
       u.role,
+      u.signup_path,
       u.operator_seq,
       u.membership_level,
       u.preferred_language,
@@ -182,7 +272,52 @@ export async function getCurrentUser(context) {
     JOIN users u ON s.user_id = u.id
     WHERE s.token = ?
       AND s.expires_at > datetime('now')
-  `).bind(token).first();
+  `;
+
+  let session = null;
+  try {
+    session = await env.DB.prepare(queryWithAuthProvider).bind(token).first();
+  } catch (error) {
+    const message = String(error?.message || '');
+    if (!/auth_provider/i.test(message) && !/no such column/i.test(message)) {
+      throw error;
+    }
+
+    session = await env.DB.prepare(`
+      SELECT
+        s.id AS session_id,
+        s.token,
+        s.expires_at,
+        u.id,
+        u.email,
+        u.name,
+        u.username,
+        u.phone,
+        u.profile_image_url,
+        u.role,
+        u.signup_path,
+        u.operator_seq,
+        u.membership_level,
+        u.preferred_language,
+        u.preferred_theme,
+        u.mfa_active,
+        u.referrer_code,
+        u.birth_year,
+        u.birth_month,
+        u.birth_day,
+        u.gender,
+        u.nationality
+      FROM sessions s
+      JOIN users u ON s.user_id = u.id
+      WHERE s.token = ?
+        AND s.expires_at > datetime('now')
+    `).bind(token).first();
+
+    if (session) {
+      session.auth_provider = null;
+      session.auth_provider_user_id = null;
+    }
+  }
 
   if (!session) return null;
 
@@ -194,6 +329,7 @@ export async function getCurrentUser(context) {
     phone: session.phone,
     profile_image_url: session.profile_image_url,
     role: session.role,
+    signup_path: session.signup_path,
     operator_seq: session.operator_seq,
     membership_level: session.membership_level,
     preferred_language: normalizeLanguagePreference(session.preferred_language),
@@ -205,6 +341,8 @@ export async function getCurrentUser(context) {
     birth_day: session.birth_day,
     gender: session.gender,
     nationality: session.nationality,
+    auth_provider: session.auth_provider || null,
+    auth_provider_user_id: session.auth_provider_user_id || null,
   });
 
   return {
