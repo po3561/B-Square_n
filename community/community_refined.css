@@ -2942,3 +2942,37 @@ body[data-layout="popup"] * {
         padding: 12px 10px 6px;
     }
 }
+
+@media (min-width: 1025px) {
+    .community-shell {
+        grid-template-columns: 72px 344px minmax(0, 1fr) 0;
+    }
+
+    .community-shell.info-panel-open {
+        grid-template-columns: 72px 344px minmax(0, 1fr) 340px;
+    }
+
+    .comm-info-panel {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    .comm-info-panel.visible {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+}
+
+@media (max-width: 1024px) {
+    .community-shell.info-panel-open {
+        grid-template-columns: 72px minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .community-shell.info-panel-open {
+        grid-template-columns: 64px minmax(0, 1fr);
+    }
+}

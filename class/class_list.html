@@ -5,76 +5,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="/theme_bootstrap.js?v=20260331_01"></script>
-    <title>클래스 모음 | B-Square</title>
-    <!-- Font -->
+    <title>B-Square | 클래스 탐색</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- CSS - 미디어 쿼리로 분리 -->
     <link rel="stylesheet" href="../style_mobile.css?v=20260331_02" media="(max-width: 768px)">
     <link rel="stylesheet" href="../style_pc.css?v=20260331_02" media="(min-width: 769px)">
     <link rel="stylesheet" href="class_list.css?v=20260331_02">
-
-    <!-- SDKs -->
     <script src="../bsq_server.js?v=20260331_02" defer></script>
-    <link rel="stylesheet" href="/theme_overrides.css?v=20260331_01">
+    <link rel="stylesheet" href="/theme_overrides.css?v=20260401_04">
     <script src="/i18n.js?v=20260331_01" defer></script>
 </head>
 
 <body class="class-list-page">
-    <!-- header.js가 헤더/푸터/Drawer/BottomNav를 동적 삽입 -->
-
     <main class="class-list-main">
         <div class="section-inner">
-            <!-- 상단 요약 히어로: 제목 + 핵심 수치 -->
-            <section class="class-list-hero" aria-label="클래스 탐색 요약">
-                <div class="class-list-hero-copy">
-                    <p class="page-eyebrow">Class Explorer</p>
-                    <h1>원하는 클래스를 더 빠르게 찾으세요</h1>
-                    <p>카테고리, 검색, 정렬, 찜하기를 한 화면에 모아 더 읽기 쉬운 목록으로 정리했습니다.</p>
-                </div>
-                <!-- 전체 / 카테고리 / 선택 카테고리 수치 -->
-                <div class="class-list-hero-stats" aria-label="클래스 목록 요약">
-                    <div class="hero-metric">
-                        <strong id="heroClassTotal">0</strong>
-                        <span>전체 클래스</span>
+            <section class="bottom-banner-section class-list-hero" aria-label="클래스 탐색 배너">
+                <div class="banner-inner home-bottom-banner-inner class-list-banner-inner">
+                    <div class="home-bottom-banner-track class-list-banner-track" id="classListBannerTrack"></div>
+                    <div class="home-bottom-banner-overlay class-list-banner-overlay">
+                        <span class="banner-eyebrow">Class Explorer</span>
+                        <h1>원하는 클래스를 더 빠르게 찾으세요</h1>
+                        <p>카테고리, 검색, 정렬을 한 화면에 담아 원하는 클래스를 더 빠르게 찾을 수 있도록 정리했습니다.</p>
                     </div>
-                    <div class="hero-metric">
-                        <strong id="heroCategoryTotal">0</strong>
-                        <span>카테고리</span>
+                    <div class="banner-actions class-list-banner-actions">
+                        <a class="banner-link" href="../community/community.html">커뮤니티 둘러보기</a>
+                        <a class="banner-link subtle" href="../index.html">홈으로 이동</a>
                     </div>
-                    <div class="hero-metric">
-                        <strong id="heroActiveCategoryCount">0</strong>
-                        <span>선택 카테고리</span>
+                    <div class="home-banner-controls home-bottom-banner-controls class-list-banner-controls"
+                        aria-label="클래스 탐색 배너 조작">
+                        <button type="button" class="banner-nav banner-nav-prev" id="classListBannerPrev"
+                            aria-label="이전 배너">←</button>
+                        <div class="home-banner-dots" id="classListBannerDots" aria-label="배너 페이지"></div>
+                        <button type="button" class="banner-nav banner-nav-next" id="classListBannerNext"
+                            aria-label="다음 배너">→</button>
                     </div>
                 </div>
             </section>
 
-            <!-- 본문 레이아웃: 좌측 카테고리 + 우측 목록 -->
-            <div class="index-layout">
-                <!-- 좌측 사이드바 카테고리 -->
+            <div class="index-layout class-list-layout">
                 <aside class="sidebar-nav">
-                    <!-- 카테고리 필터 -->
                     <nav class="category-sidebar" id="categoryFilter">
-                        <h3 class="sidebar-title">카테고리</h3>
+                        <h3 class="sidebar-title">클래스 카테고리</h3>
                         <ul>
-                            <li class="active"><a href="#" data-cat="all"><span class="icon">📋</span>전체</a></li>
-                            <li><a href="#" data-cat="디자인"><span class="icon">🎨</span>디자인</a></li>
-                            <li><a href="#" data-cat="생산성"><span class="icon">💼</span>생산성</a></li>
-                            <li><a href="#" data-cat="스포츠"><span class="icon">⚽</span>스포츠</a></li>
-                            <li><a href="#" data-cat="디지털 드로잉"><span class="icon">✏️</span>디지털 드로잉</a></li>
-                            <li><a href="#" data-cat="성공 마인드"><span class="icon">🧠</span>성공 마인드</a></li>
-                            <li><a href="#" data-cat="음악"><span class="icon">🎵</span>음악</a></li>
-                            <li><a href="#" data-cat="베이킹"><span class="icon">🧁</span>베이킹</a></li>
-                            <li><a href="#" data-cat="사진"><span class="icon">📷</span>사진</a></li>
-                            <li><a href="#" data-cat="영상"><span class="icon">🎬</span>영상</a></li>
-                            <li><a href="#" data-cat="공예"><span class="icon">🪡</span>공예</a></li>
+                            <li class="active">
+                                <a href="#" data-cat="all">
+                                    <span class="icon">📚</span>
+                                    <span class="cat-label">전체</span>
+                                    <span class="cat-count">0</span>
+                                </a>
+                            </li>
                         </ul>
                     </nav>
                 </aside>
 
-                <!-- 메인 콘텐츠 영역 -->
                 <div class="content-area">
-                    <!-- 검색 / 정렬 / 전체 카드 그리드 -->
                     <section class="class-lists-section class-page-overrides">
                         <div class="class-grid-header">
                             <div class="header-copy">
@@ -83,7 +68,7 @@
                             </div>
                             <div class="list-controls">
                                 <div class="search-filter">
-                                    <input type="text" id="classSearchInput" placeholder="클래스/강사 검색" class="class-search-input">
+                                    <input type="text" id="classSearchInput" placeholder="클래스 강사 검색" class="class-search-input">
                                 </div>
                                 <select id="sortSelect" class="sort-select">
                                     <option value="newest">최신순</option>
@@ -96,9 +81,9 @@
                         </div>
                         <div id="classListNotice" class="class-list-notice" aria-live="polite"></div>
                         <div class="card-grid" id="allClassGrid">
-                            <!-- JS에서 동적 렌더링 -->
                             <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 4rem; color:#888;">
-                                데이터를 불러오는 중입니다...</div>
+                                데이터를 불러오는 중입니다...
+                            </div>
                         </div>
                     </section>
                 </div>
@@ -106,9 +91,8 @@
         </div>
     </main>
 
-    <!-- Scripts: 목록 데이터 / 공통 셸 / 개발 모드 -->
-    <script src="class_list.js?v=20260331_02" defer></script>
-    <script src="../header.js?v=20260331_04" defer></script>
+    <script src="class_list.js?v=20260401_01" defer></script>
+    <script src="../header.js?v=20260401_05" defer></script>
     <script src="../dev_mode.js?v=20260331_02" defer></script>
 </body>
 

@@ -484,12 +484,36 @@ window.CommunityModules.ChatUI = (function () {
         document.querySelectorAll('#themeIcon').forEach(icon => { icon.className = saved === 'dark' ? 'fas fa-moon' : 'fas fa-sun'; });
     }
 
+    function syncInfoPanelShellState(visible) {
+        const shell = document.querySelector('.community-shell');
+        if (!shell) return;
+        shell.classList.toggle('info-panel-open', !!visible);
+    }
+
+    function setInfoPanelVisibility(visible) {
+        const panel = document.getElementById('commInfoPanel');
+        if (!panel) return null;
+
+        panel.classList.toggle('visible', !!visible);
+        if (panel.style) {
+            panel.style.display = visible ? 'flex' : '';
+            panel.style.visibility = visible ? 'visible' : '';
+            panel.style.pointerEvents = visible ? 'auto' : '';
+        }
+
+        syncInfoPanelShellState(visible);
+        return panel;
+    }
+
     function toggleInfoPanel() {
         const panel = document.getElementById('commInfoPanel');
-        if (panel) {
-            const isVisible = panel.classList.toggle('visible');
-            panel.style.display = isVisible ? 'flex' : '';
-            if (isVisible) renderInfoPanel();
+        if (!panel) return;
+
+        const isVisible = !panel.classList.contains('visible');
+        setInfoPanelVisibility(isVisible);
+
+        if (isVisible) {
+            renderInfoPanel().catch(() => {});
         }
     }
 
@@ -515,13 +539,14 @@ window.CommunityModules.ChatUI = (function () {
         document.addEventListener('click', (e) => {
             const activePanel = document.getElementById('commInfoPanel');
             if (activePanel && activePanel.classList.contains('visible')) {
+                if (e.target.closest('#btnClosePanel')) {
+                    setInfoPanelVisibility(false);
+                    return;
+                }
                 if (e.target.closest('#btnChatInfo') || activePanel.contains(e.target)) {
                     return;
                 }
-                if (!activePanel.contains(e.target) || e.target.closest('#btnClosePanel')) {
-                    panel.classList.remove('visible');
-                    activePanel.style.display = '';
-                }
+                setInfoPanelVisibility(false);
             }
         });
     }
@@ -634,8 +659,6 @@ window.CommunityModules.ChatUI = (function () {
         lastMsgTimestamp = 0;
         messageCache = new Map();
         currentPins = [];
-        const autoOpenInfoPanel = new URLSearchParams(location.search).get('panel') === 'info';
-
         const container = document.getElementById('chatMessagesContainer');
         if (container) container.innerHTML = '';
 
@@ -650,8 +673,9 @@ window.CommunityModules.ChatUI = (function () {
         if (searchBar) searchBar.style.display = 'none';
         const infoPanel = document.getElementById('commInfoPanel');
         if (infoPanel) {
-            infoPanel.classList.remove('visible');
-            infoPanel.style.display = '';
+            setInfoPanelVisibility(false);
+            const infoPanelBody = document.getElementById('infoPanelBody');
+            if (infoPanelBody) infoPanelBody.innerHTML = '';
         }
 
         lastScrollTop = 0; unreadCount = 0;
@@ -700,6 +724,7 @@ window.CommunityModules.ChatUI = (function () {
             localStorage.setItem('bsq_comm_last_type', String(roomType));
         } catch {}
 
+        const autoOpenInfoPanel = window.innerWidth >= 1025 || new URLSearchParams(location.search).get('panel') === 'info';
         loadMessages({ refreshAll: true, roomToken }).then((messages) => {
             if (roomToken !== roomOpenSeq || roomId !== currentRoomId || roomType !== currentRoomType) return;
             startMessageStream(messages || []);
@@ -1562,11 +1587,96 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function escapeAttr(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
     function formatFileSize(bytes) {
         if (!bytes) return '';
         if (bytes < 1024) return bytes + 'B';
         if (bytes < 1048576) return (bytes / 1024).toFixed(1) + 'KB';
         return (bytes / 1048576).toFixed(1) + 'MB';
+    }
+
+    function renderInfoSectionHTML(items = []) {
+        return items
+            .filter((item) => item && item.label)
+            .map((item) => `
+                <div class="info-detail-item">
+                    <span class="detail-label">${escapeHtml(item.label)}</span>
+                    <span class="detail-value">${escapeHtml(item.value === 0 ? '0' : (item.value ?? '정보 없음'))}</span>
+                </div>
+            `)
+            .join('');
+    }
+
+    async function renderDmProfile(body, roomInfo = {}) {
+        const name = roomInfo?.target_name || roomInfo?.dm_name || '상대 프로필';
+        const avatar = roomInfo?.target_avatar || roomInfo?.avatar_url || roomInfo?.profile_image || '';
+        const lastMessage = roomInfo?.last_message || '최근 대화를 선택하면 요약을 확인할 수 있습니다.';
+        const detailItems = [
+            { label: '대화 유형', value: '1:1 채팅' },
+            { label: '읽지 않음', value: Number(roomInfo?.unread_count || 0) },
+            { label: '최근 메시지', value: lastMessage },
+        ];
+
+        body.innerHTML = `
+            <div class="info-profile-section">
+                <div class="info-avatar"${avatar ? ` style="background-image:url(${escapeHtml(avatar)})"` : ''}>${avatar ? '' : '👤'}</div>
+                <h4 class="info-name">${escapeHtml(name)}</h4>
+                <div class="info-id">${escapeHtml(roomInfo?.target_email || roomInfo?.room_id || 'DM')}</div>
+                <div class="info-description">${escapeHtml(lastMessage)}</div>
+            </div>
+            <div class="info-detail-grid">
+                ${renderInfoSectionHTML(detailItems)}
+            </div>
+            <div class="info-actions">
+                <button type="button" class="btn-info-action" id="btnInfoOpenProfile">프로필 보기</button>
+            </div>
+        `;
+
+        body.querySelector('#btnInfoOpenProfile')?.addEventListener('click', () => {
+            const targetId = roomInfo?.target_id || roomInfo?.target_user_id || '';
+            if (targetId && window.CommunityModules?.ChatUI?.v2ToggleContact) {
+                window.CommunityModules.ChatUI.v2ToggleContact(targetId);
+            }
+        });
+    }
+
+    async function renderClassInfoPanel(body, roomId, roomInfo = {}) {
+        const title = roomInfo?.class_name || roomInfo?.target_name || '클래스 정보';
+        const category = roomInfo?.class_category || roomInfo?.category || '카테고리 정보 없음';
+        const instructor = roomInfo?.instructor_name || roomInfo?.teacher_name || (roomInfo?.is_instructor ? '나' : '강사 정보 없음');
+        const description = roomInfo?.class_summary || roomInfo?.summary || roomInfo?.last_message || '클래스 채팅방의 핵심 정보를 확인하세요.';
+        const image = roomInfo?.class_image || roomInfo?.image_url || roomInfo?.thumbnail || '/assets/default-cover.svg';
+        const classId = roomInfo?.class_id || roomId;
+        const classUrl = `../class_view/class_view.html?id=${encodeURIComponent(classId || roomId || '')}`;
+        const detailItems = [
+            { label: '카테고리', value: category },
+            { label: '강사', value: instructor },
+            { label: '읽지 않음', value: Number(roomInfo?.unread_count || 0) },
+            { label: '최근 메시지', value: roomInfo?.last_message || '새 메시지를 확인해 보세요.' },
+        ];
+
+        body.innerHTML = `
+            <div class="info-profile-section">
+                <div class="info-avatar"${image ? ` style="background-image:url(${escapeHtml(image)})"` : ''}>${image ? '' : '🏫'}</div>
+                <h4 class="info-name">${escapeHtml(title)}</h4>
+                <div class="info-id">${escapeHtml(category)}</div>
+                <div class="info-description">${escapeHtml(description)}</div>
+            </div>
+            <div class="info-class-hero" style="background-image:url(${escapeHtml(image)});"></div>
+            <div class="info-detail-grid">
+                ${renderInfoSectionHTML(detailItems)}
+            </div>
+            <div class="info-actions">
+                <a class="btn-info-action primary" href="${escapeHtml(classUrl)}">클래스 페이지 보기</a>
+            </div>
+        `;
     }
 
     // ==== 정보 패널 렌더링 (D1 API) ====
@@ -1580,10 +1690,7 @@ window.CommunityModules.ChatUI = (function () {
         const body = document.getElementById('infoPanelBody');
         if (!panel || !body) return;
 
-        if (!panel.classList.contains('visible')) {
-            panel.classList.add('visible');
-            if (panel.style) { panel.style.display = 'flex'; panel.style.visibility = 'visible'; }
-        }
+        setInfoPanelVisibility(true);
 
         body.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--comm-text2);"><i class="fas fa-circle-notch fa-spin"></i></div>';
 

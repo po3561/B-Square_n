@@ -602,6 +602,191 @@ html[data-theme="light"] .no-chat-inner {
   color: var(--bsq-text-muted) !important;
 }
 
+html[data-theme="light"] body.class-list-page {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(79, 111, 255, 0.10), transparent 28%),
+    linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%) !important;
+}
+
+html[data-theme="light"] body.class-list-page .class-list-main,
+html[data-theme="light"] body.class-list-page .class-list-hero,
+html[data-theme="light"] body.class-list-page .sidebar-nav,
+html[data-theme="light"] body.class-list-page .class-lists-section {
+  color: var(--bsq-text) !important;
+}
+
+html[data-theme="light"] body.class-list-page .bottom-banner-section .banner-inner,
+html[data-theme="light"] body.class-list-page .category-sidebar,
+html[data-theme="light"] body.class-list-page .class-card,
+html[data-theme="light"] body.class-list-page .class-list-notice,
+html[data-theme="light"] body.class-list-page .sidebar-nav,
+html[data-theme="light"] body.class-list-page .class-list-hero {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(15, 23, 42, 0.10) !important;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08) !important;
+}
+
+html[data-theme="light"] body.class-list-page .class-list-banner-overlay h1,
+html[data-theme="light"] body.class-list-page .group-title,
+html[data-theme="light"] body.class-list-page .sidebar-title,
+html[data-theme="light"] body.class-list-page .class-list-banner-overlay .banner-eyebrow {
+  color: var(--bsq-text) !important;
+}
+
+html[data-theme="light"] body.class-list-page .class-list-banner-overlay p,
+html[data-theme="light"] body.class-list-page .group-subtitle,
+html[data-theme="light"] body.class-list-page .class-list-banner-actions,
+html[data-theme="light"] body.class-list-page .meta,
+html[data-theme="light"] body.class-list-page .card-summary,
+html[data-theme="light"] body.class-list-page .total-count {
+  color: var(--bsq-text-muted) !important;
+}
+
+html[data-theme="light"] body.class-list-page .class-search-input,
+html[data-theme="light"] body.class-list-page .sort-select {
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: var(--bsq-text) !important;
+  border-color: rgba(15, 23, 42, 0.10) !important;
+}
+
+html[data-theme="light"] body.class-list-page .class-card .title,
+html[data-theme="light"] body.class-list-page .class-card .current-price,
+html[data-theme="light"] body.class-list-page .class-card .category {
+  color: var(--bsq-text) !important;
+}
+
+html[data-theme="light"] body.class-list-page .btn-bookmark {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(15, 23, 42, 0.10) !important;
+  color: var(--bsq-text) !important;
+}
+
+html[data-theme="light"] body.class-list-page .btn-bookmark.is-bookmarked {
+  background: linear-gradient(135deg, rgba(79, 111, 255, 0.18), rgba(93, 225, 198, 0.22)) !important;
+  border-color: rgba(79, 111, 255, 0.22) !important;
+  color: var(--bsq-primary-strong) !important;
+}
+
+html[data-theme="light"] body.create-page,
+html[data-theme="light"] .create-layout {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(79, 111, 255, 0.08), transparent 28%),
+    linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%) !important;
+}
+
+html[data-theme="light"] .create-sidebar,
+html[data-theme="light"] .create-content,
+html[data-theme="light"] .form-section,
+html[data-theme="light"] .premium-dropdown,
+html[data-theme="light"] .dropdown-list,
+html[data-theme="light"] .type-card,
+html[data-theme="light"] .price-type-card,
+html[data-theme="light"] .capacity-settings,
+html[data-theme="light"] .instructor-payment-section,
+html[data-theme="light"] .curriculum-container,
+html[data-theme="light"] .search-results-dropdown,
+html[data-theme="light"] .sub-instructor-list,
+html[data-theme="light"] .quill-editor-wrap,
+html[data-theme="light"] .alert-box,
+html[data-theme="light"] .input-wrapper,
+html[data-theme="light"] .pass-sub-input {
+  background: rgba(255, 255, 255, 0.94) !important;
+  color: var(--bsq-text) !important;
+  border-color: rgba(15, 23, 42, 0.10) !important;
+}
+
+html[data-theme="light"] .step-item {
+  color: var(--bsq-text-muted) !important;
+}
+
+html[data-theme="light"] .step-item.active {
+  color: var(--bsq-text) !important;
+}
+
+html[data-theme="light"] .step-num {
+  border-color: rgba(15, 23, 42, 0.10) !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+  color: var(--bsq-text) !important;
+}
+
+html[data-theme="light"] .step-item.active .step-num {
+  background: linear-gradient(135deg, var(--bsq-primary), #9fd8cf) !important;
+  color: #0b1220 !important;
+  border-color: transparent !important;
+}
+
+html[data-theme="light"] .dropdown-selected,
+html[data-theme="light"] .premium-input,
+html[data-theme="light"] .premium-textarea,
+html[data-theme="light"] .btn-prev,
+html[data-theme="light"] .btn-next,
+html[data-theme="light"] .btn-submit,
+html[data-theme="light"] .btn-add-chapter,
+html[data-theme="light"] .settings-select {
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: var(--bsq-text) !important;
+  border-color: rgba(15, 23, 42, 0.10) !important;
+}
+
+html[data-theme="light"] .dropdown-item,
+html[data-theme="light"] .type-card-content,
+html[data-theme="light"] .price-card-content,
+html[data-theme="light"] .check-text,
+html[data-theme="light"] .sub-instructor-item,
+html[data-theme="light"] .curriculum-item,
+html[data-theme="light"] .pass-item {
+  color: var(--bsq-text) !important;
+}
+
+html[data-theme="light"] .mypage-layout,
+html[data-theme="light"] .mypage-sidebar,
+html[data-theme="light"] .mypage-content,
+html[data-theme="light"] .mypage-hero,
+html[data-theme="light"] .mypage-panel-card,
+html[data-theme="light"] .dashboard-stat-card,
+html[data-theme="light"] .dashboard-commerce-shell,
+html[data-theme="light"] .dashboard-commerce-list,
+html[data-theme="light"] .dashboard-payment-summary,
+html[data-theme="light"] .security-card,
+html[data-theme="light"] .sub-card,
+html[data-theme="light"] .chat-manage-card,
+html[data-theme="light"] .friends-panel,
+html[data-theme="light"] .commerce-shell,
+html[data-theme="light"] .commerce-hero,
+html[data-theme="light"] .tab-header-row,
+html[data-theme="light"] .plan-card,
+html[data-theme="light"] .wallet-coupon-card,
+html[data-theme="light"] .cart-item-card,
+html[data-theme="light"] .friend-card {
+  background: rgba(255, 255, 255, 0.94) !important;
+  color: var(--bsq-text) !important;
+  border-color: rgba(15, 23, 42, 0.10) !important;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08) !important;
+}
+
+html[data-theme="light"] .profile-summary,
+html[data-theme="light"] .nav-btn,
+html[data-theme="light"] .hero-action-btn,
+html[data-theme="light"] .btn-chat-link,
+html[data-theme="light"] .friend-action,
+html[data-theme="light"] .tab-header-cta,
+html[data-theme="light"] .dashboard-action,
+html[data-theme="light"] .btn-secondary--soft {
+  background: rgba(255, 255, 255, 0.94) !important;
+  color: var(--bsq-text) !important;
+  border-color: rgba(15, 23, 42, 0.10) !important;
+}
+
+html[data-theme="light"] .mypage-page .page-eyebrow,
+html[data-theme="light"] .mypage-page .mypage-hero-title,
+html[data-theme="light"] .mypage-page .mypage-panel-eyebrow,
+html[data-theme="light"] .mypage-page .dashboard-stat-title,
+html[data-theme="light"] .mypage-page .commerce-title,
+html[data-theme="light"] .mypage-page .section-title,
+html[data-theme="light"] .mypage-page .nav-btn.active {
+  color: var(--bsq-text) !important;
+}
+
 @media (max-width: 768px) {
   :where(.notice-left-panel,
          .notice-right-panel,
