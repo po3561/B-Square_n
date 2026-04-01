@@ -220,6 +220,7 @@
             const updates = {
                 name: document.getElementById('profileName')?.value || '',
                 phone: document.getElementById('profilePhone')?.value || '',
+                username: document.getElementById('profileUsername')?.value || '',
                 sns_link: document.getElementById('profileSns')?.value || '',
                 referrer_code: document.getElementById('profileReferrerCode')?.value || '',
                 preferred_category: activeChips.join(', '),
