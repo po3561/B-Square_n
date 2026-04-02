@@ -79,8 +79,6 @@ function applyRoleVisibility(role) {
     'tabMarketingTools',
     'tabCampaigns',
     'tabFinancial',
-    'tabSettlementInfo',
-    'tabSettlementHistory',
     'tabTax',
   ];
 

@@ -88,37 +88,55 @@ export async function onRequestPost(context) {
     const roomId = String(body.room_id || '').trim();
     const content = String(body.content || body.message || body.text || '').trim();
     const attachmentUrl = body.image_url || body.file_data || null;
-    const messageId = 'dm_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16);
+    const roomType = String(body.room_type || 'dm').trim() || 'dm';
+    const messageType = String(body.type || 'text').trim() || 'text';
 
     if (!roomId || (!content && !attachmentUrl)) {
       return json(request, env, { success: false, error: 'room_id and content are required' }, { status: 400 });
     }
 
-    await env.DB.prepare(`
+    const insertResult = await env.DB.prepare(`
       INSERT INTO dm_messages (
-        id, room_id, room_type, sender_id, user_name, user_avatar,
-        content, message, type, image_url, created_at, updated_at
-      ) VALUES (?, ?, 'dm', ?, ?, ?, ?, ?, 'text', ?, datetime('now'), datetime('now'))
+        room_id, room_type, sender_id, user_name, user_avatar,
+        content, message, type, image_url, file_name, file_size,
+        created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
     `).bind(
-      messageId,
       roomId,
+      roomType,
       auth.user.id,
       auth.user.name || auth.user.username || 'User',
       auth.user.profile_image_url || '',
       content,
       content,
+      messageType,
       attachmentUrl,
+      body.file_name || null,
+      Number.isFinite(Number(body.file_size)) ? Number(body.file_size) : null,
     ).run();
+
+    const insertedId = insertResult?.meta?.last_row_id ?? null;
+    let message = null;
+    if (insertedId != null) {
+      message = await env.DB.prepare(`
+        SELECT ${DM_MESSAGE_COLUMNS}
+        FROM dm_messages
+        WHERE id = ?
+      `).bind(insertedId).first();
+    }
+    if (!message) {
+      message = await env.DB.prepare(`
+        SELECT ${DM_MESSAGE_COLUMNS}
+        FROM dm_messages
+        WHERE room_id = ?
+        ORDER BY id DESC
+        LIMIT 1
+      `).bind(roomId).first();
+    }
 
     await env.DB.prepare(
       'UPDATE user_chats SET last_message = ?, last_message_at = CURRENT_TIMESTAMP WHERE room_id = ?'
     ).bind(content.substring(0, 100) || 'attachment', roomId).run();
-
-    const message = await env.DB.prepare(`
-      SELECT ${DM_MESSAGE_COLUMNS}
-      FROM dm_messages
-      WHERE id = ?
-    `).bind(messageId).first();
 
     const responseData = normalizeDmMessage(message);
     if (body.client_id) responseData.client_id = String(body.client_id);

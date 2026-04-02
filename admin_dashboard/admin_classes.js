@@ -335,6 +335,22 @@ function bindControls() {
       renderClassDetailModal();
       return;
     }
+    if (target.closest('[data-action="open-settlement-info"]')) {
+      const detail = state.detail || {};
+      const cls = detail.class || {};
+      const instructor = detail.instructor || {};
+      window.__BSQ_SETTLEMENT_FOCUS__ = {
+        scope: 'class',
+        query: cls.title || instructor.name || '',
+        classId: cls.id || '',
+        instructorId: instructor.id || cls.instructor_id || '',
+        className: cls.title || '',
+        instructorName: instructor.name || cls.instructor_name || '',
+      };
+      closeModal('classDetailModal');
+      document.querySelector('.nav-item[data-tab="tabSettlementInfo"]')?.click();
+      return;
+    }
     if (target.closest('[data-action="select-emoji"]')) {
       const button = target.closest('[data-action="select-emoji"]');
       setCategoryEmoji(button.dataset.emoji || '✨');
@@ -591,9 +607,9 @@ function renderCategoryManagerList() {
           <strong>${escapeHtml(item.name)}</strong>
           <span>클래스 ${formatNumber(item.class_count || 0)}개 · 공개 ${formatNumber(item.public_class_count || 0)}개</span>
         </div>
-        <div class="class-category-manager-actions" onclick="event.stopPropagation()">
+        <div class="class-category-manager-actions">
           <button type="button" class="btn-small outline" data-action="edit-category-item" data-category-name="${escapeAttr(item.name)}">수정</button>
-          <button type="button" class="btn-small outline" data-action="delete-category-item" data-category-name="${escapeAttr(item.name)}" style="color:var(--mac-danger); border-color:rgba(255,59,48,0.25);">삭제</button>
+          <button type="button" class="btn-small outline" data-action="delete-category-item" data-category-name="${escapeAttr(item.name)}" style="color:var(--mac-danger); border-color:rgba(255,59,48,0.25);">영구 삭제</button>
         </div>
       </article>
     `;
@@ -861,7 +877,7 @@ function openDeleteCategoryConfirm(categoryName) {
   if (!categoryName) return;
   const found = state.categories.find((item) => item.name === categoryName);
   if (!found) return;
-  if (!confirm(`"${found.name}" 카테고리를 삭제할까요?\n\n이 카테고리를 사용 중인 클래스는 미분류로 변경됩니다.`)) return;
+  if (!confirm(`"${found.name}" 카테고리를 영구 삭제할까요?\n\n이 카테고리를 사용 중인 클래스는 미분류로 변경됩니다.`)) return;
   state.categoryDraft = {
     originalName: found.name,
     name: found.name,
@@ -1024,8 +1040,12 @@ function renderClassDetailModal() {
             <span>${cls.is_public ? '공개' : '비공개'}</span>
             <span>생성일 ${escapeHtml(formatDateTime(cls.created_at))}</span>
           </div>
+          ${cls.coupon_pack
+            ? `<div class="class-detail-coupon-note">쿠폰팩 허용${cls.coupon_detail ? ` · ${escapeHtml(cls.coupon_detail)}` : ''}</div>`
+            : ''}
         </div>
         <div class="class-detail-hero-side">
+          <button type="button" class="btn-small outline" data-action="open-settlement-info">정산정보 확인하기</button>
           <button type="button" class="btn-small outline" data-action="close-class-modal">닫기</button>
         </div>
       </div>
@@ -1312,7 +1332,7 @@ function ensureModals() {
         </div>
         <div class="class-admin-modal-footer">
           <button type="button" class="btn-small outline" data-action="close-category-modal">취소</button>
-          <button type="button" class="btn-small outline" data-action="delete-category" id="btnDeleteCategory" style="display:none; color:var(--mac-danger); border-color:rgba(255,59,48,0.25);">삭제</button>
+          <button type="button" class="btn-small outline" data-action="delete-category" id="btnDeleteCategory" style="display:none; color:var(--mac-danger); border-color:rgba(255,59,48,0.25);">영구 삭제</button>
           <button type="button" class="btn-primary" data-action="save-category" id="btnSaveCategory">저장</button>
         </div>
       </div>

@@ -1228,6 +1228,21 @@
                                 <strong>정산 계산식</strong>
                                 <p>발생 수익에서 카드수수료, 세금, 플랫폼 수수료를 차감한 금액을 강사 정산 예정액으로 사용합니다.</p>
                             </div>
+
+                            <div class="settlement-search-shell">
+                                <div class="settlement-scope-switch" id="settlementScopeSwitch">
+                                    <button type="button" class="period-chip active" data-scope="class">클래스별 정산</button>
+                                    <button type="button" class="period-chip" data-scope="instructor">강사별 정산</button>
+                                </div>
+                                <div class="settlement-search-row">
+                                    <input type="search" id="settlementSearchInput" class="admin-form-input"
+                                        placeholder="클래스명 또는 강사명 검색">
+                                    <button type="button" class="btn-small outline" id="btnClearSettlementSearch">초기화</button>
+                                </div>
+                                <div class="settlement-search-hint" id="settlementSearchHint">
+                                    검색 결과를 클릭하면 아래 정산 정보가 자동으로 입력됩니다.
+                                </div>
+                            </div>
                         </div>
 
                         <div class="settlement-form-grid">
@@ -1295,8 +1310,18 @@
                             </article>
                         </div>
 
-                        <div class="settlement-dual-grid">
-                            <article class="admin-subcard">
+                        <article class="admin-subcard settlement-selection-card">
+                            <div class="admin-subcard-head">
+                                <h4>선택된 정산 상세</h4>
+                                <p>검색 결과를 클릭하면 클래스명, 강사 연락처, 정산 계좌, 최종 정산금액이 자동 입력됩니다.</p>
+                            </div>
+                            <div id="settlementSelectionBody" class="settlement-selection-body">
+                                <div class="settlement-selection-empty">클래스명이나 강사명을 검색한 뒤 항목을 선택해 주세요.</div>
+                            </div>
+                        </article>
+
+                        <div class="settlement-dual-grid" id="settlementDualGrid">
+                            <article class="admin-subcard settlement-results-panel" id="settlementClassPanel">
                                 <div class="admin-subcard-head">
                                     <h4>클래스별 정산 금액</h4>
                                     <p>왼쪽 표는 클래스 기준 정산액, 오른쪽 표는 강사별 합산 정산액입니다.</p>
@@ -1322,7 +1347,7 @@
                                 </div>
                             </article>
 
-                            <article class="admin-subcard">
+                            <article class="admin-subcard settlement-results-panel" id="settlementInstructorPanel">
                                 <div class="admin-subcard-head">
                                     <h4>강사별 정산 금액</h4>
                                     <p>강사 1명이 여러 클래스를 운영하는 경우 정산액을 자동 합산합니다.</p>

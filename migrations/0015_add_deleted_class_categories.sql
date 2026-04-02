@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS deleted_class_categories (
+  name TEXT PRIMARY KEY,
+  deleted_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

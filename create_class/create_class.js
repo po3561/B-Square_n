@@ -515,7 +515,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 pass_count: (!isFree && usePackagePass.checked) ? (parseInt(document.getElementById('passCount').value) || null) : null,
                 
                 coupon_pack: document.getElementById('classCoupon')?.checked || false,
-                coupon_detail: document.getElementById('couponDetail')?.value || null,
+                coupon_detail: document.getElementById('classCoupon')?.checked
+                    ? document.getElementById('couponDetail')?.value.trim() || null
+                    : null,
                 class_type: form.querySelector('input[name="classType"]:checked')?.value || 'ONLINE',
                 operating_mode: document.getElementById('classOperatingMode').value,
                 capacity_min: parseInt(document.getElementById('minCapacity').value) || 0,

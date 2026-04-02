@@ -616,6 +616,12 @@
             document.getElementById('editClassPrice').value = cls.price || 0;
             document.getElementById('editClassDiscount').value = cls.discount_rate || 0;
             document.getElementById('editClassCoupon').checked = Boolean(cls.coupon_pack);
+            const editClassCouponDetail = document.getElementById('editClassCouponDetail');
+            if (editClassCouponDetail) editClassCouponDetail.value = cls.coupon_detail || '';
+            const editClassCouponDetailGroup = document.getElementById('editClassCouponDetailGroup');
+            if (editClassCouponDetailGroup) {
+                editClassCouponDetailGroup.style.display = cls.coupon_pack ? 'block' : 'none';
+            }
 
             document.getElementsByName('editClassType').forEach((radio) => {
                 radio.checked = radio.value === (cls.class_type || 'VOD');
@@ -623,16 +629,24 @@
 
             document.querySelectorAll('.nav-btn').forEach((button) => button.classList.remove('active'));
             document.querySelectorAll('.mypage-tab').forEach((tab) => tab.classList.remove('active'));
-            document.querySelector('[data-target="tabDashboard"]')?.classList.add('active');
-            const editTab = document.getElementById('tabEditClass');
-            if (editTab) {
-                editTab.hidden = false;
-                editTab.classList.add('active');
-            }
+                document.querySelector('[data-target="tabDashboard"]')?.classList.add('active');
+                const editTab = document.getElementById('tabEditClass');
+                if (editTab) {
+                    editTab.hidden = false;
+                    editTab.classList.add('active');
+                }
         } catch (error) {
             showMypageNotice('error', '?? ?? ??', error.message || '?? ? ?? ??? ???.');
         }
     };
+
+    const editClassCoupon = document.getElementById('editClassCoupon');
+    const editClassCouponDetailGroup = document.getElementById('editClassCouponDetailGroup');
+    editClassCoupon?.addEventListener('change', () => {
+        if (editClassCouponDetailGroup) {
+            editClassCouponDetailGroup.style.display = editClassCoupon.checked ? 'block' : 'none';
+        }
+    });
 
     const editForm = document.getElementById('editClassForm');
     if (editForm) {
@@ -648,6 +662,9 @@
                 price: parseInt(document.getElementById('editClassPrice').value, 10) || 0,
                 discount_rate: parseInt(document.getElementById('editClassDiscount').value, 10) || 0,
                 coupon_pack: document.getElementById('editClassCoupon').checked ? 1 : 0,
+                coupon_detail: document.getElementById('editClassCoupon').checked
+                    ? document.getElementById('editClassCouponDetail')?.value.trim() || null
+                    : null,
                 class_type: document.querySelector('input[name="editClassType"]:checked')?.value || 'VOD',
             };
 

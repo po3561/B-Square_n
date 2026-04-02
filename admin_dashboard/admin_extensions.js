@@ -1690,7 +1690,17 @@
 
 (function () {
   const $ = (id) => document.getElementById(id);
-  const state = { dashboard: { classes: [], instructors: [], year: null, month: null, periodLabel: '-' }, history: [], taxRows: [], period: 'month', historyPeriod: 'month', detailItem: null };
+  const state = {
+    dashboard: { classes: [], instructors: [], year: null, month: null, periodLabel: '-' },
+    history: [],
+    taxRows: [],
+    period: 'month',
+    historyPeriod: 'month',
+    detailItem: null,
+    settlementScope: 'class',
+    settlementQuery: '',
+    settlementSelection: null,
+  };
   const list = (res) => Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
   const esc = (value) => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   const money = (value) => `${Number(value || 0).toLocaleString('ko-KR')}원`;
@@ -1811,39 +1821,318 @@
     }
   }
 
+  function normalizeSettlementScope(scope) {
+    return String(scope || 'class').toLowerCase() === 'instructor' ? 'instructor' : 'class';
+  }
+
+  function settlementRows(scope = state.settlementScope) {
+    return normalizeSettlementScope(scope) === 'instructor'
+      ? (state.dashboard.instructors || [])
+      : (state.dashboard.classes || []);
+  }
+
+  function settlementLabel(row = {}, scope = state.settlementScope) {
+    return normalizeSettlementScope(scope) === 'instructor'
+      ? (row.instructor_name || row.name || '-')
+      : (row.class_name || row.class_title || '-');
+  }
+
+  function settlementSearchText(row = {}, scope = state.settlementScope) {
+    const scopeKey = normalizeSettlementScope(scope);
+    const fields = scopeKey === 'instructor'
+      ? [
+          row.instructor_name,
+          row.name,
+          row.instructor_email,
+          row.instructor_phone,
+          row.bank_name,
+          row.bank_account,
+          row.bank_holder,
+          row.class_title,
+          row.class_name,
+          row.admin_code,
+        ]
+      : [
+          row.class_name,
+          row.class_title,
+          row.instructor_name,
+          row.instructor_email,
+          row.instructor_phone,
+          row.bank_name,
+          row.bank_account,
+          row.bank_holder,
+          row.admin_code,
+        ];
+    return fields.map((value) => String(value || '').toLowerCase()).join(' ');
+  }
+
+  function matchSettlementRow(row, scope, query) {
+    const text = settlementSearchText(row, scope);
+    return !query || text.includes(query);
+  }
+
+  function computeSettlementSummary(row = {}) {
+    const grossRevenue = Number(row.total_revenue ?? row.gross_revenue ?? row.revenue ?? row.total_amount ?? row.amount ?? 0);
+    const refundAmount = Number(row.refund_amount ?? 0);
+    const cardFeeAmount = Number(row.card_fee_amount ?? row.pg_fee ?? row.payment_fee_amount ?? 0);
+    const taxFeeAmount = Number(row.tax_fee_amount ?? row.tax_amount ?? 0);
+    const platformFeeAmount = Number(row.platform_fee_amount ?? row.platform_fee ?? 0);
+    const feeAmount = Number(row.total_fee ?? row.total_fee_amount ?? (cardFeeAmount + taxFeeAmount + platformFeeAmount));
+    const netRevenue = Math.max(0, grossRevenue - refundAmount);
+    const finalAmount = Number(row.final_amount ?? row.settlement_amount ?? Math.max(0, netRevenue - feeAmount));
+    return {
+      grossRevenue,
+      refundAmount,
+      cardFeeAmount,
+      taxFeeAmount,
+      platformFeeAmount,
+      feeAmount,
+      netRevenue,
+      finalAmount,
+    };
+  }
+
+  function clearSettlementSelection() {
+    state.settlementSelection = null;
+    renderSettlementSelection();
+  }
+
+  function selectSettlementRow(scope, row) {
+    const normalizedScope = normalizeSettlementScope(scope);
+    state.settlementScope = normalizedScope;
+    state.settlementSelection = {
+      scope: normalizedScope,
+      row,
+      summary: computeSettlementSummary(row),
+    };
+    renderSettlementSelection();
+  }
+
+  function renderSettlementSelection() {
+    const body = $('settlementSelectionBody');
+    if (!body) return;
+
+    const selection = state.settlementSelection;
+    if (!selection) {
+      body.innerHTML = `
+        <div class="settlement-selection-empty">클래스명이나 강사명을 검색한 뒤 항목을 선택해 주세요.</div>
+      `;
+      return;
+    }
+
+    const { scope, row, summary } = selection;
+    const normalizedScope = normalizeSettlementScope(scope);
+    const displayTitle = settlementLabel(row, normalizedScope);
+    const labelText = normalizedScope === 'instructor' ? '강사별 정산' : '클래스별 정산';
+    const primaryLabel = normalizedScope === 'instructor' ? '강사명' : '클래스명';
+    const countLabel = normalizedScope === 'instructor' ? '담당 클래스 수' : '정산 건수';
+    const countValue = normalizedScope === 'instructor'
+      ? Number(row.class_count ?? row.settlement_count ?? 0)
+      : Number(row.settlement_count ?? row.class_count ?? 0);
+    const contactValue = row.instructor_phone || '-';
+    const emailValue = row.instructor_email || '-';
+    const bankName = row.bank_name || '-';
+    const bankAccount = row.bank_account || '-';
+    const bankHolder = row.bank_holder || '-';
+    const adminCode = row.admin_code || row.approval_code || row.batch_id || row.id || '-';
+    const payoutDate = row.payout_date || '매월 15일';
+
+    body.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+        <div>
+          <span style="display:inline-flex; align-items:center; padding:0.35rem 0.75rem; border-radius:999px; background:rgba(15, 118, 110, 0.1); color:#0f766e; font-size:0.82rem; font-weight:800;">${escapeHtml(labelText)}</span>
+          <div style="margin-top:0.55rem; font-size:1.1rem; font-weight:800; color:#0f172a;">${escapeHtml(displayTitle)}</div>
+          <div style="margin-top:0.35rem; color:#64748b; font-size:0.84rem;">정산 계좌와 기본 정보를 확인한 뒤 생성 버튼을 눌러주세요.</div>
+        </div>
+        <button type="button" class="btn-small outline" data-action="clear-settlement-selection">선택 해제</button>
+      </div>
+
+      <div class="settlement-selection-grid" style="margin-top:1rem;">
+        <div class="field-group">
+          <label>${escapeHtml(primaryLabel)}</label>
+          <input type="text" class="admin-form-input" value="${escapeHtml(displayTitle)}" readonly>
+        </div>
+        <div class="field-group">
+          <label>연락처</label>
+          <input type="text" class="admin-form-input" value="${escapeHtml(contactValue)}" readonly>
+        </div>
+        <div class="field-group">
+          <label>이메일</label>
+          <input type="text" class="admin-form-input" value="${escapeHtml(emailValue)}" readonly>
+        </div>
+        <div class="field-group">
+          <label>은행명</label>
+          <input type="text" class="admin-form-input" value="${escapeHtml(bankName)}" readonly>
+        </div>
+        <div class="field-group">
+          <label>계좌번호</label>
+          <input type="text" class="admin-form-input" value="${escapeHtml(bankAccount)}" readonly>
+        </div>
+        <div class="field-group">
+          <label>예금주</label>
+          <input type="text" class="admin-form-input" value="${escapeHtml(bankHolder)}" readonly>
+        </div>
+        <div class="field-group">
+          <label>${escapeHtml(countLabel)}</label>
+          <input type="text" class="admin-form-input" value="${escapeHtml(normalizedScope === 'instructor' ? `${countValue}개` : `${countValue}건`)}" readonly>
+        </div>
+        <div class="field-group">
+          <label>관리 ID</label>
+          <input type="text" class="admin-form-input" value="${escapeHtml(adminCode)}" readonly>
+        </div>
+      </div>
+
+      <div class="settlement-formula-box" style="margin-top:1rem;">
+        <strong style="display:block; margin-bottom:0.35rem;">정산 계산식</strong>
+        발생 수익 ${money(summary.grossRevenue)}에서 환불금액 ${money(summary.refundAmount)}과 카드·세금·플랫폼 수수료 ${money(summary.feeAmount)}를 차감한 뒤,
+        최종 정산금액은 <strong>${money(summary.finalAmount)}</strong>으로 계산됩니다.
+      </div>
+
+      <div class="detail-metric-grid" style="margin-top:1rem;">
+        <article class="detail-metric-card"><span>총 매출</span><strong>${money(summary.grossRevenue)}</strong></article>
+        <article class="detail-metric-card"><span>환불금액</span><strong>${money(summary.refundAmount)}</strong></article>
+        <article class="detail-metric-card"><span>수수료 합계</span><strong>${money(summary.feeAmount)}</strong></article>
+        <article class="detail-metric-card"><span>최종 정산금액</span><strong>${money(summary.finalAmount)}</strong></article>
+      </div>
+
+      <div style="margin-top:0.8rem; color:#64748b; font-size:0.82rem;">
+        지급 기준일: ${escapeHtml(String(payoutDate))} · 검색한 항목을 변경하면 아래 정산 상세도 즉시 바뀝니다.
+      </div>
+    `;
+  }
+
+  function renderSettlementResults() {
+    const scope = normalizeSettlementScope(state.settlementScope);
+    const query = String(state.settlementQuery || '').trim().toLowerCase();
+    const sourceRows = settlementRows(scope);
+    const rows = query ? sourceRows.filter((row) => matchSettlementRow(row, scope, query)) : [];
+    const tableBody = scope === 'instructor' ? $('settlementInstructorTableBody') : $('settlementClassTableBody');
+    const grid = $('settlementDualGrid');
+    const scopeSwitch = $('settlementScopeSwitch');
+    const searchInput = $('settlementSearchInput');
+    const searchHint = $('settlementSearchHint');
+
+    if (grid) {
+      grid.classList.toggle('scope-class', scope === 'class');
+      grid.classList.toggle('scope-instructor', scope === 'instructor');
+    }
+
+    if (scopeSwitch) {
+      scopeSwitch.querySelectorAll('.period-chip').forEach((chip) => {
+        chip.classList.toggle('active', normalizeSettlementScope(chip.dataset.scope) === scope);
+      });
+    }
+
+    if (searchInput) {
+      const placeholder = scope === 'instructor'
+        ? '강사명, 이메일, 계좌번호 검색'
+        : '클래스명, 강사명, 계좌번호 검색';
+      searchInput.placeholder = placeholder;
+    }
+
+    if (searchHint) {
+      const total = sourceRows.length;
+      searchHint.textContent = query
+        ? `검색 결과 ${rows.length.toLocaleString('ko-KR')}건 / 전체 ${total.toLocaleString('ko-KR')}건`
+        : `클래스명이나 강사명을 입력하면 해당 정산 정보가 표시됩니다.`;
+    }
+
+    if (!tableBody) return;
+
+    if (!query) {
+      tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8;">검색어를 입력하면 정산 정보가 표시됩니다.</td></tr>`;
+      renderSettlementSelection();
+      return;
+    }
+
+    if (!rows.length) {
+      tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8;">조건에 맞는 정산 정보가 없습니다.</td></tr>`;
+      renderSettlementSelection();
+      return;
+    }
+
+    const rowsHtml = rows.map((row, index) => {
+      const summary = computeSettlementSummary(row);
+      const title = settlementLabel(row, scope);
+      const subTitle = scope === 'instructor'
+        ? `${row.instructor_phone || row.instructor_email || '-'}`
+        : `${row.instructor_name || '-'}`;
+      const detailValue = scope === 'instructor'
+        ? `${Number(row.class_count ?? row.settlement_count ?? 0).toLocaleString('ko-KR')}개`
+        : `${row.instructor_name || '-'}`;
+
+      return `
+        <tr data-settlement-row="${escapeHtml(String(index))}" style="cursor:pointer;">
+          <td>
+            <div style="font-weight:700; color:#0f172a;">${escapeHtml(title)}</div>
+            <div style="font-size:0.78rem; color:#64748b; margin-top:0.25rem;">${escapeHtml(subTitle)}</div>
+          </td>
+          <td>${escapeHtml(detailValue)}</td>
+          <td>${money(summary.grossRevenue)}</td>
+          <td>${money(summary.feeAmount)}</td>
+          <td><strong style="color:#0f766e;">${money(summary.finalAmount)}</strong></td>
+          <td><button type="button" class="btn-small outline" data-settlement-select="${escapeHtml(String(index))}">선택</button></td>
+        </tr>
+      `;
+    }).join('');
+
+    tableBody.innerHTML = rowsHtml;
+    tableBody.querySelectorAll('[data-settlement-select]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const row = rows[Number(button.dataset.settlementSelect)];
+        if (!row) return;
+        selectSettlementRow(scope, row);
+      });
+    });
+
+    tableBody.querySelectorAll('tr[data-settlement-row]').forEach((rowEl) => {
+      rowEl.addEventListener('click', (event) => {
+        if (event.target.closest('button')) return;
+        const row = rows[Number(rowEl.dataset.settlementRow)];
+        if (!row) return;
+        selectSettlementRow(scope, row);
+      });
+    });
+
+    if (!state.settlementSelection || normalizeSettlementScope(state.settlementSelection.scope) !== scope) {
+      renderSettlementSelection();
+    }
+  }
+
+  function applySettlementFocus() {
+    const focus = window.__BSQ_SETTLEMENT_FOCUS__;
+    if (!focus) return;
+
+    const scope = normalizeSettlementScope(focus.scope);
+    state.settlementScope = scope;
+    state.settlementQuery = String(focus.query || focus.className || focus.instructorName || '').trim();
+    if ($('settlementSearchInput')) $('settlementSearchInput').value = state.settlementQuery;
+
+    const rows = settlementRows(scope);
+    const targetId = scope === 'instructor' ? String(focus.instructorId || '').trim() : String(focus.classId || '').trim();
+    const matched = rows.find((row) => {
+      if (targetId && String(row.instructor_id || row.class_id || row.id || '').trim() === targetId) return true;
+      const label = settlementLabel(row, scope).toLowerCase();
+      return state.settlementQuery && label.includes(state.settlementQuery.toLowerCase());
+    }) || null;
+
+    if (matched) {
+      selectSettlementRow(scope, matched);
+    } else {
+      clearSettlementSelection();
+    }
+
+    window.__BSQ_SETTLEMENT_FOCUS__ = null;
+  }
+
   function renderDashboard() {
     const classes = state.dashboard.classes || [];
     const instructors = state.dashboard.instructors || [];
     $('settlementMetricPeriod').textContent = state.dashboard.periodLabel || '-';
     $('settlementMetricClassTotal').textContent = money(classes.reduce((sum, row) => sum + Number(row.final_amount ?? row.settlement_amount ?? 0), 0));
     $('settlementMetricInstructorTotal').textContent = money(instructors.reduce((sum, row) => sum + Number(row.final_amount ?? row.settlement_amount ?? 0), 0));
-
-    const classBody = $('settlementClassTableBody');
-    const instructorBody = $('settlementInstructorTableBody');
-    if (classBody) {
-      classBody.innerHTML = classes.length ? classes.map((row, index) => `
-        <tr>
-          <td>${esc(row.class_name || row.class_title || `클래스 ${index + 1}`)}</td>
-          <td>${esc(row.instructor_name || '-')}</td>
-          <td>${money(row.total_revenue || row.revenue || 0)}</td>
-          <td>${money(row.total_fee || row.total_fee_amount || row.fee_amount || 0)}</td>
-          <td><strong style="color:#0f766e;">${money(row.final_amount ?? row.settlement_amount ?? 0)}</strong></td>
-          <td><button class="btn-small outline" type="button" data-settle-class="${esc(String(index))}">상세</button></td>
-        </tr>`).join('') : '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">집계된 클래스 정산 데이터가 없습니다.</td></tr>';
-      classBody.querySelectorAll('[data-settle-class]').forEach((button) => button.addEventListener('click', () => detail(classes[Number(button.dataset.settleClass)], classes[Number(button.dataset.settleClass)]?.class_name || '클래스 정산 상세')));
-    }
-    if (instructorBody) {
-      instructorBody.innerHTML = instructors.length ? instructors.map((row, index) => `
-        <tr>
-          <td>${esc(row.instructor_name || row.name || '-')}</td>
-          <td>${Number(row.class_count || row.classes_count || 0).toLocaleString('ko-KR')}개</td>
-          <td>${money(row.total_revenue || row.revenue || 0)}</td>
-          <td>${money(row.total_fee || row.total_fee_amount || row.fee_amount || 0)}</td>
-          <td><strong style="color:#0f766e;">${money(row.final_amount ?? row.settlement_amount ?? 0)}</strong></td>
-          <td><button class="btn-small outline" type="button" data-settle-inst="${esc(String(index))}">상세</button></td>
-        </tr>`).join('') : '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">집계된 강사 정산 데이터가 없습니다.</td></tr>';
-      instructorBody.querySelectorAll('[data-settle-inst]').forEach((button) => button.addEventListener('click', () => detail(instructors[Number(button.dataset.settleInst)], instructors[Number(button.dataset.settleInst)]?.instructor_name || '강사 정산 상세')));
-    }
+    renderSettlementResults();
+    renderSettlementSelection();
   }
 
   async function loadSettlementDashboard() {
@@ -1875,7 +2164,14 @@
         month,
         period: state.period,
       };
+      state.settlementSelection = null;
+      const focus = window.__BSQ_SETTLEMENT_FOCUS__;
+      if (focus) {
+        state.settlementScope = normalizeSettlementScope(focus.scope);
+        state.settlementQuery = String(focus.query || focus.className || focus.instructorName || '').trim();
+      }
       renderDashboard();
+      applySettlementFocus();
     } catch (error) {
       if ($('settlementClassTableBody')) $('settlementClassTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444;">정산 데이터를 불러오지 못했습니다. ${esc(error.message)}</td></tr>`;
       if ($('settlementInstructorTableBody')) $('settlementInstructorTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444;">정산 데이터를 불러오지 못했습니다. ${esc(error.message)}</td></tr>`;
@@ -2104,8 +2400,10 @@
         });
         if (!res?.success) throw new Error(res?.error || '정산 배치 생성 실패');
         alert('정산 배치가 생성되었습니다.');
-        await loadSettlementDashboard();
-        await loadSettlementHistory();
+        if ($('settlementHistoryStatusFilter') && $('settlementHistoryStatusFilter').value === 'all') {
+          $('settlementHistoryStatusFilter').value = 'pending';
+        }
+        document.querySelector('.nav-item[data-tab="tabSettlementHistory"]')?.click();
       } catch (error) {
         alert(error.message || '정산 배치 생성 실패');
       }
@@ -2117,6 +2415,32 @@
     $('settlementHistoryYearInput')?.addEventListener('change', loadSettlementHistory);
     $('settlementHistoryMonthInput')?.addEventListener('change', loadSettlementHistory);
     $('settlementHistoryStatusFilter')?.addEventListener('change', renderHistory);
+    $('settlementSearchInput')?.addEventListener('input', (event) => {
+      state.settlementQuery = String(event.target.value || '').trim();
+      state.settlementSelection = null;
+      renderSettlementResults();
+    });
+    $('btnClearSettlementSearch')?.addEventListener('click', () => {
+      state.settlementQuery = '';
+      state.settlementSelection = null;
+      if ($('settlementSearchInput')) $('settlementSearchInput').value = '';
+      renderSettlementResults();
+      renderSettlementSelection();
+    });
+    document.querySelectorAll('#settlementScopeSwitch .period-chip').forEach((button) => button.addEventListener('click', () => {
+      const nextScope = normalizeSettlementScope(button.dataset.scope);
+      state.settlementScope = nextScope;
+      state.settlementQuery = '';
+      state.settlementSelection = null;
+      if ($('settlementSearchInput')) $('settlementSearchInput').value = '';
+      document.querySelectorAll('#settlementScopeSwitch .period-chip').forEach((chip) => chip.classList.toggle('active', chip === button));
+      renderDashboard();
+    }));
+    document.body.addEventListener('click', (event) => {
+      if (event.target?.closest('[data-action="clear-settlement-selection"]')) {
+        clearSettlementSelection();
+      }
+    });
     $('btnRefreshTaxReport')?.addEventListener('click', loadTax);
     $('btnDownloadTaxReport')?.addEventListener('click', downloadTax);
     $('taxStartMonth')?.addEventListener('change', loadTax);

@@ -25,6 +25,12 @@ async function propagateCategoryRename(db, fromName, toName) {
 
 async function propagateCategoryDelete(db, categoryName) {
   if (!categoryName) return;
+  await db.prepare(`
+    INSERT INTO deleted_class_categories (name, deleted_at)
+    VALUES (?, datetime('now'))
+    ON CONFLICT(name) DO UPDATE SET
+      deleted_at = excluded.deleted_at
+  `).bind(categoryName).run();
   await db.prepare('UPDATE classes SET category = NULL WHERE category = ?').bind(categoryName).run();
   await db.prepare("UPDATE recommendations SET category = 'all' WHERE category = ?").bind(categoryName).run();
   await db.prepare("UPDATE user_chats SET class_category = '미분류' WHERE class_category = ?").bind(categoryName).run().catch(() => {});
@@ -144,17 +150,17 @@ export async function onRequest(context) {
         return json(request, env, { success: false, error: '삭제할 카테고리 이름이 필요합니다.' }, { status: 400 });
       }
 
+      const existing = await db.prepare('SELECT name FROM class_categories WHERE name = ? LIMIT 1').bind(name).first();
+      if (!existing) {
+        return json(request, env, { success: false, error: '삭제할 카테고리를 찾을 수 없습니다.' }, { status: 404 });
+      }
+
       await propagateCategoryDelete(db, name);
-      await db.prepare(`
-        UPDATE class_categories
-        SET is_active = 0,
-            updated_at = datetime('now')
-        WHERE name = ?
-      `).bind(name).run();
+      await db.prepare('DELETE FROM class_categories WHERE name = ?').bind(name).run();
 
       return json(request, env, {
         success: true,
-        message: '카테고리가 삭제되었습니다.',
+        message: '카테고리가 영구 삭제되었습니다.',
       });
     }
 

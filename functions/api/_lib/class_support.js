@@ -56,6 +56,19 @@ function uniqueStrings(values) {
   );
 }
 
+async function loadDeletedClassCategoryNames(db) {
+  const { results } = await db.prepare(`
+    SELECT name
+    FROM deleted_class_categories
+  `).all().catch(() => ({ results: [] }));
+
+  return new Set(
+    (results || [])
+      .map((row) => normalizeCategoryName(row.name))
+      .filter(Boolean),
+  );
+}
+
 function extractSubInstructorIds(rawValue) {
   if (!rawValue) return [];
 
@@ -113,6 +126,13 @@ export async function ensureClassCategoriesSchema(db) {
       )
     `).run();
 
+    await db.prepare(`
+      CREATE TABLE IF NOT EXISTS deleted_class_categories (
+        name TEXT PRIMARY KEY,
+        deleted_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+
     await addColumnIfMissing(db, 'class_categories', "emoji TEXT NOT NULL DEFAULT '✨'");
     await addColumnIfMissing(db, 'class_categories', 'image_url TEXT');
     await addColumnIfMissing(db, 'class_categories', 'sort_order INTEGER DEFAULT 0');
@@ -124,6 +144,7 @@ export async function ensureClassCategoriesSchema(db) {
   }
 
   if (!classCategoriesSeeded) {
+    const deletedNames = await loadDeletedClassCategoryNames(db).catch(() => new Set());
     const existingCategories = await db.prepare(`
       SELECT DISTINCT TRIM(category) AS name
       FROM classes
@@ -133,7 +154,7 @@ export async function ensureClassCategoriesSchema(db) {
     const merged = uniqueCategories([
       ...DEFAULT_CLASS_CATEGORIES.map((item) => item.name),
       ...(existingCategories?.results || []).map((row) => row.name),
-    ]);
+    ]).filter((name) => !deletedNames.has(name));
 
     if (merged.length) {
       const stmts = merged.map((name, index) => {

@@ -244,6 +244,22 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                         <div class="edit-price-preview" id="editPricePreview"></div>
                     </div>
 
+                    <!-- 쿠폰팩 설정 -->
+                    <div class="edit-section">
+                        <h4 class="edit-section-title">🎟️ 쿠폰팩 설정</h4>
+                        <div class="edit-field" style="margin-bottom: 1rem;">
+                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:700;">
+                                <input type="checkbox" id="editCouponPack" ${classData.coupon_pack ? 'checked' : ''}>
+                                <span>쿠폰팩 발행 허용</span>
+                            </label>
+                            <p class="edit-section-hint" style="margin:0.5rem 0 0;">관리자가 발행하는 쿠폰을 이 클래스에서 사용할 수 있게 합니다.</p>
+                        </div>
+                        <div class="edit-field" id="editCouponDetailGroup" style="display:${classData.coupon_pack ? 'block' : 'none'};">
+                            <label>쿠폰 상세 정보 (예: 할인 금액, 유효 기간 등)</label>
+                            <input type="text" id="editCouponDetail" value="${escapeHtml(classData.coupon_detail || '')}" placeholder="예: 신규 회원 5,000원 할인쿠폰 발행">
+                        </div>
+                    </div>
+
                     <!-- 커리큘럼 -->
                     <div class="edit-section">
                         <h4 class="edit-section-title">📚 커리큘럼</h4>
@@ -500,6 +516,14 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     document.getElementById('editDiscount')?.addEventListener('input', updatePricePreview);
     updatePricePreview();
 
+    const editCouponPack = document.getElementById('editCouponPack');
+    const editCouponDetailGroup = document.getElementById('editCouponDetailGroup');
+    editCouponPack?.addEventListener('change', () => {
+        if (editCouponDetailGroup) {
+            editCouponDetailGroup.style.display = editCouponPack.checked ? 'block' : 'none';
+        }
+    });
+
     // ========================
     // 6. 커리큘럼 관리
     // ========================
@@ -578,6 +602,10 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                 description: document.getElementById('editDescription').value.trim(),
                 price: parseInt(document.getElementById('editPrice').value) || 0,
                 discount_rate: parseInt(document.getElementById('editDiscount').value) || 0,
+                coupon_pack: document.getElementById('editCouponPack')?.checked || false,
+                coupon_detail: document.getElementById('editCouponPack')?.checked
+                    ? document.getElementById('editCouponDetail')?.value.trim() || null
+                    : null,
                 curriculum: chapters,
                 image_url: editImages[0] || '',
                 image_urls: editImages

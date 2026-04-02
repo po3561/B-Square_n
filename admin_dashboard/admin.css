@@ -1697,6 +1697,27 @@ input:checked+.mac-slider:before {
     background: rgba(148, 163, 184, 0.12);
 }
 
+.class-detail-coupon-note {
+    margin-top: 0.65rem;
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(79, 70, 229, 0.08);
+    color: #4338ca;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.class-detail-hero-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
 .class-detail-grid {
     display: grid;
     grid-template-columns: 1.1fr 1fr;
@@ -3869,6 +3890,83 @@ input:checked+.mac-slider:before {
     font-size: 0.88rem;
 }
 
+.settlement-search-shell {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.settlement-scope-switch {
+    display: inline-flex;
+    padding: 0.25rem;
+    border-radius: 999px;
+    background: #e2e8f0;
+    gap: 0.3rem;
+    width: fit-content;
+}
+
+.settlement-search-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.settlement-search-row .admin-form-input {
+    flex: 1;
+    margin: 0;
+}
+
+.settlement-search-hint {
+    color: #475569;
+    font-size: 0.84rem;
+}
+
+.settlement-selection-card {
+    margin: 0 0 1rem;
+}
+
+.settlement-selection-body {
+    display: grid;
+    gap: 1rem;
+}
+
+.settlement-selection-empty {
+    padding: 1rem 1.1rem;
+    border-radius: 16px;
+    background: #f8fafc;
+    border: 1px dashed rgba(148, 163, 184, 0.5);
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.settlement-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.settlement-formula-box {
+    padding: 1rem 1.1rem;
+    border-radius: 16px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    border: 1px solid rgba(147, 197, 253, 0.65);
+    line-height: 1.55;
+    font-size: 0.88rem;
+}
+
+.settlement-dual-grid.scope-class {
+    grid-template-columns: 1fr;
+}
+
+.settlement-dual-grid.scope-instructor {
+    grid-template-columns: 1fr;
+}
+
+.settlement-dual-grid.scope-class #settlementInstructorPanel,
+.settlement-dual-grid.scope-instructor #settlementClassPanel {
+    display: none;
+}
+
 .coupon-modal-grid {
     display: grid;
     grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
@@ -4105,12 +4203,18 @@ input:checked+.mac-slider:before {
 
     .admin-overview-grid,
     .settlement-fee-grid,
-    .admin-form-grid.two-col {
+    .admin-form-grid.two-col,
+    .settlement-selection-grid {
         grid-template-columns: 1fr;
     }
 
     .settlement-period-fields {
         grid-template-columns: 1fr;
+    }
+
+    .settlement-search-row {
+        flex-direction: column;
+        align-items: stretch;
     }
 }
 
@@ -4142,5 +4246,9 @@ input:checked+.mac-slider:before {
 
     .detail-metric-grid {
         grid-template-columns: 1fr;
+    }
+
+    .class-detail-hero-side {
+        align-items: flex-start;
     }
 }
