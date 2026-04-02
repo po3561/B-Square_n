@@ -2,6 +2,7 @@
   'use strict';
 
   let nicknameChecked = false;
+  let signupContext = null;
 
   document.addEventListener('DOMContentLoaded', async () => {
     if (window.BSQSocialAuth?.init) {
@@ -22,6 +23,11 @@
     const passwordInput = document.getElementById('signupPassword');
     const passwordConfirmInput = document.getElementById('signupPasswordConfirm');
     const banner = document.querySelector('[data-auth-banner]');
+    const verificationCard = document.querySelector('[data-signup-verification]');
+    const verificationProvider = document.querySelector('[data-signup-provider]');
+    const verificationSummary = document.querySelector('[data-signup-summary]');
+    const verificationEmail = document.querySelector('[data-signup-email]');
+    const verificationName = document.querySelector('[data-signup-name]');
 
     if (!form) return;
 
@@ -48,7 +54,69 @@
       setNicknameStatus('', '');
     };
 
+    const renderSignupContext = (context) => {
+      if (!verificationCard) return;
+
+      const active = Boolean(context?.active && context?.provider && context?.profile);
+      if (!active) {
+        verificationCard.hidden = true;
+        signupContext = null;
+        if (emailInput) emailInput.readOnly = false;
+        return;
+      }
+
+      signupContext = context;
+
+      const providerLabel = context.provider?.label || context.profile?.provider || '소셜';
+      const profileEmail = String(context.profile?.provider_email || context.profile?.masked_email || '').trim();
+      const profileName = String(context.profile?.name || context.profile?.nickname || '').trim();
+      const verifiedEmail = Boolean(context.profile?.email_verified && context.profile?.provider_email);
+
+      verificationCard.hidden = false;
+      if (verificationProvider) verificationProvider.textContent = `${providerLabel} 본인 인증 완료`;
+      if (verificationSummary) {
+        verificationSummary.textContent = `${providerLabel}에서 확인된 정보로 가입을 계속할 수 있습니다.`;
+      }
+      if (verificationEmail) {
+        verificationEmail.textContent = profileEmail || '이메일 정보 없음';
+      }
+      if (verificationName) {
+        verificationName.textContent = profileName || '이름 정보 없음';
+      }
+
+      if (emailInput) {
+        if (verifiedEmail) {
+          emailInput.value = String(context.profile.provider_email || '').trim();
+          emailInput.readOnly = true;
+        } else {
+          emailInput.readOnly = false;
+          if (!emailInput.value) {
+            emailInput.value = String(context.profile.provider_email || '').trim();
+          }
+        }
+      }
+
+      if (nameInput && !nameInput.value) {
+        nameInput.value = profileName || profileEmail.split('@')[0] || '';
+      }
+
+      if (nicknameInput && !nicknameInput.value) {
+        nicknameInput.value = String(context.profile?.nickname || context.profile?.name || '').trim();
+      }
+    };
+
+    const loadSignupContext = async () => {
+      try {
+        const result = await apiGet('/api/auth/social/context?purpose=signup');
+        renderSignupContext(result?.data || null);
+      } catch (error) {
+        console.warn('[Signup] social context unavailable:', error);
+        renderSignupContext(null);
+      }
+    };
+
     nicknameInput?.addEventListener('input', clearNicknameStatus);
+    void loadSignupContext();
 
     checkButton?.addEventListener('click', async () => {
       const nickname = nicknameInput?.value.trim() || '';

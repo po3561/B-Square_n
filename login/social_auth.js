@@ -230,6 +230,19 @@
     return '/index.html';
   }
 
+  function ensureRecoveryHash(returnTo, context) {
+    const raw = String(returnTo || '').trim();
+    if (!raw || context !== 'recovery') return raw;
+
+    try {
+      const url = new URL(raw, getBaseOrigin());
+      if (!url.hash) url.hash = 'social';
+      return url.toString();
+    } catch {
+      return raw.includes('#') ? raw : `${raw}#social`;
+    }
+  }
+
   function buildStartUrl(provider, context, returnTo) {
     const url = new URL(provider.startPath, getBaseOrigin());
     url.searchParams.set('flow', normalizeContext(context));
@@ -361,7 +374,7 @@
   function resolveContextAndReturnTo(root) {
     const context = normalizeContext(root.dataset.socialContext || root.dataset.context || 'login');
     const explicitReturn = String(root.dataset.socialReturn || root.dataset.returnTo || '').trim();
-    const returnTo = explicitReturn || getDefaultReturnPath(context);
+    const returnTo = ensureRecoveryHash(explicitReturn || getDefaultReturnPath(context), context);
     return { context, returnTo };
   }
 
