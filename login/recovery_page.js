@@ -7,6 +7,7 @@
   function maskEmail(value) {
     const raw = String(value ?? '').trim();
     if (!raw || !raw.includes('@')) return '';
+
     const [local, domain] = raw.split('@');
     const prefix = local.slice(0, 2);
     const suffix = local.length > 2 ? '*'.repeat(Math.max(1, Math.min(local.length - 2, 4))) : '*';
@@ -28,8 +29,12 @@
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
-    if (window.BSQSocialAuth?.init) {
-      await window.BSQSocialAuth.init({ root: '#socialAuthRecovery' });
+    try {
+      if (window.BSQSocialAuth?.init) {
+        await window.BSQSocialAuth.init({ root: '#socialAuthRecovery' });
+      }
+    } catch (error) {
+      console.warn('[Recovery] social auth init failed:', error);
     }
 
     initRecoveryPage();
@@ -102,11 +107,18 @@
       }
     };
 
+    const updateResetState = (enabled, label) => {
+      if (!requestResetButton) return;
+      requestResetButton.disabled = !enabled;
+      requestResetButton.textContent = label;
+    };
+
     const loadRecoveryContext = async () => {
       try {
         const result = await apiGet('/api/auth/social/context?purpose=recovery');
         const data = result?.data || null;
         if (!result?.success || !data?.active || !data?.account) {
+          updateResetState(Boolean(recoveryEmail), '계정 확인 후 진행해 주세요.');
           return;
         }
 
@@ -120,13 +132,15 @@
         setSummaryContent({
           state: 'info',
           title: `${providerLabel} 계정이 확인되었습니다.`,
-          text: `${providerLabel} 인증으로 연결된 계정 정보를 확인했습니다. 아래에서 비밀번호 재설정 또는 계정 복구를 진행할 수 있습니다.`,
+          text: `${providerLabel} 인증으로 연결된 계정입니다. 아래에서 비밀번호 재설정 메일을 보내거나 계정 정보를 다시 확인할 수 있습니다.`,
           email: data.account.masked_email || data.profile?.masked_email || maskEmail(recoveryEmail),
           providers: buildProviderList(data.account, providerLabel),
           resetEnabled: Boolean(recoveryEmail),
+          resetLabel: '비밀번호 재설정 메일 보내기',
         });
       } catch (error) {
         console.warn('[Recovery] social context unavailable:', error);
+        updateResetState(Boolean(recoveryEmail), '계정 확인 후 진행해 주세요.');
       }
     };
 
@@ -147,7 +161,7 @@
       const submitButton = form.querySelector('button[type="submit"]');
       submitButton.disabled = true;
       submitButton.textContent = '확인 중...';
-      showBanner('가입한 이메일과 연결된 계정을 확인 중입니다.', 'info');
+      showBanner('입력한 이메일과 연결된 계정을 확인하는 중입니다.', 'info');
 
       try {
         const result = await apiPost('/api/auth/account-lookup', { email });
@@ -171,15 +185,15 @@
             ? '아래 버튼으로 비밀번호 재설정 메일을 보낼 수 있습니다.'
             : '입력한 이메일이 맞는지 다시 확인해 주세요.'),
           email: result?.data?.masked_email || maskEmail(email),
-          providers: found ? '이메일 로그인 계정' : '다른 이메일 또는 소셜 인증으로 다시 확인해 주세요.',
+          providers: found ? '이메일 로그인 계정' : '이메일 정보가 일치하지 않습니다.',
           resetEnabled: found,
-          resetLabel: found ? '비밀번호 재설정 메일 보내기' : '계정을 다시 확인해 주세요',
+          resetLabel: found ? '비밀번호 재설정 메일 보내기' : '계정 확인 후 진행해 주세요.',
         });
 
         showBanner(
           found
             ? '계정을 확인했습니다. 아래에서 비밀번호 재설정 메일을 보낼 수 있습니다.'
-            : '계정을 찾지 못했습니다. 다른 이메일이나 소셜 인증을 이용해 주세요.',
+            : '계정을 찾지 못했습니다. 이메일을 다시 확인해 주세요.',
           found ? 'info' : 'warning',
         );
       } catch (error) {
@@ -205,19 +219,24 @@
       try {
         const result = await apiPost('/api/auth/reset-password-request', { email: targetEmail });
         if (!result?.success) {
-          throw new Error(result?.error || '비밀번호 재설정 메일 전송에 실패했습니다.');
+          throw new Error(result?.error || '비밀번호 재설정 메일 발송에 실패했습니다.');
         }
 
-        showBanner(result?.message || '비밀번호 재설정 안내 메일을 전송했습니다.', 'info');
+        const message = result?.message || '비밀번호 재설정 메일을 보냈습니다.';
+        showBanner(message, result?.email_sent === false ? 'warning' : 'info');
+
+        if (result?.debug_reset_url) {
+          showBanner(`${message} 개발용 링크: ${result.debug_reset_url}`, 'warning');
+        }
       } catch (error) {
         console.error('[Recovery] reset request failed:', error);
-        showBanner(error.message || '비밀번호 재설정 메일 전송에 실패했습니다.', 'error');
+        showBanner(error.message || '비밀번호 재설정 메일 발송에 실패했습니다.', 'error');
       } finally {
-        const hasVerifiedAccount = Boolean(recoveryAccount?.found || recoveryAccount?.source === 'social');
+        const hasVerifiedAccount = Boolean(recoveryAccount?.found || recoveryAccount?.source === 'social' || recoveryEmail);
         requestResetButton.disabled = !hasVerifiedAccount;
         requestResetButton.textContent = hasVerifiedAccount
           ? '비밀번호 재설정 메일 보내기'
-          : '계정을 다시 확인해 주세요';
+          : '계정 확인 후 진행해 주세요.';
       }
     });
 

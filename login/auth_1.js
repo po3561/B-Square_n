@@ -2,10 +2,12 @@
   'use strict';
 
   document.addEventListener('DOMContentLoaded', async () => {
-    if (window.BSQSocialAuth?.init) {
-      await window.BSQSocialAuth.init({
-        root: '#socialAuthLogin',
-      });
+    try {
+      if (window.BSQSocialAuth?.init) {
+        await window.BSQSocialAuth.init({ root: '#socialAuthLogin' });
+      }
+    } catch (error) {
+      console.warn('[Login] social auth init failed:', error);
     }
 
     initLoginPage();
@@ -19,21 +21,26 @@
     const panel = document.getElementById('emailLoginPanel');
     const banner = document.querySelector('[data-auth-banner]');
 
-    if (!loginForm || !emailInput || !passwordInput || !toggleButton || !panel) return;
+    if (!loginForm || !emailInput || !passwordInput || !toggleButton || !panel) {
+      return;
+    }
+
+    const setBanner = (message, type = 'info') => {
+      if (!banner) {
+        if (message) alert(message);
+        return;
+      }
+
+      banner.hidden = false;
+      banner.dataset.state = type;
+      banner.className = `auth-banner is-${type}`;
+      banner.textContent = message;
+    };
 
     const openEmailPanel = (focus = false) => {
       panel.hidden = false;
       toggleButton.setAttribute('aria-expanded', 'true');
       toggleButton.classList.add('is-active');
-      toggleButton.textContent = '이메일 로그인 닫기';
-
-      if (banner && !banner.dataset.state) {
-        banner.hidden = false;
-        banner.dataset.state = 'info';
-        banner.className = 'auth-banner is-info';
-        banner.textContent = '이메일과 비밀번호로 로그인할 수 있습니다.';
-      }
-
       if (focus) {
         window.requestAnimationFrame(() => emailInput.focus());
       }
@@ -43,7 +50,6 @@
       panel.hidden = true;
       toggleButton.setAttribute('aria-expanded', 'false');
       toggleButton.classList.remove('is-active');
-      toggleButton.textContent = '다른 이메일로 로그인';
       if (banner && !banner.dataset.state) {
         banner.hidden = true;
         banner.textContent = '';
@@ -71,26 +77,26 @@
       const submitButton = loginForm.querySelector('button[type="submit"]');
 
       if (!email) {
-        showMessage('이메일을 입력해 주세요.', 'error');
+        setBanner('이메일을 입력해 주세요.', 'error');
         emailInput.focus();
         return;
       }
 
       if (!email.includes('@')) {
-        showMessage('이메일 형식이 올바르지 않습니다.', 'error');
+        setBanner('유효한 이메일 주소를 입력해 주세요.', 'error');
         emailInput.focus();
         return;
       }
 
       if (!password) {
-        showMessage('비밀번호를 입력해 주세요.', 'error');
+        setBanner('비밀번호를 입력해 주세요.', 'error');
         passwordInput.focus();
         return;
       }
 
       submitButton.disabled = true;
       submitButton.textContent = '로그인 중...';
-      showMessage('이메일 계정을 확인하는 중입니다.', 'info');
+      setBanner('로그인 정보를 확인하는 중입니다.', 'info');
 
       try {
         const result = await apiPost('/api/auth/login', {
@@ -105,23 +111,27 @@
         window.location.replace('../index.html');
       } catch (error) {
         console.error('[Login] email login failed:', error);
-        showMessage(error.message || '로그인에 실패했습니다.', 'error');
+        setBanner(mapLoginError(error), 'error');
         submitButton.disabled = false;
         submitButton.textContent = '로그인';
       }
     });
+  }
 
-    function showMessage(message, type = 'info') {
-      if (!banner) {
-        alert(message);
-        return;
-      }
+  function mapLoginError(error) {
+    const message = String(error?.message || '').trim();
+    if (!message) return '로그인에 실패했습니다.';
 
-      banner.hidden = false;
-      banner.dataset.state = type;
-      banner.className = `auth-banner is-${type}`;
-      banner.textContent = message;
+    if (
+      message.includes('이메일 또는 비밀번호') ||
+      message.includes('Invalid account credentials') ||
+      message.includes('A valid email address') ||
+      message.includes('Email and password are required')
+    ) {
+      return '이메일 또는 비밀번호가 올바르지 않습니다.';
     }
+
+    return message;
   }
 
   async function apiPost(path, body) {

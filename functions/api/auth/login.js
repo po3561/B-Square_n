@@ -7,29 +7,36 @@ export async function onRequestPost(context) {
 
   try {
     const body = await request.json();
-    const email = (body?.email || '').trim().toLowerCase();
+    const identifier = String(body?.email || body?.username || body?.identifier || '').trim();
     const password = body?.password || '';
 
-    if (!email || !password) {
-      return json(request, env, { success: false, error: 'Email and password are required.' }, { status: 400 });
-    }
-
-    if (!email.includes('@')) {
-      return json(request, env, { success: false, error: 'A valid email address is required.' }, { status: 400 });
+    if (!identifier || !password) {
+      return json(request, env, { success: false, error: '이메일과 비밀번호를 입력해 주세요.' }, { status: 400 });
     }
 
     await ensureAuthSchema(env.DB);
 
     let user;
-    user = await env.DB.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').bind(email).first();
+    if (identifier.includes('@')) {
+      user = await env.DB.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1').bind(identifier.toLowerCase()).first();
+    } else {
+      user = await env.DB.prepare(`
+        SELECT *
+        FROM users
+        WHERE username = ?
+           OR LOWER(email) = LOWER(?)
+        LIMIT 1
+      `).bind(identifier, identifier).first();
+    }
 
     if (!user) {
-      return json(request, env, { success: false, error: 'Invalid account credentials.' }, { status: 401 });
+      return json(request, env, { success: false, error: '이메일 또는 비밀번호가 올바르지 않습니다.' }, { status: 401 });
     }
 
     const inputHash = await hashPassword(password);
-    if (inputHash !== user.password_hash) {
-      return json(request, env, { success: false, error: 'Invalid account credentials.' }, { status: 401 });
+    const storedHash = String(user.password_hash || '').trim();
+    if (!storedHash || inputHash !== storedHash) {
+      return json(request, env, { success: false, error: '이메일 또는 비밀번호가 올바르지 않습니다.' }, { status: 401 });
     }
 
     const session = await createSessionRecord(env.DB, user.id);
@@ -44,7 +51,7 @@ export async function onRequestPost(context) {
     });
   } catch (err) {
     console.error('Login error:', err);
-    return json(request, env, { success: false, error: 'Login failed.' }, { status: 500 });
+    return json(request, env, { success: false, error: '로그인 처리에 실패했습니다.' }, { status: 500 });
   }
 }
 

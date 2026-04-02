@@ -1,12 +1,64 @@
 (function () {
   'use strict';
 
-  let nicknameChecked = false;
+  const FALLBACK_REFERRER_GROUPS = [
+    {
+      label: '중부',
+      options: [
+        { value: 'aj001', label: '중부1' },
+        { value: 'aj002', label: '중부2' },
+        { value: 'aj003', label: '중부3' },
+        { value: 'aj004', label: '중부4' },
+        { value: 'aj005', label: '중부5' },
+      ],
+    },
+    {
+      label: '북부',
+      options: [
+        { value: 'ab001', label: '북부1' },
+        { value: 'ab002', label: '북부2' },
+        { value: 'ab003', label: '북부3' },
+        { value: 'ab004', label: '북부4' },
+        { value: 'ab005', label: '북부5' },
+      ],
+    },
+    {
+      label: '동부',
+      options: [
+        { value: 'ac001', label: '동부1' },
+        { value: 'ac002', label: '동부2' },
+        { value: 'ac003', label: '동부3' },
+        { value: 'ac004', label: '동부4' },
+        { value: 'ac005', label: '동부5' },
+      ],
+    },
+    {
+      label: '대학',
+      options: [
+        { value: 'as001', label: '대학1' },
+        { value: 'as002', label: '대학2' },
+        { value: 'as003', label: '대학3' },
+        { value: 'as004', label: '대학4' },
+      ],
+    },
+    {
+      label: '행정',
+      options: [
+        { value: 'cs020', label: '행정' },
+      ],
+    },
+  ];
+
+  let idChecked = false;
   let signupContext = null;
 
   document.addEventListener('DOMContentLoaded', async () => {
-    if (window.BSQSocialAuth?.init) {
-      await window.BSQSocialAuth.init({ root: '#socialAuthSignup' });
+    try {
+      if (window.BSQSocialAuth?.init) {
+        await window.BSQSocialAuth.init({ root: '#socialAuthSignup' });
+      }
+    } catch (error) {
+      console.warn('[Signup] social auth init failed:', error);
     }
 
     initSignupPage();
@@ -15,13 +67,16 @@
   function initSignupPage() {
     const form = document.getElementById('signupForm');
     const submitButton = document.getElementById('btnSubmit');
-    const nicknameInput = document.getElementById('signupNickname');
-    const nicknameStatus = document.getElementById('nicknameStatusMsg');
-    const checkButton = document.getElementById('btnCheckNickname');
+    const idInput = document.getElementById('signupId');
+    const idStatus = document.getElementById('idStatusMsg');
+    const checkButton = document.getElementById('btnCheckId');
     const emailInput = document.getElementById('signupEmail');
     const nameInput = document.getElementById('signupName');
     const passwordInput = document.getElementById('signupPassword');
     const passwordConfirmInput = document.getElementById('signupPasswordConfirm');
+    const phoneInput = document.getElementById('signupPhone');
+    const referrerSelect = document.getElementById('signupReferrerCode');
+    const referrerStatus = document.getElementById('referrerCodeStatus');
     const banner = document.querySelector('[data-auth-banner]');
     const verificationCard = document.querySelector('[data-signup-verification]');
     const verificationProvider = document.querySelector('[data-signup-provider]');
@@ -43,15 +98,77 @@
       banner.textContent = message;
     };
 
-    const setNicknameStatus = (message, type = 'info') => {
-      if (!nicknameStatus) return;
-      nicknameStatus.textContent = message;
-      nicknameStatus.className = message ? `status-msg ${type}` : 'status-msg';
+    const setIdStatus = (message, type = 'info') => {
+      if (!idStatus) return;
+      idStatus.textContent = message || '';
+      idStatus.className = message ? `status-msg ${type}` : 'status-msg';
     };
 
-    const clearNicknameStatus = () => {
-      nicknameChecked = false;
-      setNicknameStatus('', '');
+    const setReferrerStatus = (message, type = 'info') => {
+      if (!referrerStatus) return;
+      referrerStatus.textContent = message || '';
+      referrerStatus.className = message ? `status-msg ${type}` : 'status-msg';
+    };
+
+    const clearIdStatus = () => {
+      idChecked = false;
+      setIdStatus('', '');
+    };
+
+    const renderReferrerGroups = (groups, source = 'database') => {
+      if (!referrerSelect) return;
+
+      const safeGroups = Array.isArray(groups) && groups.length ? groups : FALLBACK_REFERRER_GROUPS;
+      const fragment = document.createDocumentFragment();
+
+      referrerSelect.innerHTML = '';
+
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = '추천인 코드를 선택해 주세요 (선택사항)';
+      fragment.appendChild(placeholder);
+
+      for (const group of safeGroups) {
+        const options = Array.isArray(group?.options) ? group.options : [];
+        if (!options.length) continue;
+
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = String(group.label || '추천인 코드').trim();
+
+        for (const option of options) {
+          const opt = document.createElement('option');
+          opt.value = String(option.value || '').trim();
+          opt.textContent = String(option.label || option.value || '').trim();
+          optgroup.appendChild(opt);
+        }
+
+        fragment.appendChild(optgroup);
+      }
+
+      referrerSelect.appendChild(fragment);
+      referrerSelect.disabled = false;
+      setReferrerStatus(
+        source === 'database'
+          ? '실제 추천인 코드 목록을 불러왔습니다.'
+          : '기본 추천인 코드 목록을 표시하고 있습니다.',
+        'info',
+      );
+    };
+
+    const suggestId = (context) => {
+      const candidates = [
+        context?.profile?.nickname,
+        context?.profile?.name,
+        context?.account?.username,
+        context?.profile?.provider_email ? String(context.profile.provider_email).split('@')[0] : '',
+      ];
+
+      for (const candidate of candidates) {
+        const value = String(candidate || '').trim();
+        if (value) return value;
+      }
+
+      return '';
     };
 
     const renderSignupContext = (context) => {
@@ -75,13 +192,13 @@
       verificationCard.hidden = false;
       if (verificationProvider) verificationProvider.textContent = `${providerLabel} 본인 인증 완료`;
       if (verificationSummary) {
-        verificationSummary.textContent = `${providerLabel}에서 확인된 정보로 가입을 계속할 수 있습니다.`;
+        verificationSummary.textContent = `${providerLabel}에서 확인한 정보로 가입 정보를 이어서 입력할 수 있습니다.`;
       }
       if (verificationEmail) {
-        verificationEmail.textContent = profileEmail || '이메일 정보 없음';
+        verificationEmail.textContent = profileEmail || '인증 이메일 없음';
       }
       if (verificationName) {
-        verificationName.textContent = profileName || '이름 정보 없음';
+        verificationName.textContent = profileName || '인증 이름 없음';
       }
 
       if (emailInput) {
@@ -100,8 +217,8 @@
         nameInput.value = profileName || profileEmail.split('@')[0] || '';
       }
 
-      if (nicknameInput && !nicknameInput.value) {
-        nicknameInput.value = String(context.profile?.nickname || context.profile?.name || '').trim();
+      if (idInput && !idInput.value) {
+        idInput.value = suggestId(context);
       }
     };
 
@@ -115,14 +232,26 @@
       }
     };
 
-    nicknameInput?.addEventListener('input', clearNicknameStatus);
+    const loadReferrerCodes = async () => {
+      try {
+        const result = await apiGet('/api/auth/referrer-codes');
+        const groups = result?.data?.groups || [];
+        renderReferrerGroups(groups, result?.data?.source || 'fallback');
+      } catch (error) {
+        console.warn('[Signup] referrer codes unavailable:', error);
+        renderReferrerGroups(FALLBACK_REFERRER_GROUPS, 'fallback');
+      }
+    };
+
+    idInput?.addEventListener('input', clearIdStatus);
     void loadSignupContext();
+    void loadReferrerCodes();
 
     checkButton?.addEventListener('click', async () => {
-      const nickname = nicknameInput?.value.trim() || '';
-      if (!nickname) {
-        showBanner('닉네임을 입력해 주세요.', 'warning');
-        nicknameInput?.focus();
+      const id = idInput?.value.trim() || '';
+      if (!id) {
+        showBanner('아이디를 입력해 주세요.', 'warning');
+        idInput?.focus();
         return;
       }
 
@@ -130,18 +259,18 @@
         checkButton.disabled = true;
         checkButton.textContent = '확인 중...';
 
-        const result = await apiGet(`/api/auth/check-username?username=${encodeURIComponent(nickname)}`);
+        const result = await apiGet(`/api/auth/check-username?username=${encodeURIComponent(id)}`);
         if (result?.success && result?.data?.available) {
-          nicknameChecked = true;
-          setNicknameStatus('사용 가능한 닉네임입니다.', 'success');
+          idChecked = true;
+          setIdStatus('사용 가능한 아이디입니다.', 'success');
           return;
         }
 
-        nicknameChecked = false;
-        setNicknameStatus(result?.data?.message || '이미 사용 중인 닉네임입니다.', 'error');
+        idChecked = false;
+        setIdStatus(result?.data?.message || '이미 사용 중인 아이디입니다.', 'error');
       } catch (error) {
-        nicknameChecked = false;
-        setNicknameStatus(error.message || '닉네임 확인에 실패했습니다.', 'error');
+        idChecked = false;
+        setIdStatus(error.message || '아이디 확인에 실패했습니다.', 'error');
       } finally {
         checkButton.disabled = false;
         checkButton.textContent = '중복 확인';
@@ -151,27 +280,28 @@
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
 
-      const nickname = nicknameInput?.value.trim() || '';
+      const id = idInput?.value.trim() || '';
       const email = emailInput?.value.trim() || '';
       const name = nameInput?.value.trim() || '';
       const password = passwordInput?.value || '';
       const passwordConfirm = passwordConfirmInput?.value || '';
-      const phone = document.getElementById('signupPhone')?.value.trim() || '';
+      const phone = phoneInput?.value.trim() || '';
+      const referrerCode = referrerSelect?.value || '';
 
-      if (!nickname) {
-        showBanner('닉네임을 입력해 주세요.', 'error');
-        nicknameInput?.focus();
+      if (!id) {
+        showBanner('아이디를 입력해 주세요.', 'error');
+        idInput?.focus();
         return;
       }
 
-      if (!nicknameChecked) {
-        showBanner('닉네임 중복 확인을 먼저 진행해 주세요.', 'warning');
+      if (!idChecked) {
+        showBanner('아이디 중복 확인을 먼저 진행해 주세요.', 'warning');
         checkButton?.focus();
         return;
       }
 
       if (!email || !email.includes('@')) {
-        showBanner('이메일 형식이 올바르지 않습니다.', 'error');
+        showBanner('유효한 이메일 주소를 입력해 주세요.', 'error');
         emailInput?.focus();
         return;
       }
@@ -204,7 +334,8 @@
           password,
           name,
           phone: phone || null,
-          username: nickname,
+          username: id,
+          referrer_code: referrerCode || null,
           signup_path: signupContext?.provider?.id ? `oauth:${signupContext.provider.id}` : 'email',
         });
 
@@ -227,11 +358,17 @@
       return window.BSQAuthAPI.getJson(path);
     }
 
-    const response = await fetch(path, { credentials: 'include', headers: { Accept: 'application/json' } });
+    const response = await fetch(path, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || payload?.success === false) {
       throw new Error(payload?.error || payload?.message || '요청에 실패했습니다.');
     }
+
     return payload;
   }
 

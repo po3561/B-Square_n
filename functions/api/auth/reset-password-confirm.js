@@ -15,7 +15,7 @@ export async function onRequestPost(context) {
     if (!token || password.length < 8) {
       return json(request, env, {
         success: false,
-        error: 'A valid token and a password of at least 8 characters are required.',
+        error: '유효한 토큰과 8자 이상의 비밀번호가 필요합니다.',
       }, { status: 400 });
     }
 
@@ -31,7 +31,7 @@ export async function onRequestPost(context) {
     `).bind(tokenHash).first();
 
     if (!resetRecord) {
-      return json(request, env, { success: false, error: 'Reset link is invalid or expired.' }, { status: 400 });
+      return json(request, env, { success: false, error: '재설정 링크가 유효하지 않거나 만료되었습니다.' }, { status: 400 });
     }
 
     const passwordHash = await hashPassword(password);
@@ -43,13 +43,13 @@ export async function onRequestPost(context) {
 
     return json(request, env, {
       success: true,
-      message: 'Password updated. Please log in again.',
+      message: '비밀번호가 변경되었습니다. 다시 로그인해 주세요.',
     });
   } catch (error) {
     console.error('Reset confirm error:', error);
     return json(request, env, {
       success: false,
-      error: 'Password reset failed.',
+      error: '비밀번호 재설정에 실패했습니다.',
       detail: error.message,
     }, { status: 500 });
   }

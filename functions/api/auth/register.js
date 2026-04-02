@@ -100,7 +100,7 @@ export async function onRequestPost(context) {
     if (socialVerification?.user_id) {
       return json(request, env, {
         success: false,
-        error: 'Account already exists.',
+        error: '이미 가입된 계정입니다.',
       }, { status: 409 });
     }
 
@@ -129,7 +129,7 @@ export async function onRequestPost(context) {
         } else if (email !== verifiedEmail) {
           return json(request, env, {
             success: false,
-            error: 'Verified social email does not match the email you entered.',
+            error: '본인 인증 이메일과 입력한 이메일이 일치하지 않습니다.',
           }, { status: 400 });
         }
       }
@@ -139,23 +139,23 @@ export async function onRequestPost(context) {
     }
 
     if (!email || !password) {
-      return json(request, env, { success: false, error: 'Email and password are required.' }, { status: 400 });
+      return json(request, env, { success: false, error: '이메일과 비밀번호를 입력해 주세요.' }, { status: 400 });
     }
     if (password.length < 8) {
-      return json(request, env, { success: false, error: 'Password must be at least 8 characters.' }, { status: 400 });
+      return json(request, env, { success: false, error: '비밀번호는 8자 이상이어야 합니다.' }, { status: 400 });
     }
 
     await ensureAuthSchema(env.DB);
 
     const existing = await env.DB.prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?)').bind(email).first();
     if (existing) {
-      return json(request, env, { success: false, error: 'Email already exists.' }, { status: 409 });
+      return json(request, env, { success: false, error: '이미 사용 중인 이메일입니다.' }, { status: 409 });
     }
 
     if (username) {
       const existingUser = await env.DB.prepare('SELECT id FROM users WHERE username = ?').bind(username).first();
       if (existingUser) {
-        return json(request, env, { success: false, error: 'Username is already in use.' }, { status: 409 });
+        return json(request, env, { success: false, error: '이미 사용 중인 아이디입니다.' }, { status: 409 });
       }
     }
 
@@ -181,12 +181,12 @@ export async function onRequestPost(context) {
       const isUnique = /unique constraint failed/i.test(message);
       if (isUnique) {
         if (/users\.email/i.test(message)) {
-          return json(request, env, { success: false, error: 'Email already exists.' }, { status: 409 });
+          return json(request, env, { success: false, error: '이미 사용 중인 이메일입니다.' }, { status: 409 });
         }
         if (/users\.username/i.test(message)) {
-          return json(request, env, { success: false, error: 'Username is already in use.' }, { status: 409 });
+          return json(request, env, { success: false, error: '이미 사용 중인 아이디입니다.' }, { status: 409 });
         }
-        return json(request, env, { success: false, error: 'Account already exists.' }, { status: 409 });
+        return json(request, env, { success: false, error: '이미 가입된 계정입니다.' }, { status: 409 });
       }
       throw insertError;
     }
@@ -205,7 +205,7 @@ export async function onRequestPost(context) {
         await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run().catch(() => {});
         return json(request, env, {
           success: false,
-          error: 'Social verification linkage failed. Please try again.',
+          error: '본인 인증 연결에 실패했습니다. 다시 시도해 주세요.',
         }, { status: 500 });
       }
     }
@@ -234,7 +234,7 @@ export async function onRequestPost(context) {
     });
   } catch (err) {
     console.error('Register error:', err);
-    return json(request, env, { success: false, error: 'Registration failed.' }, { status: 500 });
+    return json(request, env, { success: false, error: '회원가입 처리에 실패했습니다.' }, { status: 500 });
   }
 }
 

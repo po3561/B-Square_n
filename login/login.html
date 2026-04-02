@@ -8,7 +8,7 @@
     <title>로그인 | B-Square</title>
     <link rel="stylesheet" href="../style_mobile.css?v=20260331_02" media="(max-width: 768px)">
     <link rel="stylesheet" href="../style_pc.css?v=20260331_02" media="(min-width: 769px)">
-    <link rel="stylesheet" href="auth.css?v=20260401_02">
+    <link rel="stylesheet" href="auth.css?v=20260402_03">
     <link rel="stylesheet" href="/theme_overrides.css?v=20260401_04">
     <script src="/i18n.js?v=20260331_01" defer></script>
 </head>
@@ -16,12 +16,14 @@
 <body class="auth-body auth-standalone auth-login-page">
     <main class="auth-screen">
         <section class="auth-card auth-card--login">
-            <div class="auth-brand">
-                <span class="auth-brand-mark" aria-hidden="true">◆</span>
-                <span>B-Square</span>
-            </div>
+            <h1 class="auth-brand">
+                <a class="auth-brand-link" href="../index.html" aria-label="B-Square 홈으로 이동">
+                    <span class="auth-brand-mark" aria-hidden="true">◆</span>
+                    <span class="auth-brand-text">B-Square</span>
+                </a>
+            </h1>
 
-            <h1 class="auth-title">로그인</h1>
+            <h2 class="auth-title">로그인</h2>
             <p class="auth-subtitle">카카오, 네이버, 구글로 빠르게 시작하거나 이메일과 비밀번호로 로그인하세요.</p>
 
             <div class="auth-banner" data-auth-banner hidden></div>
@@ -30,10 +32,11 @@
                 data-social-return="../index.html" data-unavailable-mode="disable">
                 <div class="social-auth-list" data-social-auth-list></div>
                 <p class="social-auth-message" data-social-auth-message hidden></p>
-                <p class="social-auth-hint" data-social-auth-hint>카카오, 네이버, 구글 계정으로 빠르게 시작할 수 있습니다.</p>
+                <p class="social-auth-hint">카카오, 네이버, 구글 계정으로 빠르게 시작할 수 있습니다.</p>
             </section>
 
-            <button type="button" id="toggleEmailLogin" class="auth-toggle-button" aria-expanded="false">
+            <button type="button" id="toggleEmailLogin" class="auth-toggle-button" aria-expanded="false"
+                aria-controls="emailLoginPanel">
                 다른 이메일로 로그인
             </button>
 
@@ -64,7 +67,7 @@
 
     <script src="auth_api.js?v=20260401_02"></script>
     <script src="social_auth.js?v=20260402_01"></script>
-    <script src="auth_1.js?v=20260401_02"></script>
+    <script src="auth_1.js?v=20260402_02"></script>
 </body>
 
 </html>
