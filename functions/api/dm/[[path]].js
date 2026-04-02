@@ -49,6 +49,59 @@ function isTruthyFlag(value) {
   return text === '1' || text === 'true' || text === 'yes';
 }
 
+async function ensureRoomAccess(context, auth, roomId, roomType) {
+  const { env, request } = context;
+  const userId = String(auth.user.id || '').trim();
+  const normalizedRoomId = trimText(roomId);
+  const normalizedRoomType = trimText(roomType || 'dm').toLowerCase() || 'dm';
+  const role = String(auth.user.role || '').trim().toLowerCase();
+  const privilegedRoles = ['operator', 'admin', 'super_admin', 'super-admin', 'superadmin', 'root', 'owner', 'manager', 'operator_admin', 'ops'];
+
+  if (!normalizedRoomId) {
+    return {
+      ok: false,
+      response: json(request, env, { success: false, error: 'room_id is required' }, { status: 400 }),
+    };
+  }
+
+  if (privilegedRoles.includes(role)) {
+    return { ok: true, roomType: normalizedRoomType };
+  }
+
+  const membership = await env.DB.prepare(`
+    SELECT 1
+    FROM user_chats
+    WHERE user_id = ? AND room_id = ? AND type = ?
+    LIMIT 1
+  `).bind(userId, normalizedRoomId, normalizedRoomType).first().catch(() => null);
+
+  if (membership) {
+    return { ok: true, roomType: normalizedRoomType };
+  }
+
+  if (normalizedRoomType === 'class') {
+    const participant = await env.DB.prepare(`
+      SELECT 1
+      FROM class_participants
+      WHERE class_id = ? AND user_id = ?
+      LIMIT 1
+    `).bind(normalizedRoomId, userId).first().catch((error) => {
+      const message = String(error?.message || '');
+      if (/no such table/i.test(message)) return null;
+      throw error;
+    });
+
+    if (participant) {
+      return { ok: true, roomType: normalizedRoomType };
+    }
+  }
+
+  return {
+    ok: false,
+    response: json(request, env, { success: false, error: '채팅방 접근 권한이 필요합니다.' }, { status: 403 }),
+  };
+}
+
 function normalizeMessage(row) {
   if (!row) return null;
   return {
@@ -207,14 +260,17 @@ export async function onRequest(context) {
   }
 
   const url = new URL(request.url);
-  const roomType = url.searchParams.get('room_type') || 'dm';
+  const roomType = (trimText(url.searchParams.get('room_type')) || 'dm').toLowerCase();
   const pinnedOnly = ['1', 'true', 'yes'].includes((url.searchParams.get('pinned_only') || '').toLowerCase());
   const wantsStream = isTruthyFlag(url.searchParams.get('stream'));
+
+  const access = await ensureRoomAccess(context, auth, roomId, roomType);
+  if (!access.ok) return access.response;
 
   try {
     if (request.method === 'GET' && (subResource === 'stream' || wantsStream)) {
       const since = url.searchParams.get('since') || '0';
-      return streamMessages(context, roomId, roomType, since);
+      return streamMessages(context, roomId, access.roomType, since);
     }
 
     if (request.method === 'GET') {
@@ -266,8 +322,8 @@ export async function onRequest(context) {
         return json(request, env, { success: false, error: 'emoji is required' }, { status: 400 });
       }
 
-      const message = await env.DB.prepare('SELECT reactions FROM dm_messages WHERE id = ? AND room_id = ?')
-        .bind(messageId, roomId)
+      const message = await env.DB.prepare('SELECT reactions FROM dm_messages WHERE id = ? AND room_id = ? AND room_type = ?')
+        .bind(messageId, roomId, access.roomType)
         .first();
       if (!message) {
         return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
@@ -291,11 +347,11 @@ export async function onRequest(context) {
       await env.DB.prepare(`
         UPDATE dm_messages
         SET reactions = ?, updated_at = datetime('now')
-        WHERE id = ? AND room_id = ?
-      `).bind(JSON.stringify(reactions), messageId, roomId).run();
+        WHERE id = ? AND room_id = ? AND room_type = ?
+      `).bind(JSON.stringify(reactions), messageId, roomId, access.roomType).run();
 
-      const updated = await env.DB.prepare(`SELECT ${DM_MESSAGE_COLUMNS} FROM dm_messages WHERE id = ? AND room_id = ?`)
-        .bind(messageId, roomId)
+      const updated = await env.DB.prepare(`SELECT ${DM_MESSAGE_COLUMNS} FROM dm_messages WHERE id = ? AND room_id = ? AND room_type = ?`)
+        .bind(messageId, roomId, access.roomType)
         .first();
       if (!updated) {
         return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
@@ -307,7 +363,7 @@ export async function onRequest(context) {
     if (request.method === 'POST') {
       const body = await readJsonObject(request);
       const content = trimText(body.content || body.message || body.text || '');
-      const resolvedRoomType = trimText(body.room_type) || roomType;
+      const resolvedRoomType = (trimText(body.room_type) || access.roomType).toLowerCase();
       const resolvedClassId = resolvedRoomType === 'class' ? roomId : (trimText(body.class_id) || null);
       const attachmentUrl = trimText(body.image_url || body.file_data || '') || null;
 
@@ -398,23 +454,23 @@ export async function onRequest(context) {
         await env.DB.prepare(`
           UPDATE dm_messages
           SET content = ?, message = ?, is_edited = 1, updated_at = datetime('now')
-          WHERE id = ? AND room_id = ? AND sender_id = ?
-        `).bind(content, content, subResource, roomId, auth.user.id).run();
+          WHERE id = ? AND room_id = ? AND room_type = ? AND sender_id = ?
+        `).bind(content, content, subResource, roomId, access.roomType, auth.user.id).run();
       }
 
       if (hasPinState) {
         await env.DB.prepare(`
           UPDATE dm_messages
           SET is_pinned = ?, updated_at = datetime('now')
-          WHERE id = ? AND room_id = ?
-        `).bind(isTruthyFlag(body.is_pinned) ? 1 : 0, subResource, roomId).run();
+          WHERE id = ? AND room_id = ? AND room_type = ?
+        `).bind(isTruthyFlag(body.is_pinned) ? 1 : 0, subResource, roomId, access.roomType).run();
       }
 
       const updated = await env.DB.prepare(`
         SELECT ${DM_MESSAGE_COLUMNS}
         FROM dm_messages
-        WHERE id = ? AND room_id = ?
-      `).bind(subResource, roomId).first();
+        WHERE id = ? AND room_id = ? AND room_type = ?
+      `).bind(subResource, roomId, access.roomType).first();
       if (!updated) {
         return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
       }
@@ -423,12 +479,40 @@ export async function onRequest(context) {
     }
 
     if (request.method === 'DELETE' && subResource) {
-      await env.DB.prepare(`
-        DELETE FROM dm_messages
-        WHERE id = ? AND room_id = ? AND sender_id = ?
-      `).bind(subResource, roomId, auth.user.id).run();
+      const existing = await env.DB.prepare(`
+        SELECT ${DM_MESSAGE_COLUMNS}
+        FROM dm_messages
+        WHERE id = ? AND room_id = ? AND room_type = ?
+      `).bind(subResource, roomId, access.roomType).first();
+      if (!existing) {
+        return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
+      }
 
-      return json(request, env, { success: true });
+      const isOwner = String(existing.sender_id) === String(auth.user.id);
+      const privilegedRoles = ['operator', 'admin', 'super_admin', 'super-admin', 'superadmin', 'root', 'owner', 'manager', 'operator_admin', 'ops'];
+      if (!isOwner && !privilegedRoles.includes(String(auth.user.role || '').trim().toLowerCase())) {
+        return json(request, env, { success: false, error: 'Permission denied' }, { status: 403 });
+      }
+
+      const deletedText = '메시지가 삭제되었습니다.';
+      await env.DB.prepare(`
+        UPDATE dm_messages
+        SET content = ?, message = ?, type = 'deleted',
+            reply_to = NULL, reply_text = NULL, reply_user = NULL,
+            image_url = NULL, file_name = NULL, file_size = NULL, file_data = NULL,
+            gather_title = NULL, gather_time = NULL, gather_place = NULL,
+            min_capacity = NULL, max_capacity = NULL, current_count = 0, status = NULL,
+            is_edited = 1, is_pinned = 0, reactions = '{}', updated_at = datetime('now')
+        WHERE id = ? AND room_id = ? AND room_type = ?
+      `).bind(deletedText, deletedText, subResource, roomId, access.roomType).run();
+
+      const updated = await env.DB.prepare(`
+        SELECT ${DM_MESSAGE_COLUMNS}
+        FROM dm_messages
+        WHERE id = ? AND room_id = ? AND room_type = ?
+      `).bind(subResource, roomId, access.roomType).first();
+
+      return json(request, env, { success: true, data: updated ? normalizeMessage(updated) : null });
     }
 
     return json(request, env, { success: false, error: 'Method not allowed' }, { status: 405 });
