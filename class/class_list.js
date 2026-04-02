@@ -548,7 +548,10 @@
   }
 
   async function hydrateBookmarkStates(items = []) {
-    if (bookmarkProbeDisabled) return;
+    if (bookmarkProbeDisabled || !window.BSQ?.isLoggedIn) {
+      bookmarkProbeDisabled = true;
+      return;
+    }
     const ids = Array.from(new Set(items.map((item) => text(item?.id || item?.class_id || item)).filter(Boolean)));
     if (!ids.length) return;
 
@@ -576,6 +579,10 @@
     if (!id) return;
     if (button?.dataset.pending === '1') return;
     if (!window.BSQ?.api) return;
+    if (!window.BSQ?.isLoggedIn) {
+      setNotice('李?湲곕뒫???ъ슜?섎젮硫?濡쒓렇?명븯?몄슂.', 'error');
+      return;
+    }
 
     if (button) {
       button.dataset.pending = '1';
@@ -732,4 +739,81 @@
       setNotice(error?.message || '클래스 페이지를 초기화하지 못했습니다.', 'error');
     });
   });
+  function formatCardMode(item) {
+    const classType = text(item?.class_type || '').toUpperCase();
+    if (classType === 'ONLINE') return '온라인';
+    if (classType === 'OFFLINE') return '오프라인';
+    if (classType === 'VOD') return 'VOD';
+    if (classType) return classType;
+
+    const operatingMode = text(item?.operating_mode || '').toUpperCase();
+    if (operatingMode === 'ONEDAY') return '원데이';
+    if (operatingMode === 'SEASON') return '시즌';
+    if (operatingMode === 'WEEKLY') return '주간';
+    if (operatingMode === 'MONTHLY') return '월간';
+    return operatingMode;
+  }
+
+  function formatCardBadge() {
+    return 'CLASS101+';
+  }
+
+  function bookmarkIcon(bookmarked = false) {
+    const path = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>';
+    const filled = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"></path>';
+    return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="bsq-icon">${bookmarked ? filled : path}</svg>`;
+  }
+
+  renderCard = function renderCardOverride(item, index, variant = 'list') {
+    const id = text(item?.id || item?.class_id || '');
+    if (!id) return '';
+    const title = text(item?.title || '제목 없음');
+    const category = text(item?.category || '미분류');
+    const instructor = text(item?.instructor_name || item?.creator_name || '작성자 정보 없음');
+    const img = text(item?.thumbnail || item?.image_url || '/assets/default-cover.svg');
+    const avg = Number(item?.avg_rating || 0).toFixed(1);
+    const reviews = Number(item?.review_count || 0);
+    const cached = state.bookmarkMap.get(id);
+    const bookmarked = !!cached?.bookmarked;
+    const count = Number(cached?.count ?? item?.like_count ?? item?.bookmark_count ?? 0);
+    const mode = text(formatCardMode(item));
+    const badge = formatCardBadge();
+
+    return `
+      <article class="class-card class-list-card${variant === 'popular' ? ' class-card-popular' : ''}" data-class-id="${esc(id)}" style="animation-delay:${index * 0.05}s">
+        <a class="class-card-link" href="${esc(classUrl(id))}" aria-label="${esc(title)} 상세 보기">
+          <div class="card-thumbnail">
+            <img src="${esc(img)}" alt="${esc(title)}" loading="lazy">
+            <div class="card-badges" aria-hidden="true">
+              <span class="card-badge">${esc(badge)}</span>
+            </div>
+          </div>
+          <div class="card-info">
+            <h4 class="title">${esc(title)}</h4>
+            <div class="card-topline">
+              <span class="card-author">${esc(instructor)}</span>
+              ${mode ? '<span class="card-divider" aria-hidden="true">|</span>' : ''}
+              ${mode ? `<span class="card-mode">${esc(mode)}</span>` : ''}
+            </div>
+            <div class="meta">
+              <span class="rating">★ ${avg} (${reviews})</span>
+              <span class="meta-category">${esc(category)}</span>
+            </div>
+          </div>
+        </a>
+        <button type="button" class="btn-bookmark${bookmarked ? ' is-bookmarked' : ''}" data-action="bookmark-class" data-class-id="${esc(id)}" data-bookmarked="${bookmarked ? '1' : '0'}" data-like-count="${count}" aria-pressed="${bookmarked ? 'true' : 'false'}" aria-label="${bookmarked ? '찜 취소' : '찜하기'}">${bookmarkIcon(bookmarked)}</button>
+      </article>
+    `;
+  };
+
+  updateBookmarkButton = function updateBookmarkButtonOverride(button, classId, bookmarked, count) {
+    if (!button) return;
+    button.dataset.classId = classId;
+    button.dataset.bookmarked = bookmarked ? '1' : '0';
+    button.dataset.likeCount = String(Number(count || 0));
+    button.classList.toggle('is-bookmarked', !!bookmarked);
+    button.setAttribute('aria-pressed', bookmarked ? 'true' : 'false');
+    button.setAttribute('aria-label', bookmarked ? '찜 취소' : '찜하기');
+    button.innerHTML = bookmarkIcon(bookmarked);
+  };
 })();

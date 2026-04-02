@@ -26,7 +26,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         scheduleHomeRefresh(e.detail?.type);
     });
 
-    document.querySelector('.category-grid')?.addEventListener('click', (event) => {
+    document.addEventListener('click', (event) => {
+        const bookmarkBtn = event.target.closest('[data-action="bookmark-class"]');
+        if (bookmarkBtn) {
+            event.preventDefault();
+            event.stopPropagation();
+            void toggleHomeBookmark(bookmarkBtn.dataset.classId, bookmarkBtn);
+            return;
+        }
+
+        const categoryScope = event.target.closest('.category-grid');
+        if (!categoryScope) return;
+
         const toggle = event.target.closest('[data-category-toggle]');
         if (toggle) {
             event.preventDefault();
@@ -84,6 +95,7 @@ let homeBannerCarousels = {
     bottom: null,
 };
 const HOME_CLASS_FETCH_LIMIT = 48;
+const homeBookmarkMap = new Map();
 
 function getCurrentHomeCategory() {
     return new URLSearchParams(window.location.search).get('cat') || 'all';
@@ -526,10 +538,93 @@ function svgIcon(kind) {
         'chevron-right': '<path d="M9 6l6 6-6 6"></path>',
         star: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>',
         heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>',
+        'heart-filled': '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"></path>',
         bookmark: '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>',
         'bookmark-filled': '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="currentColor"></path>',
     };
     return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="bsq-icon">${icons[kind] || icons.spark}</svg>`;
+}
+
+function escapeCss(value) {
+    const raw = String(value ?? '');
+    if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+        return CSS.escape(raw);
+    }
+    return raw.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function formatHomeCardMode(cls) {
+    const classType = String(cls?.class_type || '').trim().toUpperCase();
+    if (classType === 'ONLINE') return '온라인';
+    if (classType === 'OFFLINE') return '오프라인';
+    if (classType) return classType;
+
+    const operatingMode = String(cls?.operating_mode || '').trim().toUpperCase();
+    if (operatingMode === 'ONEDAY') return '원데이';
+    if (operatingMode === 'SEASON') return '시즌';
+    if (operatingMode === 'WEEKLY') return '주간';
+    if (operatingMode === 'MONTHLY') return '월간';
+    return operatingMode;
+}
+
+function formatHomeCardBadge(cls) {
+    return 'CLASS101+';
+}
+
+function updateHomeBookmarkButton(button, classId, bookmarked, count) {
+    if (!button) return;
+    const nextCount = Number(count || 0);
+    button.dataset.classId = String(classId || '');
+    button.dataset.bookmarked = bookmarked ? '1' : '0';
+    button.dataset.likeCount = String(nextCount);
+    button.setAttribute('aria-pressed', bookmarked ? 'true' : 'false');
+    button.setAttribute('aria-label', bookmarked ? '찜 취소' : '찜하기');
+    button.innerHTML = svgIcon(bookmarked ? 'heart-filled' : 'heart');
+    button.classList.toggle('is-bookmarked', !!bookmarked);
+}
+
+function syncHomeBookmarkUi(classId, bookmarked, count) {
+    const id = String(classId || '').trim();
+    if (!id) return;
+    const nextCount = Number(count || 0);
+    homeBookmarkMap.set(id, { bookmarked: !!bookmarked, count: nextCount });
+    document.querySelectorAll(`.class-card[data-class-id="${escapeCss(id)}"]`).forEach((card) => {
+        card.querySelectorAll('[data-action="bookmark-class"]').forEach((button) => {
+            updateHomeBookmarkButton(button, id, bookmarked, nextCount);
+        });
+    });
+}
+
+async function toggleHomeBookmark(classId, button) {
+    const id = String(classId || '').trim();
+    if (!id || !window.BSQ?.api) return;
+    if (button?.dataset.pending === '1') return;
+
+    const previous = homeBookmarkMap.get(id) || {
+        bookmarked: button?.dataset.bookmarked === '1',
+        count: Number(button?.dataset.likeCount || 0),
+    };
+
+    if (button) {
+        button.dataset.pending = '1';
+        button.disabled = true;
+    }
+
+    try {
+        const res = await window.BSQ.api('/api/class-bookmarks', 'POST', { class_id: id });
+        if (!res?.success) {
+            throw new Error(res?.error || '찜 상태를 변경하지 못했습니다.');
+        }
+        syncHomeBookmarkUi(id, !!res.data?.bookmarked, Number(res.data?.count || 0));
+    } catch (error) {
+        syncHomeBookmarkUi(id, previous.bookmarked, previous.count);
+        console.error('[home] bookmark toggle failed:', error);
+    } finally {
+        if (button) {
+            button.dataset.pending = '0';
+            button.disabled = false;
+        }
+    }
 }
 
 async function renderHomeCategoryMenu(currentCategory = 'all') {
@@ -656,43 +751,37 @@ function renderClassCards(classes, container) {
         const title = escapeHtml(cls.title || '제목 없음');
         const category = escapeHtml(cls.category || '미분류');
         const instructor = escapeHtml(cls.instructor_name || cls.creator_name || '작성자 정보 없음');
-        const summary = getClassSummary(cls);
-        const price = Number(cls.price || 0);
-        const discountRate = Number(cls.discount_rate || 0);
-        const currentPrice = discountRate > 0 ? Math.max(Math.round(price * (1 - discountRate / 100)), 0) : price;
         const avgRating = cls.avg_rating ? Number(cls.avg_rating).toFixed(1) : '0.0';
         const reviewCount = Number(cls.review_count || 0);
         const likeCount = Number(cls.like_count || cls.bookmark_count || 0);
-        const students = Number(cls.current_participants || cls.total_enrollments || 0);
+        const badgeLabel = escapeHtml(formatHomeCardBadge(cls));
+        const modeLabel = escapeHtml(formatHomeCardMode(cls));
+        const cachedBookmark = homeBookmarkMap.get(String(cls.id || '').trim());
+        const bookmarked = !!cachedBookmark?.bookmarked;
+        const nextLikeCount = Number(cachedBookmark?.count ?? likeCount);
         return `
         <article class="class-card class-card-home card-animate" style="animation-delay:${index * 0.05}s">
             <a class="class-card-link" href="${href}" aria-label="${title} 상세 보기">
                 <div class="card-thumbnail">
                     <img src="${escapeHtml(cls.thumbnail || cls.image_url || '/assets/default-cover.svg')}" alt="${title}" loading="lazy">
-                    <div class="card-badges">
-                        ${cls.coupon_pack ? '<span class="badge-coupon">쿠폰 가능</span>' : ''}
-                        ${discountRate > 0 ? `<span class="badge-discount">${discountRate}% 할인</span>` : ''}
+                    <div class="card-badges" aria-hidden="true">
+                        <span class="card-badge">${badgeLabel}</span>
                     </div>
                 </div>
                 <div class="card-info">
-                    <div class="card-topline">
-                        <span class="category">${category}</span>
-                        <span class="card-chip">${instructor}</span>
-                    </div>
                     <h4 class="title">${title}</h4>
-                    ${summary ? `<p class="card-summary">${escapeHtml(summary)}</p>` : ''}
+                    <div class="card-topline">
+                        <span class="card-author">${instructor}</span>
+                        ${modeLabel ? '<span class="card-divider" aria-hidden="true">|</span>' : ''}
+                        ${modeLabel ? `<span class="card-mode">${modeLabel}</span>` : ''}
+                    </div>
                     <div class="meta">
                         <span class="rating">★ ${avgRating} (${reviewCount})</span>
-                        <span class="likes">찜 ${likeCount}</span>
-                        <span class="students">👥 ${students}</span>
-                    </div>
-                    <div class="price-info">
-                        ${discountRate > 0 ? `<span class="original-price">${price.toLocaleString()}원</span>` : ''}
-                        <span class="price">${currentPrice === 0 ? '무료' : `${currentPrice.toLocaleString()}원`}</span>
+                        <span class="meta-category">${category}</span>
                     </div>
                 </div>
             </a>
-            <button type="button" class="btn-bookmark" aria-label="찜하기" onclick="event.preventDefault(); event.stopPropagation();">${svgIcon('bookmark')}</button>
+            <button type="button" class="btn-bookmark${bookmarked ? ' is-bookmarked' : ''}" data-action="bookmark-class" data-class-id="${escapeHtml(String(cls.id || ''))}" data-bookmarked="${bookmarked ? '1' : '0'}" data-like-count="${nextLikeCount}" aria-pressed="${bookmarked ? 'true' : 'false'}" aria-label="${bookmarked ? '찜 취소' : '찜하기'}">${svgIcon(bookmarked ? 'heart-filled' : 'heart')}</button>
         </article>
     `;
     }).join('');
