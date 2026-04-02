@@ -421,9 +421,12 @@ async function fetchJsonResponse(url, options = {}) {
   }
 
   if (!response.ok) {
+    const errorCode = payload?.error_code ? `[${payload.error_code}] ` : '';
+    const errorDetail = payload?.error_description || payload?.error || payload?.message || response.statusText || 'Provider request failed';
     throw new OAuthError(
       'provider_fetch_failed',
-      payload?.error_description || payload?.error || payload?.message || response.statusText || 'Provider request failed',
+      `${errorCode}${errorDetail}`,
+      payload,
     );
   }
 

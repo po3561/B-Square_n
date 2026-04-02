@@ -656,6 +656,7 @@
     const queryError = readQueryError();
 
     if (queryError) {
+      console.warn('[BSQ SocialAuth] Social login error detected from query params:', queryError);
       const message = mapErrorMessage(queryError, context);
       const state = queryError.code === 'signup_required' ? 'info' : (queryError.code === 'account_not_found' ? 'warning' : 'error');
       setBanner(message, state);
