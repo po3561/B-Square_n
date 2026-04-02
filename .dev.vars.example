@@ -18,3 +18,10 @@ NAVER_REDIRECT_URI=https://b-square-web.pages.dev/auth/naver/callback
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=https://b-square-web.pages.dev/auth/google/callback
+
+# Optional: password reset email delivery
+MAIL_FROM=
+MAIL_REPLY_TO=
+
+# Optional: include reset URL in responses only for local/dev
+DEBUG_RESET_URL=false
