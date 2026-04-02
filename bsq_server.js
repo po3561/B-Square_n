@@ -233,7 +233,7 @@
         if (_siteSettingsPromise) return _siteSettingsPromise;
 
         // Fetch once and share the result across header / shell / SEO updates.
-        _siteSettingsPromise = apiCall('/api/site-settings', { cacheBust: false })
+        _siteSettingsPromise = apiCall('/api/site-settings')
             .then((result) => {
                 const settings = result?.success ? (result.data || null) : null;
                 window.__BSQ_SITE_SETTINGS__ = settings || null;
@@ -245,6 +245,12 @@
             });
 
         return _siteSettingsPromise;
+    }
+
+    function refreshSiteSettingsCache() {
+        _siteSettingsPromise = null;
+        window.__BSQ_SITE_SETTINGS__ = null;
+        return ensureSiteSettingsPromise();
     }
 
     function emitSessionEvent(reason = 'update') {
@@ -621,6 +627,7 @@
         try {
             const settings = window.__BSQ_SITE_SETTINGS__ || await ensureSiteSettingsPromise();
             if (!settings) return;
+            const theme = String(document.documentElement?.dataset?.theme || document.body?.dataset?.theme || 'dark').toLowerCase();
 
             // Title
             if (settings.site_name) {
@@ -633,14 +640,18 @@
             }
 
             // Favicon
-            if (settings.favicon_url) {
+            const faviconUrl = theme === 'light'
+                ? settings.favicon_light_url || settings.favicon_url || settings.favicon_dark_url
+                : settings.favicon_dark_url || settings.favicon_url || settings.favicon_light_url;
+
+            if (faviconUrl) {
                 let link = document.querySelector("link[rel~='icon']");
                 if (!link) {
                     link = document.createElement('link');
                     link.rel = 'icon';
                     document.getElementsByTagName('head')[0].appendChild(link);
                 }
-                link.href = settings.favicon_url;
+                link.href = faviconUrl;
             }
 
             // Footer
@@ -726,6 +737,17 @@
         window.dispatchEvent(new CustomEvent('bsq_sync', { detail: { type, timestamp: Date.now() } }));
     }
 
+    window.addEventListener('bsq_preferences', () => {
+        void applySiteSettings();
+    });
+
+    window.addEventListener('bsq_sync', (event) => {
+        const type = String(event?.detail?.type || '');
+        if (type === 'site-settings') {
+            void refreshSiteSettingsCache().then(() => applySiteSettings());
+        }
+    });
+
     // ---- 공개 API ----
     seedSessionFromStorage();
     applyPreferences();
@@ -736,7 +758,9 @@
     window.BSQ = {
         ready: readyPromise,
         apiBaseUrl: PUBLIC_API_BASE,
-        siteSettingsReady: ensureSiteSettingsPromise(),
+        get siteSettingsReady() {
+            return ensureSiteSettingsPromise();
+        },
 
         get session() {
             return _session;

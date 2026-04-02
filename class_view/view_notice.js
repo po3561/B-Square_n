@@ -1,6 +1,6 @@
 ﻿window.BSquareModules = window.BSquareModules || {};
 
-window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, isInstructor, authorContext = {}) {
+window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, isInstructor, authorContext = {}, options = {}) {
     const listContainer = document.getElementById('classNoticeList');
     const btnCreate = document.getElementById('btnCreateClassNotice');
     const viewerModal = document.getElementById('classNoticeViewerModal');
@@ -35,6 +35,7 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
     let notices = [];
     let currentNotice = null;
     let quill = null;
+    let pendingNoticeId = String(options?.noticeId || '').trim();
 
     function escapeHtml(value = '') {
         return String(value)
@@ -139,6 +140,14 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
         if (!item || !viewerModal) return;
 
         currentNotice = item;
+        const targetId = String(item.id || item.push_key || '').trim();
+        if (targetId) {
+            const nextUrl = new URL(window.location.href);
+            nextUrl.searchParams.set('tab', 'notice');
+            nextUrl.searchParams.set('notice', targetId);
+            nextUrl.searchParams.delete('faq');
+            window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+        }
         cvTitle.textContent = item.title || '공지사항';
         cvAuthor.textContent = `작성자: ${getRoleLabel(item)} ${item.author_name || '강사'}`;
         cvDate.textContent = `등록일: ${formatDate(item.created_at)}`;
@@ -147,6 +156,16 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
 
         setViewerExtrasVisible(false);
         viewerModal.style.display = 'flex';
+    }
+
+    function openNoticeById(noticeId) {
+        const targetId = String(noticeId || '').trim();
+        if (!targetId) return false;
+        const notice = notices.find((entry) => String(entry.id || entry.push_key || '') === targetId);
+        if (!notice) return false;
+        pendingNoticeId = '';
+        openViewer(notice);
+        return true;
     }
 
     function closeViewer() {
@@ -158,7 +177,7 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
         if (!classId || !listContainer) return;
 
         try {
-            const res = await window.BSQ.api(`/api/class-notices?class_id=${encodeURIComponent(classId)}`, { cacheBust: false });
+            const res = await window.BSQ.api(`/api/class-notices?class_id=${encodeURIComponent(classId)}`);
             notices = res?.success && Array.isArray(res.data) ? res.data : [];
             renderNoticeList();
         } catch (error) {
@@ -223,6 +242,14 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
                 if (notice) openViewer(notice);
             });
         });
+
+        if (pendingNoticeId) {
+            const targetNoticeId = pendingNoticeId;
+            pendingNoticeId = '';
+            window.setTimeout(() => {
+                openNoticeById(targetNoticeId);
+            }, 0);
+        }
     }
 
     async function saveNotice() {

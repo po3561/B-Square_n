@@ -1,5 +1,6 @@
 ﻿import { isAtLeastRole, requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
+import { ensureUserChatsSchema } from './_lib/schema.js';
 
 function trimText(value) {
   return String(value ?? '').trim();
@@ -46,6 +47,7 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
+  await ensureUserChatsSchema(env.DB);
 
   const url = new URL(request.url);
   const targetUserId = trimText(url.searchParams.get('user_id') || auth.user.id);
@@ -87,6 +89,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
+  await ensureUserChatsSchema(env.DB);
 
   try {
     const body = await request.json();
@@ -207,6 +210,7 @@ export async function onRequestDelete(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
+  await ensureUserChatsSchema(env.DB);
 
   const url = new URL(request.url);
   const targetUserId = trimText(url.searchParams.get('user_id') || auth.user.id);

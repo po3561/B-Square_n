@@ -7,6 +7,7 @@ let userProfile = null;
 let classData = null;
 let isEnrolled = false;
 let isInstructor = false;
+let hasAccess = false;
 
 // 패스(수강권) 관련 전역 변수
 let selectedPassType = null;
@@ -23,6 +24,80 @@ function safeParseArray(value, fallback = []) {
     } catch {
         return fallback;
     }
+}
+
+function normalizeRole(value) {
+    const v = String(value || '').trim().toLowerCase();
+    if (!v) return 'user';
+    if (['super-admin', 'superadmin', 'root', 'owner'].includes(v)) return 'super_admin';
+    if (['teacher', 'lecturer'].includes(v)) return 'instructor';
+    if (['operator_admin', 'manager', 'ops'].includes(v)) return 'operator';
+    return v;
+}
+
+function extractSubInstructorIds(rawValue) {
+    const parsed = safeParseArray(rawValue, []);
+    if (!Array.isArray(parsed) || parsed.length === 0) return [];
+    return parsed
+        .map((item) => {
+            if (!item) return '';
+            if (typeof item === 'string') return item.trim();
+            if (typeof item === 'object') return String(item.id || item.user_id || item.userId || '').trim();
+            return '';
+        })
+        .filter(Boolean);
+}
+
+function computeAccessState() {
+    const sessionUser = window.BSQ?.session?.user || null;
+    const currentUserId = String(userId || sessionUser?.id || '').trim();
+    const role = normalizeRole(userProfile?.role || sessionUser?.role || '');
+    const creatorId = String(classData?.creator_id || classData?.instructor_id || classData?.owner_id || '').trim();
+    const subInstructorIds = extractSubInstructorIds(classData?.sub_instructors);
+
+    const isOps = ['operator', 'admin', 'super_admin'].includes(role);
+    const isStaff = !!currentUserId && (
+        (creatorId && creatorId === currentUserId) ||
+        subInstructorIds.includes(currentUserId)
+    );
+
+    isInstructor = !!(window.__BSQ_DEV_MODE__ || isOps || isStaff);
+    hasAccess = !!(window.__BSQ_DEV_MODE__ || (currentUserId && (isEnrolled || isInstructor)));
+
+    const editTabBtn = document.getElementById('tabEditBtn');
+    if (editTabBtn) {
+        editTabBtn.style.display = isInstructor ? '' : 'none';
+    }
+
+    // Mirror the global theme on the chat wrapper so view_chat.css theme rules apply.
+    const chatWrapper = document.getElementById('tabChat');
+    if (chatWrapper) {
+        const theme = document.documentElement.getAttribute('data-theme')
+            || document.body.getAttribute('data-theme')
+            || localStorage.getItem('bsq_theme')
+            || 'dark';
+        chatWrapper.setAttribute('data-theme', theme);
+
+        const btnThemeToggle = document.getElementById('btnThemeToggle');
+        if (btnThemeToggle && !btnThemeToggle.dataset.bsqThemeMirror) {
+            btnThemeToggle.dataset.bsqThemeMirror = '1';
+            btnThemeToggle.addEventListener('click', () => {
+                // simple_class_chat.js toggles body[data-theme]; mirror it onto the wrapper for CSS scoping.
+                window.setTimeout(() => {
+                    const nextTheme = document.body.getAttribute('data-theme')
+                        || document.documentElement.getAttribute('data-theme')
+                        || 'dark';
+                    chatWrapper.setAttribute('data-theme', nextTheme);
+                }, 0);
+            });
+        }
+    }
+
+    if (window.SimpleClassChat?.init) {
+        window.SimpleClassChat.init(null, classId, currentUserId || null, hasAccess, isInstructor);
+    }
+
+    updateEnrollmentUI();
 }
 
 function formatMoney(value, fallback = '0원') {
@@ -68,10 +143,10 @@ function getOfferSummary(data) {
 
 function getClassImageUrl(data) {
     if (!data) return '';
-    if (data.thumbnail_url) return data.thumbnail_url;
-    if (data.thumbnail) return data.thumbnail;
     if (data.image_url) return data.image_url;
     if (Array.isArray(data.image_urls) && data.image_urls.length > 0) return data.image_urls[0];
+    if (data.thumbnail_url) return data.thumbnail_url;
+    if (data.thumbnail) return data.thumbnail;
     return '';
 }
 
@@ -171,12 +246,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            if (window.__BSQ_DEV_MODE__) { isEnrolled = true; isInstructor = true; }
-            updateEnrollmentUI();
+            if (window.__BSQ_DEV_MODE__) { isEnrolled = true; }
+            computeAccessState();
 
             if (window.BSquareModules) {
                 if (window.BSquareModules.initIntro) window.BSquareModules.initIntro(classData);
                 if (window.BSquareModules.initCurriculum) window.BSquareModules.initCurriculum(classData);
+                if (window.BSquareModules.initNotice) {
+                    window.BSquareModules.initNotice(
+                        classData,
+                        classId,
+                        userId,
+                        null,
+                        hasAccess,
+                        isInstructor,
+                        getNoticeAuthorContext(),
+                        { noticeId: urlParams.get('notice') || '' },
+                    );
+                }
             }
         }
     } catch (err) { console.error(err); }
@@ -219,32 +306,150 @@ function renderCorePageInfo(data) {
     document.getElementById('heroPriceSummarySide').textContent = getPriceSummary(data, price);
     document.getElementById('heroOfferSummarySide').textContent = getOfferSummary(data);
 
-    const images = data.image_urls?.length > 0 ? data.image_urls : [getClassImageUrl(data)];
-    const slider = document.getElementById('imageSlider');
-    if (slider && images.length > 0) {
-        slider.innerHTML = images.map((src, i) => `<div class="slider-item" style="${i === 0 ? '' : 'display:none;'}"><img src="${src}"></div>`).join('');
-        let cur = 0;
-        const items = slider.querySelectorAll('.slider-item');
-        const goTo = (idx) => { items[cur].style.display = 'none'; cur = idx; items[cur].style.display = 'block'; };
-        setInterval(() => goTo((cur + 1) % items.length), 5000);
-    }
+    const images = Array.from(new Set([
+        ...safeParseArray(data.image_urls, []).map((item) => {
+            if (!item) return '';
+            if (typeof item === 'string') return item.trim();
+            if (typeof item === 'object') return String(item.url || item.src || item.image || item.image_url || '').trim();
+            return '';
+        }),
+        String(data.image_url || data.thumbnail_url || data.thumbnail || '').trim(),
+        getClassImageUrl(data),
+    ].filter(Boolean)));
+    initHeroSlider(images);
 }
 
-function updateEnrollmentUI() {
-    const btn = document.getElementById('btnEnroll');
-    if (btn) {
-        if (isEnrolled && !window.__BSQ_DEV_MODE__) {
-            btn.textContent = "✓ 수강 중인 클래스"; btn.disabled = true;
-        } else {
-            btn.textContent = "지금 바로 시작하기"; btn.disabled = false;
-        }
+function initHeroSlider(imageUrls = []) {
+    const slider = document.getElementById('imageSlider');
+    const stage = slider?.closest('.slider-section') || null;
+    if (!slider || !stage) return;
+
+    const urls = Array.isArray(imageUrls) ? imageUrls.filter(Boolean) : [];
+    if (urls.length === 0) return;
+
+    if (window.__BSQ_CLASS_HERO_CAROUSEL__?.timer) {
+        clearInterval(window.__BSQ_CLASS_HERO_CAROUSEL__.timer);
     }
-    const pc = document.getElementById('myPassCountVal');
-    if (pc) pc.textContent = `${userPassCount}개`;
+
+    const prevBtn = stage.querySelector('.slider-btn.prev');
+    const nextBtn = stage.querySelector('.slider-btn.next');
+    const counterEl = stage.querySelector('.slider-counter');
+
+    slider.innerHTML = urls.map((src, idx) => {
+        const loading = idx === 0 ? 'eager' : 'lazy';
+        const fetchpriority = idx === 0 ? 'high' : 'auto';
+        return `
+            <div class="slider-item" data-slide-index="${idx}" data-pos="hidden" aria-hidden="true">
+                <img src="${src}" alt="" loading="${loading}" decoding="async" fetchpriority="${fetchpriority}">
+            </div>
+        `;
+    }).join('');
+
+    const items = Array.from(slider.querySelectorAll('.slider-item'));
+    const total = items.length;
+    if (total === 0) return;
+
+    let index = 0;
+    let hoverPaused = false;
+
+    const reduceMotion = typeof window.matchMedia === 'function'
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function setCounter() {
+        if (counterEl) counterEl.textContent = `${index + 1} / ${total}`;
+    }
+
+    function applyPositions() {
+        const prevIndex = (index - 1 + total) % total;
+        const nextIndex = (index + 1) % total;
+
+        items.forEach((item) => {
+            item.dataset.pos = 'hidden';
+            item.setAttribute('aria-hidden', 'true');
+        });
+
+        const center = items[index];
+        if (center) {
+            center.dataset.pos = 'center';
+            center.setAttribute('aria-hidden', 'false');
+        }
+
+        if (total > 1) {
+            const left = items[prevIndex];
+            const right = items[nextIndex];
+            if (left && left !== center) left.dataset.pos = 'left';
+            if (right && right !== center) right.dataset.pos = 'right';
+        }
+
+        setCounter();
+    }
+
+    function goTo(next) {
+        index = ((next % total) + total) % total;
+        applyPositions();
+    }
+
+    function step(dir) {
+        goTo(index + dir);
+    }
+
+    prevBtn?.addEventListener('click', () => step(-1));
+    nextBtn?.addEventListener('click', () => step(1));
+
+    slider.addEventListener('click', (event) => {
+        const item = event.target.closest('.slider-item');
+        if (!item) return;
+        const pos = item.dataset.pos;
+        if (pos === 'left') step(-1);
+        if (pos === 'right') step(1);
+    });
+
+    stage.addEventListener('pointerenter', () => { hoverPaused = true; });
+    stage.addEventListener('pointerleave', () => { hoverPaused = false; });
+
+    let timer = null;
+    if (total > 1 && !reduceMotion) {
+        timer = setInterval(() => {
+            if (document.hidden) return;
+            if (hoverPaused) return;
+            step(1);
+        }, 5000);
+    }
+
+    window.__BSQ_CLASS_HERO_CAROUSEL__ = { timer };
+    if (prevBtn) prevBtn.hidden = total <= 1;
+    if (nextBtn) nextBtn.hidden = total <= 1;
+    if (counterEl) counterEl.hidden = total <= 1;
+    goTo(0);
 }
+
+		function updateEnrollmentUI() {
+	    const btn = document.getElementById('btnEnroll');
+	    if (btn) {
+	        if (!userId && !window.__BSQ_DEV_MODE__) {
+	            btn.textContent = '로그인 후 시작하기';
+	            btn.disabled = false;
+	        } else if (isInstructor && !window.__BSQ_DEV_MODE__) {
+	            btn.textContent = '강사/운영자 계정';
+	            btn.disabled = true;
+	        } else if (isEnrolled && !window.__BSQ_DEV_MODE__) {
+	            btn.textContent = '✓ 수강 중인 클래스';
+	            btn.disabled = true;
+	        } else {
+	            btn.textContent = '지금 바로 시작하기';
+	            btn.disabled = false;
+	        }
+	    }
+	    const pc = document.getElementById('myPassCountVal');
+	    if (pc) pc.textContent = `${userPassCount}개`;
+	}
 
 function openPaymentBottomSheet() {
     if (!userId) { location.href = '../login/login.html'; return; }
+    if (isInstructor && !window.__BSQ_DEV_MODE__) {
+        showToast('info', '강사 계정', '본인(관리) 클래스는 결제 없이 이용할 수 있습니다.');
+        return;
+    }
     document.getElementById('paymentBottomSheet').style.display = 'flex';
 }
 function closePaymentBottomSheet() { document.getElementById('paymentBottomSheet').style.display = 'none'; }
@@ -252,3 +457,100 @@ function closePaymentBottomSheet() { document.getElementById('paymentBottomSheet
 async function saveCurrentClassToCart() {
     showToast('success', '장바구니에 담았습니다', '마이페이지에서 확인할 수 있습니다.');
 }
+function updateEnrollmentUI() {
+    const btn = document.getElementById('btnEnroll');
+    const isFreeClass = Number(classData?.price || 0) <= 0;
+
+    if (btn) {
+        if (!userId && !window.__BSQ_DEV_MODE__) {
+            btn.textContent = isFreeClass ? '로그인 후 수강하기' : '로그인 후 구매하기';
+            btn.disabled = false;
+        } else if (isInstructor && !window.__BSQ_DEV_MODE__) {
+            btn.textContent = '강사/운영자 계정';
+            btn.disabled = true;
+        } else if (isEnrolled && !window.__BSQ_DEV_MODE__) {
+            btn.textContent = '수강 중인 클래스';
+            btn.disabled = true;
+        } else {
+            btn.textContent = isFreeClass ? '수강하기' : '구매하기';
+            btn.disabled = false;
+        }
+    }
+
+    const pc = document.getElementById('myPassCountVal');
+    if (pc) pc.textContent = `${userPassCount}개`;
+}
+function openFreeEnrollModal() {
+    const modal = document.getElementById('freeEnrollModal');
+    if (modal) modal.classList.add('active');
+}
+
+function closeFreeEnrollModal() {
+    const modal = document.getElementById('freeEnrollModal');
+    if (modal) modal.classList.remove('active');
+}
+
+async function confirmFreeEnrollment() {
+    if (!userId) {
+        location.href = '../login/login.html';
+        return;
+    }
+
+    if (isInstructor && !window.__BSQ_DEV_MODE__) {
+        showToast('info', '강사 계정', '강사 계정은 수강 신청을 할 수 없습니다.');
+        closeFreeEnrollModal();
+        return;
+    }
+
+    try {
+        setButtonLoading(true);
+        const res = await window.BSQ.api('/api/enrollments', {
+            method: 'POST',
+            body: JSON.stringify({
+                class_id: classId,
+                pay_option: 'onetime',
+                pay_method: 'free',
+                payment_method: 'free',
+                card_name: '무료수강',
+                base_amount: 0,
+                class_discount_amount: 0,
+                coupon_discount_amount: 0,
+                final_amount: 0,
+            }),
+        });
+
+        if (res?.success) {
+            closeFreeEnrollModal();
+            isEnrolled = true;
+            computeAccessState();
+            showToast('success', '수강 완료', '무료 클래스 수강이 완료되었습니다.');
+            setTimeout(() => window.location.reload(), 700);
+            return;
+        }
+
+        throw new Error(res?.error || '무료 수강 처리에 실패했습니다.');
+    } catch (error) {
+        showToast('error', '무료 수강 실패', error.message || '처리 중 오류가 발생했습니다.');
+    } finally {
+        setButtonLoading(false);
+    }
+}
+
+function openPaymentBottomSheet() {
+    const isFreeClass = Number(classData?.price || 0) <= 0;
+    if (!userId) { location.href = '../login/login.html'; return; }
+    if (isInstructor && !window.__BSQ_DEV_MODE__) {
+        showToast('info', '강사 계정', '본인(관리) 클래스는 결제 없이 이용할 수 있습니다.');
+        return;
+    }
+    if (isFreeClass) {
+        openFreeEnrollModal();
+        return;
+    }
+    document.getElementById('paymentBottomSheet').style.display = 'flex';
+}
+
+function closePaymentBottomSheet() { document.getElementById('paymentBottomSheet').style.display = 'none'; }
+
+document.getElementById('btnFreeCancel')?.addEventListener('click', closeFreeEnrollModal);
+document.getElementById('btnFreeConfirm')?.addEventListener('click', confirmFreeEnrollment);

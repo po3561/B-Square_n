@@ -4,6 +4,8 @@ window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAcc
     console.log("💬 Chat Module Initializing... | Access:", hasAccess, "| Instructor:", isInstructor);
 
     if (window.__BSQ_DEV_MODE__) hasAccess = true;
+    // Treat instructors/admins as access-holders even if the caller only checked enrollment.
+    hasAccess = !!hasAccess || !!isInstructor;
 
     const lockedOverlay = document.getElementById('chatLockedOverlay');
     const unlockedArea = document.getElementById('chatUnlocked');

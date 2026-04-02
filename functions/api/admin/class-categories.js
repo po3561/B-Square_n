@@ -12,6 +12,10 @@ function normalizeEmoji(value, fallbackName = '') {
   return text || defaultCategoryEmoji(fallbackName);
 }
 
+function normalizeImageUrl(value) {
+  return String(value ?? '').trim();
+}
+
 async function propagateCategoryRename(db, fromName, toName) {
   if (!fromName || !toName || fromName === toName) return;
   await db.prepare('UPDATE classes SET category = ? WHERE category = ?').bind(toName, fromName).run();
@@ -31,6 +35,7 @@ async function fetchAllCategories(db) {
   return rows.map((row) => ({
     name: row.name,
     emoji: row.emoji || '✨',
+    image_url: row.image_url || '',
     sort_order: Number(row.sort_order || 0),
     is_active: Number(row.is_active ?? 1) === 1,
     class_count: Number(row.class_count || 0),
@@ -69,25 +74,27 @@ export async function onRequest(context) {
       }
 
       const emoji = normalizeEmoji(body.emoji, name);
+      const imageUrl = normalizeImageUrl(body.image_url);
       const sortOrder = toNumber(body.sort_order, 0);
       const isActive = body.is_active === undefined ? 1 : (body.is_active ? 1 : 0);
 
       const existed = await db.prepare('SELECT name FROM class_categories WHERE name = ?').bind(name).first();
 
       await db.prepare(`
-        INSERT INTO class_categories (name, emoji, sort_order, is_active, created_at, updated_at)
-        VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+        INSERT INTO class_categories (name, emoji, image_url, sort_order, is_active, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
         ON CONFLICT(name) DO UPDATE SET
           emoji = excluded.emoji,
+          image_url = excluded.image_url,
           sort_order = excluded.sort_order,
           is_active = excluded.is_active,
           updated_at = datetime('now')
-      `).bind(name, emoji, sortOrder, isActive).run();
+      `).bind(name, emoji, imageUrl, sortOrder, isActive).run();
 
       return json(request, env, {
         success: true,
         message: existed ? '카테고리가 수정되었습니다.' : '카테고리가 추가되었습니다.',
-        data: { name, emoji, sort_order: sortOrder, is_active: !!isActive },
+        data: { name, emoji, image_url: imageUrl, sort_order: sortOrder, is_active: !!isActive },
       });
     }
 
@@ -99,29 +106,35 @@ export async function onRequest(context) {
       }
 
       const emoji = normalizeEmoji(body.emoji, nextName);
+      const imageUrl = normalizeImageUrl(body.image_url);
       const sortOrder = toNumber(body.sort_order, 0);
       const isActive = body.is_active === undefined ? 1 : (body.is_active ? 1 : 0);
 
-      if (originalName !== nextName) {
-        await db.prepare('DELETE FROM class_categories WHERE name = ?').bind(originalName).run();
-      }
+      const updateResult = await db.prepare(`
+        UPDATE class_categories
+        SET name = ?, emoji = ?, image_url = ?, sort_order = ?, is_active = ?, updated_at = datetime('now')
+        WHERE name = ?
+      `).bind(nextName, emoji, imageUrl, sortOrder, isActive, originalName).run();
 
-      await db.prepare(`
-        INSERT INTO class_categories (name, emoji, sort_order, is_active, created_at, updated_at)
-        VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
-        ON CONFLICT(name) DO UPDATE SET
-          emoji = excluded.emoji,
-          sort_order = excluded.sort_order,
-          is_active = excluded.is_active,
-          updated_at = datetime('now')
-      `).bind(nextName, emoji, sortOrder, isActive).run();
+      if (Number(updateResult?.meta?.changes || 0) === 0) {
+        await db.prepare(`
+          INSERT INTO class_categories (name, emoji, image_url, sort_order, is_active, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+          ON CONFLICT(name) DO UPDATE SET
+            emoji = excluded.emoji,
+            image_url = excluded.image_url,
+            sort_order = excluded.sort_order,
+            is_active = excluded.is_active,
+            updated_at = datetime('now')
+        `).bind(nextName, emoji, imageUrl, sortOrder, isActive).run();
+      }
 
       await propagateCategoryRename(db, originalName, nextName);
 
       return json(request, env, {
         success: true,
         message: '카테고리가 수정되었습니다.',
-        data: { name: nextName, emoji, sort_order: sortOrder, is_active: !!isActive },
+        data: { name: nextName, emoji, image_url: imageUrl, sort_order: sortOrder, is_active: !!isActive },
       });
     }
 
@@ -132,7 +145,12 @@ export async function onRequest(context) {
       }
 
       await propagateCategoryDelete(db, name);
-      await db.prepare('DELETE FROM class_categories WHERE name = ?').bind(name).run();
+      await db.prepare(`
+        UPDATE class_categories
+        SET is_active = 0,
+            updated_at = datetime('now')
+        WHERE name = ?
+      `).bind(name).run();
 
       return json(request, env, {
         success: true,

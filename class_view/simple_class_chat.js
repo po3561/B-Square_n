@@ -24,6 +24,24 @@
     function escapeHtml(v) { const d = document.createElement('div'); d.textContent = String(v ?? ''); return d.innerHTML; }
     function escapeAttr(v) { return escapeHtml(v).replace(/"/g, '&quot;'); }
     function parseJson(v, fallback) { try { return typeof v === 'string' ? JSON.parse(v) : (v || fallback); } catch { return fallback; } }
+    function getPreferredChatTheme() {
+        return document.querySelector('.chat-tab-wrapper')?.getAttribute('data-theme')
+            || document.documentElement.getAttribute('data-theme')
+            || document.body.getAttribute('data-theme')
+            || localStorage.getItem('bsq_theme_class')
+            || localStorage.getItem('bsq_theme')
+            || 'dark';
+    }
+    function applyChatTheme(theme) {
+        const next = theme === 'light' ? 'light' : 'dark';
+        const wrapper = q('tabChat') || document.querySelector('.chat-tab-wrapper');
+        if (wrapper) wrapper.setAttribute('data-theme', next);
+        document.documentElement.setAttribute('data-theme', next);
+        document.body.setAttribute('data-theme', next);
+        const icon = q('themeIcon');
+        if (icon) icon.className = next === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+        return next;
+    }
     function notify(type, title, message) {
         if (typeof window.BSQClassViewToast === 'function') {
             window.BSQClassViewToast(type, title, message);
@@ -830,9 +848,7 @@
         });
 
         q('btnThemeToggle')?.addEventListener('click', () => {
-            const body = document.body;
-            const next = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            body.setAttribute('data-theme', next);
+            const next = applyChatTheme(getPreferredChatTheme() === 'dark' ? 'light' : 'dark');
             localStorage.setItem('bsq_theme_class', next);
         });
     }
@@ -852,6 +868,7 @@
         state.userProfile = window.BSQ?.session?.user || { name: 'User', profile_image_url: '' };
         state.isInstructor = !!isInstructor;
         state.hasAccess = !!hasAccess;
+        applyChatTheme(getPreferredChatTheme());
 
         const unlocked = q('chatUnlocked');
         const locked = q('chatLockedOverlay');

@@ -727,6 +727,41 @@
       </div>
     `;
 
+    const consentTriState = (value) => {
+      if (value === null || value === undefined || value === '') return null;
+      if (typeof value === 'boolean') return value;
+      if (typeof value === 'number') return value === 1;
+      const raw = String(value).trim().toLowerCase();
+      if (!raw) return null;
+      if (['1', 'true', 'yes', 'on'].includes(raw)) return true;
+      if (['0', 'false', 'no', 'off'].includes(raw)) return false;
+      return null;
+    };
+
+    const consentBadge = (tri) => {
+      if (tri === null) return '<span class="admin-badge muted">미설정</span>';
+      return tri ? '<span class="admin-badge success">동의</span>' : '<span class="admin-badge danger">거부</span>';
+    };
+
+    const smsConsent = consentTriState(
+      user.marketing_sms_consent ?? user.marketing_sms_opt_in ?? user.sms_marketing_consent ?? user.sms_consent
+    );
+    const emailConsent = consentTriState(
+      user.marketing_email_consent ?? user.marketing_email_opt_in ?? user.email_marketing_consent ?? user.email_consent
+    );
+    const consentUpdatedAt = user.marketing_consent_updated_at || user.marketing_consent_at || user.marketing_updated_at || null;
+
+    const marketingConsentInfo = `
+      <div style="display:grid; gap:0.65rem;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:0.75rem; font-size:0.9rem;">
+          <div><div style="color:#64748b; font-size:0.75rem;">문자(SMS)</div><div style="font-weight:600;">${consentBadge(smsConsent)}</div></div>
+          <div><div style="color:#64748b; font-size:0.75rem;">이메일</div><div style="font-weight:600;">${consentBadge(emailConsent)}</div></div>
+          <div><div style="color:#64748b; font-size:0.75rem;">최종 변경</div><div style="font-weight:600;">${escapeHtml(formatDate(consentUpdatedAt))}</div></div>
+        </div>
+        <div style="font-size:0.82rem; color:#64748b;">수신 동의/거부는 사용자 마이페이지에서 변경됩니다.</div>
+      </div>
+    `;
+
     const blacklistInfo = `
       <div style="display:grid; gap:0.75rem;">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap;">
@@ -823,6 +858,7 @@
         </section>
 
         ${sectionBlock('계정 상태', statusInfo)}
+        ${sectionBlock('광고 수신 동의', marketingConsentInfo)}
         ${sectionBlock('블랙리스트 정보', blacklistInfo)}
         ${sectionBlock('환불 내역', refundInfo)}
         ${sectionBlock('개설한 클래스', listWrap(instructorClasses, '개설한 클래스가 없습니다.', renderClassCard))}

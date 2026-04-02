@@ -101,6 +101,7 @@ async function loadMemberDetail(db, userId) {
       id, email, name, username, phone, profile_image_url, role, membership_level,
       birth_year, birth_month, birth_day, gender, nationality, sns_link,
       preferred_category, preferred_language, preferred_theme, mfa_active,
+      marketing_sms_consent, marketing_email_consent, marketing_consent_updated_at,
       operator_seq, role_updated_by, role_updated_at,
       is_blacklisted, blacklisted_at, blacklisted_by, blacklist_reason,
       referrer_code, created_at, updated_at
@@ -510,6 +511,25 @@ export async function onRequestPut(context) {
       }
       updates.push('mfa_active = ?');
       values.push(normalizeBoolean(body.mfa_active) ? 1 : 0);
+    }
+
+    const marketingTouched = body.marketing_sms_consent !== undefined || body.marketing_email_consent !== undefined;
+    if (marketingTouched) {
+      if (!canEditSelf && !canManageMembers) {
+        return json(request, env, { success: false, error: '수정 권한이 없습니다.' }, { status: 403 });
+      }
+
+      if (body.marketing_sms_consent !== undefined) {
+        updates.push('marketing_sms_consent = ?');
+        values.push(normalizeBoolean(body.marketing_sms_consent) ? 1 : 0);
+      }
+      if (body.marketing_email_consent !== undefined) {
+        updates.push('marketing_email_consent = ?');
+        values.push(normalizeBoolean(body.marketing_email_consent) ? 1 : 0);
+      }
+
+      updates.push('marketing_consent_updated_at = ?');
+      values.push(new Date().toISOString());
     }
 
     if (body.membership_level !== undefined) {

@@ -53,7 +53,7 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     async function loadCategories() {
         let categories = fallbackCategories;
         try {
-            const categoryRes = await window.BSQ.api('/api/class-categories', { cacheBust: false });
+            const categoryRes = await window.BSQ.api('/api/class-categories');
             if (categoryRes.success && Array.isArray(categoryRes.data) && categoryRes.data.length > 0) {
                 categories = categoryRes.data.map((item) => ({
                     name: String(item.name || '').trim(),

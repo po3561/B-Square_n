@@ -16,8 +16,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentUser = window.__BSQ_OPERATOR_PROFILE__ || { id: 'OPERATOR_GHOST', name: '운영자', email: 'operator@b-square.kr' };
     }
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialSearchQuery = String(urlParams.get('q') || '').trim();
+    const initialNoticeId = String(urlParams.get('id') || urlParams.get('notice') || '').trim();
+    const initialFaqId = String(urlParams.get('faq') || '').trim();
+
     // 전역 State
-    const state = { notices: [], classNotices: [], faqs: [], searchQuery: '' };
+    const state = { notices: [], classNotices: [], faqs: [], searchQuery: initialSearchQuery };
 
     function escapeHtml(value = '') {
         return String(value)
@@ -32,13 +37,64 @@ document.addEventListener('DOMContentLoaded', async () => {
     const noticeListEl = document.getElementById('noticeList');
     const faqListEl = document.getElementById('faqList');
     const searchInput = document.getElementById('noticeSearchIP');
+    const searchButton = document.getElementById('btnSearchNotice');
+
+    function syncSearchUrl() {
+        const nextUrl = new URL(window.location.href);
+        const query = String(state.searchQuery || '').trim();
+        if (query) nextUrl.searchParams.set('q', query);
+        else nextUrl.searchParams.delete('q');
+        nextUrl.searchParams.delete('id');
+        nextUrl.searchParams.delete('notice');
+        nextUrl.searchParams.delete('faq');
+        window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+    }
+
+    function applySearchQuery(value) {
+        state.searchQuery = String(value || '').trim();
+        if (searchInput && searchInput.value !== state.searchQuery) {
+            searchInput.value = state.searchQuery;
+        }
+        syncSearchUrl();
+        renderNotices();
+        renderClassNotices();
+        renderFaqs();
+    }
+
+    function findNoticeById(noticeId) {
+        const target = String(noticeId || '').trim();
+        if (!target) return null;
+        return state.notices.find((item) => String(item.id || item.push_key || '').trim() === target) || null;
+    }
+
+    function openFaqById(faqId) {
+        const target = String(faqId || '').trim();
+        if (!target || !faqListEl) return false;
+        const item = Array.from(faqListEl.querySelectorAll('.faq-item')).find((node) => String(node.dataset.id || '') === target);
+        if (!item) return false;
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.set('faq', target);
+        nextUrl.searchParams.delete('id');
+        nextUrl.searchParams.delete('notice');
+        window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+        document.querySelectorAll('.faq-item').forEach((node) => node.classList.remove('active'));
+        item.classList.add('active');
+        item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return true;
+    }
 
     // 초기 로드
     await Promise.all([loadNotices(), loadClassNotices(), loadFaqs()]);
+    if (initialNoticeId) {
+        const notice = findNoticeById(initialNoticeId);
+        if (notice) openViewer(notice.id || notice.push_key || initialNoticeId);
+    } else if (initialFaqId) {
+        openFaqById(initialFaqId);
+    }
 
     // ==== 운영 공지 로드 (D1 API) ====
     async function loadNotices() {
-        const result = await window.BSQ.api('/api/notices', { cacheBust: false });
+        const result = await window.BSQ.api('/api/notices');
         if (result.success && result.data) {
             state.notices = result.data.map(n => ({ ...n, source: 'official' }));
             renderNotices();
@@ -47,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ==== 클래스 공지 로드 ====
     async function loadClassNotices() {
-        const result = await window.BSQ.api('/api/class-notices', { cacheBust: false });
+        const result = await window.BSQ.api('/api/class-notices');
         if (result.success && result.data) {
             state.classNotices = result.data.map(n => ({ ...n, source: 'class' }));
             renderClassNotices();
@@ -56,7 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ==== FAQ 로드 ====
     async function loadFaqs() {
-        const result = await window.BSQ.api('/api/faqs', { cacheBust: false });
+        const result = await window.BSQ.api('/api/faqs');
         if (result.success && result.data) {
             state.faqs = result.data;
             renderFaqs();
@@ -70,7 +126,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         let combined = [...state.notices];
         const query = state.searchQuery.toLowerCase();
         if (query) {
-            combined = combined.filter(n => (n.title || '').toLowerCase().includes(query) || (n.content || '').toLowerCase().includes(query));
+            combined = combined.filter(n => {
+                const haystack = [
+                    n.title,
+                    n.content,
+                    n.author_name,
+                ].filter(Boolean).join(' ').toLowerCase();
+                return haystack.includes(query);
+            });
         }
 
         combined.sort((a, b) => {
@@ -80,7 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (combined.length === 0) {
-            noticeListEl.innerHTML = `<div class="empty-state">등록된 공지사항이 없습니다.</div>`;
+            noticeListEl.innerHTML = `<div class="empty-state">${state.searchQuery ? '검색 결과가 없습니다.' : '등록된 공지사항이 없습니다.'}</div>`;
             return;
         }
 
@@ -112,10 +175,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!classNoticeListEl) return;
 
         let combined = [...state.classNotices];
+        const query = state.searchQuery.toLowerCase();
+        if (query) {
+            combined = combined.filter((n) => {
+                const haystack = [
+                    n.title,
+                    n.content,
+                    n.class_name,
+                    n.class_title,
+                    n.author_name,
+                ].filter(Boolean).join(' ').toLowerCase();
+                return haystack.includes(query);
+            });
+        }
         combined.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
         if (combined.length === 0) {
-            classNoticeListEl.innerHTML = `<div class="empty-state">등록된 클래스 공지사항이 없습니다.</div>`;
+            classNoticeListEl.innerHTML = `<div class="empty-state">${state.searchQuery ? '검색 결과가 없습니다.' : '등록된 클래스 공지사항이 없습니다.'}</div>`;
             return;
         }
 
@@ -143,12 +219,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ==== FAQ 렌더링 ====
     function renderFaqs() {
         if (!faqListEl) return;
-        if (state.faqs.length === 0) {
-            faqListEl.innerHTML = `<div class="empty-state">등록된 FAQ가 없습니다.</div>`;
+        let items = [...state.faqs];
+        const query = state.searchQuery.toLowerCase();
+        if (query) {
+            items = items.filter((faq) => {
+                const haystack = [faq.question, faq.answer].filter(Boolean).join(' ').toLowerCase();
+                return haystack.includes(query);
+            });
+        }
+        if (items.length === 0) {
+            faqListEl.innerHTML = `<div class="empty-state">${state.searchQuery ? '검색 결과가 없습니다.' : '등록된 FAQ가 없습니다.'}</div>`;
             return;
         }
 
-        faqListEl.innerHTML = state.faqs.map(f => `
+        faqListEl.innerHTML = items.map(f => `
             <div class="faq-item" data-id="${f.id}">
                 <div class="faq-question">
                     <div class="faq-question-text">Q. ${escapeHtml(f.question || '')}</div>
@@ -167,9 +251,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    if (searchInput) searchInput.value = state.searchQuery;
+
     searchInput?.addEventListener('input', (e) => {
-        state.searchQuery = e.target.value;
-        renderNotices();
+        applySearchQuery(e.target.value);
+    });
+
+    searchInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            applySearchQuery(e.target.value);
+        }
+    });
+
+    searchButton?.addEventListener('click', () => {
+        applySearchQuery(searchInput?.value || '');
     });
 
     // ==== VIEWER LOGIC (D1 API) ====
@@ -178,8 +274,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function openViewer(noticeId) {
         currentOpenNoticeId = noticeId;
-        const notice = state.notices.find(n => n.id === noticeId);
+        const notice = findNoticeById(noticeId);
         if (!notice) return;
+
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.set('id', String(notice.id || notice.push_key || noticeId).trim());
+        nextUrl.searchParams.delete('notice');
+        nextUrl.searchParams.delete('faq');
+        window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
 
         // 조회수 증가 (D1 API)
         window.BSQ.api('/api/notices', {

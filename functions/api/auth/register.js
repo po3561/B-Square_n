@@ -15,6 +15,13 @@ function normalizeEmail(value) {
   return normalizeText(value).toLowerCase();
 }
 
+function normalizeBoolean(value) {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value === 1;
+  if (typeof value === 'string') return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
+  return false;
+}
+
 function buildDisplayName(name, fallback) {
   const normalized = normalizeText(name);
   if (normalized) return normalized;
@@ -118,6 +125,10 @@ export async function onRequestPost(context) {
     const referrer_code = body?.referrer_code || null;
     const preferred_language = normalizeLanguagePreference(body?.preferred_language || null, 'ko');
     const preferred_theme = normalizeThemePreference(body?.preferred_theme || null, 'dark');
+    const marketingTouched = body?.marketing_sms_consent !== undefined || body?.marketing_email_consent !== undefined;
+    const marketing_sms_consent = normalizeBoolean(body?.marketing_sms_consent) ? 1 : 0;
+    const marketing_email_consent = normalizeBoolean(body?.marketing_email_consent) ? 1 : 0;
+    const marketing_consent_updated_at = marketingTouched ? new Date().toISOString() : null;
 
     if (socialVerification) {
       const verifiedEmail = normalizeEmail(socialVerification.provider_email || '');
@@ -167,14 +178,18 @@ export async function onRequestPost(context) {
         INSERT INTO users (
           id, email, password_hash, name, phone, username,
           birth_year, birth_month, birth_day, gender, nationality, signup_path,
-          referrer_code, preferred_language, preferred_theme, role
+          referrer_code, preferred_language, preferred_theme, mfa_active,
+          marketing_sms_consent, marketing_email_consent, marketing_consent_updated_at,
+          role
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'user')
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'user')
       `).bind(
         userId, email, password_hash, name || null, phone, username,
         birth_year, birth_month, birth_day,
         gender, nationality, signup_path,
-        referrer_code, preferred_language, preferred_theme
+        referrer_code, preferred_language, preferred_theme,
+        0,
+        marketing_sms_consent, marketing_email_consent, marketing_consent_updated_at
       ).run();
     } catch (insertError) {
       const message = String(insertError?.message || '');

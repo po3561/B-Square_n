@@ -50,6 +50,18 @@
         return normalized;
     }
 
+    function invalidateCategoryCache() {
+        const bootCache = window.__BSQ_MYPAGE_CACHE__ || {};
+        if (bootCache.categories || bootCache.categoriesUpdatedAt) {
+            const nextCache = { ...bootCache };
+            delete nextCache.categories;
+            delete nextCache.categoriesUpdatedAt;
+            window.__BSQ_MYPAGE_CACHE__ = nextCache;
+        }
+
+        delete window.__BSQ_MYPAGE_CATEGORY_PROMISE__;
+    }
+
     function normalizeCategories(rows) {
         return (Array.isArray(rows) ? rows : [])
             .map((item) => ({
@@ -77,7 +89,7 @@
         if (!window.__BSQ_MYPAGE_CATEGORY_PROMISE__) {
             window.__BSQ_MYPAGE_CATEGORY_PROMISE__ = (async () => {
                 try {
-                    const res = await window.BSQ.api('/api/class-categories', { cacheBust: false });
+                    const res = await window.BSQ.api('/api/class-categories');
                     if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
                         return normalizeCategories(res.data);
                     }
@@ -197,6 +209,7 @@
         window.__BSQ_MYPAGE_PROFILE_SYNC_BOUND = true;
         window.addEventListener('bsq_sync', (event) => {
             if (event.detail?.type === 'class-categories') {
+                invalidateCategoryCache();
                 refreshCategoryChips(selectedCategories).catch((error) => {
                     console.warn('[tab_profile] category refresh failed:', error);
                 });

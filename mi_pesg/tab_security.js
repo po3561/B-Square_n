@@ -3,6 +3,8 @@ window.initSecurityTab = function (userId) {
     const mfaToggle = document.getElementById('mfaToggle');
     const languageSelect = document.getElementById('languageSelect');
     const themeSelect = document.getElementById('themeSelect');
+    const marketingSmsToggle = document.getElementById('marketingSmsConsentToggle');
+    const marketingEmailToggle = document.getElementById('marketingEmailConsentToggle');
 
     function syncStoredUserPreference(patch) {
         try {
@@ -32,30 +34,58 @@ window.initSecurityTab = function (userId) {
         return 'dark';
     }
 
+    function normalizeConsentChoice(value) {
+        if (value === null || value === undefined || value === '') return null;
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'number') return value === 1;
+        if (typeof value === 'string') {
+            const raw = value.trim().toLowerCase();
+            if (['1', 'true', 'yes', 'on'].includes(raw)) return true;
+            if (['0', 'false', 'no', 'off'].includes(raw)) return false;
+        }
+        return null;
+    }
+
     async function loadSecurityState() {
         try {
             const res = await window.BSQ.api(`/api/users/${userId}`);
             if (!res?.success || !res.data) return;
+            const detail = res.data || {};
+            const user = detail.user || detail;
 
-            if (mfaToggle) mfaToggle.checked = !!res.data.mfa_active;
+            if (mfaToggle) mfaToggle.checked = !!user.mfa_active;
             if (languageSelect) {
                 languageSelect.value = normalizeLanguageChoice(
-                    res.data.preferred_language || localStorage.getItem('bsq_language') || 'ko'
+                    user.preferred_language || localStorage.getItem('bsq_language') || 'ko'
                 );
             }
             if (themeSelect) {
                 themeSelect.value = normalizeThemeChoice(
-                    res.data.preferred_theme || localStorage.getItem('bsq_theme') || 'dark'
+                    user.preferred_theme || localStorage.getItem('bsq_theme') || 'dark'
                 );
             }
+
+            if (marketingSmsToggle) {
+                const stored = normalizeConsentChoice(localStorage.getItem('bsq_marketing_sms_consent'));
+                const apiValue = normalizeConsentChoice(user.marketing_sms_consent);
+                marketingSmsToggle.checked = apiValue ?? stored ?? false;
+            }
+            if (marketingEmailToggle) {
+                const stored = normalizeConsentChoice(localStorage.getItem('bsq_marketing_email_consent'));
+                const apiValue = normalizeConsentChoice(user.marketing_email_consent);
+                marketingEmailToggle.checked = apiValue ?? stored ?? false;
+            }
+
             window.BSQ.applyPreferences?.({
-                language: normalizeLanguageChoice(languageSelect?.value || res.data.preferred_language || 'ko'),
-                theme: normalizeThemeChoice(themeSelect?.value || res.data.preferred_theme || 'dark'),
+                language: normalizeLanguageChoice(languageSelect?.value || user.preferred_language || 'ko'),
+                theme: normalizeThemeChoice(themeSelect?.value || user.preferred_theme || 'dark'),
             });
         } catch (error) {
             console.warn('[tab_security] state load failed:', error);
             if (languageSelect) languageSelect.value = normalizeLanguageChoice(localStorage.getItem('bsq_language') || 'ko');
             if (themeSelect) themeSelect.value = normalizeThemeChoice(localStorage.getItem('bsq_theme') || 'dark');
+            if (marketingSmsToggle) marketingSmsToggle.checked = normalizeConsentChoice(localStorage.getItem('bsq_marketing_sms_consent')) ?? false;
+            if (marketingEmailToggle) marketingEmailToggle.checked = normalizeConsentChoice(localStorage.getItem('bsq_marketing_email_consent')) ?? false;
         }
     }
 
@@ -69,8 +99,8 @@ window.initSecurityTab = function (userId) {
                 showMypageNotice?.('error', '입력 확인', '비밀번호가 일치하지 않습니다.');
                 return;
             }
-            if (newPassword.length < 6) {
-                showMypageNotice?.('error', '비밀번호 규칙', '비밀번호는 6자리 이상이어야 합니다.');
+            if (newPassword.length < 8) {
+                showMypageNotice?.('error', '비밀번호 규칙', '비밀번호는 8자리 이상이어야 합니다.');
                 return;
             }
 
@@ -137,6 +167,34 @@ window.initSecurityTab = function (userId) {
         });
     }
 
+    async function persistMarketingConsent(payload) {
+        const updates = {};
+        if (payload.marketing_sms_consent !== undefined) updates.marketing_sms_consent = payload.marketing_sms_consent ? 1 : 0;
+        if (payload.marketing_email_consent !== undefined) updates.marketing_email_consent = payload.marketing_email_consent ? 1 : 0;
+
+        if (!Object.keys(updates).length) return;
+
+        const res = await window.BSQ.api(`/api/users/${userId}`, {
+            method: 'PUT',
+            body: JSON.stringify(updates),
+        });
+
+        if (res?.success) {
+            const nextSms = normalizeConsentChoice(res.data?.marketing_sms_consent ?? updates.marketing_sms_consent);
+            const nextEmail = normalizeConsentChoice(res.data?.marketing_email_consent ?? updates.marketing_email_consent);
+            if (payload.marketing_sms_consent !== undefined) localStorage.setItem('bsq_marketing_sms_consent', String(nextSms ?? !!updates.marketing_sms_consent));
+            if (payload.marketing_email_consent !== undefined) localStorage.setItem('bsq_marketing_email_consent', String(nextEmail ?? !!updates.marketing_email_consent));
+
+            syncStoredUserPreference({
+                ...(payload.marketing_sms_consent !== undefined ? { marketing_sms_consent: updates.marketing_sms_consent } : {}),
+                ...(payload.marketing_email_consent !== undefined ? { marketing_email_consent: updates.marketing_email_consent } : {}),
+            });
+            return;
+        }
+
+        throw new Error(res?.error || '광고 수신 설정 저장에 실패했습니다.');
+    }
+
     languageSelect?.addEventListener('change', async () => {
         try {
             await persistPreferences({ preferred_language: languageSelect.value });
@@ -152,6 +210,36 @@ window.initSecurityTab = function (userId) {
             showMypageNotice?.('success', '테마 저장 완료', '테마가 저장되었습니다.');
         } catch (error) {
             showMypageNotice?.('error', '테마 설정 실패', error.message || '테마 저장에 실패했습니다.');
+        }
+    });
+
+    marketingSmsToggle?.addEventListener('change', async (e) => {
+        const next = !!e.target.checked;
+        const prev = !next;
+        marketingSmsToggle.disabled = true;
+        try {
+            await persistMarketingConsent({ marketing_sms_consent: next });
+            showMypageNotice?.('success', '광고 수신 설정', next ? '문자(SMS) 수신에 동의했습니다.' : '문자(SMS) 수신을 거부했습니다.');
+        } catch (error) {
+            showMypageNotice?.('error', '광고 수신 설정 실패', error.message || '설정 저장에 실패했습니다.');
+            marketingSmsToggle.checked = prev;
+        } finally {
+            marketingSmsToggle.disabled = false;
+        }
+    });
+
+    marketingEmailToggle?.addEventListener('change', async (e) => {
+        const next = !!e.target.checked;
+        const prev = !next;
+        marketingEmailToggle.disabled = true;
+        try {
+            await persistMarketingConsent({ marketing_email_consent: next });
+            showMypageNotice?.('success', '광고 수신 설정', next ? '이메일 수신에 동의했습니다.' : '이메일 수신을 거부했습니다.');
+        } catch (error) {
+            showMypageNotice?.('error', '광고 수신 설정 실패', error.message || '설정 저장에 실패했습니다.');
+            marketingEmailToggle.checked = prev;
+        } finally {
+            marketingEmailToggle.disabled = false;
         }
     });
 

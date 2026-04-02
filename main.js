@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const currentCategory = getCurrentHomeCategory();
     const allGrid = document.getElementById('allClassGrid');
 
+    // Home page does not include kakao_quick.js by default. Load it lazily here so the helper is available.
+    ensureBsqHelperLoaded();
+
     syncHomeCuratedVisibility();
 
     if (allGrid && !allGrid.children.length) {
@@ -15,6 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         initBanners(),
     ]);
 
+    syncHomeCategoryBackdrop(getHomeCategoryExpandedState());
     syncHomeCuratedVisibility();
 
     window.addEventListener('bsq_sync', (e) => {
@@ -29,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const shell = toggle.closest('[data-home-category-shell]');
             const expanded = shell?.dataset.expanded === 'true';
             setHomeCategoryExpandedState(!expanded);
+            syncHomeCategoryBackdrop(!expanded);
             void renderHomeCategoryMenu(getCurrentHomeCategory());
             return;
         }
@@ -36,6 +41,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const link = event.target.closest('a[data-cat]');
         if (!link) return;
         event.preventDefault();
+        setHomeCategoryExpandedState(false);
+        syncHomeCategoryBackdrop(false);
         const categoryName = String(link.dataset.cat || 'all');
         const allGrid = document.getElementById('allClassGrid');
         const nextUrl = new URL(window.location.href);
@@ -58,6 +65,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         void renderHomeCategoryMenu(categoryName);
         document.querySelector('.all-classes')?.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        if (!getHomeCategoryExpandedState()) return;
+        setHomeCategoryExpandedState(false);
+        syncHomeCategoryBackdrop(false);
+        void renderHomeCategoryMenu(getCurrentHomeCategory());
     });
 });
 
@@ -88,13 +103,57 @@ function setHomeCategoryExpandedState(expanded) {
     } catch { }
 }
 
+function syncHomeCategoryBackdrop(expanded) {
+    document.body.classList.toggle('home-category-expanded', !!expanded);
+    const id = 'homeCategoryBackdrop';
+    const existing = document.getElementById(id);
+    if (expanded) {
+        if (existing) return;
+        const backdrop = document.createElement('div');
+        backdrop.id = id;
+        backdrop.className = 'home-category-backdrop';
+        backdrop.addEventListener('click', () => {
+            setHomeCategoryExpandedState(false);
+            syncHomeCategoryBackdrop(false);
+            void renderHomeCategoryMenu(getCurrentHomeCategory());
+        });
+        document.body.appendChild(backdrop);
+        return;
+    }
+    existing?.remove();
+}
+
+function ensureBsqHelperLoaded() {
+    if (window.__BSQ_HELPER_LOADED__) return;
+    if (document.querySelector('script[data-bsq-helper="1"]')) return;
+
+    if (document.getElementById('bsqHelperLauncher') || window.__BSQ_HELPER_READY__) {
+        window.__BSQ_HELPER_LOADED__ = true;
+        return;
+    }
+
+    const src = new URL('kakao_quick.js?v=20260402_01', window.location.href).toString();
+    const script = document.createElement('script');
+    script.src = src;
+    script.defer = true;
+    script.dataset.bsqHelper = '1';
+    script.onload = () => {
+        window.__BSQ_HELPER_LOADED__ = true;
+    };
+    script.onerror = () => {
+        window.__BSQ_HELPER_LOADED__ = true;
+        console.warn('[home] helper script load failed:', src);
+    };
+    document.head.appendChild(script);
+}
+
 function getHomeSiteSettings() {
     if (window.__BSQ_SITE_SETTINGS__) return Promise.resolve(window.__BSQ_SITE_SETTINGS__);
     if (window.BSQ?.siteSettingsReady) {
         return window.BSQ.siteSettingsReady.catch(() => window.__BSQ_SITE_SETTINGS__ || null);
     }
     if (window.BSQ?.api) {
-        return window.BSQ.api('/api/site-settings', { cacheBust: false })
+        return window.BSQ.api('/api/site-settings')
             .then((res) => (res?.success ? (res.data || null) : null))
             .catch(() => window.__BSQ_SITE_SETTINGS__ || null);
     }
@@ -201,11 +260,26 @@ function setBannerSlideState(state, nextIndex, options = {}) {
     const safeIndex = ((nextIndex % total) + total) % total;
     state.index = safeIndex;
 
+    const isAlbum = state.variant === 'album';
     state.slides.forEach((slide, index) => {
-        const active = index === safeIndex;
+        let offset = index - safeIndex;
+        if (offset > total / 2) offset -= total;
+        if (offset < -total / 2) offset += total;
+
+        const active = offset === 0;
         slide.classList.toggle('is-active', active);
         slide.setAttribute('aria-hidden', active ? 'false' : 'true');
         slide.tabIndex = active ? 0 : -1;
+
+        if (!isAlbum) return;
+        const abs = Math.abs(offset);
+        const slot = abs <= 2 ? offset : 99;
+        slide.dataset.bannerOffset = String(offset);
+        slide.dataset.bannerSlot = slot === 99 ? 'far' : String(slot);
+        slide.classList.toggle('is-prev', slot === -1);
+        slide.classList.toggle('is-next', slot === 1);
+        slide.classList.toggle('is-side', abs === 2);
+        slide.classList.toggle('is-far', abs > 2);
     });
 
     state.dots?.forEach((dot, index) => {
@@ -243,28 +317,25 @@ function renderBannerCarousel(kind, items, options = {}) {
             }]
     );
 
+    const variant = String(options.variant || '').trim().toLowerCase();
+    const albumMode = variant === 'album';
+
     track.innerHTML = slides.map((item, index) => {
-        const slideClass = `home-banner-slide${index === 0 ? ' is-active' : ''}`;
+        const slideClass = `home-banner-slide${albumMode ? ' is-album' : ''}${index === 0 ? ' is-active' : ''}`;
         const content = item.imgUrl
-            ? `<img src="${escapeHtml(item.imgUrl)}" alt="${escapeHtml(item.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async">`
+            ? `<img src="${escapeHtml(item.imgUrl)}" alt="${escapeHtml(item.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async" fetchpriority="${index === 0 ? 'high' : 'auto'}">`
             : `<div class="home-banner-empty">
                     <span class="home-banner-brand">B-Square</span>
                     <span class="home-banner-note">${escapeHtml(options.emptyMessage || `${options.fallbackLabel}를 준비 중입니다.`)}</span>
                </div>`;
-        if (item.linkUrl) {
-            return `
-                <div class="${slideClass}" data-banner-index="${index}" aria-hidden="${index === 0 ? 'false' : 'true'}">
-                    <a href="${escapeHtml(item.linkUrl)}" aria-label="${escapeHtml(item.alt)}">
-                        ${content}
-                    </a>
-                </div>
-            `;
-        }
+
+        const body = item.linkUrl
+            ? `<a href="${escapeHtml(item.linkUrl)}" aria-label="${escapeHtml(item.alt)}" class="home-banner-link">${content}</a>`
+            : `<div class="home-banner-link">${content}</div>`;
+
         return `
             <div class="${slideClass}" data-banner-index="${index}" aria-hidden="${index === 0 ? 'false' : 'true'}">
-                <div>
-                    ${content}
-                </div>
+                ${albumMode ? `<div class="home-banner-card">${body}</div>` : body}
             </div>
         `;
     }).join('');
@@ -306,6 +377,7 @@ function renderBannerCarousel(kind, items, options = {}) {
         hoverPaused: false,
         canAutoplay: slideEls.length > 1 && !reduceMotion,
         isPlaying: slideEls.length > 1 && !reduceMotion,
+        variant: albumMode ? 'album' : '',
         intervalOptions: Array.isArray(options.intervalOptions) && options.intervalOptions.length
             ? options.intervalOptions.map((value) => Math.max(1000, Number(value) || 0)).filter(Boolean)
             : [4000, 6000, 8000],
@@ -330,13 +402,43 @@ function renderBannerCarousel(kind, items, options = {}) {
         play.onclick = () => setBannerPlaying(state, !state.isPlaying);
     }
     if (interval) {
-        interval.hidden = slideEls.length <= 1;
+        interval.hidden = slideEls.length <= 1 || state.intervalOptions.length <= 1;
         interval.onclick = () => cycleBannerInterval(state);
     }
 
     if (track.parentElement) {
         track.parentElement.dataset.bannerCount = String(slideEls.length);
         track.parentElement.dataset.bannerKind = kind;
+        if (albumMode) {
+            track.parentElement.dataset.bannerVariant = 'album';
+            track.parentElement.tabIndex = 0;
+            track.parentElement.addEventListener('keydown', (event) => {
+                if (event.key === 'ArrowLeft') {
+                    event.preventDefault();
+                    setBannerSlideState(state, state.index - 1);
+                } else if (event.key === 'ArrowRight') {
+                    event.preventDefault();
+                    setBannerSlideState(state, state.index + 1);
+                }
+            });
+        }
+    }
+
+    if (albumMode) {
+        slideEls.forEach((slide) => {
+            slide.addEventListener('click', (event) => {
+                const target = event.target.closest('.home-banner-slide');
+                if (!target) return;
+                const idx = Number(target.dataset.bannerIndex || 0);
+                if (!Number.isFinite(idx)) return;
+                const now = homeBannerCarousels[kind];
+                if (!now) return;
+                if (idx !== now.index) {
+                    event.preventDefault();
+                    setBannerSlideState(now, idx);
+                }
+            });
+        });
     }
 
     if (slideEls.length > 1) {
@@ -393,6 +495,21 @@ function resolveHomeCategoryMeta(name, index = 0) {
     };
 }
 
+function renderHomeCategoryMedia(item, meta) {
+    const imageUrl = String(item?.image_url || '').trim();
+    const imageMarkup = imageUrl
+        ? `<span class="home-category-icon-image-wrap">
+                <img class="home-category-icon-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item?.name || '')}" loading="lazy">
+           </span>`
+        : '';
+    return `
+        <div class="home-category-icon home-category-icon-stack" style="background:${meta.accent}15; color:${meta.accent};">
+            <span class="home-category-icon-emoji">${svgIcon(meta.icon)}</span>
+            ${imageMarkup}
+        </div>
+    `;
+}
+
 function svgIcon(kind) {
     const icons = {
         spark: '<path d="M12 2l1.7 6.3L20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7z"></path>',
@@ -421,10 +538,11 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
 
     let categories = [];
     try {
-        const res = await window.BSQ.api('/api/class-categories', { cacheBust: false });
+        const res = await window.BSQ.api('/api/class-categories');
         if (res.success && Array.isArray(res.data)) {
             categories = res.data.map(c => ({
                 name: c.name,
+                image_url: String(c.image_url || '').trim(),
                 class_count: Number(c.class_count || 0),
             }));
         }
@@ -458,9 +576,7 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
         const meta = resolveHomeCategoryMeta(item.name, index);
         return `
             <a href="#" class="home-category-item${activeCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">
-                <div class="home-category-icon" style="background:${meta.accent}15; color:${meta.accent};">
-                    ${svgIcon(meta.icon)}
-                </div>
+                ${renderHomeCategoryMedia(item, meta)}
                 <span class="home-category-name">${escapeHtml(item.name)}</span>
             </a>
         `;
@@ -472,10 +588,8 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
     nav.innerHTML = `
         <div class="home-category-shell" data-home-category-shell data-expanded="${expanded ? 'true' : 'false'}">
             <div class="home-category-grid home-category-grid-primary">
-                <a href="#" class="home-category-item${currentCategory === 'all' ? ' is-active' : ''}" data-cat="all">
-                    <div class="home-category-icon" style="background:#f5f5f5;">
-                        ${svgIcon('spark')}
-                    </div>
+        <a href="#" class="home-category-item${currentCategory === 'all' ? ' is-active' : ''}" data-cat="all">
+                    ${renderHomeCategoryMedia({ name: '전체', image_url: '' }, { icon: 'spark', accent: '#f5f5f5' })}
                     <span class="home-category-name">전체</span>
                 </a>
                 ${visibleCategories.map((item, index) => renderCategoryCard(item, index)).join('')}
@@ -516,7 +630,7 @@ async function initMainPage(currentCategory = 'all', forceRefresh = false) {
             return;
         }
 
-        const res = await window.BSQ.api(`/api/classes?limit=${HOME_CLASS_FETCH_LIMIT}`, { cacheBust: false });
+        const res = await window.BSQ.api(`/api/classes?limit=${HOME_CLASS_FETCH_LIMIT}`);
         if (res.success) {
             globalAllClasses = res.data?.classes || res.data || [];
             if (currentCategory === 'all') {
@@ -600,8 +714,9 @@ async function initBanners() {
         fallbackLabel: '메인 배너',
         emptyMessage: '메인 배너를 준비 중입니다.',
         emptyAlt: '메인 배너 준비 중',
-        intervalMs: 6000,
-        intervalOptions: [4000, 6000, 8000],
+        variant: 'album',
+        intervalMs: 5000,
+        intervalOptions: [5000],
     });
 
     // 하단 배너: 커뮤니티 / 클래스 이동용 CTA 캐러셀

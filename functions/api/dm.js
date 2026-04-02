@@ -1,5 +1,6 @@
 ﻿import { requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
+import { ensureDmMessagesSchema, ensureUserChatsSchema } from './_lib/schema.js';
 
 function parseReactions(value) {
   if (!value) return {};
@@ -48,6 +49,7 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
+  await ensureDmMessagesSchema(env.DB);
 
   const url = new URL(request.url);
   const roomId = url.searchParams.get('room_id');
@@ -76,6 +78,10 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
+  await Promise.all([
+    ensureDmMessagesSchema(env.DB),
+    ensureUserChatsSchema(env.DB),
+  ]);
 
   try {
     const body = await request.json();

@@ -1,5 +1,6 @@
 ﻿import { requireSession } from './_lib/auth.js';
 import { json, options } from './_lib/http.js';
+import { ensureChatMessagesSchema } from './_lib/schema.js';
 
 function parseMaybeJson(value, fallback = null) {
   if (value == null || value === '') return fallback;
@@ -201,6 +202,7 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
+  await ensureChatMessagesSchema(env.DB);
 
   const url = new URL(request.url);
     const classId = url.searchParams.get('class_id');
@@ -258,6 +260,7 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
+  await ensureChatMessagesSchema(env.DB);
 
   try {
     const body = await request.json();
@@ -314,6 +317,7 @@ export async function onRequestPatch(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
+  await ensureChatMessagesSchema(env.DB);
 
   try {
     const body = await request.json();

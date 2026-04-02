@@ -10,9 +10,9 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="mypage.css?v=20260402_01">
-    <script src="../bsq_server.js?v=20260331_02" defer></script>
+    <script src="../bsq_server.js?v=20260402_01" defer></script>
     <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
-    <link rel="stylesheet" href="/theme_overrides.css?v=20260401_04">
+    <link rel="stylesheet" href="/theme_overrides.css?v=20260402_01">
     <script src="/i18n.js?v=20260331_01" defer></script>
 </head>
 <body class="mypage-page" data-page="mypage" data-auth-state="loading">
@@ -436,11 +436,11 @@
                             <form id="passwordForm" class="mypage-form">
                                 <div class="input-group">
                                     <label for="newPassword">새 비밀번호</label>
-                                    <input type="password" id="newPassword" placeholder="새 비밀번호 (6자리 이상)" autocomplete="new-password" required minlength="6">
+                                    <input type="password" id="newPassword" placeholder="새 비밀번호 (8자리 이상)" autocomplete="new-password" required minlength="8">
                                 </div>
                                 <div class="input-group">
                                     <label for="confirmPassword">비밀번호 확인</label>
-                                    <input type="password" id="confirmPassword" placeholder="비밀번호를 다시 입력하세요" autocomplete="new-password" required minlength="6">
+                                    <input type="password" id="confirmPassword" placeholder="비밀번호를 다시 입력하세요" autocomplete="new-password" required minlength="8">
                                 </div>
                                 <button type="submit" class="btn-submit">비밀번호 변경하기</button>
                             </form>
@@ -482,6 +482,28 @@
                                         <option value="dark">다크</option>
                                         <option value="light">화이트</option>
                                     </select>
+                                </div>
+
+                                <div class="settings-row">
+                                    <div>
+                                        <strong>광고 수신 동의 (문자)</strong>
+                                        <p>이벤트, 할인 등 프로모션 정보를 문자(SMS)로 받습니다.</p>
+                                    </div>
+                                    <label class="settings-switch">
+                                        <input type="checkbox" id="marketingSmsConsentToggle">
+                                        <span></span>
+                                    </label>
+                                </div>
+
+                                <div class="settings-row">
+                                    <div>
+                                        <strong>광고 수신 동의 (이메일)</strong>
+                                        <p>이벤트, 할인 등 프로모션 정보를 이메일로 받습니다.</p>
+                                    </div>
+                                    <label class="settings-switch">
+                                        <input type="checkbox" id="marketingEmailConsentToggle">
+                                        <span></span>
+                                    </label>
                                 </div>
                             </div>
                         </section>
@@ -610,9 +632,9 @@
     <script src="mypage.js?v=20260401_03" defer></script>
     <script src="tab_profile.js?v=20260401_03" defer></script>
     <script src="tab_classes.js?v=20260330_11" defer></script>
-    <script src="tab_security.js?v=20260331_02" defer></script>
+    <script src="tab_security.js?v=20260402_01" defer></script>
     <script src="tab_chat_sub.js?v=20260330_11" defer></script>
-    <script src="../header.js?v=20260401_07" defer></script>
+    <script src="../header.js?v=20260402_01" defer></script>
     <script src="../dev_mode.js?v=20260330_09" defer></script>
 </body>
 </html>

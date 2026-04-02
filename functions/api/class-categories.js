@@ -23,6 +23,7 @@ export async function onRequest(context) {
       data: categories.map((row) => ({
         name: row.name,
         emoji: row.emoji || '✨',
+        image_url: row.image_url || '',
         sort_order: Number(row.sort_order || 0),
         class_count: Number(row.class_count || 0),
       })),

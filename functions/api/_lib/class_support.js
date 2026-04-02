@@ -105,6 +105,7 @@ export async function ensureClassCategoriesSchema(db) {
       CREATE TABLE IF NOT EXISTS class_categories (
         name TEXT PRIMARY KEY,
         emoji TEXT NOT NULL DEFAULT '✨',
+        image_url TEXT,
         sort_order INTEGER DEFAULT 0,
         is_active INTEGER DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -113,6 +114,7 @@ export async function ensureClassCategoriesSchema(db) {
     `).run();
 
     await addColumnIfMissing(db, 'class_categories', "emoji TEXT NOT NULL DEFAULT '✨'");
+    await addColumnIfMissing(db, 'class_categories', 'image_url TEXT');
     await addColumnIfMissing(db, 'class_categories', 'sort_order INTEGER DEFAULT 0');
     await addColumnIfMissing(db, 'class_categories', 'is_active INTEGER DEFAULT 1');
     await addColumnIfMissing(db, 'class_categories', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
@@ -299,6 +301,7 @@ export async function loadClassCategories(db, { activeOnly = true } = {}) {
     SELECT
       cat.name,
       cat.emoji,
+      cat.image_url,
       cat.sort_order,
       cat.is_active,
       cat.created_at,

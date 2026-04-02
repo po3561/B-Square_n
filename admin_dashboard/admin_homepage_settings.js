@@ -12,12 +12,44 @@
       sizeId: 'logoSizeHint',
       recommended: '권장 480 × 120px · PNG/WebP',
     },
+    logoLight: {
+      fileId: 'settingLogoLightFile',
+      valueId: 'settingLogoLightURL',
+      previewId: 'previewLogoLight',
+      placeholderId: 'logoLightPlaceholderTxt',
+      sizeId: 'logoLightSizeHint',
+      recommended: '권장 480 × 120px · PNG/WebP',
+    },
+    logoDark: {
+      fileId: 'settingLogoDarkFile',
+      valueId: 'settingLogoDarkURL',
+      previewId: 'previewLogoDark',
+      placeholderId: 'logoDarkPlaceholderTxt',
+      sizeId: 'logoDarkSizeHint',
+      recommended: '권장 480 × 120px · PNG/WebP',
+    },
     favicon: {
       fileId: 'settingFaviconFile',
       valueId: 'settingFaviconURL',
       previewId: 'previewFavicon',
       placeholderId: 'faviconPlaceholderTxt',
       sizeId: 'faviconSizeHint',
+      recommended: '권장 512 × 512px · PNG/ICO/WebP',
+    },
+    faviconLight: {
+      fileId: 'settingFaviconLightFile',
+      valueId: 'settingFaviconLightURL',
+      previewId: 'previewFaviconLight',
+      placeholderId: 'faviconLightPlaceholderTxt',
+      sizeId: 'faviconLightSizeHint',
+      recommended: '권장 512 × 512px · PNG/ICO/WebP',
+    },
+    faviconDark: {
+      fileId: 'settingFaviconDarkFile',
+      valueId: 'settingFaviconDarkURL',
+      previewId: 'previewFaviconDark',
+      placeholderId: 'faviconDarkPlaceholderTxt',
+      sizeId: 'faviconDarkSizeHint',
       recommended: '권장 512 × 512px · PNG/ICO/WebP',
     },
   };
@@ -41,7 +73,11 @@
 
   const IMAGE_COMPRESSION = {
     logo: { maxWidth: 480, maxHeight: 120, quality: 0.82 },
+    logoLight: { maxWidth: 480, maxHeight: 120, quality: 0.82 },
+    logoDark: { maxWidth: 480, maxHeight: 120, quality: 0.82 },
     favicon: { maxWidth: 256, maxHeight: 256, quality: 0.8 },
+    faviconLight: { maxWidth: 256, maxHeight: 256, quality: 0.8 },
+    faviconDark: { maxWidth: 256, maxHeight: 256, quality: 0.8 },
     main: { maxWidth: 1600, maxHeight: 500, quality: 0.8 },
     bottom: { maxWidth: 2200, maxHeight: 420, quality: 0.76 },
   };
@@ -222,6 +258,27 @@
     if (placeholder) placeholder.style.display = 'inline';
     const sizeHint = $(cfg.sizeId);
     if (sizeHint) sizeHint.textContent = cfg.recommended;
+  }
+
+  function applyStoredMediaFile(section, value) {
+    const cfg = MEDIA_CONFIG[section];
+    if (!cfg) return;
+    const text = String(value || '').trim();
+    if (!text) {
+      resetMediaFile(section);
+      return;
+    }
+
+    setValue(cfg.valueId, text);
+    const preview = $(cfg.previewId);
+    const placeholder = $(cfg.placeholderId);
+    const sizeHint = $(cfg.sizeId);
+    if (preview) {
+      preview.src = text;
+      preview.style.display = 'block';
+    }
+    if (placeholder) placeholder.style.display = 'none';
+    if (sizeHint) sizeHint.textContent = `업로드됨 · ${cfg.recommended}`;
   }
 
   function setBannerEmptyState(section) {
@@ -412,37 +469,18 @@
 
   function fillHomepageFields(settings) {
     const logoURL = settings.logo_url || '';
+    const logoLightURL = settings.logo_light_url || logoURL || '';
+    const logoDarkURL = settings.logo_dark_url || logoURL || '';
     const faviconURL = settings.favicon_url || '';
+    const faviconLightURL = settings.favicon_light_url || faviconURL || '';
+    const faviconDarkURL = settings.favicon_dark_url || faviconURL || '';
 
-    if (logoURL) {
-      setValue('settingLogoURL', logoURL);
-      const preview = $('previewLogo');
-      if (preview) {
-        preview.src = logoURL;
-        preview.style.display = 'block';
-      }
-      const placeholder = $('logoPlaceholderTxt');
-      if (placeholder) placeholder.style.display = 'none';
-      const sizeHint = $('logoSizeHint');
-      if (sizeHint) sizeHint.textContent = `업로드됨 · ${MEDIA_CONFIG.logo.recommended}`;
-    } else {
-      resetMediaFile('logo');
-    }
-
-    if (faviconURL) {
-      setValue('settingFaviconURL', faviconURL);
-      const preview = $('previewFavicon');
-      if (preview) {
-        preview.src = faviconURL;
-        preview.style.display = 'block';
-      }
-      const placeholder = $('faviconPlaceholderTxt');
-      if (placeholder) placeholder.style.display = 'none';
-      const sizeHint = $('faviconSizeHint');
-      if (sizeHint) sizeHint.textContent = `업로드됨 · ${MEDIA_CONFIG.favicon.recommended}`;
-    } else {
-      resetMediaFile('favicon');
-    }
+    applyStoredMediaFile('logo', logoURL);
+    applyStoredMediaFile('logoLight', logoLightURL);
+    applyStoredMediaFile('logoDark', logoDarkURL);
+    applyStoredMediaFile('favicon', faviconURL);
+    applyStoredMediaFile('faviconLight', faviconLightURL);
+    applyStoredMediaFile('faviconDark', faviconDarkURL);
 
     renderBannerSection('main', settings.banners || []);
     renderBannerSection('bottom', settings.bottom_banners || []);
@@ -491,7 +529,13 @@
 
       if (type === 'homepage') {
         payload.logo_url = await compressImageDataUrl($('settingLogoURL')?.value.trim() || '', getCompressionConfig('logo'));
+        payload.logo_light_url = await compressImageDataUrl($('settingLogoLightURL')?.value.trim() || '', getCompressionConfig('logoLight'));
+        payload.logo_dark_url = await compressImageDataUrl($('settingLogoDarkURL')?.value.trim() || '', getCompressionConfig('logoDark'));
         payload.favicon_url = await compressImageDataUrl($('settingFaviconURL')?.value.trim() || '', getCompressionConfig('favicon'));
+        payload.favicon_light_url = await compressImageDataUrl($('settingFaviconLightURL')?.value.trim() || '', getCompressionConfig('faviconLight'));
+        payload.favicon_dark_url = await compressImageDataUrl($('settingFaviconDarkURL')?.value.trim() || '', getCompressionConfig('faviconDark'));
+        payload.logo_url = payload.logo_url || payload.logo_light_url || payload.logo_dark_url || currentData.logo_url || '';
+        payload.favicon_url = payload.favicon_url || payload.favicon_light_url || payload.favicon_dark_url || currentData.favicon_url || '';
         payload.banners = await Promise.all(
           serializeBannerSection('main').map(async (banner) => ({
             ...banner,
@@ -535,6 +579,7 @@
 
       alert('설정이 저장되었습니다.');
       await loadSiteSettings(type);
+      if (window.BSQ?.triggerSync) window.BSQ.triggerSync('site-settings');
     } catch (error) {
       console.error('[admin_homepage_settings] save failed', error);
       alert(`설정 저장에 실패했습니다: ${error.message}`);
@@ -549,7 +594,15 @@
   function bindMediaUpload(section) {
     const cfg = MEDIA_CONFIG[section];
     const fileInput = $(cfg.fileId);
-    const removeBtn = section === 'logo' ? $('btnRemoveLogo') : $('btnRemoveFavicon');
+    const removeBtnMap = {
+      logo: 'btnRemoveLogo',
+      logoLight: 'btnRemoveLogoLight',
+      logoDark: 'btnRemoveLogoDark',
+      favicon: 'btnRemoveFavicon',
+      faviconLight: 'btnRemoveFaviconLight',
+      faviconDark: 'btnRemoveFaviconDark',
+    };
+    const removeBtn = $(removeBtnMap[section] || '');
 
     fileInput?.addEventListener('change', async (event) => {
       const file = event.target.files?.[0];
@@ -576,6 +629,37 @@
     });
   }
 
+  function bindMediaTargetField(id) {
+    const el = $(id);
+    if (!el) return;
+    const markTarget = () => {
+      window.__BSQ_MEDIA_ASSET_TARGET__ = id;
+    };
+    el.addEventListener('focus', markTarget);
+    el.addEventListener('click', markTarget);
+  }
+
+  function bindMediaAssetButton(buttonId, targetId) {
+    $(buttonId)?.addEventListener('click', (event) => {
+      event.preventDefault();
+      window.__BSQ_MEDIA_ASSET_TARGET__ = targetId;
+      document.querySelector('.nav-item[data-tab="tabMediaAssets"]')?.click();
+    });
+  }
+
+  function bindMediaValueSync(section) {
+    const cfg = MEDIA_CONFIG[section];
+    const valueInput = $(cfg.valueId);
+    valueInput?.addEventListener('input', () => {
+      const value = valueInput.value.trim();
+      if (value) {
+        applyStoredMediaFile(section, value);
+      } else {
+        resetMediaFile(section);
+      }
+    });
+  }
+
   function init() {
     const tabHomepage = $('tabHomepage');
     const tabFooter = $('tabFooter');
@@ -590,7 +674,32 @@
     }
 
     bindMediaUpload('logo');
+    bindMediaUpload('logoLight');
+    bindMediaUpload('logoDark');
     bindMediaUpload('favicon');
+    bindMediaUpload('faviconLight');
+    bindMediaUpload('faviconDark');
+    bindMediaValueSync('logo');
+    bindMediaValueSync('logoLight');
+    bindMediaValueSync('logoDark');
+    bindMediaValueSync('favicon');
+    bindMediaValueSync('faviconLight');
+    bindMediaValueSync('faviconDark');
+    bindMediaAssetButton('btnPickLogoAsset', 'settingLogoURL');
+    bindMediaAssetButton('btnPickLogoLightAsset', 'settingLogoLightURL');
+    bindMediaAssetButton('btnPickLogoDarkAsset', 'settingLogoDarkURL');
+    bindMediaAssetButton('btnPickFaviconAsset', 'settingFaviconURL');
+    bindMediaAssetButton('btnPickFaviconLightAsset', 'settingFaviconLightURL');
+    bindMediaAssetButton('btnPickFaviconDarkAsset', 'settingFaviconDarkURL');
+    [
+      'settingLogoURL',
+      'settingLogoLightURL',
+      'settingLogoDarkURL',
+      'settingFaviconURL',
+      'settingFaviconLightURL',
+      'settingFaviconDarkURL',
+      'seoImage',
+    ].forEach(bindMediaTargetField);
     bindBannerButton('main', 'btnAddBanner');
     bindBannerButton('bottom', 'btnAddBottomBanner');
 

@@ -1,5 +1,6 @@
 ﻿import { json } from './http.js';
 import { normalizeLanguagePreference, normalizeThemePreference } from './preferences.js';
+import { ensureAuthSchema } from './schema.js';
 
 const PASSWORD_SALT = '_bsq_salt_2024';
 export const MASTER_ADMIN_USER_ID = 'user_b7a935e26112';
@@ -213,6 +214,7 @@ export async function createSessionRecord(
 
 export async function getCurrentUser(context) {
   const { request, env } = context;
+  await ensureAuthSchema(env.DB);
   const token = getSessionToken(request);
   if (!token) return null;
 
@@ -229,6 +231,9 @@ export async function getCurrentUser(context) {
       preferred_language: normalizeLanguagePreference('ko'),
       preferred_theme: normalizeThemePreference('dark'),
       mfa_active: 0,
+      marketing_sms_consent: 0,
+      marketing_email_consent: 0,
+      marketing_consent_updated_at: null,
       referrer_code: null,
     });
 
@@ -262,6 +267,9 @@ export async function getCurrentUser(context) {
       u.preferred_language,
       u.preferred_theme,
       u.mfa_active,
+      u.marketing_sms_consent,
+      u.marketing_email_consent,
+      u.marketing_consent_updated_at,
       u.referrer_code,
       u.birth_year,
       u.birth_month,
@@ -301,6 +309,9 @@ export async function getCurrentUser(context) {
         u.preferred_language,
         u.preferred_theme,
         u.mfa_active,
+        u.marketing_sms_consent,
+        u.marketing_email_consent,
+        u.marketing_consent_updated_at,
         u.referrer_code,
         u.birth_year,
         u.birth_month,
@@ -335,6 +346,9 @@ export async function getCurrentUser(context) {
     preferred_language: normalizeLanguagePreference(session.preferred_language),
     preferred_theme: normalizeThemePreference(session.preferred_theme),
     mfa_active: session.mfa_active,
+    marketing_sms_consent: session.marketing_sms_consent ?? 0,
+    marketing_email_consent: session.marketing_email_consent ?? 0,
+    marketing_consent_updated_at: session.marketing_consent_updated_at || null,
     referrer_code: session.referrer_code,
     birth_year: session.birth_year,
     birth_month: session.birth_month,
@@ -425,7 +439,7 @@ export async function requireClassManager(context, classId) {
   };
 }
 
-function hasSubInstructorAccess(rawValue, userId) {
+export function hasSubInstructorAccess(rawValue, userId) {
   const targetId = String(userId || '').trim();
   if (!targetId) return false;
 

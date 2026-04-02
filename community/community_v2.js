@@ -4,6 +4,14 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
 
+    if (window.BSQ?.ready?.then) {
+        try {
+            await window.BSQ.ready;
+        } catch (error) {
+            console.warn('[community_v2] BSQ.ready failed:', error);
+        }
+    }
+
     const session = window.BSQ?.session;
 
     const isOperator = window.__BSQ_DEV_MODE__ === true;

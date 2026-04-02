@@ -86,6 +86,93 @@ function uniqueStrings(values) {
   return Array.from(new Set(values.map((value) => String(value || '').trim()).filter(Boolean)));
 }
 
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('이미지를 읽지 못했습니다.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function estimateDataUrlBytes(dataUrl) {
+  if (!dataUrl || typeof dataUrl !== 'string') return 0;
+  const commaIndex = dataUrl.indexOf(',');
+  if (commaIndex < 0) return 0;
+  const base64 = dataUrl.slice(commaIndex + 1);
+  const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0;
+  return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
+}
+
+function loadImageFromDataUrl(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('이미지를 불러올 수 없습니다.'));
+    image.src = dataUrl;
+  });
+}
+
+async function compressCategoryImageDataUrl(dataUrl) {
+  if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) {
+    return dataUrl || '';
+  }
+
+  const originalBytes = estimateDataUrlBytes(dataUrl);
+  if (originalBytes && originalBytes < 200 * 1024) {
+    return dataUrl;
+  }
+
+  const img = await loadImageFromDataUrl(dataUrl);
+  const width = img.naturalWidth || img.width || 0;
+  const height = img.naturalHeight || img.height || 0;
+  if (!width || !height) return dataUrl;
+
+  const scale = Math.min(640 / width, 640 / height, 1);
+  const targetWidth = Math.max(1, Math.round(width * scale));
+  const targetHeight = Math.max(1, Math.round(height * scale));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return dataUrl;
+
+  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+  const blob = await new Promise((resolve) => {
+    canvas.toBlob((result) => resolve(result), 'image/webp', 0.84);
+  });
+
+  if (!blob) return dataUrl;
+  if (originalBytes && blob.size >= originalBytes) return dataUrl;
+
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || dataUrl));
+    reader.onerror = () => reject(new Error('이미지 변환에 실패했습니다.'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function normalizeImageUrl(value) {
+  return String(value || '').trim();
+}
+
+function renderCategoryMedia(item, baseClass = 'class-category-media-stack') {
+  const image = String(item?.image_url || '').trim();
+  return `
+    <span class="${baseClass}">
+      <span class="${baseClass}-emoji">${escapeHtml(item?.emoji || '✨')}</span>
+      <span class="${baseClass}-image-wrap">
+        ${image
+          ? `<img class="${baseClass}-image" src="${escapeAttr(image)}" alt="${escapeAttr(item?.name || '')}" loading="lazy">`
+          : `<span class="${baseClass}-placeholder">이미지</span>`}
+      </span>
+    </span>
+  `;
+}
+
 function currentActiveCategory() {
   return String(state.filters.category || 'all').trim() || 'all';
 }
@@ -220,6 +307,24 @@ function bindControls() {
       deleteCategoryFromModal();
       return;
     }
+    if (target.closest('[data-action="pick-category-image"]')) {
+      document.getElementById('classCategoryImageFile')?.click();
+      return;
+    }
+    if (target.closest('[data-action="remove-category-image"]')) {
+      const input = document.getElementById('classCategoryImageUrl');
+      if (input) input.value = '';
+      const fileInput = document.getElementById('classCategoryImageFile');
+      if (fileInput) fileInput.value = '';
+      if (state.categoryDraft) state.categoryDraft.image_url = '';
+      renderCategoryPreview();
+      return;
+    }
+    if (target.closest('[data-action="open-category-media-assets"]')) {
+      window.__BSQ_MEDIA_ASSET_TARGET__ = 'classCategoryImageUrl';
+      document.querySelector('.nav-item[data-tab="tabMediaAssets"]')?.click();
+      return;
+    }
     if (target.closest('[data-action="confirm-delete-class"]')) {
       confirmDeleteClassFromModalSafe();
       return;
@@ -273,6 +378,10 @@ function bindControls() {
       if (state.categoryDraft) state.categoryDraft.name = String(event.target.value || '').trim();
       renderCategoryPreview();
     }
+    if (event.target?.id === 'classCategoryImageUrl') {
+      if (state.categoryDraft) state.categoryDraft.image_url = normalizeImageUrl(event.target.value);
+      renderCategoryPreview();
+    }
     if (event.target?.id === 'classCategorySortOrder') {
       if (state.categoryDraft) state.categoryDraft.sort_order = toInteger(event.target.value, 0);
       renderCategoryPreview();
@@ -282,6 +391,29 @@ function bindControls() {
       if (confirmBtn) {
         const expected = String(event.target.dataset.expectedTitle || '').trim();
         confirmBtn.disabled = String(event.target.value || '').trim() !== expected;
+      }
+    }
+  });
+
+  document.body.addEventListener('focusin', (event) => {
+    if (event.target?.id === 'classCategoryImageUrl') {
+      window.__BSQ_MEDIA_ASSET_TARGET__ = 'classCategoryImageUrl';
+    }
+  });
+
+  document.body.addEventListener('change', async (event) => {
+    if (event.target?.id === 'classCategoryImageFile') {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        const dataUrl = await readFileAsDataURL(file);
+        const imageUrl = await compressCategoryImageDataUrl(dataUrl);
+        const input = document.getElementById('classCategoryImageUrl');
+        if (input) input.value = imageUrl;
+        if (state.categoryDraft) state.categoryDraft.image_url = imageUrl;
+        renderCategoryPreview();
+      } catch (error) {
+        alert(error?.message || '카테고리 이미지를 불러오지 못했습니다.');
       }
     }
   });
@@ -319,6 +451,7 @@ async function loadCategories() {
     state.categories = categories.map((item) => ({
       name: String(item.name || '').trim(),
       emoji: String(item.emoji || '✨').trim() || '✨',
+      image_url: String(item.image_url || '').trim(),
       sort_order: toInteger(item.sort_order, 0),
       is_active: Number(item.is_active ?? 1) === 1,
       class_count: toNumber(item.class_count, 0),
@@ -333,6 +466,7 @@ async function loadCategories() {
     state.categories = DEFAULT_CATEGORY_SEEDS.map((item, index) => ({
       name: item.name,
       emoji: item.emoji,
+      image_url: '',
       sort_order: (index + 1) * 10,
       is_active: true,
       class_count: 0,
@@ -429,7 +563,7 @@ function renderCategoryStrip() {
     const isActive = item.name === active;
     return `
       <button type="button" class="class-category-pill${isActive ? ' is-active' : ''}" data-category-filter="${escapeAttr(item.name)}">
-        <span class="class-category-pill-emoji">${escapeHtml(item.emoji || '✨')}</span>
+        ${renderCategoryMedia(item, 'class-category-pill-media')}
         <span class="class-category-pill-name">${escapeHtml(item.name === 'all' ? '전체' : item.name)}</span>
         <span class="class-category-pill-count">${formatNumber(item.class_count || 0)}</span>
       </button>
@@ -452,7 +586,7 @@ function renderCategoryManagerList() {
     const activeClass = item.is_active ? 'is-active' : 'is-inactive';
     return `
       <article class="class-category-manager-item ${activeClass}" data-action="select-category-item" data-category-name="${escapeAttr(item.name)}" role="button" tabindex="0">
-        <div class="class-category-manager-icon">${escapeHtml(item.emoji || '✨')}</div>
+        <div class="class-category-manager-icon">${renderCategoryMedia(item, 'class-category-manager-media')}</div>
         <div class="class-category-manager-body">
           <strong>${escapeHtml(item.name)}</strong>
           <span>클래스 ${formatNumber(item.class_count || 0)}개 · 공개 ${formatNumber(item.public_class_count || 0)}개</span>
@@ -596,6 +730,7 @@ function openCategoryModal(categoryName = '') {
         originalName: found.name,
         name: found.name,
         emoji: found.emoji || '✨',
+        image_url: found.image_url || '',
         sort_order: toInteger(found.sort_order, 0),
         is_active: Boolean(found.is_active),
       }
@@ -603,6 +738,7 @@ function openCategoryModal(categoryName = '') {
         originalName: '',
         name: '',
         emoji: '✨',
+        image_url: '',
         sort_order: state.categories.length ? Math.max(...state.categories.map((item) => toInteger(item.sort_order, 0))) + 10 : 10,
         is_active: true,
       };
@@ -633,6 +769,13 @@ function renderCategoryModal() {
   if (deleteBtn) deleteBtn.style.display = editing ? 'inline-flex' : 'none';
   if (saveBtn) saveBtn.textContent = editing ? '수정 저장' : '추가 저장';
 
+  if (document.getElementById('classCategoryImageUrl')) {
+    document.getElementById('classCategoryImageUrl').value = state.categoryDraft.image_url || '';
+  }
+  if (document.getElementById('classCategoryImageFile')) {
+    document.getElementById('classCategoryImageFile').value = '';
+  }
+
   if (emojiGrid) {
     emojiGrid.innerHTML = PREMIUM_EMOJIS.map((emoji) => `
       <button type="button" class="class-emoji-choice${emoji === state.categoryDraft.emoji ? ' selected' : ''}" data-action="select-emoji" data-emoji="${escapeAttr(emoji)}">${escapeHtml(emoji)}</button>
@@ -647,10 +790,11 @@ function renderCategoryPreview() {
   if (!preview || !state.categoryDraft) return;
 
   preview.innerHTML = `
-    <div class="class-category-preview-emoji">${escapeHtml(state.categoryDraft.emoji || '✨')}</div>
+    <div class="class-category-preview-media">${renderCategoryMedia(state.categoryDraft, 'class-category-preview-media-stack')}</div>
     <div class="class-category-preview-copy">
       <strong>${escapeHtml(state.categoryDraft.name || '카테고리 이름')}</strong>
       <span>정렬 순서 ${formatNumber(state.categoryDraft.sort_order || 0)}</span>
+      <span>${state.categoryDraft.image_url ? '카테고리 이미지가 적용됩니다.' : '이미지 없이 이모지만 표시됩니다.'}</span>
     </div>
   `;
 
@@ -677,6 +821,7 @@ async function saveCategoryFromModal() {
   const payload = {
     name,
     emoji: state.categoryDraft.emoji || '✨',
+    image_url: await compressCategoryImageDataUrl(normalizeImageUrl(state.categoryDraft.image_url || '')),
     sort_order: toInteger(state.categoryDraft.sort_order, 0),
     is_active: state.categoryDraft.is_active ? 1 : 0,
   };
@@ -721,6 +866,7 @@ function openDeleteCategoryConfirm(categoryName) {
     originalName: found.name,
     name: found.name,
     emoji: found.emoji || '✨',
+    image_url: found.image_url || '',
     sort_order: toInteger(found.sort_order, 0),
     is_active: Boolean(found.is_active),
   };
@@ -1147,6 +1293,17 @@ function ensureModals() {
               <div class="field-group">
                 <label>정렬 순서</label>
                 <input type="number" id="classCategorySortOrder" class="admin-form-input" min="0" step="10" value="0">
+              </div>
+              <div class="field-group">
+                <label>카테고리 이미지</label>
+                <input type="text" id="classCategoryImageUrl" class="admin-form-input" placeholder="이미지 URL 또는 data URL">
+                <div class="class-category-media-actions">
+                  <input type="file" id="classCategoryImageFile" accept="image/*" hidden>
+                  <button type="button" class="btn-small outline" data-action="pick-category-image" id="btnPickCategoryImage">업로드</button>
+                  <button type="button" class="btn-small outline" data-action="open-category-media-assets" id="btnOpenCategoryMediaAssets">보관소 선택</button>
+                  <button type="button" class="btn-small outline" data-action="remove-category-image" id="btnRemoveCategoryImage">삭제</button>
+                </div>
+                <div class="class-category-helper" id="classCategoryImageHint">카테고리 이미지는 이모지 아래에 함께 노출됩니다.</div>
               </div>
             </div>
             <div class="class-category-helper">프리미엄 이모지를 선택해 카테고리 톤을 통일합니다.</div>

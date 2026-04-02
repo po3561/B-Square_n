@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         let categories = DEFAULT_CATEGORY_SEEDS;
         try {
-            const res = await window.BSQ.api('/api/class-categories', { cacheBust: false });
+            const res = await window.BSQ.api('/api/class-categories');
             if (res.success && Array.isArray(res.data) && res.data.length > 0) {
                 categories = res.data.map((item) => ({
                     name: String(item.name || '').trim(),

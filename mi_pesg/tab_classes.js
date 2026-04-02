@@ -56,9 +56,23 @@
         return categoryCache;
     }
 
+    function invalidateCategoryCache() {
+        categoryCache = [...FALLBACK_CLASS_CATEGORIES];
+        categoryCacheLoaded = false;
+        delete window.__BSQ_MYPAGE_CATEGORY_PROMISE__;
+
+        const bootCache = window.__BSQ_MYPAGE_CACHE__ || {};
+        if (bootCache.categories || bootCache.categoriesUpdatedAt) {
+            const nextCache = { ...bootCache };
+            delete nextCache.categories;
+            delete nextCache.categoriesUpdatedAt;
+            window.__BSQ_MYPAGE_CACHE__ = nextCache;
+        }
+    }
+
     async function fetchSharedCategories() {
         try {
-            const res = await window.BSQ.api('/api/class-categories', { cacheBust: false });
+            const res = await window.BSQ.api('/api/class-categories');
             if (res?.success && Array.isArray(res.data) && res.data.length) {
                 return cacheSharedCategories(normalizeCategories(res.data));
             }
@@ -687,6 +701,7 @@
         window.addEventListener('bsq_sync', (event) => {
             const type = event.detail?.type;
             if (type === 'class-categories') {
+                invalidateCategoryCache();
                 renderEditCategoryOptions(document.getElementById('editClassCategory')?.value || '', true)
                     .catch((error) => console.warn('[mypage] category refresh failed:', error));
             }

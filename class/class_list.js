@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     categories: [],
     currentCategory: urlParams.get('cat') || 'all',
     currentSort: 'newest',
-    searchQuery: '',
+    searchQuery: urlParams.get('q') || '',
     categoryMenuExpanded: false,
     bookmarkCounts: new Map(),
     bookmarkedIds: new Set(),
@@ -76,6 +76,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     return String(value || '').trim();
   }
 
+  function renderCategoryMedia(item, baseClass = 'class-category-media-stack') {
+    const image = String(item?.image_url || '').trim();
+    const imageMarkup = image
+      ? `<span class="${baseClass}-image-wrap"><img class="${baseClass}-image" src="${escapeHtml(image)}" alt="${escapeHtml(item?.label || item?.name || '')}" loading="lazy"></span>`
+      : '';
+    return `
+      <span class="${baseClass}">
+        <span class="${baseClass}-emoji">${escapeHtml(item?.emoji || '✨')}</span>
+        ${imageMarkup}
+      </span>
+    `;
+  }
+
+  function syncClassListUrl() {
+    const nextUrl = new URL(window.location.href);
+    const category = normalizeCategoryName(state.currentCategory || 'all');
+    const query = String(state.searchQuery || '').trim();
+
+    if (category && category !== 'all') nextUrl.searchParams.set('cat', category);
+    else nextUrl.searchParams.delete('cat');
+
+    if (query) nextUrl.searchParams.set('q', query);
+    else nextUrl.searchParams.delete('q');
+
+    window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+  }
+
   function getEffectivePrice(cls) {
     const original = Number(cls.price || 0);
     const discount = Number(cls.discount_rate || 0);
@@ -107,7 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
     if (window.BSQ?.api) {
-      const res = await window.BSQ.api('/api/site-settings', { cacheBust: false }).catch(() => null);
+      const res = await window.BSQ.api('/api/site-settings').catch(() => null);
       return res?.success ? (res.data || null) : null;
     }
     return null;
@@ -191,6 +218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       merged.push({
         name,
         label: String(item?.label || name).trim(),
+        image_url: String(item?.image_url || '').trim(),
         emoji: String(item?.emoji || '📚').trim() || '📚',
       });
     };
@@ -314,11 +342,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function loadCategories() {
     try {
-      const res = await window.BSQ.api('/api/class-categories', { cacheBust: false });
+      const res = await window.BSQ.api('/api/class-categories');
       if (res.success && Array.isArray(res.data) && res.data.length > 0) {
         state.categories = res.data
           .map((item) => ({
             name: normalizeCategoryName(item.name),
+            image_url: String(item.image_url || '').trim(),
             emoji: String(item.emoji || '📚').trim() || '📚',
             class_count: Number(item.class_count || 0),
           }))
@@ -334,7 +363,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function loadClasses() {
     try {
-      const result = await window.BSQ.api(`/api/classes?limit=${CLASS_LIST_FETCH_LIMIT}`, { cacheBust: false });
+      const result = await window.BSQ.api(`/api/classes?limit=${CLASS_LIST_FETCH_LIMIT}`);
       state.allClasses = result.success && Array.isArray(result.data) ? result.data : [];
     } catch (error) {
       console.error('[class_list] D1 API load error:', error);
@@ -359,7 +388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 data-cat="${escapeHtml(item.name)}"
                 aria-pressed="${isActive ? 'true' : 'false'}"
                 title="${escapeHtml(item.label)}">
-          <span class="class-category-icon">${escapeHtml(item.emoji)}</span>
+          ${renderCategoryMedia(item, 'class-category-icon-stack')}
           <span class="class-category-label">${escapeHtml(item.label)}</span>
         </button>
       `;
@@ -531,6 +560,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       event.preventDefault();
       state.currentCategory = String(button.dataset.cat || 'all');
       state.categoryMenuExpanded = false;
+      syncClassListUrl();
       renderCategoryMenu();
       renderClasses();
     });
@@ -543,10 +573,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const searchInput = document.getElementById('classSearchInput');
     let searchTimer = null;
+    if (searchInput) searchInput.value = state.searchQuery;
     searchInput?.addEventListener('input', (event) => {
       clearTimeout(searchTimer);
       searchTimer = setTimeout(() => {
         state.searchQuery = String(event.target.value || '').trim();
+        syncClassListUrl();
         renderClasses();
       }, 220);
     });

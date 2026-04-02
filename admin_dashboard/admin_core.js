@@ -70,6 +70,7 @@ function applyRoleVisibility(role) {
     'tabClassBoards',
     'tabMenuSettings',
     'tabHomepage',
+    'tabMediaAssets',
     'tabRecommend',
     'tabFooter',
     'tabPages',

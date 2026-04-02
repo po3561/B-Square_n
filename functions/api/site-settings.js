@@ -1,5 +1,7 @@
 ﻿import { json, options } from './_lib/http.js';
 
+import { ensureSiteSettingsSchema } from './_lib/schema.js';
+
 const RESPONSE_HEADERS = {
   'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
 };
@@ -19,7 +21,10 @@ export async function onRequest(context) {
   const method = request.method;
 
   if (method === 'GET') {
+    let phase = 'ensure';
     try {
+      await ensureSiteSettingsSchema(db);
+      phase = 'select';
       const settings = await db.prepare("SELECT * FROM site_settings WHERE id = 'global'").first();
 
       if (!settings) {
@@ -27,8 +32,33 @@ export async function onRequest(context) {
           success: true,
           data: {
             site_name: 'B-Square',
+            site_url: '',
+            company_name: '',
+            ceo_name: '',
+            address: '',
+            biz_num: '',
+            mail_order_num: '',
+            cs_phone: '',
+            cs_email: '',
             banners: [],
             bottom_banners: [],
+            logo_url: '',
+            logo_light_url: '',
+            logo_dark_url: '',
+            favicon_url: '',
+            favicon_light_url: '',
+            favicon_dark_url: '',
+            footer_hours: '',
+            footer_terms_url: '',
+            footer_privacy_url: '',
+            footer_instagram_url: '',
+            footer_youtube_url: '',
+            seo: {
+              title: '',
+              description: '',
+              keywords: '',
+              image: '',
+            },
           },
         }, { headers: RESPONSE_HEADERS });
       }
@@ -42,7 +72,11 @@ export async function onRequest(context) {
           site_name: settings.site_name,
           site_url: settings.site_url,
           logo_url: settings.logo_url,
+          logo_light_url: settings.logo_light_url,
+          logo_dark_url: settings.logo_dark_url,
           favicon_url: settings.favicon_url,
+          favicon_light_url: settings.favicon_light_url,
+          favicon_dark_url: settings.favicon_dark_url,
           company_name: settings.company_name,
           ceo_name: settings.ceo_name,
           address: settings.address,
@@ -66,13 +100,21 @@ export async function onRequest(context) {
         },
       }, { headers: RESPONSE_HEADERS });
     } catch (error) {
-      console.error('[API /site-settings GET] Error:', error);
-      return json(request, env, { success: false, error: error.message }, { status: 500 });
+      console.error(`[API /site-settings GET] ${phase} Error:`, error);
+      return json(request, env, {
+        success: false,
+        error: error.message || 'Failed to load site settings',
+        phase,
+        detail: error.stack || '',
+      }, { status: 500 });
     }
   }
 
   if (method === 'POST') {
+    let phase = 'ensure';
     try {
+      await ensureSiteSettingsSchema(db);
+      phase = 'parse';
       const body = await request.json();
       const seo = body.seo || {};
       const bannersJson = JSON.stringify(body.banners || []);
@@ -80,7 +122,7 @@ export async function onRequest(context) {
 
       const sql = `
         INSERT OR REPLACE INTO site_settings (
-          id, site_name, site_url, logo_url, favicon_url,
+          id, site_name, site_url, logo_url, logo_light_url, logo_dark_url, favicon_url, favicon_light_url, favicon_dark_url,
           company_name, ceo_name, address, biz_num,
           mail_order_num, cs_phone, cs_email,
           seo_title, seo_description, seo_keywords, seo_image,
@@ -88,7 +130,7 @@ export async function onRequest(context) {
           footer_terms_url, footer_privacy_url, footer_instagram_url, footer_youtube_url,
           updated_at
         ) VALUES (
-          'global', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now')
+          'global', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now')
         )
       `;
 
@@ -96,7 +138,11 @@ export async function onRequest(context) {
         body.site_name || '',
         body.site_url || '',
         body.logo_url || '',
+        body.logo_light_url || '',
+        body.logo_dark_url || '',
         body.favicon_url || '',
+        body.favicon_light_url || '',
+        body.favicon_dark_url || '',
         body.company_name || '',
         body.ceo_name || '',
         body.address || '',
@@ -124,14 +170,14 @@ export async function onRequest(context) {
         if (msg.includes('no column named updated_at')) {
           const fallbackSql = `
             INSERT OR REPLACE INTO site_settings (
-              id, site_name, site_url, logo_url, favicon_url,
+              id, site_name, site_url, logo_url, logo_light_url, logo_dark_url, favicon_url, favicon_light_url, favicon_dark_url,
               company_name, ceo_name, address, biz_num,
               mail_order_num, cs_phone, cs_email,
               seo_title, seo_description, seo_keywords, seo_image,
               banners, bottom_banners, footer_hours,
               footer_terms_url, footer_privacy_url, footer_instagram_url, footer_youtube_url
             ) VALUES (
-              'global', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+              'global', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
           `;
           await db.prepare(fallbackSql).bind(...bindValues).run();
@@ -142,8 +188,13 @@ export async function onRequest(context) {
 
       return json(request, env, { success: true, message: 'Settings updated successfully' });
     } catch (error) {
-      console.error('[API /site-settings POST] Error:', error);
-      return json(request, env, { success: false, error: error.message || 'Failed to save site settings' }, { status: 500 });
+      console.error(`[API /site-settings POST] ${phase} Error:`, error);
+      return json(request, env, {
+        success: false,
+        error: error.message || 'Failed to save site settings',
+        phase,
+        detail: error.stack || '',
+      }, { status: 500 });
     }
   }
 

@@ -15,6 +15,37 @@
   const prefix = homePrefix;
 
   const OP_MODE_KEY = 'bsq_operator_view_mode';
+  const SEARCH_DEBOUNCE_MS = 180;
+  const SEARCH_LIMIT = 6;
+
+  const SEARCH_SECTION_TITLES = {
+    categories: '카테고리',
+    classes: '클래스',
+    notices: '공지사항',
+    class_notices: '클래스 공지',
+    faqs: 'FAQ',
+    inquiries: '문의',
+    history: '최근 검색',
+  };
+
+  const SEARCH_RESULT_LABELS = {
+    category: '카테고리',
+    class: '클래스',
+    notice: '공지',
+    class_notice: '클래스 공지',
+    faq: 'FAQ',
+    inquiry: '문의',
+  };
+
+  const searchState = {
+    open: false,
+    query: '',
+    pendingRequest: 0,
+    timer: null,
+    results: null,
+    history: [],
+    currentRequestQuery: '',
+  };
 
   const NAV_ITEMS = [
     { id: 'class', label: '클래스', href: 'class/class_list.html' },
@@ -99,6 +130,137 @@
     };
   }
 
+  function escapeHtml(value = '') {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function getThemeName() {
+    const theme = String(document.documentElement?.dataset?.theme || document.body?.dataset?.theme || localStorage.getItem('bsq_theme') || 'dark').trim().toLowerCase();
+    return theme === 'light' ? 'light' : 'dark';
+  }
+
+  function pickThemedUrl(settings, lightKey, darkKey, fallbackKey) {
+    const theme = getThemeName();
+    const lightUrl = String(settings?.[lightKey] || '').trim();
+    const darkUrl = String(settings?.[darkKey] || '').trim();
+    const fallbackUrl = String(settings?.[fallbackKey] || '').trim();
+    return theme === 'light'
+      ? (lightUrl || fallbackUrl || darkUrl)
+      : (darkUrl || fallbackUrl || lightUrl);
+  }
+
+  function normalizeSearchResult(item = {}) {
+    return {
+      kind: String(item.kind || item.result_type || '').trim(),
+      id: String(item.id || item.result_id || '').trim(),
+      title: String(item.title || item.result_title || item.query || '').trim(),
+      subtitle: String(item.subtitle || item.category || item.source_page || '').trim(),
+      snippet: String(item.snippet || '').trim(),
+      url: String(item.url || item.result_url || '').trim(),
+      image_url: String(item.image_url || '').trim(),
+      class_count: Number(item.class_count || 0),
+      public_class_count: Number(item.public_class_count || 0),
+      query: String(item.query || '').trim(),
+      result_title: String(item.result_title || '').trim(),
+    };
+  }
+
+  function getSearchKindLabel(kind) {
+    return SEARCH_RESULT_LABELS[kind] || '결과';
+  }
+
+  function selectBestSearchTarget(data) {
+    const results = data?.results || {};
+    const orderedBuckets = ['classes', 'notices', 'class_notices', 'faqs', 'inquiries', 'categories'];
+
+    for (const bucket of orderedBuckets) {
+      const item = Array.isArray(results[bucket]) ? results[bucket][0] : null;
+      if (item?.url) return normalizeSearchResult(item);
+    }
+
+    const suggestions = Array.isArray(data?.suggestions) ? data.suggestions : [];
+    const target = suggestions.find((item) => item?.url);
+    return target ? normalizeSearchResult(target) : null;
+  }
+
+  function buildSearchResultCard(item, query = '') {
+    const result = normalizeSearchResult(item);
+    if (!result.url) return '';
+
+    const label = getSearchKindLabel(result.kind);
+    const subtitle = result.subtitle || (result.kind === 'history' ? result.query : '');
+    const snippet = result.snippet || '';
+    const title = result.title || result.query || '결과 없음';
+    const image = result.image_url
+      ? `<img class="bsq-search-result-image" src="${escapeHtml(result.image_url)}" alt="">`
+      : `<span class="bsq-search-result-avatar">${escapeHtml((title || label).charAt(0) || '?')}</span>`;
+
+    return `
+      <button type="button" class="bsq-search-result" data-url="${escapeHtml(result.url)}" data-kind="${escapeHtml(result.kind)}" data-id="${escapeHtml(result.id)}" data-title="${escapeHtml(title)}" data-query="${escapeHtml(query)}">
+        <span class="bsq-search-result-media">${image}</span>
+        <span class="bsq-search-result-copy">
+          <span class="bsq-search-result-head">
+            <strong>${escapeHtml(title)}</strong>
+            <span class="bsq-search-result-badge">${escapeHtml(label)}</span>
+          </span>
+          ${subtitle ? `<span class="bsq-search-result-subtitle">${escapeHtml(subtitle)}</span>` : ''}
+          ${snippet ? `<span class="bsq-search-result-snippet">${escapeHtml(snippet)}</span>` : ''}
+        </span>
+      </button>
+    `;
+  }
+
+  function buildSearchSection(title, items, query = '') {
+    const list = Array.isArray(items) ? items.filter((item) => item && (item.url || item.result_url || item.query)) : [];
+    if (!list.length) return '';
+
+    return `
+      <section class="bsq-search-section">
+        <div class="bsq-search-section-head">
+          <strong>${escapeHtml(title)}</strong>
+          <span>${list.length}</span>
+        </div>
+        <div class="bsq-search-section-list">
+          ${list.map((item) => buildSearchResultCard(item, query)).join('')}
+        </div>
+      </section>
+    `;
+  }
+
+  function buildSearchEmptyState(query) {
+    const q = String(query || '').trim();
+    if (!q) {
+      return `
+        <div class="bsq-search-empty">
+          <strong>최근 검색 기록이 표시됩니다.</strong>
+          <p>검색어를 입력하면 클래스, 공지, FAQ, 문의를 함께 찾습니다.</p>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="bsq-search-empty">
+        <strong>검색 결과가 없습니다.</strong>
+        <p>다른 키워드로 다시 검색하거나 아래 바로가기를 이용해 보세요.</p>
+      </div>
+    `;
+  }
+
+  function buildSearchQuickLinks() {
+    return `
+      <div class="bsq-search-quick-links">
+        <a href="${prefix}class/class_list.html">전체 클래스</a>
+        <a href="${prefix}notice/notice.html">공지사항</a>
+        <a href="${prefix}contact/contact.html">문의하기</a>
+      </div>
+    `;
+  }
+
   function buildHeaderHTML() {
     return `
       <header class="site-header" id="bsqHeader">
@@ -143,6 +305,238 @@
           </div>
         </div>
       </header>`;
+  }
+
+  function setupGlobalSearch() {
+    const shell = document.querySelector('.search-bar.desktop-only-flex');
+    if (!shell || shell.dataset.bsqSearchReady === '1') return;
+
+    shell.dataset.bsqSearchReady = '1';
+    shell.classList.add('bsq-global-search-shell');
+    shell.innerHTML = `
+      <input
+        type="search"
+        id="bsqSearchInput"
+        class="bsq-search-input"
+        placeholder="통합 검색"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="사이트 통합 검색"
+      >
+      <button type="button" id="bsqSearchButton" class="bsq-search-button">검색</button>
+      <div id="bsqSearchPanel" class="bsq-search-panel" aria-live="polite"></div>
+    `;
+
+    const input = document.getElementById('bsqSearchInput');
+    const button = document.getElementById('bsqSearchButton');
+    const panel = document.getElementById('bsqSearchPanel');
+    if (!input || !button || !panel) return;
+
+    let activeQuery = '';
+    let requestToken = 0;
+    let debounceTimer = null;
+    let open = false;
+
+    const getContext = () => 'global';
+
+    const setPanelOpen = (value) => {
+      open = !!value;
+      shell.classList.toggle('is-search-open', open);
+      panel.hidden = !open;
+      input.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+
+    const normalizeQuery = (value) => String(value || '').trim();
+
+    const buildRequestUrl = (query) => {
+      const params = new URLSearchParams();
+      if (query) params.set('q', query);
+      params.set('scope', getContext());
+      params.set('limit', String(SEARCH_LIMIT));
+      params.set('history_limit', '6');
+      params.set('include_history', '1');
+      return `/api/search?${params.toString()}`;
+    };
+
+    const renderPayload = (data, query) => {
+      const normalizedQuery = normalizeQuery(query);
+      const results = data?.results || {};
+      const history = Array.isArray(data?.history) ? data.history : [];
+      const sections = [];
+
+      if (normalizedQuery) {
+        sections.push(
+          buildSearchSection(SEARCH_SECTION_TITLES.categories, results.categories, normalizedQuery),
+          buildSearchSection(SEARCH_SECTION_TITLES.classes, results.classes, normalizedQuery),
+          buildSearchSection(SEARCH_SECTION_TITLES.notices, results.notices, normalizedQuery),
+          buildSearchSection(SEARCH_SECTION_TITLES.class_notices, results.class_notices, normalizedQuery),
+          buildSearchSection(SEARCH_SECTION_TITLES.faqs, results.faqs, normalizedQuery),
+          buildSearchSection(SEARCH_SECTION_TITLES.inquiries, results.inquiries, normalizedQuery),
+        );
+      } else {
+        if (history.length) {
+          sections.push(buildSearchSection(SEARCH_SECTION_TITLES.history, history, normalizedQuery));
+        }
+        if (Array.isArray(results.categories) && results.categories.length) {
+          sections.push(buildSearchSection('추천 카테고리', results.categories, normalizedQuery));
+        }
+        sections.push(buildSearchQuickLinks());
+      }
+
+      const content = sections.filter(Boolean).join('') || buildSearchEmptyState(normalizedQuery);
+      panel.innerHTML = content;
+
+      panel.querySelectorAll('.bsq-search-result').forEach((item) => {
+        item.addEventListener('click', async () => {
+          const result = {
+            kind: item.dataset.kind || '',
+            id: item.dataset.id || '',
+            title: item.dataset.title || '',
+            url: item.dataset.url || '',
+          };
+          const targetUrl = String(result.url || '').trim();
+          if (!targetUrl) return;
+
+          const selectedQuery = normalizeQuery(item.dataset.query || normalizedQuery);
+          if (selectedQuery && window.BSQ?.api) {
+            void window.BSQ.api('/api/search', {
+              method: 'POST',
+              keepalive: true,
+              body: JSON.stringify({
+                action: 'record',
+                query: selectedQuery,
+                context: getContext(),
+                result_type: result.kind || '',
+                result_id: result.id || '',
+                result_title: result.title || '',
+                result_url: targetUrl,
+                source_page: currentPath || '',
+              }),
+            });
+          }
+
+          window.location.href = targetUrl;
+        });
+      });
+    };
+
+    const fetchAndRender = async (query) => {
+      const normalizedQuery = normalizeQuery(query);
+      activeQuery = normalizedQuery;
+      const token = ++requestToken;
+
+      if (!normalizedQuery) {
+        setPanelOpen(true);
+      } else {
+        setPanelOpen(true);
+      }
+
+      try {
+        const res = await window.BSQ.api(buildRequestUrl(normalizedQuery));
+        if (token !== requestToken) return;
+        const data = res?.success ? (res.data || null) : null;
+        searchState.results = data;
+        searchState.history = Array.isArray(data?.history) ? data.history : [];
+        renderPayload(data, normalizedQuery);
+      } catch (error) {
+        if (token !== requestToken) return;
+        panel.innerHTML = buildSearchEmptyState(normalizedQuery);
+        console.warn('[BSQ] search load failed:', error);
+      }
+    };
+
+    const navigateToBestResult = async () => {
+      const query = normalizeQuery(input.value || '');
+      if (!query) {
+        setPanelOpen(true);
+        await fetchAndRender('');
+        return;
+      }
+
+      const res = await window.BSQ.api(buildRequestUrl(query));
+      const data = res?.success ? (res.data || null) : null;
+      searchState.results = data;
+      searchState.history = Array.isArray(data?.history) ? data.history : [];
+      renderPayload(data, query);
+
+      const best = selectBestSearchTarget(data);
+      if (!best?.url) return;
+
+      if (window.BSQ?.api) {
+        void window.BSQ.api('/api/search', {
+          method: 'POST',
+          keepalive: true,
+          body: JSON.stringify({
+            action: 'record',
+            query,
+            context: getContext(),
+            result_type: best.kind || '',
+            result_id: best.id || '',
+            result_title: best.title || '',
+            result_url: best.url || '',
+            source_page: currentPath || '',
+          }),
+        });
+      }
+
+      window.location.href = best.url;
+    };
+
+    const scheduleFetch = (query) => {
+      window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(() => {
+        void fetchAndRender(query);
+      }, SEARCH_DEBOUNCE_MS);
+    };
+
+    input.addEventListener('focus', () => {
+      setPanelOpen(true);
+      if (!activeQuery) {
+        void fetchAndRender('');
+      }
+    });
+
+    input.addEventListener('input', (event) => {
+      const nextQuery = normalizeQuery(event.target.value || '');
+      activeQuery = nextQuery;
+      setPanelOpen(true);
+      scheduleFetch(nextQuery);
+    });
+
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setPanelOpen(false);
+        input.blur();
+        return;
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        void navigateToBestResult();
+      }
+    });
+
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      void navigateToBestResult();
+    });
+
+    panel.addEventListener('mousedown', (event) => {
+      event.stopPropagation();
+    });
+
+    document.addEventListener('click', (event) => {
+      if (shell.contains(event.target)) return;
+      setPanelOpen(false);
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && open) {
+        setPanelOpen(false);
+      }
+    });
+
+    setPanelOpen(false);
   }
 
   function buildDrawerHTML() {
@@ -247,14 +641,14 @@
   }
 
   async function applyShellBranding() {
-    try {
-      const settings = window.__BSQ_SITE_SETTINGS__
+      try {
+        const settings = window.__BSQ_SITE_SETTINGS__
         || (window.BSQ?.siteSettingsReady ? await window.BSQ.siteSettingsReady : null)
         || null;
       if (!settings) return;
 
       const brandName = settings.company_name || settings.site_name || 'B-Square';
-      const logoUrl = settings.logo_url || '';
+      const logoUrl = pickThemedUrl(settings, 'logo_light_url', 'logo_dark_url', 'logo_url');
 
       const setLogo = (imgId, textId) => {
         const img = document.getElementById(imgId);
@@ -437,6 +831,24 @@
     window.addEventListener('bsq_session', renderCurrentSession);
   }
 
+  function ensureHelperLoaded() {
+    if (window.__BSQ_HELPER_READY__) return;
+    if (document.getElementById('bsqHelperLauncher') || document.getElementById('bsqHelperPanel')) return;
+    if (document.querySelector('script[data-bsq-helper="1"]')) return;
+
+    const helperScript = document.createElement('script');
+    helperScript.dataset.bsqHelper = '1';
+    helperScript.async = true;
+    helperScript.src = `${homePrefix}kakao_quick.js?v=20260402_01`;
+    helperScript.onload = () => {
+      window.__BSQ_HELPER_LOADED__ = true;
+    };
+    helperScript.onerror = () => {
+      console.warn('[BSQ] Helper script failed to load:', helperScript.src);
+    };
+    document.body.appendChild(helperScript);
+  }
+
   window.handleGlobalLogout = async function () {
     const authProvider = String(window.BSQ?.session?.user?.auth_provider || window.BSQ?.userProfile?.auth_provider || '').trim().toLowerCase();
 
@@ -467,7 +879,18 @@
   function run() {
     injectUI();
     setupDrawer();
+    setupGlobalSearch();
+    ensureHelperLoaded();
     initAuth();
+
+    window.addEventListener('bsq_preferences', () => {
+      void applyShellBranding();
+    });
+    window.addEventListener('bsq_sync', (event) => {
+      if (String(event?.detail?.type || '') === 'site-settings') {
+        void applyShellBranding();
+      }
+    });
   }
 
   if (document.readyState === 'loading') {

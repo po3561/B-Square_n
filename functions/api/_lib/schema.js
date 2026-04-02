@@ -11,6 +11,8 @@ let chatMessagesSchemaReady = false;
 let gatheringsSchemaReady = false;
 let operationsSchemaReady = false;
 let siteSettingsSchemaReady = false;
+let mediaAssetsSchemaReady = false;
+let searchHistorySchemaReady = false;
 let commerceSchemaReady = false;
 const tableColumnsCache = new Map();
 
@@ -188,6 +190,9 @@ export async function ensureAuthSchema(db) {
       preferred_language TEXT,
       preferred_theme TEXT,
       mfa_active INTEGER DEFAULT 0,
+      marketing_sms_consent INTEGER DEFAULT 0,
+      marketing_email_consent INTEGER DEFAULT 0,
+      marketing_consent_updated_at DATETIME,
       referrer_code TEXT,
       profile_image_url TEXT,
       birth_year TEXT,
@@ -209,12 +214,15 @@ export async function ensureAuthSchema(db) {
   await addColumnIfMissing(db, 'users', 'password_hash TEXT');
   await addColumnIfMissing(db, 'users', 'name TEXT');
   await addColumnIfMissing(db, 'users', 'phone TEXT');
-  await addColumnIfMissing(db, 'users', 'username TEXT UNIQUE');
+  await addColumnIfMissing(db, 'users', 'username TEXT');
   await addColumnIfMissing(db, 'users', 'sns_link TEXT');
   await addColumnIfMissing(db, 'users', 'preferred_category TEXT');
   await addColumnIfMissing(db, 'users', 'preferred_language TEXT');
   await addColumnIfMissing(db, 'users', 'preferred_theme TEXT');
   await addColumnIfMissing(db, 'users', 'mfa_active INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'users', 'marketing_sms_consent INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'users', 'marketing_email_consent INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'users', 'marketing_consent_updated_at DATETIME');
   await addColumnIfMissing(db, 'users', 'referrer_code TEXT');
   await addColumnIfMissing(db, 'users', 'profile_image_url TEXT');
   await addColumnIfMissing(db, 'users', 'birth_year TEXT');
@@ -234,6 +242,12 @@ export async function ensureAuthSchema(db) {
   await addColumnIfMissing(db, 'users', 'blacklist_reason TEXT');
   await addColumnIfMissing(db, 'users', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
   await addColumnIfMissing(db, 'users', 'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+  try {
+    await db.prepare('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)').run();
+  } catch (error) {
+    // Old databases may already contain duplicate usernames. Do not block auth hydration on that.
+    console.warn('[schema] failed to ensure unique username index:', error?.message || error);
+  }
 
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS sessions (
@@ -1501,7 +1515,11 @@ export async function ensureSiteSettingsSchema(db) {
       site_name TEXT,
       site_url TEXT,
       logo_url TEXT,
+      logo_light_url TEXT,
+      logo_dark_url TEXT,
       favicon_url TEXT,
+      favicon_light_url TEXT,
+      favicon_dark_url TEXT,
       company_name TEXT,
       ceo_name TEXT,
       address TEXT,
@@ -1521,7 +1539,11 @@ export async function ensureSiteSettingsSchema(db) {
   await addColumnIfMissing(db, 'site_settings', 'site_name TEXT');
   await addColumnIfMissing(db, 'site_settings', 'site_url TEXT');
   await addColumnIfMissing(db, 'site_settings', 'logo_url TEXT');
+  await addColumnIfMissing(db, 'site_settings', 'logo_light_url TEXT');
+  await addColumnIfMissing(db, 'site_settings', 'logo_dark_url TEXT');
   await addColumnIfMissing(db, 'site_settings', 'favicon_url TEXT');
+  await addColumnIfMissing(db, 'site_settings', 'favicon_light_url TEXT');
+  await addColumnIfMissing(db, 'site_settings', 'favicon_dark_url TEXT');
   await addColumnIfMissing(db, 'site_settings', 'company_name TEXT');
   await addColumnIfMissing(db, 'site_settings', 'ceo_name TEXT');
   await addColumnIfMissing(db, 'site_settings', 'address TEXT');
@@ -1543,6 +1565,90 @@ export async function ensureSiteSettingsSchema(db) {
   await addColumnIfMissing(db, 'site_settings', 'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP');
 
   siteSettingsSchemaReady = true;
+}
+
+export async function ensureMediaAssetsSchema(db) {
+  if (mediaAssetsSchemaReady) return;
+
+  await ensureAuthSchema(db);
+
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS media_assets (
+      id TEXT PRIMARY KEY,
+      asset_group TEXT NOT NULL DEFAULT 'general',
+      asset_type TEXT NOT NULL DEFAULT 'image',
+      name TEXT NOT NULL,
+      description TEXT,
+      file_name TEXT,
+      mime_type TEXT,
+      file_size INTEGER DEFAULT 0,
+      data_url TEXT NOT NULL,
+      alt_text TEXT,
+      tags TEXT,
+      sort_order INTEGER DEFAULT 0,
+      is_active INTEGER DEFAULT 1,
+      created_by TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+
+  await addColumnIfMissing(db, 'media_assets', "asset_group TEXT NOT NULL DEFAULT 'general'");
+  await addColumnIfMissing(db, 'media_assets', "asset_type TEXT NOT NULL DEFAULT 'image'");
+  await addColumnIfMissing(db, 'media_assets', 'name TEXT');
+  await addColumnIfMissing(db, 'media_assets', 'description TEXT');
+  await addColumnIfMissing(db, 'media_assets', 'file_name TEXT');
+  await addColumnIfMissing(db, 'media_assets', 'mime_type TEXT');
+  await addColumnIfMissing(db, 'media_assets', 'file_size INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'media_assets', 'data_url TEXT');
+  await addColumnIfMissing(db, 'media_assets', 'alt_text TEXT');
+  await addColumnIfMissing(db, 'media_assets', 'tags TEXT');
+  await addColumnIfMissing(db, 'media_assets', 'sort_order INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'media_assets', 'is_active INTEGER DEFAULT 1');
+  await addColumnIfMissing(db, 'media_assets', 'created_by TEXT');
+  await addColumnIfMissing(db, 'media_assets', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+  await addColumnIfMissing(db, 'media_assets', 'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_media_assets_group_type_active ON media_assets(asset_group, asset_type, is_active, sort_order, updated_at)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_media_assets_name ON media_assets(name COLLATE NOCASE)').run();
+
+  mediaAssetsSchemaReady = true;
+}
+
+export async function ensureSearchHistorySchema(db) {
+  if (searchHistorySchemaReady) return;
+
+  await ensureAuthSchema(db);
+
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS search_history (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      context TEXT DEFAULT 'global',
+      query TEXT NOT NULL,
+      result_type TEXT,
+      result_id TEXT,
+      result_title TEXT,
+      result_url TEXT,
+      source_page TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run();
+
+  await addColumnIfMissing(db, 'search_history', 'user_id TEXT');
+  await addColumnIfMissing(db, 'search_history', "context TEXT DEFAULT 'global'");
+  await addColumnIfMissing(db, 'search_history', 'query TEXT');
+  await addColumnIfMissing(db, 'search_history', 'result_type TEXT');
+  await addColumnIfMissing(db, 'search_history', 'result_id TEXT');
+  await addColumnIfMissing(db, 'search_history', 'result_title TEXT');
+  await addColumnIfMissing(db, 'search_history', 'result_url TEXT');
+  await addColumnIfMissing(db, 'search_history', 'source_page TEXT');
+  await addColumnIfMissing(db, 'search_history', 'created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+  await addColumnIfMissing(db, 'search_history', 'updated_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_search_history_user_context_time ON search_history(user_id, context, created_at)').run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_search_history_user_query ON search_history(user_id, query COLLATE NOCASE)').run();
+
+  searchHistorySchemaReady = true;
 }
 
 export async function ensureCommerceSchema(db) {

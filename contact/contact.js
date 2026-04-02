@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const inquirySearchQuery = String(urlParams.get('q') || '').trim().toLowerCase();
+
     // ---- 카카오 채널 연결 ----
     const btnKakao = document.getElementById('btnKakaoChannel');
     btnKakao?.addEventListener('click', () => {
@@ -35,6 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             const payload = { name, email, category, title, content };
+            if (window.BSQ?.session?.user?.id) payload.user_id = window.BSQ.session.user.id;
             if (window.__BSQ_DEV_MODE__) payload.submitted_by = 'OPERATOR_GHOST';
 
             const result = await window.BSQ.api('/api/inquiries', {
@@ -72,9 +76,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const result = await window.BSQ.api('/api/inquiries');
         if (!result.success) return;
 
-        const inquiries = result.data || [];
+        let inquiries = result.data || [];
+        if (inquirySearchQuery) {
+            inquiries = inquiries.filter((inq) => {
+                const haystack = [
+                    inq.title,
+                    inq.content,
+                    inq.category,
+                    inq.name,
+                    inq.email,
+                ].filter(Boolean).join(' ').toLowerCase();
+                return haystack.includes(inquirySearchQuery);
+            });
+        }
         if (inquiries.length === 0) {
-            list.innerHTML = '<div class="empty-state">접수된 문의가 없습니다.</div>';
+            list.innerHTML = `<div class="empty-state">${inquirySearchQuery ? '검색 결과가 없습니다.' : '접수된 문의가 없습니다.'}</div>`;
             return;
         }
 

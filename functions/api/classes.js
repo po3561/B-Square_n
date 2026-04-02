@@ -1,6 +1,8 @@
 ﻿import { requireClassManager, requireSession } from './_lib/auth.js';
 import { json } from './_lib/http.js';
 
+import { ensureClassStatsSchema, ensureClassesSchema } from './_lib/schema.js';
+
 const RESPONSE_HEADERS = {
   'Cache-Control': 'public, max-age=15, stale-while-revalidate=120',
 };
@@ -90,7 +92,12 @@ export async function onRequest(context) {
     const limit = category || query || instructorId ? requestedLimit : Math.min(requestedLimit, 120);
     const offset = Math.max(Number.parseInt(url.searchParams.get('offset') || '0', 10) || 0, 0);
 
+    let phase = 'ensure';
     try {
+      await ensureClassesSchema(db);
+      await ensureClassStatsSchema(db);
+
+      phase = 'query';
       let sql = `${CLASS_LIST_SELECT} WHERE c.is_public = 1`;
       const params = [];
 
@@ -127,7 +134,9 @@ export async function onRequest(context) {
       return json(request, env, {
         success: false,
         error: 'Failed to load class list',
+        phase,
         detail: error.message,
+        stack: error.stack || '',
       }, { status: 500 });
     }
   }

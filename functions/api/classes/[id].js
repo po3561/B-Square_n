@@ -1,4 +1,11 @@
-﻿async function bumpClassVisit(db, classId) {
+import {
+  ensureAuthSchema,
+  ensureChatMessagesSchema,
+  ensureClassesSchema,
+  ensureClassStatsSchema,
+} from '../_lib/schema.js';
+
+async function bumpClassVisit(db, classId) {
   await db.prepare(`
     INSERT INTO class_stats (class_id, total_visits, updated_at)
     VALUES (?, 1, datetime('now'))
@@ -44,7 +51,14 @@ export async function onRequest(context) {
     return Response.json({ success: false, error: 'class_id is required' }, { status: 400 });
   }
 
-    try {
+  try {
+    await Promise.all([
+      ensureAuthSchema(db),
+      ensureClassesSchema(db),
+      ensureClassStatsSchema(db),
+      ensureChatMessagesSchema(db),
+    ]);
+
     const classData = await db
       .prepare(`
         SELECT

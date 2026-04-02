@@ -7,6 +7,35 @@ function normalizeText(value) {
   return String(value ?? '').trim();
 }
 
+function hasSubInstructorAccess(rawValue, userId) {
+  const targetId = String(userId || '').trim();
+  if (!targetId) return false;
+
+  const matches = (value) => String(value || '').trim() === targetId;
+
+  if (Array.isArray(rawValue)) {
+    return rawValue.some((item) => matches(item?.id ?? item?.user_id ?? item));
+  }
+
+  const rawText = String(rawValue || '').trim();
+  if (!rawText) return false;
+
+  try {
+    const parsed = JSON.parse(rawText);
+    if (Array.isArray(parsed)) {
+      return parsed.some((item) => matches(item?.id ?? item?.user_id ?? item));
+    }
+  } catch {
+    // fall through to delimited string matching
+  }
+
+  return rawText
+    .split(/[,\s]+/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .some((item) => item === targetId);
+}
+
 function normalizeCode(value) {
   return normalizeText(value).toUpperCase();
 }
@@ -247,7 +276,31 @@ export async function onRequestGet(context) {
         WHERE e.user_id = ? AND e.class_id = ?
       `).bind(userId, classId).first();
 
-      return json(request, env, { success: true, data: { enrolled: !!enrollment, enrollment } });
+      const isSelf = auth.user.id === userId;
+      let staffAccess = false;
+      if (!enrollment && isSelf) {
+        if (isAtLeastRole(auth.user.role, 'operator')) {
+          staffAccess = true;
+        } else {
+          const cls = await env.DB.prepare(`
+            SELECT creator_id, sub_instructors
+            FROM classes
+            WHERE id = ?
+          `).bind(classId).first().catch(() => null);
+
+          staffAccess = !!(cls && (String(cls.creator_id || '').trim() === userId || hasSubInstructorAccess(cls.sub_instructors, userId)));
+        }
+      }
+
+      const hasAccess = !!enrollment || staffAccess;
+      return json(request, env, {
+        success: true,
+        data: {
+          enrolled: hasAccess,
+          enrollment,
+          access: { enrolled: !!enrollment, staff: staffAccess },
+        },
+      });
     }
 
     if (classId && !userId) {
