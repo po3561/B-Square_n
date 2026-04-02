@@ -1839,7 +1839,43 @@
       : (row.class_name || row.class_title || '-');
   }
 
-  function settlementSearchText(row = {}, scope = state.settlementScope) {
+  function normalizeSettlementQuery(value) {
+    return String(value ?? '').normalize('NFKC').trim().toLowerCase();
+  }
+
+  function compactSettlementQuery(value) {
+    return normalizeSettlementQuery(value).replace(/[^0-9a-z가-힣]+/g, '');
+  }
+
+  function tokenizeSettlementQuery(value) {
+    return normalizeSettlementQuery(value)
+      .split(/[\s,./|()\-_:]+/)
+      .map((token) => token.trim())
+      .filter(Boolean);
+  }
+
+  function buildSettlementBigramSet(value) {
+    const compact = compactSettlementQuery(value);
+    if (compact.length < 2) return compact ? new Set([compact]) : new Set();
+    const grams = new Set();
+    for (let index = 0; index < compact.length - 1; index += 1) {
+      grams.add(compact.slice(index, index + 2));
+    }
+    return grams;
+  }
+
+  function settlementDiceCoefficient(a, b) {
+    const gramsA = buildSettlementBigramSet(a);
+    const gramsB = buildSettlementBigramSet(b);
+    if (!gramsA.size || !gramsB.size) return 0;
+    let overlap = 0;
+    for (const gram of gramsA) {
+      if (gramsB.has(gram)) overlap += 1;
+    }
+    return (2 * overlap) / (gramsA.size + gramsB.size);
+  }
+
+  function settlementSearchFields(row = {}, scope = state.settlementScope) {
     const scopeKey = normalizeSettlementScope(scope);
     const fields = scopeKey === 'instructor'
       ? [
@@ -1850,9 +1886,15 @@
           row.bank_name,
           row.bank_account,
           row.bank_holder,
+          row.class_titles,
           row.class_title,
           row.class_name,
+          row.category,
+          row.keywords,
+          row.coupon_detail,
           row.admin_code,
+          row.approval_result,
+          row.status,
         ]
       : [
           row.class_name,
@@ -1863,25 +1905,151 @@
           row.bank_name,
           row.bank_account,
           row.bank_holder,
+          row.category,
+          row.keywords,
+          row.coupon_detail,
           row.admin_code,
+          row.approval_result,
+          row.status,
         ];
-    return fields.map((value) => String(value || '').toLowerCase()).join(' ');
+    return fields;
   }
 
-  function matchSettlementRow(row, scope, query) {
-    const text = settlementSearchText(row, scope);
-    return !query || text.includes(query);
+  function settlementSearchText(row = {}, scope = state.settlementScope) {
+    return settlementSearchFields(row, scope)
+      .map((value) => String(value || '').toLowerCase())
+      .join(' ');
   }
 
-  function computeSettlementSummary(row = {}) {
-    const grossRevenue = Number(row.total_revenue ?? row.gross_revenue ?? row.revenue ?? row.total_amount ?? row.amount ?? 0);
-    const refundAmount = Number(row.refund_amount ?? 0);
-    const cardFeeAmount = Number(row.card_fee_amount ?? row.pg_fee ?? row.payment_fee_amount ?? 0);
-    const taxFeeAmount = Number(row.tax_fee_amount ?? row.tax_amount ?? 0);
-    const platformFeeAmount = Number(row.platform_fee_amount ?? row.platform_fee ?? 0);
-    const feeAmount = Number(row.total_fee ?? row.total_fee_amount ?? (cardFeeAmount + taxFeeAmount + platformFeeAmount));
+  function settlementSearchScore(row = {}, scope = state.settlementScope, query = '') {
+    const normalizedQuery = normalizeSettlementQuery(query);
+    if (!normalizedQuery) return 1;
+
+    const compactQuery = compactSettlementQuery(normalizedQuery);
+    if (!compactQuery) return 0;
+
+    const queryDigits = compactQuery.replace(/[^0-9]+/g, '');
+    const tokens = tokenizeSettlementQuery(normalizedQuery);
+    const fields = settlementSearchFields(row, scope);
+
+    let bestScore = 0;
+    let tokenHits = 0;
+    let digitHits = 0;
+
+    for (const field of fields) {
+      const normalizedField = normalizeSettlementQuery(field);
+      if (!normalizedField) continue;
+      const compactField = compactSettlementQuery(normalizedField);
+      if (!compactField) continue;
+
+      let score = 0;
+      if (compactField === compactQuery) score += 1000;
+      if (compactField.includes(compactQuery)) score += 350 + Math.min(100, compactQuery.length * 4);
+      if (compactQuery.includes(compactField)) score += 180 + Math.min(60, compactField.length * 2);
+      if (normalizedField.startsWith(normalizedQuery)) score += 120;
+      if (normalizedField.includes(normalizedQuery)) score += 80;
+
+      const fieldDigits = compactField.replace(/[^0-9]+/g, '');
+      if (queryDigits && fieldDigits) {
+        if (fieldDigits === queryDigits) score += 160;
+        else if (fieldDigits.includes(queryDigits)) score += 90;
+      }
+
+      const fieldTokenHits = tokens.filter((token) => {
+        const compactToken = compactSettlementQuery(token);
+        return compactToken && compactField.includes(compactToken);
+      }).length;
+
+      if (fieldTokenHits) {
+        tokenHits = Math.max(tokenHits, fieldTokenHits);
+        score += fieldTokenHits * 35;
+      }
+
+      if (queryDigits && fieldDigits && fieldDigits.includes(queryDigits)) {
+        digitHits = Math.max(digitHits, 1);
+      }
+
+      score += Math.round(settlementDiceCoefficient(compactField, compactQuery) * 120);
+
+      if (score > bestScore) bestScore = score;
+    }
+
+    if (!bestScore && tokens.length) {
+      const joined = compactSettlementQuery(fields.join(' '));
+      const matchedTokens = tokens.filter((token) => {
+        const compactToken = compactSettlementQuery(token);
+        return compactToken && joined.includes(compactToken);
+      }).length;
+      if (matchedTokens) {
+        tokenHits = Math.max(tokenHits, matchedTokens);
+        bestScore = matchedTokens * 20;
+      }
+    }
+
+    bestScore += tokenHits * 10;
+    bestScore += digitHits * 20;
+    return bestScore;
+  }
+
+  function settlementFeeRates() {
+    return {
+      pg: Number($('settlementRatePg')?.value || state.dashboard?.fee_rates?.pg_rate || 6),
+      tax: Number($('settlementRateTax')?.value || state.dashboard?.fee_rates?.tax_rate || 3.3),
+      platform: Number($('settlementRatePlatform')?.value || state.dashboard?.fee_rates?.platform_rate || 1.7),
+    };
+  }
+
+  function settlementSelectionSource(selection = null) {
+    if (!selection) return {};
+    return {
+      ...(selection.row || {}),
+      ...(selection.draft || {}),
+    };
+  }
+
+  function settlementSelectionDraft(row = {}, scope = state.settlementScope) {
+    const source = row || {};
+    const normalizedScope = normalizeSettlementScope(scope);
+    const displayTitle = settlementLabel(source, normalizedScope);
+    const grossRevenue = Number(source.gross_revenue ?? source.total_revenue ?? source.revenue ?? source.total_amount ?? source.amount ?? 0);
+    const refundAmount = Number(source.refund_amount ?? 0);
+    const rates = settlementFeeRates();
+    const cardFeeAmount = Math.round(grossRevenue * (rates.pg / 100));
+    const taxFeeAmount = Math.round(grossRevenue * (rates.tax / 100));
+    const platformFeeAmount = Math.round(grossRevenue * (rates.platform / 100));
+    return {
+      class_name: source.class_name || source.class_title || displayTitle || '',
+      instructor_name: source.instructor_name || '',
+      instructor_phone: source.instructor_phone || '',
+      instructor_email: source.instructor_email || '',
+      bank_name: source.bank_name || '',
+      bank_account: source.bank_account || '',
+      bank_holder: source.bank_holder || '',
+      gross_revenue: grossRevenue,
+      refund_amount: refundAmount,
+      payout_date: source.payout_date ? String(source.payout_date).slice(0, 10) : '',
+      admin_code: source.admin_code || source.approval_code || source.batch_id || source.id || '',
+      count_value: normalizedScope === 'instructor'
+        ? Number(source.class_count ?? source.settlement_count ?? 0)
+        : Number(source.settlement_count ?? source.class_count ?? 0),
+      source_label: source.source_label || (normalizedScope === 'instructor' ? '강사별 정산' : '클래스별 정산'),
+    };
+  }
+
+  function computeSettlementSummary(row = {}, draft = {}) {
+    const source = {
+      ...(row || {}),
+      ...(draft || {}),
+    };
+    const grossRevenue = Number(source.gross_revenue ?? source.total_revenue ?? source.revenue ?? source.total_amount ?? source.amount ?? 0);
+    const refundAmount = Number(source.refund_amount ?? 0);
+    const rates = settlementFeeRates();
+    const cardFeeAmount = Math.round(grossRevenue * (rates.pg / 100));
+    const taxFeeAmount = Math.round(grossRevenue * (rates.tax / 100));
+    const platformFeeAmount = Math.round(grossRevenue * (rates.platform / 100));
+    const feeAmount = cardFeeAmount + taxFeeAmount + platformFeeAmount;
     const netRevenue = Math.max(0, grossRevenue - refundAmount);
-    const finalAmount = Number(row.final_amount ?? row.settlement_amount ?? Math.max(0, netRevenue - feeAmount));
+    const finalAmount = Math.max(0, netRevenue - feeAmount);
     return {
       grossRevenue,
       refundAmount,
@@ -1905,9 +2073,50 @@
     state.settlementSelection = {
       scope: normalizedScope,
       row,
-      summary: computeSettlementSummary(row),
+      draft: settlementSelectionDraft(row, normalizedScope),
+      summary: computeSettlementSummary(row, settlementSelectionDraft(row, normalizedScope)),
     };
     renderSettlementSelection();
+  }
+
+  function updateSettlementSelectionSummary(body) {
+    const selection = state.settlementSelection;
+    if (!body || !selection) return null;
+
+    const source = settlementSelectionSource(selection);
+    const summary = computeSettlementSummary(source, selection.draft || {});
+
+    body.querySelectorAll('[data-settlement-summary-field]').forEach((element) => {
+      const field = element.dataset.settlementSummaryField;
+      if (field === 'grossRevenue') element.textContent = money(summary.grossRevenue);
+      if (field === 'refundAmount') element.textContent = money(summary.refundAmount);
+      if (field === 'feeAmount') element.textContent = money(summary.feeAmount);
+      if (field === 'finalAmount') element.textContent = money(summary.finalAmount);
+      if (field === 'countValue') {
+        const scope = normalizeSettlementScope(selection.scope);
+        const value = scope === 'instructor'
+          ? Number(selection.draft?.count_value ?? source.class_count ?? source.settlement_count ?? 0)
+          : Number(selection.draft?.count_value ?? source.settlement_count ?? source.class_count ?? 0);
+        element.textContent = scope === 'instructor' ? `${value.toLocaleString('ko-KR')}개` : `${value.toLocaleString('ko-KR')}건`;
+      }
+    });
+
+    const formulaEl = body.querySelector('[data-settlement-summary-field="formula"]');
+    if (formulaEl) {
+      formulaEl.innerHTML = `발생 수익 ${money(summary.grossRevenue)}에서 환불금액 ${money(summary.refundAmount)}과 카드·세금·플랫폼 수수료 ${money(summary.feeAmount)}를 차감한 뒤, 최종 정산금액은 <strong>${money(summary.finalAmount)}</strong>으로 계산됩니다.`;
+    }
+
+    const payoutEl = body.querySelector('[data-settlement-summary-field="payoutNote"]');
+    if (payoutEl) {
+      const payoutDate = source.payout_date || '매월 15일';
+      payoutEl.textContent = `지급 기준일: ${String(payoutDate)} · 선택한 항목을 변경하면 아래 값이 즉시 갱신됩니다.`;
+    }
+
+    if (selection) {
+      selection.summary = summary;
+    }
+
+    return summary;
   }
 
   function renderSettlementSelection() {
@@ -1922,29 +2131,25 @@
       return;
     }
 
-    const { scope, row, summary } = selection;
+    const { scope } = selection;
     const normalizedScope = normalizeSettlementScope(scope);
-    const displayTitle = settlementLabel(row, normalizedScope);
+    const source = settlementSelectionSource(selection);
+    const draft = selection.draft || settlementSelectionDraft(source, normalizedScope);
+    const summary = updateSettlementSelectionSummary(body) || computeSettlementSummary(source, draft);
+    const displayTitle = settlementLabel(source, normalizedScope);
     const labelText = normalizedScope === 'instructor' ? '강사별 정산' : '클래스별 정산';
     const primaryLabel = normalizedScope === 'instructor' ? '강사명' : '클래스명';
     const countLabel = normalizedScope === 'instructor' ? '담당 클래스 수' : '정산 건수';
     const countValue = normalizedScope === 'instructor'
-      ? Number(row.class_count ?? row.settlement_count ?? 0)
-      : Number(row.settlement_count ?? row.class_count ?? 0);
-    const contactValue = row.instructor_phone || '-';
-    const emailValue = row.instructor_email || '-';
-    const bankName = row.bank_name || '-';
-    const bankAccount = row.bank_account || '-';
-    const bankHolder = row.bank_holder || '-';
-    const adminCode = row.admin_code || row.approval_code || row.batch_id || row.id || '-';
-    const payoutDate = row.payout_date || '매월 15일';
+      ? Number(draft.count_value ?? source.class_count ?? source.settlement_count ?? 0)
+      : Number(draft.count_value ?? source.settlement_count ?? source.class_count ?? 0);
 
     body.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
         <div>
           <span style="display:inline-flex; align-items:center; padding:0.35rem 0.75rem; border-radius:999px; background:rgba(15, 118, 110, 0.1); color:#0f766e; font-size:0.82rem; font-weight:800;">${escapeHtml(labelText)}</span>
           <div style="margin-top:0.55rem; font-size:1.1rem; font-weight:800; color:#0f172a;">${escapeHtml(displayTitle)}</div>
-          <div style="margin-top:0.35rem; color:#64748b; font-size:0.84rem;">정산 계좌와 기본 정보를 확인한 뒤 생성 버튼을 눌러주세요.</div>
+          <div style="margin-top:0.35rem; color:#64748b; font-size:0.84rem;">선택한 정보가 아래 폼에 자동 입력됩니다. 운영자는 값을 수정한 뒤 정산 생성으로 이어갈 수 있습니다.</div>
         </div>
         <button type="button" class="btn-small outline" data-action="clear-settlement-selection">선택 해제</button>
       </div>
@@ -1952,62 +2157,108 @@
       <div class="settlement-selection-grid" style="margin-top:1rem;">
         <div class="field-group">
           <label>${escapeHtml(primaryLabel)}</label>
-          <input type="text" class="admin-form-input" value="${escapeHtml(displayTitle)}" readonly>
+          <input type="text" class="admin-form-input" data-settlement-field="class_name" value="${escapeHtml(draft.class_name || source.class_name || source.class_title || displayTitle || '')}">
+        </div>
+        <div class="field-group">
+          <label>강사명</label>
+          <input type="text" class="admin-form-input" data-settlement-field="instructor_name" value="${escapeHtml(draft.instructor_name || source.instructor_name || '')}">
         </div>
         <div class="field-group">
           <label>연락처</label>
-          <input type="text" class="admin-form-input" value="${escapeHtml(contactValue)}" readonly>
+          <input type="text" class="admin-form-input" data-settlement-field="instructor_phone" value="${escapeHtml(draft.instructor_phone || source.instructor_phone || '')}">
         </div>
         <div class="field-group">
           <label>이메일</label>
-          <input type="text" class="admin-form-input" value="${escapeHtml(emailValue)}" readonly>
+          <input type="text" class="admin-form-input" data-settlement-field="instructor_email" value="${escapeHtml(draft.instructor_email || source.instructor_email || '')}">
         </div>
         <div class="field-group">
           <label>은행명</label>
-          <input type="text" class="admin-form-input" value="${escapeHtml(bankName)}" readonly>
+          <input type="text" class="admin-form-input" data-settlement-field="bank_name" value="${escapeHtml(draft.bank_name || source.bank_name || '')}">
         </div>
         <div class="field-group">
           <label>계좌번호</label>
-          <input type="text" class="admin-form-input" value="${escapeHtml(bankAccount)}" readonly>
+          <input type="text" class="admin-form-input" data-settlement-field="bank_account" value="${escapeHtml(draft.bank_account || source.bank_account || '')}">
         </div>
         <div class="field-group">
           <label>예금주</label>
-          <input type="text" class="admin-form-input" value="${escapeHtml(bankHolder)}" readonly>
+          <input type="text" class="admin-form-input" data-settlement-field="bank_holder" value="${escapeHtml(draft.bank_holder || source.bank_holder || '')}">
         </div>
         <div class="field-group">
           <label>${escapeHtml(countLabel)}</label>
-          <input type="text" class="admin-form-input" value="${escapeHtml(normalizedScope === 'instructor' ? `${countValue}개` : `${countValue}건`)}" readonly>
+          <input type="text" class="admin-form-input" value="${escapeHtml(normalizedScope === 'instructor' ? `${countValue}개` : `${countValue}건`)}" readonly data-settlement-summary-field="countValue">
         </div>
         <div class="field-group">
           <label>관리 ID</label>
-          <input type="text" class="admin-form-input" value="${escapeHtml(adminCode)}" readonly>
+          <input type="text" class="admin-form-input" data-settlement-field="admin_code" value="${escapeHtml(draft.admin_code || source.admin_code || source.batch_id || source.id || '')}">
+        </div>
+        <div class="field-group">
+          <label>지급 기준일</label>
+          <input type="date" class="admin-form-input" data-settlement-field="payout_date" value="${escapeHtml(draft.payout_date || source.payout_date || '')}">
+        </div>
+        <div class="field-group">
+          <label>총 매출</label>
+          <input type="number" class="admin-form-input" data-settlement-field="gross_revenue" min="0" value="${escapeHtml(String(draft.gross_revenue ?? source.gross_revenue ?? source.total_revenue ?? 0))}">
+        </div>
+        <div class="field-group">
+          <label>환불금액</label>
+          <input type="number" class="admin-form-input" data-settlement-field="refund_amount" min="0" value="${escapeHtml(String(draft.refund_amount ?? source.refund_amount ?? 0))}">
         </div>
       </div>
 
-      <div class="settlement-formula-box" style="margin-top:1rem;">
+      <div class="settlement-formula-box" style="margin-top:1rem;" data-settlement-summary-field="formula">
         <strong style="display:block; margin-bottom:0.35rem;">정산 계산식</strong>
         발생 수익 ${money(summary.grossRevenue)}에서 환불금액 ${money(summary.refundAmount)}과 카드·세금·플랫폼 수수료 ${money(summary.feeAmount)}를 차감한 뒤,
         최종 정산금액은 <strong>${money(summary.finalAmount)}</strong>으로 계산됩니다.
       </div>
 
       <div class="detail-metric-grid" style="margin-top:1rem;">
-        <article class="detail-metric-card"><span>총 매출</span><strong>${money(summary.grossRevenue)}</strong></article>
-        <article class="detail-metric-card"><span>환불금액</span><strong>${money(summary.refundAmount)}</strong></article>
-        <article class="detail-metric-card"><span>수수료 합계</span><strong>${money(summary.feeAmount)}</strong></article>
-        <article class="detail-metric-card"><span>최종 정산금액</span><strong>${money(summary.finalAmount)}</strong></article>
+        <article class="detail-metric-card"><span>총 매출</span><strong data-settlement-summary-field="grossRevenue">${money(summary.grossRevenue)}</strong></article>
+        <article class="detail-metric-card"><span>환불금액</span><strong data-settlement-summary-field="refundAmount">${money(summary.refundAmount)}</strong></article>
+        <article class="detail-metric-card"><span>수수료 합계</span><strong data-settlement-summary-field="feeAmount">${money(summary.feeAmount)}</strong></article>
+        <article class="detail-metric-card"><span>최종 정산금액</span><strong data-settlement-summary-field="finalAmount">${money(summary.finalAmount)}</strong></article>
       </div>
 
-      <div style="margin-top:0.8rem; color:#64748b; font-size:0.82rem;">
-        지급 기준일: ${escapeHtml(String(payoutDate))} · 검색한 항목을 변경하면 아래 정산 상세도 즉시 바뀝니다.
+      <div style="margin-top:0.8rem; color:#64748b; font-size:0.82rem;" data-settlement-summary-field="payoutNote">
+        지급 기준일: ${escapeHtml(String(draft.payout_date || source.payout_date || '매월 15일'))} · 선택한 항목을 변경하면 아래 값이 즉시 갱신됩니다.
       </div>
     `;
+
+    body.querySelectorAll('[data-settlement-field]').forEach((input) => {
+      input.addEventListener('input', () => {
+        if (!state.settlementSelection) return;
+        const field = input.dataset.settlementField;
+        if (!field) return;
+        if (!state.settlementSelection.draft) {
+          state.settlementSelection.draft = settlementSelectionDraft(state.settlementSelection.row, state.settlementSelection.scope);
+        }
+        state.settlementSelection.draft[field] = input.type === 'number'
+          ? Number(input.value || 0)
+          : String(input.value || '');
+        updateSettlementSelectionSummary(body);
+      });
+    });
+
+    updateSettlementSelectionSummary(body);
   }
 
   function renderSettlementResults() {
     const scope = normalizeSettlementScope(state.settlementScope);
-    const query = String(state.settlementQuery || '').trim().toLowerCase();
+    const query = String(state.settlementQuery || '').trim();
+    const normalizedQuery = normalizeSettlementQuery(query);
     const sourceRows = settlementRows(scope);
-    const rows = query ? sourceRows.filter((row) => matchSettlementRow(row, scope, query)) : [];
+    const rows = normalizedQuery
+      ? sourceRows
+        .map((row) => ({
+          row,
+          score: settlementSearchScore(row, scope, normalizedQuery),
+        }))
+        .filter((entry) => entry.score > 0)
+        .sort((a, b) => {
+          if (b.score !== a.score) return b.score - a.score;
+          return Number(b.row.final_amount || b.row.settlement_amount || 0) - Number(a.row.final_amount || a.row.settlement_amount || 0);
+        })
+        .map((entry) => ({ ...entry.row, search_score: entry.score }))
+      : sourceRows;
     const tableBody = scope === 'instructor' ? $('settlementInstructorTableBody') : $('settlementClassTableBody');
     const grid = $('settlementDualGrid');
     const scopeSwitch = $('settlementScopeSwitch');
@@ -2027,21 +2278,21 @@
 
     if (searchInput) {
       const placeholder = scope === 'instructor'
-        ? '강사명, 이메일, 계좌번호 검색'
-        : '클래스명, 강사명, 계좌번호 검색';
+        ? '강사명, 이메일, 계좌번호, 클래스명 검색'
+        : '클래스명, 강사명, 계좌번호, 쿠폰 상세 검색';
       searchInput.placeholder = placeholder;
     }
 
     if (searchHint) {
       const total = sourceRows.length;
-      searchHint.textContent = query
+      searchHint.textContent = normalizedQuery
         ? `검색 결과 ${rows.length.toLocaleString('ko-KR')}건 / 전체 ${total.toLocaleString('ko-KR')}건`
         : `클래스명이나 강사명을 입력하면 해당 정산 정보가 표시됩니다.`;
     }
 
     if (!tableBody) return;
 
-    if (!query) {
+    if (!normalizedQuery) {
       tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8;">검색어를 입력하면 정산 정보가 표시됩니다.</td></tr>`;
       renderSettlementSelection();
       return;
@@ -2054,7 +2305,7 @@
     }
 
     const rowsHtml = rows.map((row, index) => {
-      const summary = computeSettlementSummary(row);
+      const summary = computeSettlementSummary(row, row);
       const title = settlementLabel(row, scope);
       const subTitle = scope === 'instructor'
         ? `${row.instructor_phone || row.instructor_email || '-'}`
@@ -2439,6 +2690,12 @@
         loadSettlementDashboard({ includeInfo: false, query: state.settlementQuery });
       }, 180);
       renderSettlementResults();
+    });
+    ['settlementRatePg', 'settlementRateTax', 'settlementRatePlatform'].forEach((id) => {
+      $(id)?.addEventListener('input', () => {
+        renderSettlementResults();
+        renderSettlementSelection();
+      });
     });
     $('btnClearSettlementSearch')?.addEventListener('click', () => {
       state.settlementQuery = '';

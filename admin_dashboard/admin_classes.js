@@ -75,6 +75,32 @@ function formatDateTime(value) {
   return date.toLocaleString('ko-KR');
 }
 
+function formatCouponDetailSummary(value = '') {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      const parts = [];
+      const code = String(parsed.code || parsed.coupon_code || '').trim();
+      if (code) parts.push(code);
+      const type = String(parsed.discount_type || parsed.type || '').trim().toLowerCase();
+      const amount = Number(parsed.discount_value ?? parsed.amount ?? 0);
+      if (amount > 0) {
+        parts.push(type === 'percent' ? `${amount}% 할인` : `${amount.toLocaleString()}원 할인`);
+      }
+      const quantity = Number(parsed.issue_count ?? parsed.quantity ?? parsed.limit_count ?? 0);
+      if (quantity > 0) parts.push(`발행 ${quantity.toLocaleString()}개`);
+      const description = String(parsed.description || parsed.note || '').trim();
+      if (description) parts.push(description);
+      return parts.join(' · ') || text;
+    }
+  } catch {
+    // plain text fallback
+  }
+  return text;
+}
+
 function effectivePrice(row) {
   const price = toNumber(row?.price, 0);
   const discount = toNumber(row?.discount_rate, 0);
@@ -1041,7 +1067,7 @@ function renderClassDetailModal() {
             <span>생성일 ${escapeHtml(formatDateTime(cls.created_at))}</span>
           </div>
           ${cls.coupon_pack
-            ? `<div class="class-detail-coupon-note">쿠폰팩 허용${cls.coupon_detail ? ` · ${escapeHtml(cls.coupon_detail)}` : ''}</div>`
+            ? `<div class="class-detail-coupon-note">쿠폰팩 허용${cls.coupon_detail ? ` · ${escapeHtml(formatCouponDetailSummary(cls.coupon_detail))}` : ''}</div>`
             : ''}
         </div>
         <div class="class-detail-hero-side">

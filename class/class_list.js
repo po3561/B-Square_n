@@ -72,6 +72,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;
   }
 
+  function formatCouponDetailSummary(value = '') {
+    const text = String(value || '').trim();
+    if (!text) return '';
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        const parts = [];
+        const code = String(parsed.code || parsed.coupon_code || '').trim();
+        if (code) parts.push(code);
+        const type = String(parsed.discount_type || parsed.type || '').trim().toLowerCase();
+        const amount = Number(parsed.discount_value ?? parsed.amount ?? 0);
+        if (amount > 0) {
+          parts.push(type === 'percent' ? `${amount}% 할인` : `${amount.toLocaleString()}원 할인`);
+        }
+        const quantity = Number(parsed.issue_count ?? parsed.quantity ?? parsed.limit_count ?? 0);
+        if (quantity > 0) parts.push(`발행 ${quantity.toLocaleString()}개`);
+        const description = String(parsed.description || parsed.note || '').trim();
+        if (description) parts.push(description);
+        return parts.join(' · ') || text;
+      }
+    } catch {
+      // plain text fallback
+    }
+    return text;
+  }
+
   function normalizeCategoryName(value = '') {
     return String(value || '').trim();
   }
@@ -511,7 +537,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(cls.title || '클래스 이미지')}" loading="lazy">
               <div class="card-badges">
                 ${isNew ? '<span class="badge-new">NEW</span>' : ''}
-                ${cls.coupon_pack ? `<span class="badge-coupon" title="${escapeHtml(cls.coupon_detail || '쿠폰팩 발행 가능')}">쿠폰 가능</span>` : ''}
+                ${cls.coupon_pack ? `<span class="badge-coupon" title="${escapeHtml(formatCouponDetailSummary(cls.coupon_detail) || '쿠폰팩 발행 가능')}">쿠폰 가능</span>` : ''}
                 ${discountRate > 0 ? `<span class="badge-discount">${discountRate}% 할인</span>` : ''}
               </div>
             </div>
@@ -521,7 +547,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               </div>
               <h4 class="title">${escapeHtml(cls.title || '제목 없음')}</h4>
               ${summary ? `<p class="card-summary">${escapeHtml(summary)}</p>` : ''}
-              ${cls.coupon_pack && cls.coupon_detail ? `<p class="card-summary" style="margin-top:0.35rem; font-size:0.78rem; color:#8b9bb4;">쿠폰: ${escapeHtml(cls.coupon_detail)}</p>` : ''}
+              ${cls.coupon_pack && cls.coupon_detail ? `<p class="card-summary" style="margin-top:0.35rem; font-size:0.78rem; color:#8b9bb4;">쿠폰: ${escapeHtml(formatCouponDetailSummary(cls.coupon_detail))}</p>` : ''}
               <div class="meta">
                 <span class="rating">★ ${avgRating} (${reviewCount})</span>
                 <span class="likes" data-like-count="${likeCount}">찜 ${likeCount}</span>

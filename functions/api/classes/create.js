@@ -1,6 +1,33 @@
 ﻿import { requireSession } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
-import { ensureClassesSchema } from '../_lib/schema.js';
+import { ensureClassesSchema, ensureOperationsSchema } from '../_lib/schema.js';
+
+function serializeCouponDetail(value) {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value === 'string') return value.trim() || null;
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
+function parseCouponDetail(value) {
+  if (!value) return null;
+  if (typeof value === 'object') return value;
+  if (typeof value !== 'string') return null;
+
+  const text = value.trim();
+  if (!text) return null;
+
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed;
+    }
+  } catch {
+    // fallback to description text
+  }
+
+  return { description: text };
+}
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -8,6 +35,7 @@ export async function onRequestPost(context) {
   if (!auth.ok) return auth.response;
   try {
     await ensureClassesSchema(env.DB);
+    await ensureOperationsSchema(env.DB);
 
     const body = await request.json();
     console.log('[API] Class Create Request keys:', Object.keys(body));
@@ -88,8 +116,35 @@ export async function onRequestPost(context) {
       sub_instructors,
       target_audience,
       objectives,
-      body.coupon_detail || null
+      serializeCouponDetail(body.coupon_detail)
     ).run();
+
+    const couponDetail = parseCouponDetail(body.coupon_detail);
+    const couponCode = String(couponDetail?.code || couponDetail?.coupon_code || '').trim().toUpperCase();
+    const couponType = String(couponDetail?.discount_type || couponDetail?.type || 'amount').trim().toLowerCase() || 'amount';
+    const couponValue = Number(couponDetail?.discount_value ?? couponDetail?.value ?? couponDetail?.amount ?? 0);
+    const couponLimit = Number(couponDetail?.issue_count ?? couponDetail?.limit_count ?? couponDetail?.max_limit ?? 0);
+
+    if (body.coupon_pack && couponCode) {
+      try {
+        await env.DB.prepare(`
+          INSERT INTO coupons (class_id, coupon_code, type, value, limit_count, used_count)
+          VALUES (?, ?, ?, ?, ?, 0)
+          ON CONFLICT(class_id, coupon_code) DO UPDATE SET
+            type = excluded.type,
+            value = excluded.value,
+            limit_count = excluded.limit_count
+        `).bind(
+          classId,
+          couponCode,
+          couponType === 'percent' ? 'percent' : 'amount',
+          Number.isFinite(couponValue) ? couponValue : 0,
+          Number.isFinite(couponLimit) ? couponLimit : 0,
+        ).run();
+      } catch (couponErr) {
+        console.warn('[API] Coupon creation skipped after class create:', couponErr?.message || couponErr);
+      }
+    }
 
     console.log(`[API] Class Created: ${classId}`);
     return json(request, env, { success: true, data: { id: classId } }, { status: 201 });

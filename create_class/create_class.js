@@ -291,6 +291,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             couponDetailGroup.style.display = classCouponBtn.checked ? 'block' : 'none';
         }
     });
+    if (couponDetailGroup && classCouponBtn) {
+        couponDetailGroup.style.display = classCouponBtn.checked ? 'block' : 'none';
+    }
+
+    function buildCouponDetailPayload() {
+        if (!classCouponBtn?.checked) return null;
+        const code = document.getElementById('couponCode')?.value.trim().toUpperCase() || '';
+        const discountType = document.getElementById('couponDiscountType')?.value || 'amount';
+        const discountValue = parseInt(document.getElementById('couponDiscountValue')?.value, 10) || 0;
+        const issueCount = parseInt(document.getElementById('couponIssueCount')?.value, 10) || 0;
+        const description = document.getElementById('couponDetailNote')?.value.trim() || '';
+        return {
+            code,
+            discount_type: discountType,
+            discount_value: discountValue,
+            issue_count: issueCount,
+            description,
+        };
+    }
 
     // --- 커리큘럼 관리 ---
     const curriculumList = document.getElementById('curriculumList');
@@ -493,6 +512,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 detail: child.querySelector('.chapter-detail').value,
                 materials: child.querySelector('.chapter-materials').value
             }));
+            const couponDetail = buildCouponDetailPayload();
+            const couponEnabled = Boolean(document.getElementById('classCoupon')?.checked);
+            if (couponEnabled) {
+                if (!couponDetail?.code) {
+                    alert('쿠폰 코드를 입력해주세요.');
+                    btnSubmit.textContent = btnText;
+                    btnSubmit.disabled = false;
+                    return;
+                }
+                if (!Number.isFinite(couponDetail.discount_value) || couponDetail.discount_value <= 0) {
+                    alert('쿠폰 할인 값을 1 이상으로 입력해주세요.');
+                    btnSubmit.textContent = btnText;
+                    btnSubmit.disabled = false;
+                    return;
+                }
+            }
 
             const classData = {
                 instructor_id: userId,
@@ -514,10 +549,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 price_multi: (!isFree && usePackagePass.checked) ? (parseInt(document.getElementById('priceMulti').value) || null) : null,
                 pass_count: (!isFree && usePackagePass.checked) ? (parseInt(document.getElementById('passCount').value) || null) : null,
                 
-                coupon_pack: document.getElementById('classCoupon')?.checked || false,
-                coupon_detail: document.getElementById('classCoupon')?.checked
-                    ? document.getElementById('couponDetail')?.value.trim() || null
-                    : null,
+                coupon_pack: couponEnabled,
+                coupon_detail: couponDetail,
                 class_type: form.querySelector('input[name="classType"]:checked')?.value || 'ONLINE',
                 operating_mode: document.getElementById('classOperatingMode').value,
                 capacity_min: parseInt(document.getElementById('minCapacity').value) || 0,

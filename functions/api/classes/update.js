@@ -2,6 +2,13 @@
 import { json, options } from '../_lib/http.js';
 import { ensureClassesSchema } from '../_lib/schema.js';
 
+function serializeCouponDetail(value) {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value === 'string') return value.trim() || null;
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
 export async function onRequestPut(context) {
   const { request, env } = context;
 
@@ -57,7 +64,9 @@ export async function onRequestPut(context) {
     for (const field of allowedFields) {
       if (updates[field] !== undefined) {
         updateKeys.push(`${field} = ?`);
-        updateValues.push(updates[field]);
+        updateValues.push(field === 'coupon_detail'
+          ? serializeCouponDetail(updates[field])
+          : updates[field]);
       }
     }
 

@@ -113,6 +113,32 @@
         return `${amount.toLocaleString('ko-KR')}원`;
     }
 
+    function formatCouponDetailSummary(value = '') {
+        const text = String(value || '').trim();
+        if (!text) return '';
+        try {
+            const parsed = JSON.parse(text);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                const parts = [];
+                const code = String(parsed.code || parsed.coupon_code || '').trim();
+                if (code) parts.push(code);
+                const type = String(parsed.discount_type || parsed.type || '').trim().toLowerCase();
+                const amount = Number(parsed.discount_value ?? parsed.amount ?? 0);
+                if (amount > 0) {
+                    parts.push(type === 'percent' ? `${amount}% 할인` : `${amount.toLocaleString()}원 할인`);
+                }
+                const quantity = Number(parsed.issue_count ?? parsed.quantity ?? parsed.limit_count ?? 0);
+                if (quantity > 0) parts.push(`발행 ${quantity.toLocaleString()}개`);
+                const description = String(parsed.description || parsed.note || '').trim();
+                if (description) parts.push(description);
+                return parts.join(' · ') || text;
+            }
+        } catch {
+            // plain text fallback
+        }
+        return text;
+    }
+
     function emptyState(message) {
         return `<div class="empty-state compact">${escapeHtml(message)}</div>`;
     }
@@ -435,11 +461,11 @@
                         <div class="my-class-head">
                             <span class="commerce-badge accent">개설</span>
                             <span class="commerce-badge">${escapeHtml(cls.class_type || 'VOD')}</span>
-                            ${cls.coupon_pack ? `<span class="commerce-badge warm" title="${escapeHtml(cls.coupon_detail || '쿠폰팩 발행 가능')}">쿠폰 가능</span>` : ''}
+                            ${cls.coupon_pack ? `<span class="commerce-badge warm" title="${escapeHtml(formatCouponDetailSummary(cls.coupon_detail) || '쿠폰팩 발행 가능')}">쿠폰 가능</span>` : ''}
                         </div>
                         <h4>${escapeHtml(cls.title || '제목 없음')}</h4>
                         <p>${escapeHtml(cls.category || '미분류')}</p>
-                        ${cls.coupon_pack && cls.coupon_detail ? `<p style="margin:0.35rem 0 0; font-size:0.78rem; color:var(--text-secondary);">쿠폰: ${escapeHtml(cls.coupon_detail)}</p>` : ''}
+                        ${cls.coupon_pack && cls.coupon_detail ? `<p style="margin:0.35rem 0 0; font-size:0.78rem; color:var(--text-secondary);">쿠폰: ${escapeHtml(formatCouponDetailSummary(cls.coupon_detail))}</p>` : ''}
                         <div class="my-class-actions">
                             <a class="btn-chat-link" href="../class_view/class_view.html?id=${encodeURIComponent(cls.id)}#tabChat">클래스 채널</a>
                             <a class="btn-chat-link subtle" href="../class_view/class_view.html?id=${encodeURIComponent(cls.id)}">메인화면</a>
@@ -619,7 +645,7 @@
             document.getElementById('editClassDiscount').value = cls.discount_rate || 0;
             document.getElementById('editClassCoupon').checked = Boolean(cls.coupon_pack);
             const editClassCouponDetail = document.getElementById('editClassCouponDetail');
-            if (editClassCouponDetail) editClassCouponDetail.value = cls.coupon_detail || '';
+            if (editClassCouponDetail) editClassCouponDetail.value = formatCouponDetailSummary(cls.coupon_detail || '');
             const editClassCouponDetailGroup = document.getElementById('editClassCouponDetailGroup');
             if (editClassCouponDetailGroup) {
                 editClassCouponDetailGroup.style.display = cls.coupon_pack ? 'block' : 'none';

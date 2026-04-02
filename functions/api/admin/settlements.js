@@ -893,7 +893,6 @@ async function loadSettlementSearchData(db, query, options = {}) {
   if (!normalizedQuery) return null;
 
   const settings = await loadFeeSettings(db);
-  const like = `%${normalizedQuery}%`;
   const period = String(options.period || 'month').toLowerCase() === 'year' ? 'year' : 'month';
   const year = normalizeInt(options.year);
   const month = normalizeInt(options.month);
@@ -940,30 +939,9 @@ async function loadSettlementSearchData(db, query, options = {}) {
     FROM classes c
     LEFT JOIN users u ON u.id = c.creator_id
     LEFT JOIN class_stats s ON s.class_id = c.id
-    WHERE (
-      c.title LIKE ?
-      OR c.category LIKE ?
-      OR c.keywords LIKE ?
-      OR c.summary LIKE ?
-      OR c.coupon_detail LIKE ?
-      OR c.instructor_name LIKE ?
-      OR c.instructor_email LIKE ?
-      OR c.instructor_phone LIKE ?
-      OR c.payment_bank_name LIKE ?
-      OR c.payment_bank_account LIKE ?
-      OR c.payment_bank_holder LIKE ?
-      OR u.name LIKE ?
-      OR u.username LIKE ?
-      OR u.email LIKE ?
-      OR u.phone LIKE ?
-    )
     ORDER BY c.updated_at DESC, c.created_at DESC
-    LIMIT 120
-  `).bind(
-    like, like, like, like, like,
-    like, like, like, like, like, like,
-    like, like, like, like,
-  ).all().catch(() => ({ results: [] }));
+    LIMIT 1000
+  `).all().catch(() => ({ results: [] }));
 
   const classMap = new Map();
   for (const row of currentClassRows) {
@@ -1032,7 +1010,7 @@ async function loadSettlementSearchData(db, query, options = {}) {
     }
   }
 
-  const uniqueClassIds = Array.from(new Set(classCandidateIds.filter(Boolean))).slice(0, 120);
+  const uniqueClassIds = Array.from(new Set(classCandidateIds.filter(Boolean))).slice(0, 240);
   const latestHistoryByClass = new Map();
   if (uniqueClassIds.length) {
     const placeholders = uniqueClassIds.map(() => '?').join(',');
@@ -1098,20 +1076,9 @@ async function loadSettlementSearchData(db, query, options = {}) {
     FROM settlement_batch_items i
     INNER JOIN settlement_batches b
       ON b.id = i.batch_id
-    WHERE (
-      i.class_title LIKE ?
-      OR i.instructor_name LIKE ?
-      OR i.instructor_email LIKE ?
-      OR i.instructor_phone LIKE ?
-      OR i.bank_name LIKE ?
-      OR i.bank_account LIKE ?
-      OR i.bank_holder LIKE ?
-      OR b.manager_code LIKE ?
-      OR b.id LIKE ?
-    )
     ORDER BY b.year DESC, b.month DESC, i.settlement_amount DESC, i.class_title ASC
-    LIMIT 200
-  `).bind(like, like, like, like, like, like, like, like, like).all().catch(() => ({ results: [] }));
+    LIMIT 1000
+  `).all().catch(() => ({ results: [] }));
 
   for (const row of historyCandidates.results || []) {
     const batch = {

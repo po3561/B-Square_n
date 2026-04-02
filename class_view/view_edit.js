@@ -29,6 +29,32 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
             .replace(/'/g, '&#39;');
     }
 
+    function formatCouponDetailSummary(value = '') {
+        const text = String(value || '').trim();
+        if (!text) return '';
+        try {
+            const parsed = JSON.parse(text);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                const parts = [];
+                const code = String(parsed.code || parsed.coupon_code || '').trim();
+                if (code) parts.push(code);
+                const type = String(parsed.discount_type || parsed.type || '').trim().toLowerCase();
+                const amount = Number(parsed.discount_value ?? parsed.amount ?? 0);
+                if (amount > 0) {
+                    parts.push(type === 'percent' ? `${amount}% 할인` : `${amount.toLocaleString()}원 할인`);
+                }
+                const quantity = Number(parsed.issue_count ?? parsed.quantity ?? parsed.limit_count ?? 0);
+                if (quantity > 0) parts.push(`발행 ${quantity.toLocaleString()}개`);
+                const description = String(parsed.description || parsed.note || '').trim();
+                if (description) parts.push(description);
+                return parts.join(' · ') || text;
+            }
+        } catch {
+            // plain text fallback
+        }
+        return text;
+    }
+
     // ========================
     // 2. 데이터 준비
     // ========================
@@ -273,7 +299,7 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
                         </div>
                         <div class="edit-field" id="editCouponDetailGroup" style="display:${classData.coupon_pack ? 'block' : 'none'};">
                             <label>쿠폰 상세 정보 (예: 할인 금액, 유효 기간 등)</label>
-                            <input type="text" id="editCouponDetail" value="${escapeHtml(classData.coupon_detail || '')}" placeholder="예: 신규 회원 5,000원 할인쿠폰 발행">
+                            <input type="text" id="editCouponDetail" value="${escapeHtml(formatCouponDetailSummary(classData.coupon_detail || ''))}" placeholder="예: 신규 회원 5,000원 할인쿠폰 발행">
                         </div>
                     </div>
 
