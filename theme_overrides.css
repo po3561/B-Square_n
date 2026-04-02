@@ -1248,10 +1248,6 @@ body.home-page .class-card.class-card-home {
   transform: translateZ(0);
 }
 
-body.home-page .class-card.class-card-home .card-info {
-  padding: 0.85rem 0.95rem 0.95rem !important;
-}
-
 /* === 2026-04 Home Visual Final Lock (terminal override) === */
 body.home-page .home-category-panel {
   background: transparent !important;
