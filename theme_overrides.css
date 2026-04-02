@@ -1186,6 +1186,321 @@ html[data-theme="light"] body.home-page .home-category-item.is-active {
   border-color: rgba(79, 111, 255, 0.18) !important;
 }
 
+/* Recommend page card polish */
+body.recommend-page {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(79, 111, 255, 0.10), transparent 28%),
+    linear-gradient(180deg, #0d1117 0%, #090b10 100%);
+  color: #f7f9ff;
+}
+
+body.recommend-page .recommend-container {
+  width: min(calc(100% - (var(--page-gutter) * 2)), var(--container-wide));
+  margin: 0 auto;
+  padding: clamp(1rem, 2vw, 2rem) 0 clamp(2rem, 4vw, 4rem);
+  gap: 1.25rem;
+}
+
+body.recommend-page .recommend-content {
+  min-width: 0;
+}
+
+body.recommend-page .sidebar-categories h3,
+body.recommend-page .recommend-header h2 {
+  color: #f7f9ff;
+}
+
+body.recommend-page .sidebar-categories li a {
+  color: rgba(236, 242, 255, 0.72);
+}
+
+body.recommend-page .sidebar-categories li a:hover,
+body.recommend-page .sidebar-categories li a.active {
+  color: #fff;
+}
+
+body.recommend-page .card-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+body.recommend-page .class-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(18, 22, 31, 0.96), rgba(10, 12, 18, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+body.recommend-page .class-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(142, 165, 255, 0.28);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28);
+}
+
+body.recommend-page .class-card-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  color: inherit;
+  min-height: 100%;
+}
+
+body.recommend-page .card-thumbnail {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  overflow: hidden;
+  background: #fff;
+}
+
+body.recommend-page .card-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+body.recommend-page .card-thumbnail::after {
+  content: none;
+}
+
+body.recommend-page .card-badges {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.85rem;
+  right: auto;
+  bottom: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  z-index: 1;
+}
+
+body.recommend-page .card-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0.34rem 0.78rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  color: #111827;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.14);
+  max-width: min(58%, 220px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.recommend-page .btn-bookmark {
+  position: absolute;
+  top: 0.82rem;
+  right: 0.82rem;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  color: #a3a3a3;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(14px);
+  transition: transform 180ms ease, background 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+body.recommend-page .btn-bookmark:hover {
+  transform: translateY(-1px) scale(1.04);
+  background: rgba(255, 255, 255, 1);
+  color: #ff4d7a;
+}
+
+body.recommend-page .btn-bookmark.is-bookmarked {
+  background: rgba(255, 245, 248, 0.98);
+  border-color: rgba(255, 125, 160, 0.32);
+  color: #ff4d7a;
+}
+
+body.recommend-page .btn-bookmark .bsq-icon {
+  width: 18px;
+  height: 18px;
+}
+
+body.recommend-page .card-info {
+  display: grid;
+  gap: 0.38rem;
+  padding: 0 1rem 1rem;
+}
+
+body.recommend-page .title {
+  margin: 0;
+  font-size: 1.06rem;
+  line-height: 1.3;
+  letter-spacing: -0.04em;
+  color: #f7f9ff;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+body.recommend-page .card-topline {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  font-size: 0.76rem;
+  color: rgba(236, 242, 255, 0.7);
+}
+
+body.recommend-page .card-author,
+body.recommend-page .card-mode {
+  min-width: 0;
+}
+
+body.recommend-page .card-divider {
+  color: rgba(236, 242, 255, 0.5);
+}
+
+body.recommend-page .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.75rem;
+  color: rgba(236, 242, 255, 0.72);
+  font-size: 0.8rem;
+  align-items: center;
+}
+
+body.recommend-page .rating {
+  color: #ffd166;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+body.recommend-page .meta-category {
+  color: rgba(236, 242, 255, 0.68);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.recommend-page .price-area,
+body.recommend-page .current-price,
+body.recommend-page .badge-coupon,
+body.recommend-page .badge-discount {
+  display: none !important;
+}
+
+@media (max-width: 1280px) {
+  body.recommend-page .card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  body.recommend-page .recommend-container {
+    grid-template-columns: 1fr;
+  }
+
+  body.recommend-page .sidebar-categories {
+    display: none;
+  }
+
+  body.recommend-page .card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  body.recommend-page .card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.recommend-page .card-badge {
+    min-height: 26px;
+    padding: 0.28rem 0.58rem;
+    font-size: 0.68rem;
+  }
+
+  body.recommend-page .btn-bookmark {
+    top: 0.7rem;
+    right: 0.7rem;
+    width: 34px;
+    height: 34px;
+  }
+
+  body.recommend-page .btn-bookmark .bsq-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  body.recommend-page .card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+html[data-theme="light"] body.recommend-page {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(79, 111, 255, 0.10), transparent 28%),
+    linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+  color: var(--bsq-text);
+}
+
+html[data-theme="light"] body.recommend-page .sidebar-categories h3,
+html[data-theme="light"] body.recommend-page .recommend-header h2 {
+  color: var(--bsq-text);
+}
+
+html[data-theme="light"] body.recommend-page .sidebar-categories li a {
+  color: var(--bsq-text-muted);
+}
+
+html[data-theme="light"] body.recommend-page .sidebar-categories li a:hover,
+html[data-theme="light"] body.recommend-page .sidebar-categories li a.active {
+  color: var(--bsq-text);
+}
+
+html[data-theme="light"] body.recommend-page .class-card {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(15, 23, 42, 0.10);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="light"] body.recommend-page .title,
+html[data-theme="light"] body.recommend-page .card-author,
+html[data-theme="light"] body.recommend-page .card-mode {
+  color: var(--bsq-text);
+}
+
+html[data-theme="light"] body.recommend-page .card-topline,
+html[data-theme="light"] body.recommend-page .meta {
+  color: var(--bsq-text-muted);
+}
+
+html[data-theme="light"] body.recommend-page .card-badge {
+  background: rgba(255, 255, 255, 0.96);
+  color: #111827;
+}
+
+html[data-theme="light"] body.recommend-page .btn-bookmark {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(15, 23, 42, 0.10);
+  color: var(--bsq-text);
+}
+
+html[data-theme="light"] body.recommend-page .btn-bookmark.is-bookmarked {
+  background: linear-gradient(135deg, rgba(79, 111, 255, 0.18), rgba(93, 225, 198, 0.22));
+  border-color: rgba(79, 111, 255, 0.22);
+  color: var(--bsq-primary-strong);
+}
+
 /* Class list final layout corrections */
 body.class-list-page .class-list-banner-overlay {
   display: none !important;
@@ -1841,7 +2156,7 @@ body.home-page .home-category-backdrop {
 }
 
 body.home-page .home-category-panel {
-  z-index: 10070;
+  z-index: 998;
 }
 
 body.home-page .home-category-shell[data-expanded="true"] {

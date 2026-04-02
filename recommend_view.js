@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 let currentFolderClasses = [];
+const bookmarkMap = new Map();
+let bookmarkProbeDisabled = false;
 
 function escapeHtml(value = '') {
     return String(value)
@@ -27,7 +29,134 @@ function escapeHtml(value = '') {
 }
 
 function getThumb(cls) {
-    return cls?.thumbnail || cls?.image_url || 'https://placehold.co/600x360?text=No+Image';
+    return cls?.thumbnail || cls?.image_url || '/assets/default-cover.svg';
+}
+
+function cssEsc(value = '') {
+    const raw = String(value || '');
+    if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+        return CSS.escape(raw);
+    }
+    return raw.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function text(value = '') {
+    return String(value || '').trim();
+}
+
+function formatCardMode(cls) {
+    const classType = text(cls?.class_type || '').toUpperCase();
+    if (classType === 'ONLINE') return '온라인';
+    if (classType === 'OFFLINE') return '오프라인';
+    if (classType === 'VOD') return 'VOD';
+    if (classType) return classType;
+
+    const operatingMode = text(cls?.operating_mode || '').toUpperCase();
+    if (operatingMode === 'ONEDAY') return '원데이';
+    if (operatingMode === 'SEASON') return '시즌';
+    if (operatingMode === 'WEEKLY') return '주간';
+    if (operatingMode === 'MONTHLY') return '월간';
+    return operatingMode;
+}
+
+function formatCardBadge() {
+    return 'CLASS101+';
+}
+
+function bookmarkIcon(bookmarked = false) {
+    const path = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>';
+    const filled = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"></path>';
+    return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="bsq-icon">${bookmarked ? filled : path}</svg>`;
+}
+
+function updateBookmarkButton(button, classId, bookmarked, count) {
+    if (!button) return;
+    const nextCount = Number(count || 0);
+    button.dataset.classId = String(classId || '');
+    button.dataset.bookmarked = bookmarked ? '1' : '0';
+    button.dataset.likeCount = String(nextCount);
+    button.classList.toggle('is-bookmarked', !!bookmarked);
+    button.setAttribute('aria-pressed', bookmarked ? 'true' : 'false');
+    button.setAttribute('aria-label', bookmarked ? '찜 취소' : '찜하기');
+    button.innerHTML = bookmarkIcon(bookmarked);
+}
+
+function syncBookmarkUi(classId, bookmarked, count) {
+    const id = text(classId);
+    if (!id) return;
+    const nextCount = Number(count || 0);
+    bookmarkMap.set(id, { bookmarked: !!bookmarked, count: nextCount, synced: true });
+    document.querySelectorAll(`.class-card[data-class-id="${cssEsc(id)}"]`).forEach((card) => {
+        card.querySelectorAll('[data-action="bookmark-class"]').forEach((button) => {
+            updateBookmarkButton(button, id, bookmarked, nextCount);
+        });
+    });
+}
+
+async function hydrateBookmarkStates(items = []) {
+    if (bookmarkProbeDisabled || !window.BSQ?.isLoggedIn) {
+        bookmarkProbeDisabled = true;
+        return;
+    }
+
+    const ids = Array.from(new Set(items.map((item) => text(item?.id || item?.class_id || item)).filter(Boolean)));
+    if (!ids.length) return;
+
+    await Promise.all(ids.map(async (id) => {
+        const cached = bookmarkMap.get(id);
+        if (cached?.synced) return;
+        try {
+            const res = await window.BSQ.api(`/api/class-bookmarks?class_id=${encodeURIComponent(id)}`);
+            if (!res?.success || !res.data) throw new Error(res?.error || '찜 상태를 불러오지 못했습니다.');
+            syncBookmarkUi(id, !!res.data.bookmarked, Number(res.data.count || 0));
+        } catch (error) {
+            const message = String(error?.message || '');
+            if (/401|403|unauthorized|로그인/i.test(message)) {
+                bookmarkProbeDisabled = true;
+                return;
+            }
+            console.warn('[recommend] bookmark probe failed:', error);
+        }
+    }));
+}
+
+async function toggleBookmark(classId, button) {
+    const id = text(classId);
+    if (!id || !window.BSQ?.api) return;
+    if (!window.BSQ?.isLoggedIn) {
+        alert('로그인이 필요합니다.');
+        return;
+    }
+    if (button?.dataset.pending === '1') return;
+
+    const previous = bookmarkMap.get(id) || {
+        bookmarked: button?.dataset.bookmarked === '1',
+        count: Number(button?.dataset.likeCount || 0),
+    };
+
+    if (button) {
+        button.dataset.pending = '1';
+        button.disabled = true;
+    }
+
+    try {
+        const res = await window.BSQ.api('/api/class-bookmarks', 'POST', { class_id: id });
+        if (!res?.success) throw new Error(res?.error || '찜 상태를 변경하지 못했습니다.');
+        syncBookmarkUi(id, !!res.data?.bookmarked, Number(res.data?.count || 0));
+    } catch (error) {
+        syncBookmarkUi(id, previous.bookmarked, previous.count);
+        console.error('[recommend] bookmark toggle failed:', error);
+        alert(error?.message || '찜 상태를 변경하지 못했습니다.');
+    } finally {
+        if (button) {
+            button.dataset.pending = '0';
+            button.disabled = false;
+        }
+    }
+}
+
+function classUrl(id) {
+    return `../class_view/class_view.html?id=${encodeURIComponent(id)}`;
 }
 
 async function loadFolderData(folderId) {
@@ -82,33 +211,48 @@ function renderClasses(classes) {
     }
 
     container.innerHTML = classes.map((cls) => {
-        const discountRate = parseInt(cls.discount_rate, 10) || 0;
-        const originalPrice = parseInt(cls.price, 10) || 0;
-        const currentPrice = discountRate > 0 ? originalPrice * (1 - discountRate / 100) : originalPrice;
+        const id = text(cls.id || '');
+        if (!id) return '';
         const thumb = getThumb(cls);
+        const title = escapeHtml(cls.title || '제목 없음');
+        const category = escapeHtml(cls.category || '미분류');
+        const instructor = escapeHtml(cls.instructor_name || cls.creator_name || '작성자 정보 없음');
+        const reviews = Number(cls.review_count || cls.reviews_count || 0);
+        const avgRating = Number(cls.avg_rating || cls.rating || 0).toFixed(1);
+        const cached = bookmarkMap.get(id);
+        const bookmarked = !!cached?.bookmarked;
+        const likeCount = Number(cached?.count ?? cls.like_count ?? cls.bookmark_count ?? 0);
+        const mode = text(formatCardMode(cls));
+        const badge = formatCardBadge();
 
         return `
-        <div class="class-card" onclick="location.href='../class_view/class_view.html?id=${encodeURIComponent(cls.id)}'" style="cursor:pointer;">
-            <div class="card-thumbnail">
-                <img src="${escapeHtml(thumb)}" alt="${escapeHtml(cls.title || '')}">
-                <div class="card-badges">
-                    ${cls.coupon_pack ? '<span class="badge-coupon">쿠폰팩</span>' : ''}
-                    ${discountRate > 0 ? `<span class="badge-discount">${discountRate}% 할인</span>` : ''}
+        <article class="class-card class-card-recommend" data-class-id="${escapeHtml(id)}">
+            <a class="class-card-link" href="${escapeHtml(classUrl(id))}" aria-label="${title} 상세 보기">
+                <div class="card-thumbnail">
+                    <img src="${escapeHtml(thumb)}" alt="${title}" loading="lazy">
+                    <div class="card-badges" aria-hidden="true">
+                        <span class="card-badge">${escapeHtml(badge)}</span>
+                    </div>
                 </div>
-            </div>
-            <div class="card-info">
-                <span class="category">${escapeHtml(cls.category || '기타')}</span>
-                <h4 class="title">${escapeHtml(cls.title || '')}</h4>
-                <div class="meta">
-                    <span class="rating">⭐ ${escapeHtml(Number(cls.rating || 4.5).toFixed(1))}</span>
+                <div class="card-info">
+                    <h4 class="title">${title}</h4>
+                    <div class="card-topline">
+                        <span class="card-author">${instructor}</span>
+                        ${mode ? '<span class="card-divider" aria-hidden="true">|</span>' : ''}
+                        ${mode ? `<span class="card-mode">${escapeHtml(mode)}</span>` : ''}
+                    </div>
+                    <div class="meta">
+                        <span class="rating">★ ${avgRating} (${reviews})</span>
+                        <span class="meta-category">${category}</span>
+                    </div>
                 </div>
-                <div class="price-area">
-                    <span class="current-price">${Math.round(currentPrice).toLocaleString()}원</span>
-                </div>
-            </div>
-        </div>
+            </a>
+            <button type="button" class="btn-bookmark${bookmarked ? ' is-bookmarked' : ''}" data-action="bookmark-class" data-class-id="${escapeHtml(id)}" data-bookmarked="${bookmarked ? '1' : '0'}" data-like-count="${likeCount}" aria-pressed="${bookmarked ? 'true' : 'false'}" aria-label="${bookmarked ? '찜 취소' : '찜하기'}">${bookmarkIcon(bookmarked)}</button>
+        </article>
     `;
     }).join('');
+
+    void hydrateBookmarkStates(classes);
 }
 
 function setupCategoryFilter() {
@@ -130,3 +274,11 @@ function setupCategoryFilter() {
         });
     });
 }
+
+document.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-action="bookmark-class"]');
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    void toggleBookmark(button.dataset.classId, button);
+});
