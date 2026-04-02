@@ -40,6 +40,9 @@
     },
   ];
 
+  const KAKAO_SDK_SRC = 'https://t1.kakaocdn.net/kakao_js_sdk/2.8.0/kakao.min.js';
+  const KAKAO_SDK_SCOPE = 'profile_nickname,profile_image,account_email';
+
   const ERROR_MESSAGES = {
     provider_unavailable: '현재 선택한 소셜 로그인은 준비 중입니다.',
     callback_missing_code: '소셜 인증 정보를 받지 못했습니다. 다시 시도해 주세요.',
@@ -107,6 +110,20 @@
     return response.json().catch(() => ({}));
   }
 
+  async function apiPost(path, body) {
+    if (window.BSQAuthAPI?.postJson) {
+      return window.BSQAuthAPI.postJson(path, body);
+    }
+
+    const response = await fetch(path, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {}),
+    });
+    return response.json().catch(() => ({}));
+  }
+
   function normalizeProviderRecord(providerId, payload) {
     if (payload === true) {
       return {
@@ -130,6 +147,8 @@
       callback_url: record.callback_url || record.callbackUrl || `/auth/${providerId}/callback`,
       logout_url: record.logout_url || record.logoutUrl || null,
       missing_fields: Array.isArray(record.missing_fields) ? record.missing_fields : [],
+      public_key: String(record.public_key || record.publicKey || '').trim(),
+      token_url: String(record.token_url || record.tokenUrl || '').trim(),
     };
   }
 
@@ -185,6 +204,8 @@
   }
 
   let providersCachePromise = null;
+  let kakaoSdkPromise = null;
+  let kakaoSdkInitKey = '';
 
   function resolveRoots(target) {
     if (!target) {
@@ -213,6 +234,92 @@
     }
 
     return providersCachePromise;
+  }
+
+  function loadKakaoSdk() {
+    if (kakaoSdkPromise) return kakaoSdkPromise;
+
+    kakaoSdkPromise = new Promise((resolve) => {
+      if (window.Kakao) {
+        resolve(true);
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = KAKAO_SDK_SRC;
+      script.async = true;
+      script.crossOrigin = 'anonymous';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.head.appendChild(script);
+    });
+
+    return kakaoSdkPromise;
+  }
+
+  async function ensureKakaoSdk(publicKey) {
+    const key = String(publicKey || '').trim();
+    if (!key) return false;
+
+    const loaded = await loadKakaoSdk();
+    if (!loaded || !window.Kakao) return false;
+
+    try {
+      if (!window.Kakao.isInitialized()) {
+        window.Kakao.init(key);
+        kakaoSdkInitKey = key;
+        return true;
+      }
+
+      if (kakaoSdkInitKey && kakaoSdkInitKey !== key) {
+        return false;
+      }
+
+      kakaoSdkInitKey = key;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function loginWithKakaoSdk(providerRecord, context, returnTo) {
+    const publicKey = String(providerRecord?.public_key || '').trim();
+    if (!publicKey) return false;
+
+    const ready = await ensureKakaoSdk(publicKey);
+    if (!ready || !window.Kakao?.Auth?.login) return false;
+
+    const authResult = await new Promise((resolve, reject) => {
+      try {
+        window.Kakao.Auth.login({
+          scope: KAKAO_SDK_SCOPE,
+          success: resolve,
+          fail: reject,
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+
+    const accessToken = String(authResult?.access_token || '').trim();
+    if (!accessToken) {
+      throw new Error('missing_access_token');
+    }
+
+    const endpoint = providerRecord?.token_url || '/auth/kakao/token';
+    const result = await apiPost(endpoint, {
+      access_token: accessToken,
+      flow: context,
+      return_to: returnTo,
+    });
+
+    if (!result?.success) {
+      throw new Error(String(result?.message || result?.error || 'kakao_token_login_failed'));
+    }
+
+    const redirectTo = toAbsoluteUrl(result?.data?.redirect_to || returnTo);
+    window.location.assign(redirectTo);
+    return true;
   }
 
   function normalizeContext(value) {
@@ -410,7 +517,7 @@
       const button = buildProviderButton(provider, record, context, unavailableMode);
       if (!button) continue;
 
-      button.addEventListener('click', () => {
+      button.addEventListener('click', async () => {
         if (button.disabled) {
           setRootMessage(root, record.reason || '현재 사용할 수 없는 소셜 로그인입니다.', 'warning');
           return;
@@ -423,6 +530,18 @@
           sessionStorage.setItem('bsq_social_last_provider', provider.id);
         } catch {
           // sessionStorage is optional
+        }
+
+        try {
+          if (provider.id === 'kakao' && record.public_key) {
+            const sdkLoggedIn = await loginWithKakaoSdk(record, context, returnTo);
+            if (sdkLoggedIn) {
+              return;
+            }
+          }
+        } catch (error) {
+          console.warn('[BSQ SocialAuth] Kakao SDK login failed, falling back to redirect:', error);
+          setRootMessage(root, '카카오 인증을 이어가는 중입니다. 설정을 확인한 뒤 다시 시도해 주세요.', 'warning');
         }
 
         window.location.assign(buildStartUrl(provider, context, returnTo));

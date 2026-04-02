@@ -47,10 +47,20 @@ export function json(request, env, payload, init = {}) {
     ...(init.headers || {}),
   });
 
-  return new Response(JSON.stringify(payload), {
+  const cookies = Array.isArray(init.cookies)
+    ? init.cookies.filter((cookie) => String(cookie || '').trim())
+    : [];
+
+  const response = new Response(JSON.stringify(payload), {
     ...init,
     headers,
   });
+
+  cookies.forEach((cookie) => {
+    response.headers.append('Set-Cookie', cookie);
+  });
+
+  return response;
 }
 
 export function options(request, env, extra = {}) {

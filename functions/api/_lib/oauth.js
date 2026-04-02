@@ -7,6 +7,7 @@ import {
   parseCookies,
   serializeCookie,
 } from './auth.js';
+import { json } from './http.js';
 import { ensureAuthSchema } from './schema.js';
 import { normalizeLanguagePreference, normalizeThemePreference } from './preferences.js';
 import {
@@ -224,6 +225,8 @@ export function listOAuthProviders(env, request) {
       callback_url: `/auth/${config.id}/callback`,
       logout_url: `/auth/${config.id}/logout`,
       public_key_configured: config.id === 'kakao' ? Boolean(config.publicKey) : null,
+      public_key: config.id === 'kakao' ? config.publicKey || '' : null,
+      token_url: config.id === 'kakao' ? `/auth/kakao/token` : null,
     };
 
     return accumulator;
@@ -802,6 +805,146 @@ async function lookupOAuthAccount(db, profile) {
   return { user, linkedAccount };
 }
 
+async function completeOAuthProfileFlow(context, config, profile, {
+  intent = 'login',
+  returnTo = '',
+  clearState = false,
+  provider = config?.id || profile?.provider || 'kakao',
+} = {}) {
+  const { request, env } = context;
+  const normalizedIntent = normalizeSocialPurpose(intent);
+  const fallbackReturnTo = normalizedIntent === 'signup'
+    ? '/login/signup.html'
+    : normalizedIntent === 'recovery'
+      ? '/login/find_account.html'
+      : '/index.html';
+  const resolvedReturnTo = sanitizeReturnTo(returnTo, env, request, fallbackReturnTo);
+  const matched = await lookupOAuthAccount(env.DB, profile);
+  const cookies = [];
+
+  if (normalizedIntent === 'signup') {
+    if (matched.user) {
+      if (clearState) {
+        cookies.push(clearStateCookie(config, request, env));
+      }
+      return {
+        location: buildAuthRedirectUrl(env, request, provider, 'account_exists', 'login'),
+        cookies,
+      };
+    }
+
+    const verification = await createSocialVerification(env.DB, {
+      purpose: 'signup',
+      profile,
+      returnTo: resolvedReturnTo,
+    });
+
+    cookies.push(
+      await buildSocialVerificationCookie(verification.token, request, env, 'signup'),
+    );
+    if (clearState) {
+      cookies.push(clearStateCookie(config, request, env));
+    }
+
+    return {
+      location: sanitizeReturnTo(resolvedReturnTo, env, request, '/login/signup.html'),
+      cookies,
+    };
+  }
+
+  if (normalizedIntent === 'recovery') {
+    if (!matched.user) {
+      if (clearState) {
+        cookies.push(clearStateCookie(config, request, env));
+      }
+      return {
+        location: buildAuthRedirectUrl(env, request, provider, 'account_not_found', 'recovery'),
+        cookies,
+      };
+    }
+
+    const verification = await createSocialVerification(env.DB, {
+      purpose: 'recovery',
+      profile,
+      userId: matched.user.id,
+      returnTo: resolvedReturnTo,
+    });
+
+    cookies.push(
+      await buildSocialVerificationCookie(verification.token, request, env, 'recovery'),
+    );
+    if (clearState) {
+      cookies.push(clearStateCookie(config, request, env));
+    }
+
+    return {
+      location: sanitizeReturnTo(resolvedReturnTo, env, request, '/login/find_account.html'),
+      cookies,
+    };
+  }
+
+  if (!matched.user) {
+    const verification = await createSocialVerification(env.DB, {
+      purpose: 'signup',
+      profile,
+      returnTo: resolvedReturnTo,
+    });
+
+    cookies.push(
+      await buildSocialVerificationCookie(verification.token, request, env, 'signup'),
+    );
+    if (clearState) {
+      cookies.push(clearStateCookie(config, request, env));
+    }
+
+    return {
+      location: buildAuthRedirectUrl(env, request, provider, 'signup_required', 'signup'),
+      cookies,
+    };
+  }
+
+  const { user } = await resolveOAuthAccount(env.DB, profile, {
+    allowCreate: false,
+    allowEmailLink: true,
+    allowEmailLookup: true,
+  });
+
+  if (!user) {
+    const verification = await createSocialVerification(env.DB, {
+      purpose: 'signup',
+      profile,
+      returnTo: resolvedReturnTo,
+    });
+
+    cookies.push(
+      await buildSocialVerificationCookie(verification.token, request, env, 'signup'),
+    );
+    if (clearState) {
+      cookies.push(clearStateCookie(config, request, env));
+    }
+
+    return {
+      location: buildAuthRedirectUrl(env, request, provider, 'signup_required', 'signup'),
+      cookies,
+    };
+  }
+
+  const session = await createSessionRecord(env.DB, user.id, {
+    authProvider: profile.provider,
+    authProviderUserId: profile.provider_user_id,
+  });
+
+  cookies.push(createSessionCookie(session.token, request, env));
+  if (clearState) {
+    cookies.push(clearStateCookie(config, request, env));
+  }
+
+  return {
+    location: sanitizeReturnTo(resolvedReturnTo, env, request),
+    cookies,
+  };
+}
+
 function mapProviderError(code) {
   const normalized = normalizeText(code).toLowerCase();
   if (!normalized) return 'provider_error';
@@ -917,105 +1060,14 @@ export async function handleOAuthCallback(context, provider) {
     if (!profile.provider_user_id) throw new OAuthError('user_info_failed', 'Missing provider user id');
 
     const intent = normalizeSocialPurpose(statePayload.intent);
-    const matched = await lookupOAuthAccount(env.DB, profile);
-
-    if (intent === 'signup') {
-      if (matched.user) {
-        return buildRedirectResponse(
-          buildAuthRedirectUrl(env, request, provider, 'account_exists', 'login'),
-          clearFlowCookies(config, request, env),
-        );
-      }
-
-      const verification = await createSocialVerification(env.DB, {
-        purpose: 'signup',
-        profile,
-        returnTo: statePayload.return_to,
-      });
-
-      return buildRedirectResponse(
-        sanitizeReturnTo(statePayload.return_to, env, request, '/login/signup.html'),
-        [
-          await buildSocialVerificationCookie(verification.token, request, env, 'signup'),
-          clearStateCookie(config, request, env),
-        ],
-      );
-    }
-
-    if (intent === 'recovery') {
-      if (!matched.user) {
-        return buildRedirectResponse(
-          buildAuthRedirectUrl(env, request, provider, 'account_not_found', 'recovery'),
-          clearFlowCookies(config, request, env),
-        );
-      }
-
-      const verification = await createSocialVerification(env.DB, {
-        purpose: 'recovery',
-        profile,
-        userId: matched.user.id,
-        returnTo: statePayload.return_to,
-      });
-
-      return buildRedirectResponse(
-        sanitizeReturnTo(statePayload.return_to, env, request, '/login/find_account.html'),
-        [
-          await buildSocialVerificationCookie(verification.token, request, env, 'recovery'),
-          clearStateCookie(config, request, env),
-        ],
-      );
-    }
-
-    if (!matched.user) {
-      const verification = await createSocialVerification(env.DB, {
-        purpose: 'signup',
-        profile,
-        returnTo: statePayload.return_to,
-      });
-
-      return buildRedirectResponse(
-        buildAuthRedirectUrl(env, request, provider, 'signup_required', 'signup'),
-        [
-          await buildSocialVerificationCookie(verification.token, request, env, 'signup'),
-          clearStateCookie(config, request, env),
-        ],
-      );
-    }
-
-    const { user } = await resolveOAuthAccount(env.DB, profile, {
-      allowCreate: false,
-      allowEmailLink: true,
-      allowEmailLookup: true,
+    const result = await completeOAuthProfileFlow(context, config, profile, {
+      intent,
+      returnTo: statePayload.return_to,
+      clearState: true,
+      provider,
     });
 
-    if (!user) {
-      const verification = await createSocialVerification(env.DB, {
-        purpose: 'signup',
-        profile,
-        returnTo: statePayload.return_to,
-      });
-
-      return buildRedirectResponse(
-        buildAuthRedirectUrl(env, request, provider, 'signup_required', 'signup'),
-        [
-          await buildSocialVerificationCookie(verification.token, request, env, 'signup'),
-          clearStateCookie(config, request, env),
-        ],
-      );
-    }
-
-    const session = await createSessionRecord(env.DB, user.id, {
-      authProvider: profile.provider,
-      authProviderUserId: profile.provider_user_id,
-    });
-
-    return buildRedirectResponse(
-      sanitizeReturnTo(statePayload.return_to, env, request),
-      [
-        createSessionCookie(session.token, request, env),
-        clearStateCookie(config, request, env),
-      ],
-    );
+    return buildRedirectResponse(result.location, result.cookies);
   } catch (error) {
     const codeValue = error instanceof OAuthError ? error.code : 'oauth_failed';
     const redirect = new URL(buildAuthRedirectUrl(env, request, provider, codeValue, statePayload?.intent || 'login'));
@@ -1026,6 +1078,113 @@ export async function handleOAuthCallback(context, provider) {
       redirect.toString(),
       clearFlowCookies(config, request, env),
     );
+  }
+}
+
+export async function handleOAuthTokenLogin(context, provider) {
+  const { request, env } = context;
+  const config = getProviderConfig(provider, env, request);
+
+  if (!config || !config.enabled) {
+    return json(request, env, {
+      success: false,
+      error: 'provider_unavailable',
+      message: '현재 선택한 소셜 로그인은 준비 중입니다.',
+    }, { status: 503 });
+  }
+
+  await ensureAuthSchema(env.DB);
+
+  const requestOrigin = normalizeText(request.headers.get('Origin'));
+  if (requestOrigin) {
+    try {
+      const allowedOrigin = new URL(getAppOrigin(env, request)).origin;
+      if (new URL(requestOrigin).origin !== allowedOrigin && !requestOrigin.endsWith('.pages.dev')) {
+        return json(request, env, {
+          success: false,
+          error: 'origin_mismatch',
+          message: '요청 출처가 올바르지 않습니다.',
+        }, { status: 403 });
+      }
+    } catch {
+      return json(request, env, {
+        success: false,
+        error: 'origin_mismatch',
+        message: '요청 출처가 올바르지 않습니다.',
+      }, { status: 403 });
+    }
+  }
+
+  let body = {};
+  try {
+    body = await request.json();
+  } catch {
+    body = {};
+  }
+
+  const accessToken = normalizeText(body?.access_token || body?.accessToken);
+  const intent = normalizeSocialPurpose(body?.flow || body?.intent);
+  const returnTo = sanitizeReturnTo(
+    body?.return_to || body?.returnTo,
+    env,
+    request,
+    intent === 'signup'
+      ? '/login/signup.html'
+      : intent === 'recovery'
+        ? '/login/find_account.html'
+        : '/index.html',
+  );
+
+  if (!accessToken) {
+    return json(request, env, {
+      success: false,
+      error: 'missing_access_token',
+      message: '카카오 access token이 필요합니다.',
+    }, { status: 400 });
+  }
+
+  try {
+    const providerProfile = await fetchProfile(config, accessToken);
+    const profile = normalizeProviderProfile(config, providerProfile);
+    if (!profile.provider_user_id) throw new OAuthError('user_info_failed', 'Missing provider user id');
+
+    const result = await completeOAuthProfileFlow(context, config, profile, {
+      intent,
+      returnTo,
+      clearState: false,
+      provider,
+    });
+
+    return json(request, env, {
+      success: true,
+      data: {
+        provider: profile.provider,
+        redirect_to: result.location,
+        profile: {
+          provider: profile.provider,
+          provider_user_id: profile.provider_user_id,
+          email: profile.email,
+          provider_email: profile.provider_email,
+          email_verified: profile.email_verified,
+          name: profile.name,
+          nickname: profile.nickname,
+          avatar_url: profile.avatar_url,
+          locale: profile.locale,
+        },
+      },
+    }, {
+      cookies: result.cookies,
+    });
+  } catch (error) {
+    const codeValue = error instanceof OAuthError ? error.code : 'oauth_failed';
+    const response = {
+      success: false,
+      error: codeValue,
+      message: error instanceof OAuthError && normalizeText(error.message)
+        ? normalizeText(error.message)
+        : '카카오 access token 로그인에 실패했습니다.',
+    };
+    return json(request, env, response, { status: 400 });
   }
 }
 
