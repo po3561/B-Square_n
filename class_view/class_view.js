@@ -219,8 +219,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    const needsAuthHydration = !window.BSQ?.session && !window.__BSQ_DEV_MODE__ && window.BSQ?.ready?.then;
-    if (needsAuthHydration) await window.BSQ.ready.catch(() => null);
+    const authBootstrapTasks = [];
+    if (window.BSQ?.ready?.then) authBootstrapTasks.push(window.BSQ.ready.catch(() => null));
+    if (window.BSQ?.sessionBootstrapPromise?.then) authBootstrapTasks.push(window.BSQ.sessionBootstrapPromise.catch(() => null));
+    if (authBootstrapTasks.length) await Promise.all(authBootstrapTasks);
 
     let session = window.BSQ?.session;
     if (session || window.__BSQ_DEV_MODE__) {

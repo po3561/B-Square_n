@@ -521,14 +521,24 @@
       void navigateToBestResult();
     });
 
+    const closeSearchOnOutsidePointer = (event) => {
+      if (!open) return;
+      if (shell.contains(event.target)) return;
+      setPanelOpen(false);
+    };
+
     panel.addEventListener('mousedown', (event) => {
       event.stopPropagation();
     });
+
+    document.addEventListener('pointerdown', closeSearchOnOutsidePointer, true);
 
     document.addEventListener('click', (event) => {
       if (shell.contains(event.target)) return;
       setPanelOpen(false);
     });
+
+    document.addEventListener('focusin', closeSearchOnOutsidePointer);
 
     window.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && open) {

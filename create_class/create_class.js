@@ -3,7 +3,10 @@
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("🚀 B-Square Create Class Page Initializing (v2 Logic)...");
 
-    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
+    const authBootstrapTasks = [];
+    if (window.BSQ?.ready?.then) authBootstrapTasks.push(window.BSQ.ready.catch(() => null));
+    if (window.BSQ?.sessionBootstrapPromise?.then) authBootstrapTasks.push(window.BSQ.sessionBootstrapPromise.catch(() => null));
+    if (authBootstrapTasks.length) await Promise.all(authBootstrapTasks);
     
     // Lucide Icons 초기화
     if (typeof lucide !== 'undefined') {

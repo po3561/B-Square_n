@@ -1,7 +1,10 @@
 ﻿// notice_admin.js - 운영자전용 (D1 API 기반)
 document.addEventListener('DOMContentLoaded', async () => {
-    // bsq_server.js 초기화 대기
-    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
+    // bsq_server.js 초기화 + session bootstrap 대기
+    const authBootstrapTasks = [];
+    if (window.BSQ?.ready?.then) authBootstrapTasks.push(window.BSQ.ready.catch(() => null));
+    if (window.BSQ?.sessionBootstrapPromise?.then) authBootstrapTasks.push(window.BSQ.sessionBootstrapPromise.catch(() => null));
+    if (authBootstrapTasks.length) await Promise.all(authBootstrapTasks);
 
     // Quill JS 초기화
     let quill;

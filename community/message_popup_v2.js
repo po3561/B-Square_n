@@ -1,7 +1,10 @@
 ﻿window.CommunityModules = window.CommunityModules || {};
 
 document.addEventListener('DOMContentLoaded', async () => {
-    if (window.BSQ?.ready) await window.BSQ.ready;
+    const authBootstrapTasks = [];
+    if (window.BSQ?.ready?.then) authBootstrapTasks.push(window.BSQ.ready.catch(() => null));
+    if (window.BSQ?.sessionBootstrapPromise?.then) authBootstrapTasks.push(window.BSQ.sessionBootstrapPromise.catch(() => null));
+    if (authBootstrapTasks.length) await Promise.all(authBootstrapTasks);
 
     const session = window.BSQ?.session;
     const isOperator = window.__BSQ_DEV_MODE__ === true;

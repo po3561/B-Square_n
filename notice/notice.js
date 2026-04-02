@@ -2,8 +2,11 @@
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("📢 B-Square Notice Page Initializing (D1 API)...");
 
-    // BSQ.ready 대기
-    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
+    // BSQ ready + session bootstrap 대기
+    const authBootstrapTasks = [];
+    if (window.BSQ?.ready?.then) authBootstrapTasks.push(window.BSQ.ready.catch(() => null));
+    if (window.BSQ?.sessionBootstrapPromise?.then) authBootstrapTasks.push(window.BSQ.sessionBootstrapPromise.catch(() => null));
+    if (authBootstrapTasks.length) await Promise.all(authBootstrapTasks);
 
     let currentUser = null;
     const session = window.BSQ?.session;

@@ -1,8 +1,11 @@
 ﻿// community.js - 커뮤니티 채팅 메인 컨트롤러 (D1 API 버전)
 // Firebase/Supabase 의존성 완전 제거 → BSQ.api 기반
 document.addEventListener('DOMContentLoaded', async () => {
-    // ---- BSQ.ready 대기 ----
-    if (window.BSQ && window.BSQ.ready) await window.BSQ.ready;
+    // ---- BSQ ready + session bootstrap 대기 ----
+    const authBootstrapTasks = [];
+    if (window.BSQ?.ready?.then) authBootstrapTasks.push(window.BSQ.ready.catch(() => null));
+    if (window.BSQ?.sessionBootstrapPromise?.then) authBootstrapTasks.push(window.BSQ.sessionBootstrapPromise.catch(() => null));
+    if (authBootstrapTasks.length) await Promise.all(authBootstrapTasks);
 
     // ---- 세션 및 운영자 확인 ----
     const isOperator = window.__BSQ_DEV_MODE__ === true;

@@ -2,15 +2,15 @@
 
 
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function waitForAuthBootstrap() {
+    const tasks = [];
+    if (window.BSQ?.ready?.then) tasks.push(window.BSQ.ready.catch(() => null));
+    if (window.BSQ?.sessionBootstrapPromise?.then) tasks.push(window.BSQ.sessionBootstrapPromise.catch(() => null));
+    if (tasks.length) await Promise.all(tasks);
+}
 
-    if (window.BSQ?.ready?.then) {
-        try {
-            await window.BSQ.ready;
-        } catch (error) {
-            console.warn('[community_v2] BSQ.ready failed:', error);
-        }
-    }
+document.addEventListener('DOMContentLoaded', async () => {
+    await waitForAuthBootstrap();
 
     const session = window.BSQ?.session;
 
