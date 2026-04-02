@@ -42,6 +42,7 @@
 
   const KAKAO_SDK_SRC = 'https://t1.kakaocdn.net/kakao_js_sdk/2.8.0/kakao.min.js';
   const KAKAO_SDK_SCOPE = 'profile_nickname,profile_image,account_email';
+  const NAVER_SDK_SRC = 'https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.2.js';
 
   const ERROR_MESSAGES = {
     provider_unavailable: '현재 선택한 소셜 로그인은 준비 중입니다.',
@@ -206,6 +207,7 @@
   let providersCachePromise = null;
   let kakaoSdkPromise = null;
   let kakaoSdkInitKey = '';
+  let naverSdkPromise = null;
 
   function resolveRoots(target) {
     if (!target) {
@@ -325,6 +327,85 @@
       }
       return false;
     }
+  }
+
+  function loadNaverSdk() {
+    if (naverSdkPromise) return naverSdkPromise;
+
+    naverSdkPromise = new Promise((resolve) => {
+      if (window.naver?.LoginWithNaverId) {
+        resolve(true);
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = NAVER_SDK_SRC;
+      script.async = true;
+      script.crossOrigin = 'anonymous';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.head.appendChild(script);
+    });
+
+    return naverSdkPromise;
+  }
+
+  async function startNaverSdkAuthorize(providerRecord, context, returnTo) {
+    const startUrl = new URL(providerRecord?.start_url || '/auth/naver/start', getBaseOrigin());
+    startUrl.searchParams.set('flow', normalizeContext(context));
+    if (returnTo) startUrl.searchParams.set('return_to', returnTo);
+    startUrl.searchParams.set('format', 'json');
+
+    const response = await fetch(startUrl.toString(), {
+      method: 'GET',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload?.success) {
+      throw new Error(String(payload?.message || payload?.error || 'naver_sdk_bootstrap_failed'));
+    }
+
+    const data = payload.data || {};
+    const authorizeUrl = String(data.authorize_url || '').trim();
+    const redirectUri = String(data.redirect_uri || providerRecord?.callback_url || '/auth/naver/callback').trim();
+    const state = String(data.state || '').trim();
+    const clientId = (() => {
+      try {
+        return new URL(authorizeUrl).searchParams.get('client_id') || '';
+      } catch {
+        return '';
+      }
+    })().trim();
+
+    const loaded = await loadNaverSdk();
+    if (!loaded || !window.naver?.LoginWithNaverId || !clientId || !redirectUri || !state) return false;
+
+    try {
+      const naverLogin = new window.naver.LoginWithNaverId({
+        clientId,
+        callbackUrl: redirectUri,
+        isPopup: false,
+        state,
+        loginButton: { color: 'green', type: 3, height: 60 },
+      });
+
+      if (typeof naverLogin.init === 'function') naverLogin.init();
+      if (typeof naverLogin.authorize === 'function') {
+        naverLogin.authorize();
+        return true;
+      }
+    } catch (error) {
+      console.warn('[BSQ SocialAuth] Naver SDK authorize failed, falling back to direct redirect:', error);
+    }
+
+    if (authorizeUrl) {
+      window.location.assign(authorizeUrl);
+      return true;
+    }
+
+    return false;
   }
 
   function normalizeContext(value) {
@@ -542,9 +623,13 @@
             const sdkStarted = await startKakaoSdkAuthorize(record, context, returnTo);
             if (sdkStarted) return;
           }
+          if (provider.id === 'naver') {
+            const sdkStarted = await startNaverSdkAuthorize(record, context, returnTo);
+            if (sdkStarted) return;
+          }
         } catch (error) {
-          console.warn('[BSQ SocialAuth] Kakao SDK login failed, falling back to redirect:', error);
-          setRootMessage(root, '카카오 인증을 이어가는 중입니다. 설정을 확인한 뒤 다시 시도해 주세요.', 'warning');
+          console.warn('[BSQ SocialAuth] Social SDK login failed, falling back to redirect:', error);
+          setRootMessage(root, `${provider.label} 인증을 이어가는 중입니다. 설정을 확인한 뒤 다시 시도해 주세요.`, 'warning');
         }
 
         window.location.assign(buildStartUrl(provider, context, returnTo));

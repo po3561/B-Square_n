@@ -1,4 +1,4 @@
-import {
+﻿import {
   clearCookie,
   clearSessionCookie,
   createSessionCookie,
@@ -1142,9 +1142,78 @@ export async function handleOAuthTokenLogin(context, provider) {
   }
 
   const accessToken = normalizeText(body?.access_token || body?.accessToken);
-  const intent = normalizeSocialPurpose(body?.flow || body?.intent);
-  const returnTo = sanitizeReturnTo(
+  const stateToken = normalizeText(body?.state || body?.stateToken || body?.oauth_state);
+  const bodyIntent = normalizeSocialPurpose(body?.flow || body?.intent);
+  const bodyReturnTo = sanitizeReturnTo(
     body?.return_to || body?.returnTo,
+    env,
+    request,
+    bodyIntent === 'signup'
+      ? '/login/signup.html'
+      : bodyIntent === 'recovery'
+        ? '/login/find_account.html'
+        : '/index.html',
+  );
+  const expectsState = provider !== 'kakao';
+  if (expectsState && !stateToken) {
+    return json(request, env, {
+      success: false,
+      error: 'missing_state',
+      message: 'OAuth state token이 필요합니다.',
+      data: {
+        redirect_to: buildAuthRedirectUrl(env, request, provider, 'missing_state', bodyIntent),
+      },
+    }, {
+      status: 400,
+      cookies: [clearStateCookie(config, request, env)],
+    });
+  }
+
+  let statePayload = null;
+  if (stateToken) {
+    const stateCookie = getRequestCookie(request, config.stateCookieName);
+    if (!stateCookie || stateCookie !== stateToken) {
+      return json(request, env, {
+        success: false,
+        error: 'state_mismatch',
+        message: 'OAuth state verification failed.',
+        data: {
+          redirect_to: buildAuthRedirectUrl(env, request, provider, 'state_mismatch', bodyIntent),
+        },
+      }, {
+        status: 403,
+        cookies: [clearStateCookie(config, request, env)],
+      });
+    }
+
+    try {
+      statePayload = await parseStateToken(stateToken, config.id, env);
+    } catch (error) {
+      return json(request, env, {
+        success: false,
+        error: error instanceof OAuthError ? error.code : 'state_mismatch',
+        message: error instanceof OAuthError && normalizeText(error.message)
+          ? normalizeText(error.message)
+          : 'OAuth state verification failed.',
+        data: {
+          redirect_to: buildAuthRedirectUrl(
+            env,
+            request,
+            provider,
+            error instanceof OAuthError ? error.code : 'state_mismatch',
+            bodyIntent,
+          ),
+        },
+      }, {
+        status: 400,
+        cookies: [clearStateCookie(config, request, env)],
+      });
+    }
+  }
+
+  const intent = normalizeSocialPurpose(statePayload?.intent || bodyIntent);
+  const returnTo = sanitizeReturnTo(
+    statePayload?.return_to || bodyReturnTo,
     env,
     request,
     intent === 'signup'
@@ -1153,13 +1222,20 @@ export async function handleOAuthTokenLogin(context, provider) {
         ? '/login/find_account.html'
         : '/index.html',
   );
+  const clearStateCookies = stateToken ? [clearStateCookie(config, request, env)] : [];
 
   if (!accessToken) {
     return json(request, env, {
       success: false,
       error: 'missing_access_token',
-      message: '카카오 access token이 필요합니다.',
-    }, { status: 400 });
+      message: 'OAuth access token이 필요합니다.',
+      data: {
+        redirect_to: buildAuthRedirectUrl(env, request, provider, 'missing_access_token', intent),
+      },
+    }, {
+      status: 400,
+      cookies: clearStateCookies,
+    });
   }
 
   try {
@@ -1174,7 +1250,7 @@ export async function handleOAuthTokenLogin(context, provider) {
       provider,
     });
 
-    return json(request, env, {
+      return json(request, env, {
       success: true,
       data: {
         provider: profile.provider,
@@ -1192,7 +1268,10 @@ export async function handleOAuthTokenLogin(context, provider) {
         },
       },
     }, {
-      cookies: result.cookies,
+      cookies: [
+        ...(Array.isArray(result.cookies) ? result.cookies : [result.cookies]).filter(Boolean),
+        ...clearStateCookies,
+      ],
     });
   } catch (error) {
     const codeValue = error instanceof OAuthError ? error.code : 'oauth_failed';
@@ -1201,9 +1280,15 @@ export async function handleOAuthTokenLogin(context, provider) {
       error: codeValue,
       message: error instanceof OAuthError && normalizeText(error.message)
         ? normalizeText(error.message)
-        : '카카오 access token 로그인에 실패했습니다.',
+        : 'OAuth access token 로그인에 실패했습니다.',
+      data: {
+        redirect_to: buildAuthRedirectUrl(env, request, provider, codeValue, intent),
+      },
     };
-    return json(request, env, response, { status: 400 });
+    return json(request, env, response, {
+      status: 400,
+      cookies: clearStateCookies,
+    });
   }
 }
 
