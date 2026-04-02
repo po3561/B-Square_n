@@ -973,6 +973,8 @@ export async function handleOAuthStart(context, provider) {
   const config = getProviderConfig(provider, env, request);
   const requestUrl = new URL(request.url);
   const intent = normalizeSocialPurpose(requestUrl.searchParams.get('flow') || requestUrl.searchParams.get('intent'));
+  const responseFormat = normalizeText(requestUrl.searchParams.get('format') || requestUrl.searchParams.get('response'));
+  const wantsJson = ['json', 'bridge', 'sdk'].includes(responseFormat) || requestUrl.searchParams.get('json') === '1';
 
   if (!config || !config.enabled) {
     return buildRedirectResponse(buildAuthRedirectUrl(env, request, provider, 'provider_unavailable', intent));
@@ -989,6 +991,23 @@ export async function handleOAuthStart(context, provider) {
         : '/index.html',
   );
   const stateToken = await createStateToken(config.id, returnTo, env, intent);
+
+  if (wantsJson) {
+    return json(request, env, {
+      success: true,
+      data: {
+        provider: config.id,
+        intent,
+        return_to: returnTo,
+        redirect_uri: config.redirectUri,
+        authorize_url: buildProviderStartUrl(config, stateToken),
+        state: stateToken,
+        scope: config.scope || '',
+      },
+    }, {
+      cookies: [buildStateCookie(config, stateToken, request, env)],
+    });
+  }
 
   return buildRedirectResponse(buildProviderStartUrl(config, stateToken), [
     buildStateCookie(config, stateToken, request, env),

@@ -282,44 +282,49 @@
     }
   }
 
-  async function loginWithKakaoSdk(providerRecord, context, returnTo) {
+  async function startKakaoSdkAuthorize(providerRecord, context, returnTo) {
     const publicKey = String(providerRecord?.public_key || '').trim();
     if (!publicKey) return false;
 
     const ready = await ensureKakaoSdk(publicKey);
-    if (!ready || !window.Kakao?.Auth?.login) return false;
+    if (!ready || !window.Kakao?.Auth?.authorize) return false;
 
-    const authResult = await new Promise((resolve, reject) => {
-      try {
-        window.Kakao.Auth.login({
-          scope: KAKAO_SDK_SCOPE,
-          success: resolve,
-          fail: reject,
-        });
-      } catch (error) {
-        reject(error);
+    const startUrl = new URL(providerRecord?.start_url || '/auth/kakao/start', getBaseOrigin());
+    startUrl.searchParams.set('flow', normalizeContext(context));
+    if (returnTo) startUrl.searchParams.set('return_to', returnTo);
+    startUrl.searchParams.set('format', 'json');
+
+    const response = await fetch(startUrl.toString(), {
+      method: 'GET',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload?.success) {
+      throw new Error(String(payload?.message || payload?.error || 'kakao_sdk_bootstrap_failed'));
+    }
+
+    const data = payload.data || {};
+    const redirectUri = String(data.redirect_uri || providerRecord?.callback_url || '/auth/kakao/callback').trim();
+    const state = String(data.state || '').trim();
+    const authorizeUrl = String(data.authorize_url || '').trim();
+
+    try {
+      window.Kakao.Auth.authorize({
+        redirectUri,
+        scope: KAKAO_SDK_SCOPE,
+        state,
+      });
+      return true;
+    } catch (error) {
+      console.warn('[BSQ SocialAuth] Kakao SDK authorize failed, falling back to direct redirect:', error);
+      if (authorizeUrl) {
+        window.location.assign(authorizeUrl);
+        return true;
       }
-    });
-
-    const accessToken = String(authResult?.access_token || '').trim();
-    if (!accessToken) {
-      throw new Error('missing_access_token');
+      return false;
     }
-
-    const endpoint = providerRecord?.token_url || '/auth/kakao/token';
-    const result = await apiPost(endpoint, {
-      access_token: accessToken,
-      flow: context,
-      return_to: returnTo,
-    });
-
-    if (!result?.success) {
-      throw new Error(String(result?.message || result?.error || 'kakao_token_login_failed'));
-    }
-
-    const redirectTo = toAbsoluteUrl(result?.data?.redirect_to || returnTo);
-    window.location.assign(redirectTo);
-    return true;
   }
 
   function normalizeContext(value) {
@@ -534,10 +539,8 @@
 
         try {
           if (provider.id === 'kakao' && record.public_key) {
-            const sdkLoggedIn = await loginWithKakaoSdk(record, context, returnTo);
-            if (sdkLoggedIn) {
-              return;
-            }
+            const sdkStarted = await startKakaoSdkAuthorize(record, context, returnTo);
+            if (sdkStarted) return;
           }
         } catch (error) {
           console.warn('[BSQ SocialAuth] Kakao SDK login failed, falling back to redirect:', error);
