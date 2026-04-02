@@ -106,12 +106,42 @@ function setupReviewForm(classId, userId, hasAccess, isInstructor) {
     const newBtnSubmit = btnSubmit.cloneNode(true);
     btnSubmit.parentNode.replaceChild(newBtnSubmit, btnSubmit);
 
+    const ratingInput = document.getElementById('reviewRating');
+    const ratingHint = document.getElementById('reviewRatingHint');
+    const ratingButtons = Array.from(document.querySelectorAll('.star-rating-option'));
+    const ratingLabels = {
+        1: '1점 - 많이 아쉬워요',
+        2: '2점 - 조금 아쉬워요',
+        3: '3점 - 보통이에요',
+        4: '4점 - 만족해요',
+        5: '5점 - 아주 좋아요',
+    };
+
+    function setRating(value) {
+        const next = Math.max(0, Math.min(5, Number(value) || 0));
+        if (ratingInput) ratingInput.value = next ? String(next) : '';
+        ratingButtons.forEach((button) => {
+            const rating = Number(button.dataset.rating || 0);
+            const selected = next > 0 && rating <= next;
+            button.classList.toggle('is-selected', selected);
+            button.setAttribute('aria-pressed', rating === next ? 'true' : 'false');
+        });
+        if (ratingHint) {
+            ratingHint.textContent = next ? (ratingLabels[next] || `${next}점`) : '별점을 선택해 주세요.';
+        }
+    }
+
+    ratingButtons.forEach((button) => {
+        button.addEventListener('click', () => setRating(button.dataset.rating));
+    });
+    setRating(ratingInput?.value || 0);
+
     newBtnSubmit.addEventListener('click', async () => {
         if (!userId) return showToast('info', '로그인이 필요합니다', '후기를 작성하려면 먼저 로그인해 주세요.');
         if (!hasAccess) return showToast('info', '수강 후 작성 가능', '수강을 완료한 뒤 후기를 남길 수 있습니다.');
 
         const content = document.getElementById('reviewText')?.value.trim();
-        const rating = document.querySelector('input[name="rating"]:checked')?.value;
+        const rating = ratingInput?.value || document.querySelector('input[name="rating"]:checked')?.value;
 
         if (!rating) return showToast('info', '별점을 선택해 주세요', '별점은 1점부터 5점까지 선택할 수 있습니다.');
         if (!content) return showToast('info', '내용을 입력해 주세요', '후기 내용을 입력한 뒤 등록할 수 있습니다.');
@@ -135,8 +165,7 @@ function setupReviewForm(classId, userId, hasAccess, isInstructor) {
             if (result?.success) {
                 const textArea = document.getElementById('reviewText');
                 if (textArea) textArea.value = '';
-                const checked = document.querySelector('input[name="rating"]:checked');
-                if (checked) checked.checked = false;
+                setRating(0);
                 showToast('success', '후기가 등록되었습니다', '다른 수강생들에게 큰 도움이 됩니다.');
                 loadReviews(classId, isInstructor);
             } else {

@@ -30,7 +30,19 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
     const viewerCommentSection = viewerActionRow?.nextElementSibling || null;
 
     const currentUser = window.BSQ?.session?.user || null;
-    const canWriteNotice = !!(isInstructor || window.__BSQ_DEV_MODE__ === true || authorContext?.role === 'admin' || authorContext?.role === 'operator');
+    const authorRole = String(authorContext?.role || '').trim().toLowerCase();
+    const canWriteNotice = !!(
+        isInstructor
+        || window.__BSQ_DEV_MODE__ === true
+        || authorRole === 'main_instructor'
+        || authorRole === 'sub_instructor'
+        || authorRole === 'instructor'
+        || authorRole === 'teacher'
+        || authorRole === 'lecturer'
+        || authorRole === 'admin'
+        || authorRole === 'super_admin'
+        || authorRole === 'operator'
+    );
 
     let notices = [];
     let currentNotice = null;

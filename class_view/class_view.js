@@ -69,30 +69,6 @@ function computeAccessState() {
         editTabBtn.style.display = isInstructor ? '' : 'none';
     }
 
-    // Mirror the global theme on the chat wrapper so view_chat.css theme rules apply.
-    const chatWrapper = document.getElementById('tabChat');
-    if (chatWrapper) {
-        const theme = document.documentElement.getAttribute('data-theme')
-            || document.body.getAttribute('data-theme')
-            || localStorage.getItem('bsq_theme')
-            || 'dark';
-        chatWrapper.setAttribute('data-theme', theme);
-
-        const btnThemeToggle = document.getElementById('btnThemeToggle');
-        if (btnThemeToggle && !btnThemeToggle.dataset.bsqThemeMirror) {
-            btnThemeToggle.dataset.bsqThemeMirror = '1';
-            btnThemeToggle.addEventListener('click', () => {
-                // simple_class_chat.js toggles body[data-theme]; mirror it onto the wrapper for CSS scoping.
-                window.setTimeout(() => {
-                    const nextTheme = document.body.getAttribute('data-theme')
-                        || document.documentElement.getAttribute('data-theme')
-                        || 'dark';
-                    chatWrapper.setAttribute('data-theme', nextTheme);
-                }, 0);
-            });
-        }
-    }
-
     if (window.SimpleClassChat?.init) {
         window.SimpleClassChat.init(null, classId, currentUserId || null, hasAccess, isInstructor);
     }

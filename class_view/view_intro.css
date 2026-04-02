@@ -6,7 +6,7 @@
     margin: 0;
     font-size: 1.02rem;
     line-height: 1.8;
-    color: rgba(228, 234, 247, 0.86);
+    color: var(--text-secondary);
 }
 
 .intro-divider {
@@ -32,11 +32,11 @@
 .objective-card {
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    border: 1px solid var(--border-color);
     background:
-        linear-gradient(180deg, rgba(21, 24, 33, 0.9), rgba(12, 15, 22, 0.92)),
+        linear-gradient(180deg, var(--bg-card), var(--bg-card)),
         radial-gradient(circle at top right, rgba(94, 126, 255, 0.16), transparent 38%);
-    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.18);
+    box-shadow: var(--shadow-md);
 }
 
 .target-list li {
@@ -48,7 +48,7 @@
     gap: 0.8rem;
     font-size: 0.96rem;
     line-height: 1.65;
-    color: rgba(241, 245, 255, 0.95);
+    color: var(--text-primary);
 }
 
 .target-list li:hover,
@@ -66,7 +66,7 @@
     justify-content: center;
     border-radius: 999px;
     background: rgba(137, 160, 255, 0.18);
-    color: #dce5ff;
+    color: var(--text-primary);
     font-size: 0.82rem;
     font-weight: 800;
 }
@@ -97,14 +97,14 @@
     margin-bottom: 0.45rem;
     font-size: 1rem;
     line-height: 1.4;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .obj-text p {
     margin: 0;
     font-size: 0.9rem;
     line-height: 1.65;
-    color: rgba(205, 213, 230, 0.82);
+    color: var(--text-secondary);
 }
 
 html[data-theme="light"] body.class-view-page .intro-summary,

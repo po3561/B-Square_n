@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     shared.applySettings?.();
 
     SyncBridge.init(null, null, userId);
-    ChatUI.init({ themeKey: 'bsq_theme' });
+    ChatUI.init();
 
     setupPopupShell(shared, ChatUI);
     setupPopupHelpers({ userId, shared, SyncBridge, ChatUI, DM });
@@ -55,9 +55,6 @@ function setupPopupShell(shared, ChatUI) {
         location.href = target.toString();
     });
 
-    document.getElementById('btnThemeToggle')?.addEventListener('click', () => {
-        shared.toggleTheme?.();
-    });
 }
 
 function setupPopupHelpers({ userId, shared, SyncBridge, ChatUI, DM }) {

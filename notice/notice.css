@@ -1284,3 +1284,86 @@
         -webkit-box-orient: vertical;
     }
 }
+
+/* === 2026-04 Notice Page Final Polish === */
+.notice-main {
+    gap: 1.1rem;
+}
+
+.notice-hero {
+    border-radius: 26px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(circle at 10% 0%, rgba(79, 111, 255, 0.32), transparent 38%),
+        radial-gradient(circle at 95% 10%, rgba(28, 170, 156, 0.22), transparent 34%),
+        linear-gradient(135deg, rgba(12, 20, 44, 0.98), rgba(8, 14, 30, 0.98)) !important;
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.24) !important;
+}
+
+.notice-left-panel,
+.notice-right-panel,
+.class-notice-container {
+    border-radius: 22px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(18, 22, 31, 0.92), rgba(10, 12, 18, 0.92)) !important;
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.16) !important;
+}
+
+.panel-header {
+    border-bottom-color: rgba(255, 255, 255, 0.09) !important;
+}
+
+.notice-list-header {
+    color: rgba(226, 232, 240, 0.86);
+}
+
+.notice-item {
+    border-radius: 14px;
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.notice-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    transform: translateY(-1px);
+}
+
+.faq-item {
+    border-radius: 16px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03) !important;
+    box-shadow: none !important;
+}
+
+.faq-question {
+    font-weight: 700;
+}
+
+html[data-theme="light"] .notice-hero {
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    background:
+        radial-gradient(circle at 10% 0%, rgba(79, 111, 255, 0.2), transparent 38%),
+        radial-gradient(circle at 95% 10%, rgba(28, 170, 156, 0.14), transparent 34%),
+        linear-gradient(135deg, rgba(243, 248, 255, 0.98), rgba(236, 244, 255, 0.98)) !important;
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-theme="light"] .notice-left-panel,
+html[data-theme="light"] .notice-right-panel,
+html[data-theme="light"] .class-notice-container {
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    background: rgba(255, 255, 255, 0.96) !important;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1) !important;
+}
+
+html[data-theme="light"] .notice-list-header {
+    color: #334155;
+}
+
+html[data-theme="light"] .notice-item:hover {
+    background: rgba(79, 111, 255, 0.06);
+}
+
+html[data-theme="light"] .faq-item {
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    background: #f8fbff !important;
+}

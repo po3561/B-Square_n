@@ -153,13 +153,30 @@
                             </div>
                             <div class="review-form-unlocked" id="reviewFormUnlocked" style="display:none;">
                                 <h4>후기 작성하기</h4>
-                                <div class="star-rating">
-                                    <input type="radio" name="rating" value="1" id="r1"><label for="r1">⭐️</label>
-                                    <input type="radio" name="rating" value="2" id="r2"><label for="r2">⭐️</label>
-                                    <input type="radio" name="rating" value="3" id="r3"><label for="r3">⭐️</label>
-                                    <input type="radio" name="rating" value="4" id="r4"><label for="r4">⭐️</label>
-                                    <input type="radio" name="rating" value="5" id="r5"><label for="r5">⭐️</label>
+                                <div class="star-rating" id="reviewStarPicker" role="radiogroup" aria-label="별점 선택">
+                                    <input type="hidden" name="rating" id="reviewRating" value="">
+                                    <button type="button" class="star-rating-option" data-rating="1" aria-label="1점">
+                                        <span class="star-rating-icon">★</span>
+                                        <span class="star-rating-label">1</span>
+                                    </button>
+                                    <button type="button" class="star-rating-option" data-rating="2" aria-label="2점">
+                                        <span class="star-rating-icon">★</span>
+                                        <span class="star-rating-label">2</span>
+                                    </button>
+                                    <button type="button" class="star-rating-option" data-rating="3" aria-label="3점">
+                                        <span class="star-rating-icon">★</span>
+                                        <span class="star-rating-label">3</span>
+                                    </button>
+                                    <button type="button" class="star-rating-option" data-rating="4" aria-label="4점">
+                                        <span class="star-rating-icon">★</span>
+                                        <span class="star-rating-label">4</span>
+                                    </button>
+                                    <button type="button" class="star-rating-option" data-rating="5" aria-label="5점">
+                                        <span class="star-rating-icon">★</span>
+                                        <span class="star-rating-label">5</span>
+                                    </button>
                                 </div>
+                                <p class="review-rating-hint" id="reviewRatingHint">별점을 선택해 주세요.</p>
                                 <textarea id="reviewText" placeholder="수강 경험과 도움이 된 점을 자세히 남겨주세요."></textarea>
                                 <button id="btnSubmitReview" class="btn-submit-review">후기 등록</button>
                             </div>
@@ -195,8 +212,6 @@
                                             <div class="chat-header-actions">
                                                 <button class="btn-header-icon" id="btnChatSearch" type="button"
                                                     title="메시지 검색"><i class="fa-solid fa-magnifying-glass"></i></button>
-                                                <button class="btn-header-icon" id="btnThemeToggle" title="테마 전환"><i
-                                                        class="fa-solid fa-moon" id="themeIcon"></i></button>
                                                 <button class="btn-header-icon" id="btnChatInfo" title="채팅 정보"><i
                                                         class="fa-solid fa-circle-info"></i></button>
                                             </div>

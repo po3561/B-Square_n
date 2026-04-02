@@ -10,7 +10,6 @@ window.CommunityModules.ChatUI = (function () {
     let currentRoomInfo = null;
     let replyTarget = null;
     let editingMsgKey = null;
-    let themeStorageKey = 'bsq_theme';
     let isSending = false;
     let currentPins = [];
     let messageCache = new Map();
@@ -445,19 +444,16 @@ window.CommunityModules.ChatUI = (function () {
     const EMOJIS = ['😀', '😂', '🥰', '😍', '🤔', '😅', '😎', '🥳', '😢', '😡', '👍', '👎', '❤️', '🔥', '⭐', '🎉', '💯', '🙌', '👏', '🤝', '💪', '🙏', '✨', '💬', '📌', '📎', '🎵', '🎮', '☕', '🍕', '🎊', '💐', '🌈', '🍀', '🐶', '🐱', '🦊', '🐻'];
 
     function init(options = {}) {
-        if (options.themeKey) themeStorageKey = options.themeKey;
         setupInputUI();
         setupEmojiPicker();
         setupFileUpload();
         setupInputAutoResize();
         setupReply();
-        setupThemeToggle();
         setupMessageSearch();
         setupInfoPanelToggle();
         setupGatheringUI();
         setupScrollUX();
         setupLightbox();
-        restoreTheme();
         console.log("🎨 ChatUI initialized (D1 API version)");
     }
 
@@ -546,27 +542,6 @@ window.CommunityModules.ChatUI = (function () {
                 }
             });
         }
-    }
-
-    // ==== 테마 토글 ====
-    function setupThemeToggle() {
-        const btns = document.querySelectorAll('#btnThemeToggle');
-        btns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const current = document.documentElement.getAttribute('data-theme') || 'dark';
-                const next = current === 'dark' ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-theme', next);
-                document.querySelectorAll('#themeIcon').forEach(icon => { icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun'; });
-                localStorage.setItem(themeStorageKey, next);
-            });
-        });
-    }
-
-    function restoreTheme() {
-        const saved = localStorage.getItem(themeStorageKey) || 'dark';
-        document.documentElement.setAttribute('data-theme', saved);
-        document.querySelectorAll('#themeIcon').forEach(icon => { icon.className = saved === 'dark' ? 'fas fa-moon' : 'fas fa-sun'; });
     }
 
     function syncInfoPanelShellState(visible) {
@@ -758,7 +733,7 @@ window.CommunityModules.ChatUI = (function () {
         if (searchBar) searchBar.style.display = 'none';
         const infoPanel = document.getElementById('commInfoPanel');
         if (infoPanel) {
-            setInfoPanelVisibility(true);
+            setInfoPanelVisibility(false);
             const infoPanelBody = document.getElementById('infoPanelBody');
             if (infoPanelBody) infoPanelBody.innerHTML = '';
         }
@@ -1802,7 +1777,8 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     // ==== 정보 패널 렌더링 (D1 API) ====
-        async function renderInfoPanel(roomId, roomType, roomInfo) {
+        async function renderInfoPanel(roomId, roomType, roomInfo, options = {}) {
+        const hasExplicitTarget = arguments.length > 0;
         roomId = roomId || currentRoomId;
         roomType = roomType || currentRoomType;
         roomInfo = roomInfo || currentRoomInfo;
@@ -1812,7 +1788,10 @@ window.CommunityModules.ChatUI = (function () {
         const body = document.getElementById('infoPanelBody');
         if (!panel || !body) return;
 
-        setInfoPanelVisibility(true);
+        const shouldOpenPanel = !!options.open || panel.classList.contains('visible') || !hasExplicitTarget;
+        if (shouldOpenPanel) {
+            setInfoPanelVisibility(true);
+        }
 
         body.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--comm-text2);"><i class="fas fa-circle-notch fa-spin"></i></div>';
 

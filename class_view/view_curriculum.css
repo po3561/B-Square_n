@@ -11,12 +11,12 @@
 .curriculum-chapter {
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color);
     border-radius: 24px;
     background:
-        linear-gradient(180deg, rgba(22, 25, 34, 0.96), rgba(13, 15, 22, 0.98)),
+        linear-gradient(180deg, var(--bg-card), var(--bg-card)),
         radial-gradient(circle at top right, rgba(94, 126, 255, 0.14), transparent 34%);
-    box-shadow: 0 24px 44px rgba(0, 0, 0, 0.22);
+    box-shadow: var(--shadow-md);
 }
 
 .chapter-header {
@@ -61,21 +61,21 @@
     font-size: 1.1rem;
     font-weight: 700;
     line-height: 1.4;
-    color: var(--text-primary, #fff);
+    color: var(--text-primary);
 }
 
 .chapter-summary {
     margin: 0;
     font-size: 0.88rem;
     line-height: 1.55;
-    color: rgba(210, 216, 231, 0.72);
+    color: var(--text-secondary);
 }
 
 .chapter-materials {
     margin: 0;
     font-size: 0.78rem;
     line-height: 1.45;
-    color: rgba(169, 180, 203, 0.82);
+    color: var(--text-secondary);
 }
 
 .chapter-meta {
@@ -91,12 +91,12 @@
     align-items: center;
     min-height: 2.25rem;
     padding: 0 0.9rem;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color);
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.04);
     font-size: 0.82rem;
     font-weight: 600;
-    color: rgba(223, 228, 240, 0.9);
+    color: var(--text-primary);
 }
 
 .toggle-icon {
@@ -107,7 +107,7 @@
     height: 2.2rem;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.04);
-    color: rgba(223, 228, 240, 0.82);
+    color: var(--text-secondary);
     font-size: 0.76rem;
     transition: transform 0.24s ease, background-color 0.24s ease;
 }
@@ -121,7 +121,7 @@
 
 .lesson-list-container.active {
     max-height: 1800px;
-    border-top-color: rgba(255, 255, 255, 0.06);
+    border-top-color: var(--border-color);
 }
 
 .lesson-item {
@@ -131,7 +131,7 @@
     gap: 1rem;
     padding: 1rem 1.75rem;
     background: rgba(255, 255, 255, 0.01);
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid var(--border-color);
 }
 
 .lesson-item:first-child {
@@ -148,7 +148,7 @@
 .lesson-index {
     flex-shrink: 0;
     width: 1.4rem;
-    color: rgba(177, 186, 211, 0.62);
+    color: var(--text-secondary);
     font-size: 0.82rem;
     font-weight: 700;
 }
@@ -157,7 +157,7 @@
     display: block;
     font-size: 0.95rem;
     line-height: 1.55;
-    color: rgba(243, 246, 255, 0.96);
+    color: var(--text-primary);
     word-break: keep-all;
 }
 
@@ -176,7 +176,7 @@
     padding: 0 0.7rem;
     border-radius: 999px;
     background: rgba(136, 162, 255, 0.18);
-    color: #d9e2ff;
+    color: var(--text-primary);
     font-size: 0.74rem;
     font-weight: 700;
 }
@@ -184,14 +184,14 @@
 .lesson-duration {
     min-width: 4.25rem;
     text-align: right;
-    color: rgba(206, 214, 230, 0.78);
+    color: var(--text-secondary);
     font-size: 0.82rem;
     font-variant-numeric: tabular-nums;
 }
 
 .lesson-duration-empty {
     min-width: auto;
-    color: rgba(173, 181, 199, 0.5);
+    color: var(--text-secondary);
 }
 
 .lesson-status-icon {
@@ -199,7 +199,7 @@
     align-items: center;
     justify-content: center;
     width: 1rem;
-    color: rgba(227, 233, 247, 0.82);
+    color: var(--text-secondary);
     font-size: 0.84rem;
 }
 
@@ -207,34 +207,34 @@
     display: grid;
     gap: 0.35rem;
     padding: 1.15rem 1.75rem 1.3rem;
-    color: rgba(216, 222, 236, 0.82);
+    color: var(--text-secondary);
 }
 
 .lesson-empty-state strong {
     font-size: 0.92rem;
     font-weight: 700;
-    color: rgba(247, 249, 255, 0.96);
+    color: var(--text-primary);
 }
 
 .lesson-empty-state p {
     margin: 0;
     font-size: 0.82rem;
     line-height: 1.55;
-    color: rgba(180, 188, 208, 0.7);
+    color: var(--text-secondary);
 }
 
 .lesson-empty-detail {
-    color: rgba(221, 227, 242, 0.82);
+    color: var(--text-secondary);
 }
 
 .lesson-empty-materials {
-    color: rgba(163, 175, 202, 0.84);
+    color: var(--text-secondary);
 }
 
 .curriculum-empty-state {
-    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border: 1px dashed var(--border-color);
     border-radius: 24px;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-card);
     padding-block: 1.4rem;
 }
 

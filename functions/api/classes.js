@@ -17,10 +17,98 @@ function parseIntOrDefault(value, fallback, max) {
   return Math.min(parsed, max);
 }
 
+function parseNonNegativeInt(value, fallback = 0) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+  return parsed;
+}
+
 function isTruthyFlag(value) {
   if (value === true || value === 1) return true;
   const text = String(value ?? '').trim().toLowerCase();
   return text === '1' || text === 'true' || text === 'yes';
+}
+
+function parseSortSpec(rawSort, rawOrder) {
+  const sortInput = String(rawSort ?? '').trim().toLowerCase();
+  const orderInput = String(rawOrder ?? '').trim().toLowerCase();
+
+  let sort = 'created_at';
+  let defaultOrder = 'DESC';
+
+  if (sortInput === 'oldest') {
+    sort = 'created_at';
+    defaultOrder = 'ASC';
+  } else if (['popular', 'bookmarks', 'bookmark', 'likes', 'hot'].includes(sortInput)) {
+    sort = 'popular';
+  } else if (['rating', 'reviews'].includes(sortInput)) {
+    sort = 'rating';
+  } else if (['participants', 'students', 'enrollments'].includes(sortInput)) {
+    sort = 'participants';
+  } else if (['price', 'price_low', 'price_asc', 'low_price'].includes(sortInput)) {
+    sort = 'price';
+    defaultOrder = 'ASC';
+  } else if (['price_high', 'price_desc', 'high_price'].includes(sortInput)) {
+    sort = 'price';
+    defaultOrder = 'DESC';
+  } else if (['new', 'newest', 'recent', 'latest', 'created_at', ''].includes(sortInput)) {
+    sort = 'created_at';
+    defaultOrder = 'DESC';
+  }
+
+  const order = orderInput === 'asc' ? 'ASC' : orderInput === 'desc' ? 'DESC' : defaultOrder;
+  return { sort, order };
+}
+
+function buildOrderByClause(sort, order) {
+  switch (sort) {
+    case 'popular':
+      return `COALESCE(s.bookmark_count, 0) ${order}, COALESCE(s.review_count, 0) ${order}, c.created_at DESC, c.id DESC`;
+    case 'rating':
+      return `COALESCE(s.avg_rating, 0) ${order}, COALESCE(s.review_count, 0) ${order}, c.created_at DESC, c.id DESC`;
+    case 'participants':
+      return `COALESCE(s.total_enrollments, c.current_participants, 0) ${order}, c.created_at DESC, c.id DESC`;
+    case 'price':
+      return `CASE WHEN COALESCE(c.is_free, 0) = 1 THEN 0 ELSE COALESCE(c.price, 0) END ${order}, c.created_at DESC, c.id DESC`;
+    case 'created_at':
+    default:
+      return `c.created_at ${order}, c.id ${order}`;
+  }
+}
+
+function parseCursorToken(value) {
+  const token = trimText(value);
+  if (!token) return { cursor: null, error: null };
+
+  let decoded = '';
+  try {
+    decoded = Buffer.from(token, 'base64url').toString('utf8');
+  } catch {
+    try {
+      decoded = Buffer.from(token, 'base64').toString('utf8');
+    } catch {
+      return { cursor: null, error: 'Invalid cursor encoding' };
+    }
+  }
+
+  try {
+    const payload = JSON.parse(decoded);
+    const createdAt = trimText(payload?.created_at);
+    const id = trimText(payload?.id);
+    if (!createdAt || !id) {
+      return { cursor: null, error: 'Invalid cursor payload' };
+    }
+    return { cursor: { createdAt, id }, error: null };
+  } catch {
+    return { cursor: null, error: 'Invalid cursor payload' };
+  }
+}
+
+function makeCursorToken(row) {
+  const createdAt = trimText(row?.created_at);
+  const id = trimText(row?.id);
+  if (!createdAt || !id) return null;
+  return Buffer.from(JSON.stringify({ created_at: createdAt, id }), 'utf8').toString('base64url');
 }
 
 function normalizeClassRow(row) {
@@ -34,13 +122,14 @@ function normalizeClassRow(row) {
   };
 }
 
-function buildPageMeta(limit, offset, count, hasMore) {
+function buildPageMeta(limit, offset, count, hasMore, extra = {}) {
   return {
     limit,
     offset,
     count,
     has_more: hasMore,
     next_offset: hasMore ? offset + limit : null,
+    ...extra,
   };
 }
 
@@ -89,9 +178,21 @@ export async function onRequest(context) {
     const category = trimText(url.searchParams.get('category'));
     const query = trimText(url.searchParams.get('q'));
     const instructorId = trimText(url.searchParams.get('instructor_id') || url.searchParams.get('creator_id'));
+    const hasSortQuery = url.searchParams.has('sort') || url.searchParams.has('order');
+    const { sort, order } = parseSortSpec(url.searchParams.get('sort'), url.searchParams.get('order'));
     const requestedLimit = parseIntOrDefault(url.searchParams.get('limit'), 50, 200);
     const limit = category || query || instructorId ? requestedLimit : Math.min(requestedLimit, 120);
-    const offset = Math.max(Number.parseInt(url.searchParams.get('offset') || '0', 10) || 0, 0);
+    const offset = parseNonNegativeInt(url.searchParams.get('offset'), 0);
+    const includeTotal = isTruthyFlag(url.searchParams.get('include_total'));
+    const hasCursorQuery = url.searchParams.has('cursor');
+    const { cursor, error: cursorError } = parseCursorToken(url.searchParams.get('cursor'));
+
+    if (cursorError) {
+      return json(request, env, { success: false, error: cursorError }, { status: 400 });
+    }
+    if (cursor && sort !== 'created_at') {
+      return json(request, env, { success: false, error: 'cursor is only supported for created_at sorting' }, { status: 400 });
+    }
 
     let phase = 'ensure';
     try {
@@ -118,18 +219,80 @@ export async function onRequest(context) {
         params.push(like, like, like, like, like, like, like);
       }
 
-      sql += ' ORDER BY c.created_at DESC, c.id DESC LIMIT ? OFFSET ?';
-      params.push(limit + 1, offset);
+      if (cursor) {
+        if (order === 'DESC') {
+          sql += ' AND (c.created_at < ? OR (c.created_at = ? AND c.id < ?))';
+        } else {
+          sql += ' AND (c.created_at > ? OR (c.created_at = ? AND c.id > ?))';
+        }
+        params.push(cursor.createdAt, cursor.createdAt, cursor.id);
+      }
+
+      sql += ` ORDER BY ${buildOrderByClause(sort, order)} LIMIT ?`;
+      params.push(limit + 1);
+
+      if (!cursor) {
+        sql += ' OFFSET ?';
+        params.push(offset);
+      }
 
       const { results } = await db.prepare(sql).bind(...params).all();
       const rows = (results || []).map(normalizeClassRow);
       const hasMore = rows.length > limit;
       const enriched = hasMore ? rows.slice(0, limit) : rows;
+      const nextCursor = hasMore && sort === 'created_at'
+        ? makeCursorToken(enriched[enriched.length - 1])
+        : null;
+
+      let total = null;
+      if (includeTotal) {
+        let totalSql = `
+          SELECT COUNT(*) AS total
+          FROM classes c
+          LEFT JOIN users u ON u.id = c.creator_id
+          WHERE c.is_public = 1
+        `;
+        const totalParams = [];
+
+        if (category) {
+          totalSql += ' AND c.category = ?';
+          totalParams.push(category);
+        }
+
+        if (instructorId) {
+          totalSql += ' AND c.creator_id = ?';
+          totalParams.push(instructorId);
+        }
+
+        if (query) {
+          const like = `%${query}%`;
+          totalSql += ' AND (c.title LIKE ? OR c.category LIKE ? OR c.keywords LIKE ? OR c.instructor_name LIKE ? OR c.instructor_email LIKE ? OR u.name LIKE ? OR u.email LIKE ?)';
+          totalParams.push(like, like, like, like, like, like, like);
+        }
+
+        const totalRow = await db.prepare(totalSql).bind(...totalParams).first().catch(() => ({ total: 0 }));
+        total = Number(totalRow?.total || 0);
+      }
+
+      const extraMeta = {};
+      if (hasSortQuery) {
+        extraMeta.sort = sort;
+        extraMeta.order = order.toLowerCase();
+      }
+      if (includeTotal) {
+        extraMeta.total = total;
+      }
+      if (hasCursorQuery) {
+        extraMeta.next_cursor = nextCursor;
+      }
+      if (cursor) {
+        extraMeta.next_offset = null;
+      }
 
       return json(request, env, {
         success: true,
         data: enriched,
-        meta: buildPageMeta(limit, offset, enriched.length, hasMore),
+        meta: buildPageMeta(limit, cursor ? 0 : offset, enriched.length, hasMore, extraMeta),
       }, { headers: RESPONSE_HEADERS });
     } catch (error) {
       return json(request, env, {
@@ -147,7 +310,7 @@ export async function onRequest(context) {
     if (!auth.ok) return auth.response;
 
     try {
-      const body = await request.json();
+      const body = await request.json().catch(() => ({}));
       const id = trimText(body.id);
       if (!id) {
         return json(request, env, { success: false, error: 'ID is required' }, { status: 400 });

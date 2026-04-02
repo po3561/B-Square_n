@@ -23,6 +23,18 @@ function trimText(value) {
   return String(value ?? '').trim();
 }
 
+async function readJsonObject(request) {
+  try {
+    const parsed = await request.json();
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+}
+
 function toSQLiteTimestamp(value) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return null;
@@ -38,6 +50,7 @@ function isTruthyFlag(value) {
 }
 
 function normalizeMessage(row) {
+  if (!row) return null;
   return {
     ...row,
     content: row.content || row.message || '',
@@ -246,7 +259,7 @@ export async function onRequest(context) {
 
     if (request.method === 'POST' && subResource && extra === 'reaction') {
       const messageId = subResource;
-      const body = await request.json();
+      const body = await readJsonObject(request);
       const emoji = String(body.emoji || '').trim();
 
       if (!emoji) {
@@ -284,12 +297,15 @@ export async function onRequest(context) {
       const updated = await env.DB.prepare(`SELECT ${DM_MESSAGE_COLUMNS} FROM dm_messages WHERE id = ? AND room_id = ?`)
         .bind(messageId, roomId)
         .first();
+      if (!updated) {
+        return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
+      }
 
       return json(request, env, { success: true, data: { ...normalizeMessage(updated), reactions } });
     }
 
     if (request.method === 'POST') {
-      const body = await request.json();
+      const body = await readJsonObject(request);
       const content = trimText(body.content || body.message || body.text || '');
       const resolvedRoomType = trimText(body.room_type) || roomType;
       const resolvedClassId = resolvedRoomType === 'class' ? roomId : (trimText(body.class_id) || null);
@@ -352,6 +368,9 @@ export async function onRequest(context) {
           LIMIT 1
         `).bind(roomId, resolvedRoomType).first();
       }
+      if (!inserted) {
+        return json(request, env, { success: false, error: 'Failed to create message' }, { status: 500 });
+      }
 
       await env.DB.prepare(`
         UPDATE user_chats
@@ -366,7 +385,7 @@ export async function onRequest(context) {
     }
 
     if (request.method === 'PATCH' && subResource) {
-      const body = await request.json();
+      const body = await readJsonObject(request);
       const content = typeof body.content === 'string' ? body.content.trim() : '';
       const hasContent = content.length > 0;
       const hasPinState = body.is_pinned !== undefined;
@@ -396,6 +415,9 @@ export async function onRequest(context) {
         FROM dm_messages
         WHERE id = ? AND room_id = ?
       `).bind(subResource, roomId).first();
+      if (!updated) {
+        return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
+      }
 
       return json(request, env, { success: true, data: normalizeMessage(updated) });
     }

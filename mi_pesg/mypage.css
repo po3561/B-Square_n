@@ -26,11 +26,11 @@
     --mp-accent: var(--accent-color, #9ebcff);
     --mp-accent-strong: var(--accent-strong, #b7caff);
 
-    --mp-page-gutter: clamp(0.9rem, 2.2vw, 1.8rem);
+    --mp-page-gutter: clamp(0.8rem, 1.8vw, 1.45rem);
     --mp-page-max: 1400px;
-    --mp-gap: clamp(0.9rem, 1.8vw, 1.35rem);
-    --mp-card-pad: clamp(1rem, 1.7vw, 1.55rem);
-    --mp-card-pad-tight: clamp(0.75rem, 1.2vw, 1.05rem);
+    --mp-gap: clamp(0.78rem, 1.45vw, 1.1rem);
+    --mp-card-pad: clamp(0.9rem, 1.45vw, 1.3rem);
+    --mp-card-pad-tight: clamp(0.68rem, 1.05vw, 0.96rem);
 
     --mp-title-xl: clamp(1.6rem, 2.8vw, 2.4rem);
     --mp-title-lg: clamp(1.15rem, 1.8vw, 1.5rem);
@@ -55,7 +55,7 @@
    ========================================================= */
 .mypage-layout {
     width: min(calc(100% - (var(--mp-page-gutter) * 2)), var(--mp-page-max));
-    margin: clamp(1rem, 2vw, 2rem) auto clamp(2rem, 4vw, 4rem);
+    margin: clamp(0.85rem, 1.6vw, 1.45rem) auto clamp(1.6rem, 3vw, 3rem);
     display: grid;
     grid-template-columns: 280px minmax(0, 1fr);
     gap: var(--mp-gap);
@@ -92,7 +92,7 @@
     background: linear-gradient(145deg, rgba(18, 22, 32, 0.9), rgba(10, 12, 18, 0.9));
     border: 1px solid var(--mp-border);
     box-shadow: var(--mp-shadow-soft);
-    margin-bottom: 1rem;
+    margin-bottom: 0.85rem;
 }
 
 .profile-img-placeholder {
@@ -2257,8 +2257,8 @@
 }
 
 body[data-page="mypage"] .mypage-layout {
-    margin-top: clamp(0.55rem, 1vw, 0.95rem);
-    gap: clamp(1rem, 1.7vw, 1.35rem);
+    margin-top: clamp(0.5rem, 0.9vw, 0.85rem);
+    gap: clamp(0.85rem, 1.35vw, 1.1rem);
 }
 
 body[data-page="mypage"] .mypage-sidebar {
@@ -2286,21 +2286,24 @@ body[data-page="mypage"] .profile-actions-stack {
 }
 
 body[data-page="mypage"] .mypage-content {
-    gap: clamp(1rem, 1.6vw, 1.35rem);
+    gap: clamp(0.85rem, 1.3vw, 1.05rem);
 }
 
 body[data-page="mypage"] .tab-header-row {
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.65rem;
 }
 
 body[data-page="mypage"] .dashboard-summary-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(0.9rem, 1.4vw, 1.2rem);
+    grid-template-columns: minmax(300px, 1.08fr) repeat(3, minmax(0, 0.92fr));
+    gap: clamp(0.8rem, 1.2vw, 1rem);
 }
 
-body[data-page="mypage"] .dashboard-profile-card,
+body[data-page="mypage"] .dashboard-profile-card {
+    grid-column: auto;
+}
+
 body[data-page="mypage"] .dashboard-accordion-card[data-accordion="friend"] {
-    grid-column: 1 / -1;
+    grid-column: auto;
 }
 
 body[data-page="mypage"] .dashboard-stat-card,
@@ -2309,7 +2312,7 @@ body[data-page="mypage"] .dashboard-commerce-shell,
 body[data-page="mypage"] .mypage-hero,
 body[data-page="mypage"] .guest-gate {
     border: 0;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
 }
 
 body[data-page="mypage"] .dashboard-summary-toggle {
@@ -2318,7 +2321,7 @@ body[data-page="mypage"] .dashboard-summary-toggle {
 }
 
 body[data-page="mypage"] .dashboard-accordion-body {
-    padding-top: 0.9rem;
+    padding-top: 0.75rem;
 }
 
 body[data-page="mypage"] .dashboard-summary-item,
@@ -2328,8 +2331,8 @@ body[data-page="mypage"] .payment-summary-row {
 }
 
 body[data-page="mypage"] .dashboard-commerce-grid {
-    grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
-    gap: clamp(0.9rem, 1.4vw, 1.2rem);
+    grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+    gap: clamp(0.8rem, 1.2vw, 1rem);
 }
 
 body[data-page="mypage"] .page-eyebrow,
@@ -2396,4 +2399,48 @@ body[data-page="mypage"] .payment-summary-row {
 body[data-page="mypage"] .dashboard-commerce-grid {
     grid-template-columns: minmax(0, 1.12fr) minmax(300px, 0.88fr);
     gap: clamp(1rem, 1.5vw, 1.25rem);
+}
+
+/* Final compact tuning for the desktop dashboard */
+body[data-page="mypage"] .mypage-layout {
+    margin-top: clamp(0.45rem, 0.8vw, 0.75rem);
+    gap: clamp(0.8rem, 1.2vw, 1rem);
+}
+
+body[data-page="mypage"] .mypage-content {
+    gap: clamp(0.8rem, 1.2vw, 0.98rem);
+}
+
+body[data-page="mypage"] .tab-header-row {
+    margin-bottom: 0.55rem;
+}
+
+body[data-page="mypage"] .dashboard-summary-grid {
+    grid-template-columns: minmax(340px, 1.25fr) repeat(2, minmax(0, 1fr));
+    gap: clamp(0.75rem, 1.05vw, 0.95rem);
+}
+
+body[data-page="mypage"] .dashboard-commerce-grid {
+    grid-template-columns: minmax(0, 1.06fr) minmax(280px, 0.94fr);
+    gap: clamp(0.75rem, 1vw, 0.95rem);
+}
+
+body[data-page="mypage"] .dashboard-stat-card,
+body[data-page="mypage"] .mypage-panel-card,
+body[data-page="mypage"] .dashboard-commerce-shell,
+body[data-page="mypage"] .mypage-hero,
+body[data-page="mypage"] .guest-gate {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+}
+
+body[data-page="mypage"] .dashboard-accordion-body {
+    padding-top: 0.68rem;
+}
+
+body[data-page="mypage"] .profile-actions-stack {
+    gap: 0.28rem;
+}
+
+body[data-page="mypage"] .dashboard-accordion-card[data-accordion="friend"] {
+    grid-column: 1 / -1;
 }

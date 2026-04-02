@@ -4252,3 +4252,132 @@ input:checked+.mac-slider:before {
         align-items: flex-start;
     }
 }
+
+/* === 2026-04 Admin Recommendation Visual Restore === */
+#tabRecommend .admin-card {
+    border-radius: 22px;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+#tabRecommend .card-header {
+    padding: 1.15rem 1.25rem !important;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+}
+
+#tabRecommend .section-title {
+    letter-spacing: -0.02em;
+}
+
+#tabRecommend .recommend-card-actions {
+    gap: 0.6rem;
+}
+
+#tabRecommend #popularClassList {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+    border: 1px dashed rgba(148, 163, 184, 0.5) !important;
+    border-radius: 16px !important;
+    min-height: 168px !important;
+}
+
+#tabRecommend #recommendFolderList {
+    padding: 1.2rem !important;
+    gap: 1.2rem !important;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.66), rgba(248, 250, 252, 0.24)) !important;
+}
+
+#tabRecommend .recommend-folder-item {
+    border-radius: 18px !important;
+    padding: 1rem !important;
+}
+
+#tabRecommend .recommend-folder-item .selected-class-list {
+    border-radius: 14px !important;
+    border: 1px dashed rgba(148, 163, 184, 0.45) !important;
+    padding: 0.9rem !important;
+}
+
+#tabRecommend .selected-class-card {
+    border-radius: 14px !important;
+    border: 1px solid rgba(226, 232, 240, 0.95) !important;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+#tabRecommend .selected-class-card .class-name,
+#tabRecommend .selected-class-card .class-price {
+    color: #0f172a !important;
+}
+
+#tabRecommend .selected-class-card .btn-small,
+#tabRecommend .recommend-folder-item .btn-small {
+    border-radius: 10px !important;
+}
+
+#classSearchModal {
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+#classSearchModal > div {
+    border-radius: 20px !important;
+    border: 1px solid rgba(226, 232, 240, 0.95) !important;
+    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.2) !important;
+}
+
+#classSearchModal > div > div:first-child {
+    background: #f8fbff !important;
+}
+
+#classSearchResultList {
+    border-radius: 14px !important;
+    background: linear-gradient(180deg, #ffffff, #f8fafc) !important;
+}
+
+#classSearchResultList .search-class-card {
+    border-radius: 14px !important;
+    border: 1px solid rgba(226, 232, 240, 0.95) !important;
+    background: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+#classSearchResultList .search-class-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 22px rgba(15, 23, 42, 0.1);
+}
+
+html[data-theme="dark"] #tabRecommend .admin-card,
+body.admin-body[data-theme="dark"] #tabRecommend .admin-card {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(15, 19, 30, 0.96), rgba(10, 13, 22, 0.96));
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] #tabRecommend #popularClassList,
+html[data-theme="dark"] #tabRecommend #recommendFolderList,
+body.admin-body[data-theme="dark"] #tabRecommend #popularClassList,
+body.admin-body[data-theme="dark"] #tabRecommend #recommendFolderList {
+    border-color: rgba(255, 255, 255, 0.16) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+
+html[data-theme="dark"] #tabRecommend .recommend-folder-item,
+body.admin-body[data-theme="dark"] #tabRecommend .recommend-folder-item {
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: linear-gradient(180deg, rgba(24, 30, 44, 0.92), rgba(16, 21, 34, 0.92)) !important;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.24) !important;
+}
+
+html[data-theme="dark"] #tabRecommend .selected-class-card,
+body.admin-body[data-theme="dark"] #tabRecommend .selected-class-card {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    background: rgba(11, 15, 24, 0.94) !important;
+}
+
+html[data-theme="dark"] #tabRecommend .selected-class-card .class-name,
+html[data-theme="dark"] #tabRecommend .selected-class-card .class-price,
+body.admin-body[data-theme="dark"] #tabRecommend .selected-class-card .class-name,
+body.admin-body[data-theme="dark"] #tabRecommend .selected-class-card .class-price {
+    color: #f8fafc !important;
+}

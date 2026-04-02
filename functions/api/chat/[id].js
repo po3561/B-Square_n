@@ -35,6 +35,18 @@ function trimText(value) {
   return String(value ?? '').trim();
 }
 
+async function readJsonObject(request) {
+  try {
+    const parsed = await request.json();
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+}
+
 function normalizeChatMessage(row) {
   if (!row) return row;
 
@@ -91,7 +103,7 @@ export async function onRequest(context) {
     }
 
     if (request.method === 'PUT' || request.method === 'PATCH') {
-      const body = await request.json();
+      const body = await readJsonObject(request);
       const content = trimText(body.message || body.content || '');
       if (!content) {
         return json(request, env, { success: false, error: 'message is required' }, { status: 400 });
@@ -104,6 +116,9 @@ export async function onRequest(context) {
       const updated = await env.DB.prepare(`SELECT ${CHAT_MESSAGE_COLUMNS} FROM chat_messages WHERE id = ?`)
         .bind(messageId)
         .first();
+      if (!updated) {
+        return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
+      }
 
       const responseData = normalizeChatMessage(updated);
       if (body.client_id) responseData.client_id = String(body.client_id);

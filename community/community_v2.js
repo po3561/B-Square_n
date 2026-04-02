@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     SyncBridge.init(null, null, userId);
 
-    ChatUI.init({ themeKey: 'bsq_theme' });
+    ChatUI.init();
 
 
 
@@ -365,14 +365,6 @@ function wireShellActions(userId, deps) {
     setupSettingsModal({ shared, ChatUI });
 
 
-
-    document.getElementById('btnThemeToggle')?.addEventListener('click', () => {
-
-        shared.toggleTheme?.();
-
-        syncSettingsPanel();
-
-    });
 
 }
 
@@ -1181,7 +1173,7 @@ async function openInitialRoute(userId, { shared, ChatList, ChatUI, DM }) {
 
         if (params.get('panel') === 'info') {
 
-            setTimeout(() => ChatUI.renderInfoPanel(room, type, roomInfo), 0);
+            setTimeout(() => ChatUI.renderInfoPanel(room, type, roomInfo, { open: true }), 0);
 
         }
 
@@ -1215,7 +1207,7 @@ async function openInitialRoute(userId, { shared, ChatList, ChatUI, DM }) {
 
         if (params.get('panel') === 'info') {
 
-            setTimeout(() => ChatUI.renderInfoPanel(classId, 'class', roomInfo), 0);
+            setTimeout(() => ChatUI.renderInfoPanel(classId, 'class', roomInfo, { open: true }), 0);
 
         }
 
@@ -1249,7 +1241,7 @@ async function openInitialRoute(userId, { shared, ChatList, ChatUI, DM }) {
 
         if (params.get('panel') === 'info') {
 
-            setTimeout(() => ChatUI.renderInfoPanel(groupId, 'group', roomInfo), 0);
+            setTimeout(() => ChatUI.renderInfoPanel(groupId, 'group', roomInfo, { open: true }), 0);
 
         }
 

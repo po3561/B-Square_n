@@ -12,6 +12,18 @@ function parseReactions(value) {
   }
 }
 
+async function readJsonObject(request) {
+  try {
+    const parsed = await request.json();
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+}
+
 export async function onRequest(context) {
   const { request, env, params } = context;
 
@@ -45,14 +57,14 @@ export async function onRequest(context) {
       if (!classAuth.ok) return classAuth.response;
     }
 
-    const body = await request.json();
+    const body = await readJsonObject(request);
     const emoji = String(body.emoji || body.reaction || '').trim();
     if (!emoji) {
       return json(request, env, { success: false, error: 'emoji is required' }, { status: 400 });
     }
 
     const reactions = parseReactions(message.reactions);
-    reactions[emoji] = Array.isArray(reactions[emoji]) ? reactions[emoji] : [];
+    reactions[emoji] = Array.isArray(reactions[emoji]) ? reactions[emoji].map((value) => String(value)) : [];
 
     const userId = String(auth.user.id);
     const idx = reactions[emoji].indexOf(userId);
@@ -70,6 +82,9 @@ export async function onRequest(context) {
     const updated = await env.DB.prepare(
       'SELECT id, class_id, user_id, reactions, updated_at FROM chat_messages WHERE id = ?'
     ).bind(messageId).first();
+    if (!updated) {
+      return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
+    }
 
     return json(request, env, {
       success: true,

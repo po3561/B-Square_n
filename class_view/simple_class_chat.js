@@ -24,23 +24,30 @@
     function escapeHtml(v) { const d = document.createElement('div'); d.textContent = String(v ?? ''); return d.innerHTML; }
     function escapeAttr(v) { return escapeHtml(v).replace(/"/g, '&quot;'); }
     function parseJson(v, fallback) { try { return typeof v === 'string' ? JSON.parse(v) : (v || fallback); } catch { return fallback; } }
-    function getPreferredChatTheme() {
-        return document.querySelector('.chat-tab-wrapper')?.getAttribute('data-theme')
-            || document.documentElement.getAttribute('data-theme')
-            || document.body.getAttribute('data-theme')
-            || localStorage.getItem('bsq_theme_class')
+    function getDocumentTheme() {
+        return document.documentElement.getAttribute('data-theme')
+            || document.body?.getAttribute('data-theme')
             || localStorage.getItem('bsq_theme')
             || 'dark';
     }
-    function applyChatTheme(theme) {
+    function syncChatTheme(theme = getDocumentTheme()) {
         const next = theme === 'light' ? 'light' : 'dark';
         const wrapper = q('tabChat') || document.querySelector('.chat-tab-wrapper');
         if (wrapper) wrapper.setAttribute('data-theme', next);
-        document.documentElement.setAttribute('data-theme', next);
-        document.body.setAttribute('data-theme', next);
-        const icon = q('themeIcon');
-        if (icon) icon.className = next === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
         return next;
+    }
+    function observeThemeChanges() {
+        if (window.__BSQ_CLASS_CHAT_THEME_OBSERVER__) return;
+        const syncFromRoot = () => syncChatTheme();
+        const observer = new MutationObserver(syncFromRoot);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        if (document.body) {
+            observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+        }
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'bsq_theme') syncFromRoot();
+        });
+        window.__BSQ_CLASS_CHAT_THEME_OBSERVER__ = observer;
     }
     function notify(type, title, message) {
         if (typeof window.BSQClassViewToast === 'function') {
@@ -847,10 +854,6 @@
             }
         });
 
-        q('btnThemeToggle')?.addEventListener('click', () => {
-            const next = applyChatTheme(getPreferredChatTheme() === 'dark' ? 'light' : 'dark');
-            localStorage.setItem('bsq_theme_class', next);
-        });
     }
 
     function init(_, classId, userId, hasAccess, isInstructor) {
@@ -868,7 +871,8 @@
         state.userProfile = window.BSQ?.session?.user || { name: 'User', profile_image_url: '' };
         state.isInstructor = !!isInstructor;
         state.hasAccess = !!hasAccess;
-        applyChatTheme(getPreferredChatTheme());
+        syncChatTheme();
+        observeThemeChanges();
 
         const unlocked = q('chatUnlocked');
         const locked = q('chatLockedOverlay');

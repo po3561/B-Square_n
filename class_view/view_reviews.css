@@ -11,7 +11,7 @@
     gap: 0.55rem;
     font-size: 1.35rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .review-count-badge {
@@ -31,14 +31,14 @@
 .review-section-caption {
     margin: 0;
     font-size: 0.86rem;
-    color: rgba(187, 195, 214, 0.74);
+    color: var(--text-secondary);
 }
 
 .review-subtitle {
     margin: 0 0 1rem;
     font-size: 0.92rem;
     font-weight: 700;
-    color: rgba(215, 222, 236, 0.88);
+    color: var(--text-primary);
 }
 
 .photo-review-grid {
@@ -48,11 +48,11 @@
 .review-item-premium,
 .review-form-card {
     border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color);
     background:
-        linear-gradient(180deg, rgba(22, 25, 34, 0.96), rgba(13, 15, 22, 0.98)),
-        radial-gradient(circle at top right, rgba(94, 126, 255, 0.14), transparent 34%);
-    box-shadow: 0 24px 42px rgba(0, 0, 0, 0.2);
+        linear-gradient(180deg, var(--bg-card), var(--bg-card)),
+        radial-gradient(circle at top right, rgba(94, 126, 255, 0.12), transparent 34%);
+    box-shadow: var(--shadow-md);
 }
 
 .review-item-premium {
@@ -69,7 +69,7 @@
 }
 
 .rip-name {
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .rip-stars {
@@ -77,7 +77,7 @@
 }
 
 .rip-date {
-    color: rgba(176, 184, 202, 0.68);
+    color: var(--text-secondary);
     font-size: 0.8rem;
 }
 
@@ -88,7 +88,7 @@
 .rip-text {
     margin: 0;
     line-height: 1.8;
-    color: rgba(226, 232, 244, 0.88);
+    color: var(--text-secondary);
     font-size: 0.94rem;
     word-break: keep-all;
 }
@@ -105,7 +105,7 @@
 
 .review-form-locked p {
     margin: 0;
-    color: rgba(184, 193, 211, 0.78);
+    color: var(--text-secondary);
     font-size: 0.92rem;
     font-weight: 600;
 }
@@ -116,13 +116,61 @@
 }
 
 .star-rating {
-    gap: 0.25rem;
-    margin-bottom: 1rem;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
 }
 
-.star-rating label {
-    font-size: 1.7rem;
-    color: rgba(255, 255, 255, 0.14);
+.star-rating-option {
+    display: grid;
+    place-items: center;
+    gap: 0.15rem;
+    min-height: 74px;
+    padding: 0.65rem 0.45rem;
+    border-radius: 18px;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-xs);
+    transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.star-rating-option:hover,
+.star-rating-option.is-selected {
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, rgba(126, 153, 255, 0.18), rgba(95, 123, 255, 0.12));
+    border-color: rgba(126, 153, 255, 0.28);
+    color: var(--text-primary);
+    box-shadow: 0 16px 28px rgba(79, 111, 255, 0.12);
+}
+
+.star-rating-option:focus-visible {
+    outline: 2px solid rgba(126, 153, 255, 0.9);
+    outline-offset: 2px;
+}
+
+.star-rating-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+    color: rgba(255, 214, 102, 0.45);
+}
+
+.star-rating-option:hover .star-rating-icon,
+.star-rating-option.is-selected .star-rating-icon {
+    color: #ffd34d;
+}
+
+.star-rating-label {
+    font-size: 0.84rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.review-rating-hint {
+    margin: 0 0 1rem;
+    font-size: 0.84rem;
+    color: var(--text-secondary);
 }
 
 .review-form-unlocked textarea {
@@ -130,17 +178,17 @@
     min-height: 112px;
     padding: 1rem 1.05rem;
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.03);
-    color: #fff;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-primary);
     font-size: 0.92rem;
     line-height: 1.65;
     box-sizing: border-box;
 }
 
 .review-form-unlocked textarea:focus {
-    border-color: rgba(136, 162, 255, 0.46);
-    box-shadow: 0 0 0 3px rgba(136, 162, 255, 0.14);
+    border-color: rgba(126, 153, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(126, 153, 255, 0.14);
 }
 
 .btn-submit-review {
@@ -191,6 +239,10 @@ html[data-theme="light"] body.class-view-page .review-form-unlocked textarea {
     background: rgba(15, 23, 42, 0.03);
     border-color: rgba(15, 23, 42, 0.08);
     color: #0f172a;
+}
+
+html[data-theme="light"] body.class-view-page .star-rating-option {
+    background: rgba(255, 255, 255, 0.88);
 }
 
 @media (max-width: 768px) {

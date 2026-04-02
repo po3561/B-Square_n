@@ -1179,6 +1179,456 @@ html[data-theme="light"] body.home-page .home-category-item.is-active {
   border-color: rgba(79, 111, 255, 0.18) !important;
 }
 
+/* === 2026-04-02 Home Visual Polish (final overrides) === */
+/* Fix "더보기" overlay positioning: ensure absolute children anchor to the shell. */
+body.home-page .home-category-shell {
+  position: relative !important;
+}
+
+/* Remove the visible panel "box" feel (especially in light mode). */
+html[data-theme="light"] body.home-page .home-category-panel {
+  padding: 0.25rem 0 0 !important;
+}
+
+/* In light mode, the blur backdrop can read like a white rectangle; disable it. */
+html[data-theme="light"] body.home-page .home-category-panel::before {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Light mode text contrast: prevent label/title from blending into the tile. */
+html[data-theme="light"] body.home-page .home-category-item {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body.home-page .home-category-name,
+html[data-theme="light"] body.home-page .home-category-label {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body.home-page .home-category-count {
+  color: #0f172a !important;
+  background: rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Remove main banner bottom fade shadow (requested). */
+body.home-page .home-banner-stage::after {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Tighten home class-card grid spacing to match the dark reference layout. */
+body.home-page .class-lists-section .section-inner {
+  width: min(1880px, calc(100vw - 1.25rem)) !important;
+  max-width: 1880px !important;
+  padding-left: 0.25rem !important;
+  padding-right: 0.25rem !important;
+}
+
+body.home-page .all-classes {
+  margin-top: 0.25rem !important;
+}
+
+body.home-page .all-classes .card-grid,
+body.home-page #allClassGrid.card-grid {
+  gap: clamp(0.7rem, 1.2vw, 1rem) !important;
+}
+
+body.home-page .class-card.class-card-home {
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+  transform: translateZ(0);
+}
+
+body.home-page .class-card.class-card-home .card-info {
+  padding: 0.85rem 0.95rem 0.95rem !important;
+}
+
+/* === 2026-04 Home Visual Final Lock (terminal override) === */
+body.home-page .home-category-panel {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+body.home-page .home-category-panel::before,
+body.home-page .home-banner-stage::after {
+  content: none !important;
+  display: none !important;
+}
+
+body.home-page .home-category-extra-wrap {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: calc(100% + 0.55rem) !important;
+  z-index: 110 !important;
+  max-height: min(540px, calc(100vh - 220px)) !important;
+  overflow: auto !important;
+}
+
+body.home-page .curated-sections-dark,
+body.home-page .recommended-classes,
+body.home-page .all-classes {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding-inline: 0 !important;
+}
+
+body.home-page .card-grid.large-grid {
+  gap: 1rem !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+}
+
+html[data-theme="light"] body.home-page .home-category-item,
+html[data-theme="light"] body.home-page .home-category-name,
+html[data-theme="light"] body.home-page .home-category-label,
+html[data-theme="light"] body.home-page .home-category-count {
+  color: #0f172a !important;
+}
+
+/* high-specificity lock against duplicated trailing rules */
+body.home-page .hero-inner > .home-category-panel,
+body.home-page .hero-inner > aside.home-category-panel {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+body.home-page #homeMainBannerStage.home-banner-stage::after {
+  content: none !important;
+  display: none !important;
+}
+
+body.home-page .hero-inner .all-classes .card-grid.large-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 1rem !important;
+}
+
+/* === 2026-04 Home Visual Final Lock === */
+body.home-page .home-category-panel {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: clamp(0.4rem, 1vw, 0.7rem) 0 0 !important;
+}
+
+body.home-page .home-category-panel::before {
+  content: none !important;
+  display: none !important;
+}
+
+body.home-page .home-banner-stage::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+
+body.home-page .home-category-shell {
+  width: min(1180px, calc(100vw - 1.25rem)) !important;
+  max-width: 1180px !important;
+}
+
+body.home-page .home-category-grid-primary,
+body.home-page .home-category-grid-extra {
+  gap: 0.56rem !important;
+}
+
+body.home-page .home-category-extra-wrap {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: calc(100% + 0.55rem) !important;
+  z-index: 110 !important;
+  max-height: min(540px, calc(100vh - 220px)) !important;
+  overflow: auto !important;
+  pointer-events: none !important;
+}
+
+body.home-page .home-category-shell[data-expanded="true"] .home-category-extra-wrap {
+  pointer-events: auto !important;
+}
+
+body.home-page .curated-sections-dark,
+body.home-page .recommended-classes,
+body.home-page .all-classes {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding-inline: 0 !important;
+}
+
+body.home-page .card-grid.large-grid {
+  gap: 1rem !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+}
+
+body.home-page .card-grid.large-grid .class-card {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: linear-gradient(180deg, rgba(12, 16, 24, 0.96), rgba(7, 9, 14, 0.96)) !important;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22) !important;
+}
+
+html[data-theme="light"] body.home-page .home-category-item {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body.home-page .home-category-name,
+html[data-theme="light"] body.home-page .home-category-label,
+html[data-theme="light"] body.home-page .home-category-count {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body.home-page .card-grid.large-grid .class-card {
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  background: #ffffff !important;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.1) !important;
+}
+
+@media (max-width: 1440px) {
+  body.home-page .card-grid.large-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  body.home-page .card-grid.large-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.8rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  body.home-page .home-category-shell {
+    width: calc(100vw - 1rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+  }
+
+  body.home-page .card-grid.large-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Worker 1 final pass: home hero/category/card cleanup */
+body.home-page .hero-inner,
+body.home-page .home-category-panel,
+body.home-page .home-category-panel > .category-grid {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+body.home-page .home-category-panel {
+  padding-top: clamp(0.35rem, 0.75vw, 0.68rem) !important;
+  overflow: visible !important;
+}
+
+body.home-page .home-category-panel::before {
+  display: none !important;
+}
+
+body.home-page .home-category-shell {
+  position: relative;
+  width: min(1120px, calc(100vw - 1.5rem));
+  margin: 0 auto;
+  isolation: isolate;
+  overflow: visible !important;
+}
+
+body.home-page .home-category-grid-primary,
+body.home-page .home-category-grid-extra {
+  gap: 0.48rem !important;
+}
+
+body.home-page .home-category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  text-align: center;
+  min-height: 84px !important;
+  padding: 0.42rem 0.34rem !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+body.home-page .home-category-name,
+body.home-page .home-category-label {
+  font-size: 0.72rem !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.01em;
+}
+
+body.home-page .home-category-toggle {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+body.home-page .home-category-extra-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 10px);
+  z-index: 12000;
+  max-height: min(520px, calc(100vh - 240px));
+  border-radius: 20px;
+  padding: 0.72rem;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: rgba(8, 12, 18, 0.9) !important;
+  box-shadow: 0 24px 58px rgba(0, 0, 0, 0.42) !important;
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: opacity 180ms ease, transform 220ms ease, visibility 180ms ease;
+}
+
+body.home-page .home-category-shell[data-expanded="true"] .home-category-extra-wrap {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+body.home-page .home-banner-stage::after {
+  content: none !important;
+  display: none !important;
+}
+
+body.home-page .main-ad-banner.home-main-banner::before {
+  background: linear-gradient(
+    90deg,
+    rgba(5, 7, 11, 0.82) 0%,
+    rgba(5, 7, 11, 0.14) 14%,
+    rgba(5, 7, 11, 0) 28%,
+    rgba(5, 7, 11, 0) 72%,
+    rgba(5, 7, 11, 0.14) 86%,
+    rgba(5, 7, 11, 0.82) 100%
+  ) !important;
+}
+
+body.home-page .class-lists-section,
+body.home-page .curated-sections-dark,
+body.home-page .all-classes,
+body.home-page .popular-classes,
+body.home-page .recommended-classes {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+body.home-page .section-inner {
+  max-width: min(1480px, calc(100vw - 1.5rem)) !important;
+  padding-inline: 0.75rem !important;
+  gap: clamp(1rem, 1.8vw, 1.5rem) !important;
+}
+
+body.home-page .class-group {
+  gap: 0.72rem !important;
+}
+
+body.home-page .card-grid.large-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 0.72rem !important;
+}
+
+body.home-page .class-card {
+  border-radius: 18px !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+body.home-page .class-card-link {
+  gap: 0.68rem !important;
+}
+
+body.home-page .card-info {
+  gap: 0.42rem !important;
+  padding: 0 0.84rem 0.9rem !important;
+}
+
+body.home-page .card-summary {
+  margin-top: 0.1rem;
+}
+
+html[data-theme="light"] body.home-page .home-category-item {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
+}
+
+html[data-theme="light"] body.home-page .home-category-name,
+html[data-theme="light"] body.home-page .home-category-label {
+  color: #12233f !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] body.home-page .home-category-count {
+  color: #2848d8 !important;
+  background: rgba(79, 111, 255, 0.14) !important;
+}
+
+html[data-theme="light"] body.home-page .home-category-toggle {
+  background: rgba(79, 111, 255, 0.08) !important;
+}
+
+html[data-theme="light"] body.home-page .home-category-extra-wrap {
+  border-color: rgba(15, 23, 42, 0.11);
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.2) !important;
+}
+
+html[data-theme="light"] body.home-page .main-ad-banner.home-main-banner::before {
+  background: linear-gradient(
+    90deg,
+    rgba(247, 251, 255, 0.92) 0%,
+    rgba(247, 251, 255, 0.14) 14%,
+    rgba(247, 251, 255, 0) 28%,
+    rgba(247, 251, 255, 0) 72%,
+    rgba(247, 251, 255, 0.14) 86%,
+    rgba(247, 251, 255, 0.92) 100%
+  ) !important;
+}
+
+@media (max-width: 1460px) {
+  body.home-page .card-grid.large-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 980px) {
+  body.home-page .card-grid.large-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  body.home-page .home-category-shell {
+    width: calc(100vw - 1rem);
+  }
+
+  body.home-page .home-category-item {
+    min-height: 82px !important;
+    border-radius: 14px !important;
+  }
+
+  body.home-page .home-category-name,
+  body.home-page .home-category-label {
+    font-size: 0.78rem !important;
+  }
+
+  body.home-page .card-grid.large-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
 /* Final home UI polish: category overlay stays above content, slider keeps album depth */
 body.home-page .home-category-panel {
   overflow: visible !important;

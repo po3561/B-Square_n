@@ -16,6 +16,18 @@ function trimText(value) {
   return String(value ?? '').trim();
 }
 
+async function readJsonObject(request) {
+  try {
+    const parsed = await request.json();
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+}
+
 function toSQLiteTimestamp(value) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return null;
@@ -263,8 +275,8 @@ export async function onRequestPost(context) {
   await ensureChatMessagesSchema(env.DB);
 
   try {
-    const body = await request.json();
-    const classId = body.class_id;
+    const body = await readJsonObject(request);
+    const classId = trimText(body.class_id);
     const message = trimText(body.message || body.content || body.text || body.file_name || '');
     const attachmentUrl = trimText(body.image_url || body.file_data || '') || null;
 
@@ -303,6 +315,9 @@ export async function onRequestPost(context) {
     const inserted = await env.DB.prepare(
       `SELECT ${CHAT_MESSAGE_COLUMNS} FROM chat_messages WHERE id = ?`
     ).bind(id).first();
+    if (!inserted) {
+      return json(request, env, { success: false, error: 'Failed to create message' }, { status: 500 });
+    }
 
     const responseData = normalizeChatMessage(inserted);
     if (body.client_id) responseData.client_id = String(body.client_id);
@@ -320,20 +335,28 @@ export async function onRequestPatch(context) {
   await ensureChatMessagesSchema(env.DB);
 
   try {
-    const body = await request.json();
-    const { id, is_pinned } = body;
+    const body = await readJsonObject(request);
+    const id = trimText(body.id);
+    const hasPinState = Object.prototype.hasOwnProperty.call(body, 'is_pinned');
+    const isPinned = body.is_pinned;
 
     if (!id) {
       return json(request, env, { success: false, error: 'message id is required' }, { status: 400 });
     }
+    if (!hasPinState) {
+      return json(request, env, { success: false, error: 'is_pinned is required' }, { status: 400 });
+    }
 
     await env.DB.prepare('UPDATE chat_messages SET is_pinned = ?, updated_at = datetime(\'now\') WHERE id = ?')
-      .bind(isTruthyFlag(is_pinned) ? 1 : 0, id)
+      .bind(isTruthyFlag(isPinned) ? 1 : 0, id)
       .run();
 
     const updated = await env.DB.prepare(`SELECT ${CHAT_MESSAGE_COLUMNS} FROM chat_messages WHERE id = ?`)
       .bind(id)
       .first();
+    if (!updated) {
+      return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
+    }
 
     return json(request, env, { success: true, data: normalizeChatMessage(updated) });
   } catch (error) {

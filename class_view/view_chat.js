@@ -19,7 +19,7 @@ window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAcc
         const currentUserId = window.__BSQ_DEV_MODE__ ? 'OPERATOR_GHOST' : userId;
 
         SyncBridge.init(null, null, currentUserId);
-        ChatUI.init({ themeKey: 'bsq_theme_class' });
+        ChatUI.init();
 
         const classTitle = document.getElementById('sidebarTitle')?.textContent || '클래스';
         ChatUI.openRoom(classId, 'class', {
@@ -36,23 +36,6 @@ window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAcc
             msgInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ChatUI.sendCurrentMessage(); }
             });
-        }
-
-        // 테마 토글
-        const btnThemeToggle = document.getElementById('btnThemeToggle');
-        if (btnThemeToggle) {
-            btnThemeToggle.onclick = () => {
-                const cur = document.documentElement.getAttribute('data-theme') || 'dark';
-                const next = cur === 'dark' ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-theme', next);
-                const icon = document.getElementById('themeIcon');
-                if (icon) icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-                localStorage.setItem('bsq_theme_class', next);
-            };
-            const saved = localStorage.getItem('bsq_theme_class') || 'dark';
-            document.documentElement.setAttribute('data-theme', saved);
-            const icon = document.getElementById('themeIcon');
-            if (icon) icon.className = saved === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
         }
 
         // 검색 바

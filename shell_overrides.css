@@ -2142,6 +2142,15 @@ body.class-list-page .class-list-main {
   scrollbar-color: rgba(158, 188, 255, 0.42) transparent;
 }
 
+.bsq-search-panel[hidden],
+.bsq-global-search-shell:not(.is-search-open) .bsq-search-panel {
+  display: none !important;
+}
+
+.bsq-global-search-shell.is-search-open .bsq-search-panel {
+  display: grid !important;
+}
+
 .bsq-search-section {
   display: grid;
   gap: 0.6rem;

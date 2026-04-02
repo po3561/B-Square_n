@@ -11,9 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../style_mobile.css?v=20260331_02" media="(max-width: 768px)">
     <link rel="stylesheet" href="../style_pc.css?v=20260331_02" media="(min-width: 769px)">
-    <link rel="stylesheet" href="class_list.css?v=20260401_08">
+    <link rel="stylesheet" href="class_list.css?v=20260402_02">
     <script src="../bsq_server.js?v=20260402_01" defer></script>
-    <link rel="stylesheet" href="/theme_overrides.css?v=20260402_01">
+    <link rel="stylesheet" href="/theme_overrides.css?v=20260402_03">
     <script src="/i18n.js?v=20260331_01" defer></script>
 </head>
 
@@ -27,14 +27,13 @@
                         <div class="home-bottom-banner-overlay class-list-banner-overlay">
                             <span class="banner-eyebrow">Class Explorer</span>
                             <h1>원하는 클래스를 더 빠르게 찾으세요</h1>
-                            <p>카테고리, 검색, 정렬을 한 화면에 담아 원하는 클래스를 더 빠르게 찾을 수 있도록 정리했습니다.</p>
+                            <p>카테고리, 검색, 정렬을 한 화면에 담아 원하는 클래스를 빠르게 찾을 수 있도록 정리했습니다.</p>
                             <div class="banner-actions class-list-banner-actions">
                                 <a class="banner-link" href="../community/community.html">커뮤니티 둘러보기</a>
                                 <a class="banner-link subtle" href="../index.html">홈으로 이동</a>
                             </div>
                         </div>
-                        <div class="home-banner-controls home-bottom-banner-controls class-list-banner-controls"
-                            aria-label="클래스 탐색 배너 제어">
+                        <div class="home-banner-controls home-bottom-banner-controls class-list-banner-controls" aria-label="클래스 탐색 배너 제어">
                             <button type="button" class="banner-nav banner-nav-prev" id="classListBannerPrev" aria-label="이전 배너">←</button>
                             <div class="home-banner-dots" id="classListBannerDots" aria-label="배너 페이지"></div>
                             <button type="button" class="banner-nav banner-nav-next" id="classListBannerNext" aria-label="다음 배너">→</button>
@@ -55,6 +54,17 @@
             </section>
 
             <section class="class-lists-section class-page-overrides">
+                <article class="class-group popular-classes" id="popularSection" hidden>
+                    <div class="class-grid-header popular-grid-header">
+                        <div class="header-copy">
+                            <span class="banner-eyebrow">Popular</span>
+                            <h3 class="group-title" id="popularGroupTitle">지금 인기 있는 클래스</h3>
+                            <p class="group-subtitle">메인 추천 설정과 연동된 인기 클래스입니다.</p>
+                        </div>
+                    </div>
+                    <div class="card-grid popular-grid" id="popularClassGrid"></div>
+                </article>
+
                 <div class="class-grid-header">
                     <div class="header-copy">
                         <h3 class="group-title">전체 클래스 목록</h3>
@@ -62,7 +72,7 @@
                     </div>
                     <div class="list-controls">
                         <div class="search-filter">
-                            <input type="text" id="classSearchInput" placeholder="클래스 강사 검색" class="class-search-input">
+                            <input type="text" id="classSearchInput" placeholder="클래스, 강사, 키워드 검색" class="class-search-input">
                         </div>
                         <select id="sortSelect" class="sort-select">
                             <option value="newest">최신순</option>
@@ -73,17 +83,19 @@
                         <span id="totalClassCount" class="total-count">총 0개</span>
                     </div>
                 </div>
+
                 <div id="classListNotice" class="class-list-notice" aria-live="polite"></div>
-                <div class="card-grid" id="allClassGrid">
-                    <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 4rem; color:#888;">
+                <div class="card-grid large-grid" id="allClassGrid">
+                    <div class="empty-state" style="grid-column:1/-1; text-align:center; padding:4rem; color:#888;">
                         데이터를 불러오는 중입니다...
                     </div>
                 </div>
+                <div id="classListSentinel" class="class-list-sentinel" aria-hidden="true"></div>
             </section>
         </div>
     </main>
 
-    <script src="class_list.js?v=20260401_03" defer></script>
+    <script src="class_list.js?v=20260402_02" defer></script>
     <script src="../header.js?v=20260402_01" defer></script>
     <script src="../dev_mode.js?v=20260331_02" defer></script>
 </body>
