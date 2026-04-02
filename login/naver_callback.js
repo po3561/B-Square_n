@@ -4,9 +4,17 @@
   const TOKEN_ENDPOINT = '/auth/naver/token';
   const FALLBACK_LOGIN = '/login/login.html';
 
-  function readHashParams() {
-    const raw = String(window.location.hash || '').replace(/^#/, '');
-    return new URLSearchParams(raw);
+  function readAuthParams() {
+    const hashParams = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
+    const queryParams = new URLSearchParams(String(window.location.search || '').replace(/^\?/, ''));
+
+    for (const [key, value] of queryParams.entries()) {
+      if (!hashParams.has(key) && value !== undefined) {
+        hashParams.set(key, value);
+      }
+    }
+
+    return hashParams;
   }
 
   function redirectWithError(code, message) {
@@ -44,7 +52,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    const params = readHashParams();
+    const params = readAuthParams();
     const payload = {
       access_token: String(params.get('access_token') || '').trim(),
       state: String(params.get('state') || '').trim(),

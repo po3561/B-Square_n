@@ -391,6 +391,14 @@
         loginButton: { color: 'green', type: 3, height: 60 },
       });
 
+      if (state) {
+        naverLogin.state = state;
+        naverLogin.generateState = function generateState() {
+          this.state = state;
+          return state;
+        };
+      }
+
       if (typeof naverLogin.init === 'function') naverLogin.init();
       if (typeof naverLogin.authorize === 'function') {
         naverLogin.authorize();
