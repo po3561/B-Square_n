@@ -40,7 +40,8 @@ const PROVIDERS = {
     stateCookieName: 'bsq_oauth_state_kakao',
     logoutCookieName: 'bsq_oauth_logout_kakao',
     tokenMethod: 'POST',
-    scope: 'profile_nickname profile_image account_email',
+    // Kakao expects comma-separated scopes on the authorization request.
+    scope: 'profile_nickname,profile_image,account_email',
   },
   naver: {
     id: 'naver',
@@ -807,6 +808,14 @@ function mapProviderError(code) {
   if (normalized === 'access_denied') return 'access_denied';
   if (normalized === 'consent_required') return 'consent_required';
   if (normalized === 'login_required') return 'login_required';
+  if (normalized === 'invalid_scope') return 'invalid_scope';
+  if (normalized === 'invalid_client') return 'invalid_client';
+  if (normalized === 'invalid_grant') return 'invalid_grant';
+  if (normalized === 'invalid_request') return 'invalid_request';
+  if (normalized === 'unauthorized_client') return 'unauthorized_client';
+  if (normalized === 'redirect_uri_mismatch') return 'redirect_uri_mismatch';
+  if (normalized === 'server_error') return 'server_error';
+  if (normalized === 'temporarily_unavailable') return 'temporarily_unavailable';
   return 'provider_error';
 }
 
@@ -856,10 +865,12 @@ export async function handleOAuthCallback(context, provider) {
   const requestUrl = new URL(request.url);
   const providerError = requestUrl.searchParams.get('error');
   if (providerError) {
-    return buildRedirectResponse(
-      buildAuthRedirectUrl(env, request, provider, mapProviderError(providerError)),
-      clearFlowCookies(config, request, env),
-    );
+    const redirect = new URL(buildAuthRedirectUrl(env, request, provider, mapProviderError(providerError)));
+    const providerErrorDescription = normalizeText(requestUrl.searchParams.get('error_description'));
+    if (providerErrorDescription) {
+      redirect.searchParams.set('message', providerErrorDescription);
+    }
+    return buildRedirectResponse(redirect.toString(), clearFlowCookies(config, request, env));
   }
 
   const code = normalizeText(requestUrl.searchParams.get('code'));
@@ -1007,8 +1018,12 @@ export async function handleOAuthCallback(context, provider) {
     );
   } catch (error) {
     const codeValue = error instanceof OAuthError ? error.code : 'oauth_failed';
+    const redirect = new URL(buildAuthRedirectUrl(env, request, provider, codeValue, statePayload?.intent || 'login'));
+    if (error instanceof OAuthError && normalizeText(error.message)) {
+      redirect.searchParams.set('message', normalizeText(error.message));
+    }
     return buildRedirectResponse(
-      buildAuthRedirectUrl(env, request, provider, codeValue, statePayload?.intent || 'login'),
+      redirect.toString(),
       clearFlowCookies(config, request, env),
     );
   }
