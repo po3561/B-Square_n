@@ -84,6 +84,130 @@ function normalizeChatMessage(row) {
   return normalized;
 }
 
+const ROLE_RANK = {
+  user: 0,
+  student: 0,
+  member: 0,
+  instructor: 1,
+  operator: 2,
+  admin: 3,
+  super_admin: 3,
+};
+
+function normalizeRole(role) {
+  const value = String(role || '').trim().toLowerCase();
+  if (!value) return 'user';
+  if (['super-admin', 'superadmin', 'root', 'owner'].includes(value)) return 'super_admin';
+  if (['manager', 'operator_admin', 'ops'].includes(value)) return 'operator';
+  if (['teacher', 'lecturer'].includes(value)) return 'instructor';
+  return value in ROLE_RANK ? value : 'user';
+}
+
+function isAtLeastRole(role, minimumRole) {
+  return (ROLE_RANK[normalizeRole(role)] ?? 0) >= (ROLE_RANK[normalizeRole(minimumRole)] ?? 0);
+}
+
+function hasSubInstructorAccess(rawValue, userId) {
+  const targetId = String(userId || '').trim();
+  if (!targetId) return false;
+
+  const matches = (value) => String(value || '').trim() === targetId;
+
+  if (Array.isArray(rawValue)) {
+    return rawValue.some((item) => matches(item?.id ?? item?.user_id ?? item));
+  }
+
+  const rawText = String(rawValue || '').trim();
+  if (!rawText) return false;
+
+  try {
+    const parsed = JSON.parse(rawText);
+    if (Array.isArray(parsed)) {
+      return parsed.some((item) => matches(item?.id ?? item?.user_id ?? item));
+    }
+  } catch {
+    // fall through to delimited string matching
+  }
+
+  return rawText
+    .split(/[,\s]+/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .some(matches);
+}
+
+async function checkClassChatAccess(context, auth, classId, { managerOnly = false } = {}) {
+  const { env, request } = context;
+  const normalizedClassId = trimText(classId);
+  if (!normalizedClassId) {
+    return {
+      ok: false,
+      response: json(request, env, { success: false, error: 'class_id is required' }, { status: 400 }),
+    };
+  }
+
+  const cls = await env.DB.prepare(`
+    SELECT id, creator_id, sub_instructors
+    FROM classes
+    WHERE id = ?
+  `).bind(normalizedClassId).first();
+
+  if (!cls) {
+    return {
+      ok: false,
+      response: json(request, env, { success: false, error: '대상을 찾을 수 없습니다.' }, { status: 404 }),
+    };
+  }
+
+  const userId = String(auth.user.id || '').trim();
+  const isManager =
+    isAtLeastRole(auth.user.role, 'operator') ||
+    cls.creator_id === userId ||
+    hasSubInstructorAccess(cls.sub_instructors, userId);
+
+  if (isManager) {
+    return { ok: true, auth };
+  }
+
+  if (managerOnly) {
+    return {
+      ok: false,
+      response: json(request, env, { success: false, error: '클래스 관리 권한이 필요합니다.' }, { status: 403 }),
+    };
+  }
+
+  const classRoom = await env.DB.prepare(`
+    SELECT 1
+    FROM user_chats
+    WHERE user_id = ? AND room_id = ? AND type = 'class'
+    LIMIT 1
+  `).bind(userId, normalizedClassId).first().catch(() => null);
+
+  if (classRoom) {
+    return { ok: true, auth };
+  }
+
+  const participant = await env.DB.prepare(`
+    SELECT 1
+    FROM class_participants
+    WHERE class_id = ? AND user_id = ?
+    LIMIT 1
+  `).bind(normalizedClassId, userId).first().catch((error) => {
+    const message = String(error?.message || '');
+    if (/no such table/i.test(message)) return null;
+    throw error;
+  });
+
+  if (participant) {
+    return { ok: true, auth };
+  }
+
+  return {
+    ok: false,
+    response: json(request, env, { success: false, error: '클래스 채팅 참여 권한이 필요합니다.' }, { status: 403 }),
+  };
+}
+
 function buildSinceClause(since, after) {
   const hasSince = since !== undefined && since !== null && String(since).trim() !== '';
   if (hasSince) {
