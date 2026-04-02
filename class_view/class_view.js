@@ -254,6 +254,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (window.BSquareModules) {
                 if (window.BSquareModules.initIntro) window.BSquareModules.initIntro(classData);
                 if (window.BSquareModules.initCurriculum) window.BSquareModules.initCurriculum(classData);
+                if (window.BSquareModules.initReviews) {
+                    window.BSquareModules.initReviews(
+                        classData,
+                        classId,
+                        userId,
+                        null,
+                        hasAccess,
+                        isInstructor,
+                    );
+                }
                 if (window.BSquareModules.initNotice) {
                     window.BSquareModules.initNotice(
                         classData,
@@ -265,6 +275,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         getNoticeAuthorContext(),
                         { noticeId: urlParams.get('notice') || '' },
                     );
+                }
+                if (isInstructor && window.BSquareModules.initEdit) {
+                    await window.BSquareModules.initEdit(null, classId, classData, null, userId);
                 }
             }
         }

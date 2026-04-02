@@ -38,6 +38,7 @@ async function loadClasses(db, params) {
       c.price,
       c.discount_rate,
       c.coupon_pack,
+      c.coupon_detail,
       c.class_type,
       c.operating_mode,
       c.capacity_min,

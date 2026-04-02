@@ -1,5 +1,6 @@
 ﻿import { requireSession } from '../_lib/auth.js';
 import { json, options } from '../_lib/http.js';
+import { ensureDmMessagesSchema, ensureUserChatsSchema } from '../_lib/schema.js';
 
 function getPathParts(params) {
   if (Array.isArray(params.path)) return params.path;
@@ -177,6 +178,10 @@ export async function onRequest(context) {
 
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
+  await Promise.all([
+    ensureDmMessagesSchema(env.DB),
+    ensureUserChatsSchema(env.DB),
+  ]);
 
   const pathParts = getPathParts(params);
   const roomId = pathParts[0];
@@ -191,9 +196,10 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const roomType = url.searchParams.get('room_type') || 'dm';
   const pinnedOnly = ['1', 'true', 'yes'].includes((url.searchParams.get('pinned_only') || '').toLowerCase());
+  const wantsStream = isTruthyFlag(url.searchParams.get('stream'));
 
   try {
-    if (request.method === 'GET' && subResource === 'stream') {
+    if (request.method === 'GET' && (subResource === 'stream' || wantsStream)) {
       const since = url.searchParams.get('since') || '0';
       return streamMessages(context, roomId, roomType, since);
     }
@@ -288,22 +294,20 @@ export async function onRequest(context) {
       const resolvedRoomType = trimText(body.room_type) || roomType;
       const resolvedClassId = resolvedRoomType === 'class' ? roomId : (trimText(body.class_id) || null);
       const attachmentUrl = trimText(body.image_url || body.file_data || '') || null;
-      const messageId = 'dm_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16);
 
       if (!content && !attachmentUrl && body.type !== 'gathering_card') {
         return json(request, env, { success: false, error: 'message or attachment is required' }, { status: 400 });
       }
 
-      await env.DB.prepare(`
+      const insertResult = await env.DB.prepare(`
         INSERT INTO dm_messages (
-          id, room_id, room_type, class_id, sender_id, user_name, user_avatar,
+          room_id, room_type, class_id, sender_id, user_name, user_avatar,
           content, message, type, reply_to, reply_text, reply_user,
           image_url, file_name, file_size,
           gather_title, gather_time, gather_place, min_capacity, max_capacity, current_count, status,
           is_pinned, reactions, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
       `).bind(
-        messageId,
         roomId,
         resolvedRoomType,
         resolvedClassId,
@@ -330,11 +334,24 @@ export async function onRequest(context) {
         typeof body.reactions === 'string' ? body.reactions : JSON.stringify(body.reactions || {}),
       ).run();
 
-      const inserted = await env.DB.prepare(`
-        SELECT ${DM_MESSAGE_COLUMNS}
-        FROM dm_messages
-        WHERE id = ?
-      `).bind(messageId).first();
+      const insertedId = insertResult?.meta?.last_row_id ?? null;
+      let inserted = null;
+      if (insertedId != null) {
+        inserted = await env.DB.prepare(`
+          SELECT ${DM_MESSAGE_COLUMNS}
+          FROM dm_messages
+          WHERE id = ?
+        `).bind(insertedId).first();
+      }
+      if (!inserted) {
+        inserted = await env.DB.prepare(`
+          SELECT ${DM_MESSAGE_COLUMNS}
+          FROM dm_messages
+          WHERE room_id = ? AND room_type = ?
+          ORDER BY id DESC
+          LIMIT 1
+        `).bind(roomId, resolvedRoomType).first();
+      }
 
       await env.DB.prepare(`
         UPDATE user_chats

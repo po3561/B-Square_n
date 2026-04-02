@@ -1700,6 +1700,8 @@
     settlementScope: 'class',
     settlementQuery: '',
     settlementSelection: null,
+    settlementSearchTimer: null,
+    settlementDashboardToken: 0,
   };
   const list = (res) => Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
   const esc = (value) => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -2135,13 +2137,24 @@
     renderSettlementSelection();
   }
 
-  async function loadSettlementDashboard() {
+  async function loadSettlementDashboard(options = {}) {
+    const requestToken = ++state.settlementDashboardToken;
     try {
       const { year, month } = params('settlement');
+      const focusQuery = String(window.__BSQ_SETTLEMENT_FOCUS__?.query || state.settlementQuery || options.query || '').trim();
+      const includeInfo = options.includeInfo !== false;
+      const dashboardParams = new URLSearchParams({
+        type: 'dashboard',
+        period: state.period,
+        year,
+        month,
+      });
+      if (focusQuery) dashboardParams.set('q', focusQuery);
       const [infoRes, dashRes] = await Promise.all([
-        window.BSQ.api('/api/admin/settlements?type=info'),
-        window.BSQ.api(`/api/admin/settlements?type=dashboard&period=${encodeURIComponent(state.period)}&year=${year}&month=${month}`).catch(() => ({ data: {} })),
+        includeInfo ? window.BSQ.api('/api/admin/settlements?type=info') : Promise.resolve({ data: {} }),
+        window.BSQ.api(`/api/admin/settlements?${dashboardParams.toString()}`).catch(() => ({ data: {} })),
       ]);
+      if (requestToken !== state.settlementDashboardToken) return;
       const info = infoRes?.data || {};
       const data = dashRes?.data || {};
       if ($('settlementCompanyName')) $('settlementCompanyName').value = info.company_name || '';
@@ -2169,10 +2182,13 @@
       if (focus) {
         state.settlementScope = normalizeSettlementScope(focus.scope);
         state.settlementQuery = String(focus.query || focus.className || focus.instructorName || '').trim();
+      } else if (focusQuery) {
+        state.settlementQuery = focusQuery;
       }
       renderDashboard();
       applySettlementFocus();
     } catch (error) {
+      if (requestToken !== state.settlementDashboardToken) return;
       if ($('settlementClassTableBody')) $('settlementClassTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444;">정산 데이터를 불러오지 못했습니다. ${esc(error.message)}</td></tr>`;
       if ($('settlementInstructorTableBody')) $('settlementInstructorTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444;">정산 데이터를 불러오지 못했습니다. ${esc(error.message)}</td></tr>`;
     }
@@ -2418,12 +2434,18 @@
     $('settlementSearchInput')?.addEventListener('input', (event) => {
       state.settlementQuery = String(event.target.value || '').trim();
       state.settlementSelection = null;
+      clearTimeout(state.settlementSearchTimer);
+      state.settlementSearchTimer = setTimeout(() => {
+        loadSettlementDashboard({ includeInfo: false, query: state.settlementQuery });
+      }, 180);
       renderSettlementResults();
     });
     $('btnClearSettlementSearch')?.addEventListener('click', () => {
       state.settlementQuery = '';
       state.settlementSelection = null;
+      clearTimeout(state.settlementSearchTimer);
       if ($('settlementSearchInput')) $('settlementSearchInput').value = '';
+      loadSettlementDashboard({ includeInfo: false, query: '' });
       renderSettlementResults();
       renderSettlementSelection();
     });
@@ -2432,9 +2454,10 @@
       state.settlementScope = nextScope;
       state.settlementQuery = '';
       state.settlementSelection = null;
+      clearTimeout(state.settlementSearchTimer);
       if ($('settlementSearchInput')) $('settlementSearchInput').value = '';
       document.querySelectorAll('#settlementScopeSwitch .period-chip').forEach((chip) => chip.classList.toggle('active', chip === button));
-      renderDashboard();
+      loadSettlementDashboard({ includeInfo: false, query: '' });
     }));
     document.body.addEventListener('click', (event) => {
       if (event.target?.closest('[data-action="clear-settlement-selection"]')) {

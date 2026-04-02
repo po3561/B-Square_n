@@ -511,7 +511,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(cls.title || '클래스 이미지')}" loading="lazy">
               <div class="card-badges">
                 ${isNew ? '<span class="badge-new">NEW</span>' : ''}
-                ${cls.coupon_pack ? '<span class="badge-coupon">쿠폰 가능</span>' : ''}
+                ${cls.coupon_pack ? `<span class="badge-coupon" title="${escapeHtml(cls.coupon_detail || '쿠폰팩 발행 가능')}">쿠폰 가능</span>` : ''}
                 ${discountRate > 0 ? `<span class="badge-discount">${discountRate}% 할인</span>` : ''}
               </div>
             </div>
@@ -521,6 +521,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               </div>
               <h4 class="title">${escapeHtml(cls.title || '제목 없음')}</h4>
               ${summary ? `<p class="card-summary">${escapeHtml(summary)}</p>` : ''}
+              ${cls.coupon_pack && cls.coupon_detail ? `<p class="card-summary" style="margin-top:0.35rem; font-size:0.78rem; color:#8b9bb4;">쿠폰: ${escapeHtml(cls.coupon_detail)}</p>` : ''}
               <div class="meta">
                 <span class="rating">★ ${avgRating} (${reviewCount})</span>
                 <span class="likes" data-like-count="${likeCount}">찜 ${likeCount}</span>

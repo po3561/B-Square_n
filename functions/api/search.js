@@ -184,6 +184,7 @@ async function searchClasses(db, query, limit = 6, isStaff = false) {
       c.price,
       c.discount_rate,
       c.coupon_pack,
+      c.coupon_detail,
       c.creator_id AS instructor_id,
       COALESCE(u.name, c.instructor_name) AS instructor_name,
       COALESCE(u.email, c.creator_email, c.instructor_email) AS instructor_email
@@ -233,6 +234,7 @@ async function searchClasses(db, query, limit = 6, isStaff = false) {
     price: Number(row.price || 0),
     discount_rate: Number(row.discount_rate || 0),
     coupon_pack: Number(row.coupon_pack || 0),
+    coupon_detail: row.coupon_detail || '',
   })) : [];
 }
 

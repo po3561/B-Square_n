@@ -148,7 +148,10 @@ window.CommunityModules.SyncBridge = (function () {
         params.set('limit', String(limit));
         if (since !== '' && since != null) params.set('since', String(since));
         if (pinnedOnly) params.set('pinned_only', '1');
-        if (stream) params.set('stream', '1');
+        if (stream) {
+            params.set('stream', '1');
+            return `/api/dm/${encodeURIComponent(String(roomId))}/messages/stream?${params.toString()}`;
+        }
         return `/api/dm/${encodeURIComponent(String(roomId))}/messages?${params.toString()}`;
     }
 

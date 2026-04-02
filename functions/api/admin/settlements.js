@@ -562,9 +562,161 @@ function mapDashboardInstructorRow(item = {}, classCount = 0, batch = null) {
   };
 }
 
-async function loadDashboardData(db, period, year, month) {
+function settlementSearchText(row = {}, scope = 'class') {
+  const scopeKey = String(scope || 'class').toLowerCase() === 'instructor' ? 'instructor' : 'class';
+  const fields = scopeKey === 'instructor'
+    ? [
+        row.instructor_name,
+        row.name,
+        row.instructor_email,
+        row.instructor_phone,
+        row.bank_name,
+        row.bank_account,
+        row.bank_holder,
+        row.class_title,
+        row.class_name,
+        row.admin_code,
+      ]
+    : [
+        row.class_name,
+        row.class_title,
+        row.instructor_name,
+        row.instructor_email,
+        row.instructor_phone,
+        row.bank_name,
+        row.bank_account,
+        row.bank_holder,
+        row.admin_code,
+      ];
+  return fields.map((value) => String(value || '').toLowerCase()).join(' ');
+}
+
+function settlementRowMatches(row = {}, scope = 'class', query = '') {
+  const normalizedQuery = String(query || '').trim().toLowerCase();
+  if (!normalizedQuery) return true;
+  return settlementSearchText(row, scope).includes(normalizedQuery);
+}
+
+function summarizeSettlementRows(classes = [], instructors = []) {
+  return {
+    class_count: classes.length,
+    instructor_count: new Set(
+      (instructors || [])
+        .map((row) => String(row.instructor_id || row.instructor_name || row.id || '').trim())
+        .filter(Boolean),
+    ).size,
+    order_count: classes.reduce((sum, row) => sum + Number(row.settlement_count ?? row.class_count ?? 0), 0),
+    gross_revenue: classes.reduce((sum, row) => sum + Number(row.total_revenue ?? row.gross_revenue ?? 0), 0),
+    refund_amount: classes.reduce((sum, row) => sum + Number(row.refund_amount ?? 0), 0),
+    net_revenue: classes.reduce((sum, row) => sum + Number(row.net_revenue ?? Math.max(0, Number(row.total_revenue ?? row.gross_revenue ?? 0) - Number(row.refund_amount ?? 0))), 0),
+    card_fee_amount: classes.reduce((sum, row) => sum + Number(row.card_fee_amount ?? 0), 0),
+    tax_fee_amount: classes.reduce((sum, row) => sum + Number(row.tax_fee_amount ?? 0), 0),
+    platform_fee_amount: classes.reduce((sum, row) => sum + Number(row.platform_fee_amount ?? 0), 0),
+    settlement_amount: classes.reduce((sum, row) => sum + Number(row.final_amount ?? row.settlement_amount ?? 0), 0),
+  };
+}
+
+async function loadSettlementSearchData(db, query) {
+  const normalizedQuery = normalizeText(query);
+  if (!normalizedQuery) return null;
+
+  const settings = await loadFeeSettings(db);
+  const like = `%${normalizedQuery}%`;
+  const { results } = await db.prepare(`
+    SELECT
+      i.*,
+      b.id AS batch_id,
+      b.year AS batch_year,
+      b.month AS batch_month,
+      b.period_start,
+      b.period_end,
+      b.payout_date,
+      b.status AS batch_status,
+      b.approval_result AS batch_approval_result,
+      b.manager_code
+    FROM settlement_batch_items i
+    INNER JOIN settlement_batches b
+      ON b.id = i.batch_id
+    WHERE (
+      i.class_title LIKE ?
+      OR i.instructor_name LIKE ?
+      OR i.instructor_email LIKE ?
+      OR i.instructor_phone LIKE ?
+      OR i.bank_name LIKE ?
+      OR i.bank_account LIKE ?
+      OR i.bank_holder LIKE ?
+      OR b.manager_code LIKE ?
+      OR b.id LIKE ?
+    )
+    ORDER BY b.year DESC, b.month DESC, i.settlement_amount DESC, i.class_title ASC
+    LIMIT 1000
+  `).bind(like, like, like, like, like, like, like, like, like).all().catch(() => ({ results: [] }));
+
+  const classRows = [];
+  const instructorRows = [];
+  for (const row of results || []) {
+    const batch = {
+      id: row.batch_id,
+      status: row.batch_status,
+      approval_result: row.batch_approval_result,
+      manager_code: row.manager_code,
+      payout_date: row.payout_date,
+    };
+    classRows.push({
+      ...mapDashboardClassRow(row, batch),
+      year: row.batch_year || null,
+      month: row.batch_month || null,
+    });
+    instructorRows.push({
+      ...mapDashboardInstructorRow(row, 1, batch),
+      year: row.batch_year || null,
+      month: row.batch_month || null,
+    });
+  }
+
+  return {
+    period: 'search',
+    year: null,
+    month: null,
+    period_label: `검색 결과: ${normalizedQuery}`,
+    fee_rates: {
+      pg_rate: settings.card_fee_rate,
+      tax_rate: settings.tax_rate,
+      platform_rate: settings.platform_fee_rate,
+      payout_day: settings.payout_day,
+    },
+    summary: summarizeSettlementRows(classRows, instructorRows),
+    classes: classRows,
+    instructors: instructorRows,
+  };
+}
+
+async function finalizeSettlementDashboard(db, dashboard, query) {
+  const normalizedQuery = normalizeText(query);
+  if (!normalizedQuery) return dashboard;
+
+  const classRows = (dashboard.classes || []).filter((row) => settlementRowMatches(row, 'class', normalizedQuery));
+  const instructorRows = (dashboard.instructors || []).filter((row) => settlementRowMatches(row, 'instructor', normalizedQuery));
+
+  if (classRows.length || instructorRows.length) {
+    return {
+      ...dashboard,
+      classes: classRows,
+      instructors: instructorRows,
+      summary: summarizeSettlementRows(classRows, instructorRows),
+      period_label: `${dashboard.period_label || '정산'} · 검색: ${normalizedQuery}`,
+      search_query: normalizedQuery,
+    };
+  }
+
+  const fallback = await loadSettlementSearchData(db, normalizedQuery);
+  return fallback || dashboard;
+}
+
+async function loadDashboardData(db, period, year, month, options = {}) {
   const settings = await loadFeeSettings(db);
   const normalizedPeriod = String(period || 'month').toLowerCase() === 'year' ? 'year' : 'month';
+  const query = normalizeText(options.query || '');
 
   if (normalizedPeriod === 'year') {
     const { results } = await db.prepare(`
@@ -710,7 +862,7 @@ async function loadDashboardData(db, period, year, month) {
       settlement_amount: 0,
     });
 
-    return {
+    const dashboard = {
       period: normalizedPeriod,
       year,
       month,
@@ -725,6 +877,7 @@ async function loadDashboardData(db, period, year, month) {
       classes,
       instructors,
     };
+    return await finalizeSettlementDashboard(db, dashboard, query);
   }
 
   const existingBatch = await db.prepare('SELECT * FROM settlement_batches WHERE year = ? AND month = ?').bind(year, month).first().catch(() => null);
@@ -733,7 +886,7 @@ async function loadDashboardData(db, period, year, month) {
     if (detail) {
       const classes = (detail.class_items || []).map((item) => mapDashboardClassRow(item, detail.batch));
       const instructors = (detail.instructor_items || []).map((item) => mapDashboardInstructorRow(item, Number(item.class_count || 0), detail.batch));
-      return {
+      const dashboard = {
         period: normalizedPeriod,
         year,
         month,
@@ -759,6 +912,7 @@ async function loadDashboardData(db, period, year, month) {
         classes,
         instructors,
       };
+      return await finalizeSettlementDashboard(db, dashboard, query);
     }
   }
 
@@ -787,7 +941,7 @@ async function loadDashboardData(db, period, year, month) {
     payout_date: preview.period?.payout_date || null,
   }));
 
-  return {
+  const dashboard = {
     period: normalizedPeriod,
     year,
     month,
@@ -802,6 +956,7 @@ async function loadDashboardData(db, period, year, month) {
     classes,
     instructors,
   };
+  return await finalizeSettlementDashboard(db, dashboard, query);
 }
 
 async function loadHistoryRows(db, period, year, month) {
@@ -1149,6 +1304,7 @@ export async function onRequest(context) {
       const month = normalizeInt(url.searchParams.get('month'));
       const preview = normalizeText(url.searchParams.get('preview'));
       const period = normalizeText(url.searchParams.get('period') || 'month');
+      const query = normalizeText(url.searchParams.get('q'));
       const now = new Date();
       const resolvedYear = year || now.getFullYear();
       const resolvedMonth = month || (now.getMonth() + 1);
@@ -1172,8 +1328,13 @@ export async function onRequest(context) {
       }
 
       if (type === 'dashboard') {
-        const dashboard = await loadDashboardData(db, period, resolvedYear, resolvedMonth);
+        const dashboard = await loadDashboardData(db, period, resolvedYear, resolvedMonth, { query });
         return json(request, env, { success: true, data: dashboard });
+      }
+
+      if (type === 'search') {
+        const searchData = await loadSettlementSearchData(db, query);
+        return json(request, env, { success: true, data: searchData || { classes: [], instructors: [], summary: summarizeSettlementRows([], []), period_label: `검색 결과: ${query || '-'}`, period: 'search' } });
       }
 
       if (type === 'history') {

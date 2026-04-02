@@ -1,198 +1,386 @@
-﻿/* view_curriculum.css - Class101 Style Redesign */
-.curriculum-premium-card {
-    padding: 0 !important;
-    background: transparent !important;
-    border: none !important;
-}
-
 .curriculum-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 1rem;
     margin-bottom: 1.5rem;
-    padding: 0 1rem;
 }
 
-.chap-count {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-    font-weight: 400;
-    margin-left: 10px;
-}
-
-.btn-toggle-all {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: underline;
+.curriculum-container {
+    display: grid;
+    gap: 1rem;
 }
 
 .curriculum-chapter {
-    margin-bottom: 1rem;
-    border-radius: var(--card-radius, 16px);
-    background: var(--card-bg, rgba(30, 30, 30, 0.4));
-    backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
-    -webkit-backdrop-filter: var(--glass-blur, blur(15px) saturate(180%));
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+    position: relative;
     overflow: hidden;
-    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    background:
+        linear-gradient(180deg, rgba(22, 25, 34, 0.96), rgba(13, 15, 22, 0.98)),
+        radial-gradient(circle at top right, rgba(94, 126, 255, 0.14), transparent 34%);
+    box-shadow: 0 24px 44px rgba(0, 0, 0, 0.22);
 }
 
 .chapter-header {
-    padding: 1.5rem 2rem;
+    width: 100%;
+    border: 0;
+    padding: 1.5rem 1.75rem;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 1rem;
+    text-align: left;
     cursor: pointer;
-    transition: background 0.2s;
+    background: transparent;
+    color: inherit;
 }
 
 .chapter-header:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.chapter-header:focus-visible {
+    outline: 2px solid rgba(132, 160, 255, 0.75);
+    outline-offset: -2px;
+}
+
+.chapter-title-group {
+    min-width: 0;
+    display: grid;
+    gap: 0.35rem;
 }
 
 .chapter-num {
-    color: #888;
-    font-size: 0.8rem;
-    letter-spacing: 1px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    display: block;
+    display: inline-flex;
+    width: fit-content;
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
+    font-weight: 700;
+    color: rgba(193, 203, 230, 0.72);
 }
 
 .chapter-title-text {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #fff;
+    line-height: 1.4;
+    color: var(--text-primary, #fff);
+}
+
+.chapter-summary {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: rgba(210, 216, 231, 0.72);
+}
+
+.chapter-materials {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: rgba(169, 180, 203, 0.82);
 }
 
 .chapter-meta {
-    display: flex;
+    flex-shrink: 0;
+    display: inline-flex;
     align-items: center;
-    gap: 15px;
+    gap: 0.8rem;
+    padding-left: 0.75rem;
 }
 
 .lesson-count {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: rgba(223, 228, 240, 0.9);
+}
+
+.toggle-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(223, 228, 240, 0.82);
+    font-size: 0.76rem;
+    transition: transform 0.24s ease, background-color 0.24s ease;
 }
 
 .lesson-list-container {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.4s ease-out;
-    background: #111;
+    transition: max-height 0.28s ease;
+    border-top: 1px solid transparent;
 }
 
 .lesson-list-container.active {
-    max-height: 1500px;
+    max-height: 1800px;
+    border-top-color: rgba(255, 255, 255, 0.06);
 }
 
 .lesson-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.2rem 2rem;
-    border-top: 1px solid #222;
-    transition: background 0.2s;
+    gap: 1rem;
+    padding: 1rem 1.75rem;
+    background: rgba(255, 255, 255, 0.01);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.lesson-item:hover {
-    background: #1a1a1a;
+.lesson-item:first-child {
+    border-top: 0;
 }
 
 .lesson-info {
+    min-width: 0;
     display: flex;
-    gap: 10px;
-    color: #ddd;
-    font-size: 0.95rem;
+    align-items: flex-start;
+    gap: 0.8rem;
 }
 
 .lesson-index {
-    color: #666;
-    width: 20px;
+    flex-shrink: 0;
+    width: 1.4rem;
+    color: rgba(177, 186, 211, 0.62);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.lesson-name {
+    display: block;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: rgba(243, 246, 255, 0.96);
+    word-break: keep-all;
 }
 
 .lesson-actions {
-    display: flex;
+    flex-shrink: 0;
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: 0.65rem;
 }
 
 .badge-preview {
-    background: var(--accent-color);
-    color: #000;
-    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.7rem;
+    padding: 0 0.7rem;
+    border-radius: 999px;
+    background: rgba(136, 162, 255, 0.18);
+    color: #d9e2ff;
+    font-size: 0.74rem;
     font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 4px;
 }
 
 .lesson-duration {
-    font-size: 0.9rem;
-    color: #666;
+    min-width: 4.25rem;
+    text-align: right;
+    color: rgba(206, 214, 230, 0.78);
+    font-size: 0.82rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.lesson-duration-empty {
+    min-width: auto;
+    color: rgba(173, 181, 199, 0.5);
 }
 
 .lesson-status-icon {
-    font-size: 1.1rem;
-    width: 20px;
-    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    color: rgba(227, 233, 247, 0.82);
+    font-size: 0.84rem;
 }
 
-.toggle-icon {
-    font-size: 0.7rem;
-    color: #888;
-    transition: transform 0.3s;
+.lesson-empty-state {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.15rem 1.75rem 1.3rem;
+    color: rgba(216, 222, 236, 0.82);
+}
 
-    /* 모바일 반응형 지원 */
-    @media (max-width: 768px) {
-        .curriculum-header-row {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 12px;
-        }
+.lesson-empty-state strong {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: rgba(247, 249, 255, 0.96);
+}
 
-        .chapter-header {
-            padding: 1.2rem 1.5rem;
-        }
+.lesson-empty-state p {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: rgba(180, 188, 208, 0.7);
+}
 
-        .lesson-item {
-            padding: 1rem 1.5rem;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-        }
+.lesson-empty-detail {
+    color: rgba(221, 227, 242, 0.82);
+}
+
+.lesson-empty-materials {
+    color: rgba(163, 175, 202, 0.84);
+}
+
+.curriculum-empty-state {
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.02);
+    padding-block: 1.4rem;
+}
+
+html[data-theme="light"] body.class-view-page .curriculum-chapter {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(245, 247, 251, 0.96)),
+        radial-gradient(circle at top right, rgba(94, 126, 255, 0.08), transparent 34%);
+    border-color: rgba(15, 23, 42, 0.08);
+    box-shadow: 0 22px 36px rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="light"] body.class-view-page .chapter-header:hover {
+    background: rgba(15, 23, 42, 0.02);
+}
+
+html[data-theme="light"] body.class-view-page .chapter-num,
+html[data-theme="light"] body.class-view-page .chapter-summary,
+html[data-theme="light"] body.class-view-page .chapter-materials,
+html[data-theme="light"] body.class-view-page .lesson-duration,
+html[data-theme="light"] body.class-view-page .lesson-empty-state p {
+    color: rgba(71, 85, 105, 0.9);
+}
+
+html[data-theme="light"] body.class-view-page .lesson-empty-detail,
+html[data-theme="light"] body.class-view-page .lesson-empty-materials {
+    color: rgba(71, 85, 105, 0.86);
+}
+
+html[data-theme="light"] body.class-view-page .lesson-count,
+html[data-theme="light"] body.class-view-page .toggle-icon {
+    background: rgba(79, 124, 255, 0.06);
+    border-color: rgba(79, 124, 255, 0.12);
+    color: #334155;
+}
+
+html[data-theme="light"] body.class-view-page .lesson-item,
+html[data-theme="light"] body.class-view-page .lesson-list-container.active {
+    border-color: rgba(15, 23, 42, 0.06);
+}
+
+@media (max-width: 900px) {
+    .chapter-header {
+        padding: 1.3rem 1.4rem;
     }
 
-    /* 모바일 반응형 지원 */
-    @media (max-width: 768px) {
-        .curriculum-header-row {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 12px;
-        }
+    .lesson-item,
+    .lesson-empty-state {
+        padding-left: 1.4rem;
+        padding-right: 1.4rem;
+    }
+}
 
-        .chapter-header {
-            padding: 1.2rem 1.5rem;
-        }
+@media (max-width: 768px) {
+    .curriculum-header-row {
+        align-items: stretch;
+    }
 
-        .lesson-item {
-            padding: 1rem 1.5rem;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-        }
+    .chapter-header {
+        gap: 0.9rem;
+        padding: 1.1rem 1.05rem;
+        flex-direction: column;
+    }
 
-        .lesson-item .item-meta {
-            align-self: flex-start;
-        }
+    .chapter-meta {
+        width: 100%;
+        padding-left: 0;
+        justify-content: space-between;
+    }
 
-        .lesson-title {
-            font-size: 0.95rem;
-            line-height: 1.4;
-        }
+    .chapter-title-text {
+        font-size: 0.98rem;
+    }
+
+    .chapter-summary {
+        font-size: 0.8rem;
+    }
+
+    .chapter-materials {
+        font-size: 0.72rem;
+    }
+
+    .lesson-item {
+        align-items: flex-start;
+        padding: 0.9rem 1.05rem;
+        flex-direction: column;
+        gap: 0.55rem;
+    }
+
+    .lesson-info,
+    .lesson-actions {
+        width: 100%;
+    }
+
+    .lesson-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 0.45rem 0.65rem;
+    }
+
+    .lesson-name {
+        font-size: 0.88rem;
+    }
+
+    .lesson-duration,
+    .lesson-empty-state p {
+        font-size: 0.76rem;
+    }
+
+    .lesson-empty-materials {
+        font-size: 0.74rem;
+    }
+
+    .lesson-count,
+    .toggle-icon,
+    .badge-preview {
+        min-height: 1.85rem;
+        font-size: 0.72rem;
+    }
+
+    .lesson-empty-state {
+        padding: 1rem 1.05rem 1.1rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .curriculum-chapter {
+        border-radius: 20px;
+    }
+
+    .chapter-header {
+        padding: 1rem 0.9rem;
+    }
+
+    .lesson-item,
+    .lesson-empty-state {
+        padding-left: 0.9rem;
+        padding-right: 0.9rem;
+    }
+
+    .chapter-title-text {
+        font-size: 0.92rem;
+    }
+
+    .lesson-index,
+    .lesson-name,
+    .lesson-count {
+        font-size: 0.74rem;
     }
 }

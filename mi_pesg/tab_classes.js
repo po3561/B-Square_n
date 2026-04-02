@@ -435,9 +435,11 @@
                         <div class="my-class-head">
                             <span class="commerce-badge accent">개설</span>
                             <span class="commerce-badge">${escapeHtml(cls.class_type || 'VOD')}</span>
+                            ${cls.coupon_pack ? `<span class="commerce-badge warm" title="${escapeHtml(cls.coupon_detail || '쿠폰팩 발행 가능')}">쿠폰 가능</span>` : ''}
                         </div>
                         <h4>${escapeHtml(cls.title || '제목 없음')}</h4>
                         <p>${escapeHtml(cls.category || '미분류')}</p>
+                        ${cls.coupon_pack && cls.coupon_detail ? `<p style="margin:0.35rem 0 0; font-size:0.78rem; color:var(--text-secondary);">쿠폰: ${escapeHtml(cls.coupon_detail)}</p>` : ''}
                         <div class="my-class-actions">
                             <a class="btn-chat-link" href="../class_view/class_view.html?id=${encodeURIComponent(cls.id)}#tabChat">클래스 채널</a>
                             <a class="btn-chat-link subtle" href="../class_view/class_view.html?id=${encodeURIComponent(cls.id)}">메인화면</a>

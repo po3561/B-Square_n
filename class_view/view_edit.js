@@ -93,16 +93,33 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
     const categories = await loadCategories();
     const catOptions = buildCategoryOptions(categories, classData.category || '');
 
-    const curriculum = classData.curriculum || [];
-    const curriculumHTML = curriculum.map((ch, i) => `
-        <div class="edit-chapter-item" data-index="${i}">
+    const curriculum = Array.isArray(classData.curriculum) ? classData.curriculum : [];
+
+    function buildChapterEditor(chapter = {}, index = 0) {
+        const chapterTitle = escapeHtml(String(chapter.title || chapter.name || '').trim());
+        const chapterDetail = escapeHtml(String(chapter.detail || chapter.summary || chapter.description || '').trim());
+        const chapterMaterials = escapeHtml(String(chapter.materials || chapter.material || chapter.prep || '').trim());
+
+        return `
+        <div class="edit-chapter-item" data-index="${index}">
             <div class="edit-chapter-row">
-                <span class="edit-chapter-num">챕터 ${i + 1}</span>
-                <input type="text" class="edit-chapter-title" value="${ch.title || ''}" placeholder="챕터 제목">
+                <span class="edit-chapter-num">챕터 ${index + 1}</span>
+                <input type="text" class="edit-chapter-title" value="${chapterTitle}" placeholder="챕터 제목">
                 <button type="button" class="btn-remove-chapter">✕</button>
             </div>
+            <div class="edit-chapter-field">
+                <label>상세 내용</label>
+                <textarea class="edit-chapter-detail" rows="2" placeholder="이 챕터에서 무엇을 배우나요?">${chapterDetail}</textarea>
+            </div>
+            <div class="edit-chapter-field">
+                <label>준비물 / 메모</label>
+                <input type="text" class="edit-chapter-materials" value="${chapterMaterials}" placeholder="예: 개인 노트북, 필기도구 등">
+            </div>
         </div>
-    `).join('');
+        `;
+    }
+
+    const curriculumHTML = curriculum.map((ch, i) => buildChapterEditor(ch, i)).join('');
 
     const keywords = Array.isArray(classData.keywords) ? classData.keywords.join(', ') : (classData.keywords || '');
     const createdDate = classData.created_at ? new Date(classData.created_at).toLocaleDateString('ko-KR') : '-';
@@ -535,13 +552,7 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
         const count = list.querySelectorAll('.edit-chapter-item').length;
         const div = document.createElement('div');
         div.className = 'edit-chapter-item';
-        div.innerHTML = `
-            <div class="edit-chapter-row">
-                <span class="edit-chapter-num">챕터 ${count + 1}</span>
-                <input type="text" class="edit-chapter-title" value="" placeholder="새 챕터 제목">
-                <button type="button" class="btn-remove-chapter">✕</button>
-            </div>
-        `;
+        div.innerHTML = buildChapterEditor({}, count);
         list.appendChild(div);
         attachRemoveEvent(div.querySelector('.btn-remove-chapter'));
         div.querySelector('.edit-chapter-title').focus();
@@ -569,9 +580,13 @@ window.BSquareModules.initEdit = async function (db, classId, classData, supabas
         saveBtn.disabled = true;
 
         try {
-            const chapters = Array.from(document.querySelectorAll('#editCurriculumList .edit-chapter-title'))
-                .map(input => ({ title: input.value.trim() }))
-                .filter(ch => ch.title);
+            const chapters = Array.from(document.querySelectorAll('#editCurriculumList .edit-chapter-item'))
+                .map((item) => ({
+                    title: item.querySelector('.edit-chapter-title')?.value.trim() || '',
+                    detail: item.querySelector('.edit-chapter-detail')?.value.trim() || '',
+                    materials: item.querySelector('.edit-chapter-materials')?.value.trim() || '',
+                }))
+                .filter(ch => ch.title || ch.detail || ch.materials);
 
             const keywordsArr = document.getElementById('editKeywords').value.split(',').map(k => k.trim()).filter(k => k);
 

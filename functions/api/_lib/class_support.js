@@ -394,6 +394,7 @@ export async function loadClassesByIds(db, classIds = [], { publicOnly = true } 
         c.price,
         c.discount_rate,
         c.coupon_pack,
+        c.coupon_detail,
         c.class_type,
         c.is_free,
         c.is_public,

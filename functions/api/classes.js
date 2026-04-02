@@ -55,6 +55,7 @@ const CLASS_LIST_SELECT = `
     c.price,
     c.discount_rate,
     c.coupon_pack,
+    c.coupon_detail,
     c.class_type,
     c.operating_mode,
     c.is_free,

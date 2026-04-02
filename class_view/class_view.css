@@ -48,7 +48,7 @@
 .hero-content-wrapper.hero-full-slider {
     max-width: 1300px;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 clamp(1rem, 2vw, 2rem);
 }
 
 .slider-section {
@@ -200,10 +200,10 @@
    ======================== */
 .view-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 400px;
-    gap: 4rem;
-    padding: 2rem 2rem;
-    max-width: 1300px;
+    grid-template-columns: minmax(0, 1fr) clamp(300px, 30vw, 400px);
+    gap: clamp(2rem, 3vw, 4rem);
+    padding: clamp(1.5rem, 2vw, 2rem);
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -352,7 +352,7 @@
 .sidebar-cta-area {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
 .cta-primary-row {
@@ -431,26 +431,34 @@
    ======================== */
 .view-tabs {
     display: flex;
-    gap: 3rem;
+    gap: clamp(0.6rem, 1.8vw, 3rem);
     border-bottom: 2px solid #222;
     position: sticky;
     top: 60px;
     background: var(--bg-deep);
     z-index: 90;
     margin-bottom: 3rem;
-    padding: 0 1rem;
+    padding: 0 clamp(0.25rem, 1vw, 1rem) 0.35rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.view-tabs::-webkit-scrollbar {
+    display: none;
 }
 
 .tab-btn {
     background: none;
     border: none;
     color: #666;
-    padding: 1.5rem 0;
-    font-size: 1.1rem;
+    padding: 1.25rem 0;
+    font-size: clamp(0.92rem, 1.05vw, 1.1rem);
     font-weight: 800;
     cursor: pointer;
     position: relative;
     transition: 0.2s;
+    flex-shrink: 0;
 }
 
 .tab-btn:hover {
@@ -495,8 +503,8 @@
 
 .content-card {
     background: rgba(255, 255, 255, 0.02);
-    border-radius: 24px;
-    padding: 3rem;
+    border-radius: clamp(18px, 2vw, 24px);
+    padding: clamp(1.5rem, 2.5vw, 3rem);
     border: 1px solid rgba(255, 255, 255, 0.05);
     margin-bottom: 4rem;
 }
@@ -546,8 +554,8 @@
 /* Review styles */
 .photo-review-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
 }
 
 .photo-review-item {
@@ -573,16 +581,107 @@
         position: relative;
         top: 0;
         margin-bottom: 3rem;
+        max-width: min(100%, 460px);
+        justify-self: end;
     }
 }
 
 @media (max-width: 768px) {
+    .hero-content-wrapper.hero-full-slider {
+        padding: 0 1rem;
+    }
+
+    .view-grid {
+        padding: 1.25rem 1rem;
+        gap: 1.75rem;
+    }
+
+    .view-tabs {
+        gap: 0.45rem;
+        margin-bottom: 2rem;
+    }
+
+    .tab-btn {
+        padding: 1rem 0;
+        font-size: 0.92rem;
+    }
+
     .slider-section {
         aspect-ratio: 16 / 9;
     }
 
     .content-card {
-        padding: 1.5rem;
+        padding: 1.15rem;
+    }
+
+    .photo-review-grid {
+        grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+        gap: 10px;
+    }
+
+    .sidebar-cta-area {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 430px) {
+    .hero-content-wrapper.hero-full-slider {
+        padding: 0 0.85rem;
+    }
+
+    .view-grid {
+        padding: 1rem 0.85rem;
+    }
+
+    .content-card {
+        padding: 1rem;
+        border-radius: 18px;
+    }
+
+    .tab-btn {
+        font-size: 0.88rem;
+    }
+}
+
+@media (max-width: 390px) {
+    .view-grid {
+        padding: 0.9rem 0.7rem;
+    }
+
+    .tab-btn {
+        font-size: 0.84rem;
+    }
+}
+
+@media (max-width: 320px) {
+    .view-grid {
+        padding: 0.8rem 0.6rem;
+    }
+
+    .content-card {
+        padding: 0.85rem;
+    }
+
+    .tab-btn {
+        font-size: 0.8rem;
+    }
+
+    .photo-review-grid {
+        grid-template-columns: repeat(auto-fill, minmax(94px, 1fr));
+    }
+}
+
+@media (max-width: 220px) {
+    .view-grid {
+        padding: 0.7rem 0.45rem;
+    }
+
+    .content-card {
+        padding: 0.7rem;
+    }
+
+    .tab-btn {
+        font-size: 0.75rem;
     }
 }
 
@@ -762,6 +861,86 @@ body.class-view-page .content-card {
     box-shadow: 0 26px 72px rgba(0, 0, 0, 0.18);
 }
 
+body.class-view-page .edit-chapter-item {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.03);
+    margin-bottom: 0.9rem;
+}
+
+body.class-view-page .edit-chapter-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+body.class-view-page .edit-chapter-num {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: rgba(183, 193, 216, 0.85);
+    letter-spacing: 0.06em;
+}
+
+body.class-view-page .edit-chapter-title,
+body.class-view-page .edit-chapter-detail,
+body.class-view-page .edit-chapter-materials {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    background: rgba(8, 10, 16, 0.72);
+    color: #fff;
+    padding: 0.85rem 0.95rem;
+    font-size: 0.92rem;
+    outline: none;
+}
+
+body.class-view-page .edit-chapter-detail {
+    min-height: 84px;
+    resize: vertical;
+}
+
+body.class-view-page .edit-chapter-materials {
+    min-height: 46px;
+}
+
+body.class-view-page .edit-chapter-title:focus,
+body.class-view-page .edit-chapter-detail:focus,
+body.class-view-page .edit-chapter-materials:focus {
+    border-color: rgba(127, 162, 255, 0.7);
+    box-shadow: 0 0 0 1px rgba(127, 162, 255, 0.15);
+}
+
+body.class-view-page .edit-chapter-field {
+    display: grid;
+    gap: 0.45rem;
+}
+
+body.class-view-page .edit-chapter-field label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: rgba(174, 184, 205, 0.9);
+}
+
+body.class-view-page .btn-remove-chapter {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    cursor: pointer;
+}
+
+body.class-view-page .btn-add-chapter {
+    margin-top: 0.75rem;
+}
+
 html[data-theme="light"] body.class-view-page .premium-hero {
     background:
         radial-gradient(circle at 14% 0%, rgba(79, 111, 255, 0.14), transparent 28%),
@@ -806,5 +985,21 @@ html[data-theme="light"] body.class-view-page .btn-enroll-flat {
 
     body.class-view-page .sticky-card-premium {
         border-radius: 24px;
+    }
+
+    body.class-view-page .edit-chapter-item {
+        padding: 0.9rem;
+        gap: 0.75rem;
+    }
+
+    body.class-view-page .edit-chapter-row {
+        flex-wrap: wrap;
+    }
+
+    body.class-view-page .edit-chapter-title,
+    body.class-view-page .edit-chapter-detail,
+    body.class-view-page .edit-chapter-materials {
+        font-size: 0.86rem;
+        padding: 0.75rem 0.85rem;
     }
 }
