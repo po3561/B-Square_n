@@ -24,6 +24,58 @@ async function readJsonObject(request) {
   }
 }
 
+async function hasClassReactionAccess(context, auth, classId) {
+  const { env, request } = context;
+  const normalizedClassId = trimText(classId);
+  const userId = String(auth.user.id || '').trim();
+  const role = String(auth.user.role || '').trim().toLowerCase();
+  const privilegedRoles = ['operator', 'admin', 'super_admin', 'super-admin', 'superadmin', 'root', 'owner', 'manager', 'operator_admin', 'ops'];
+
+  if (!normalizedClassId) {
+    return {
+      ok: false,
+      response: json(request, env, { success: false, error: 'class_id is required' }, { status: 400 }),
+    };
+  }
+
+  if (privilegedRoles.includes(role)) {
+    return { ok: true };
+  }
+
+  const member = await env.DB.prepare(`
+    SELECT 1
+    FROM user_chats
+    WHERE user_id = ? AND room_id = ? AND type = 'class'
+    LIMIT 1
+  `).bind(userId, normalizedClassId).first().catch(() => null);
+
+  if (member) {
+    return { ok: true };
+  }
+
+  const participant = await env.DB.prepare(`
+    SELECT 1
+    FROM class_participants
+    WHERE class_id = ? AND user_id = ?
+    LIMIT 1
+  `).bind(normalizedClassId, userId).first().catch((error) => {
+    const message = String(error?.message || '');
+    if (/no such table/i.test(message)) return null;
+    throw error;
+  });
+
+  if (participant) {
+    return { ok: true };
+  }
+
+  const manager = await requireClassManager(context, normalizedClassId);
+  if (!manager.ok) {
+    return { ok: false, response: manager.response };
+  }
+
+  return { ok: true };
+}
+
 export async function onRequest(context) {
   const { request, env, params } = context;
 
@@ -53,8 +105,8 @@ export async function onRequest(context) {
 
     const isOwner = String(message.user_id) === String(auth.user.id);
     if (!isOwner && !isAtLeastRole(auth.user.role, 'admin')) {
-      const classAuth = await requireClassManager(context, message.class_id);
-      if (!classAuth.ok) return classAuth.response;
+      const access = await hasClassReactionAccess(context, auth, message.class_id);
+      if (!access.ok) return access.response;
     }
 
     const body = await readJsonObject(request);

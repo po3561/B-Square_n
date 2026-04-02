@@ -1054,7 +1054,10 @@ window.CommunityModules.ChatUI = (function () {
         let contentHtml = '';
 
         // 답장 인용구
-        if (msgData.reply_to && msgData.reply_text) {
+        if (msgData.type === 'deleted') {
+            const deletedText = msgData.content || msgData.message || '메시지가 삭제되었습니다.';
+            contentHtml += `<div class="msg-bubble msg-deleted">${escapeHtml(deletedText)}</div>`;
+        } else if (msgData.reply_to && msgData.reply_text) {
             contentHtml += `<div class="msg-reply-quote" onclick="document.getElementById('msg-${msgData.reply_to}')?.scrollIntoView({behavior:'smooth', block:'center'})">
                 <span class="reply-quote-user">${msgData.reply_user || '이전 메시지'}</span>
                 <span class="reply-quote-content">${escapeHtml(msgData.reply_text)}</span>
@@ -1062,7 +1065,9 @@ window.CommunityModules.ChatUI = (function () {
         }
 
         // 메시지 유형별
-        if (msgData.type === 'image' && (msgData.file_data || msgData.image_url)) {
+        if (msgData.type === 'deleted') {
+            // tombstone already rendered above
+        } else if (msgData.type === 'image' && (msgData.file_data || msgData.image_url)) {
             const imageSrc = msgData.file_data || msgData.image_url;
             contentHtml += `<div class="msg-bubble image-only"><img class="msg-image" src="${imageSrc}" alt="이미지"></div>`;
         } else if (msgData.type === 'file' && msgData.file_name) {
@@ -1260,8 +1265,12 @@ window.CommunityModules.ChatUI = (function () {
     async function deleteMsg(key) {
         if (!requireSecondTap(deletePrompt, key, '메시지를 삭제하려면 5초 안에 다시 눌러 주세요.')) return;
         try {
-            await window.BSQ.api(getRoomMessageItemUrl(key), { method: 'DELETE' });
-            removeMessage(key);
+            const res = await window.BSQ.api(getRoomMessageItemUrl(key), { method: 'DELETE' });
+            if (res?.data) {
+                renderMessage(res.data.id || key, normalizeIncomingMessage({ ...res.data, client_id: res.data.client_id || key }), true);
+            } else {
+                removeMessage(key);
+            }
         } catch (e) { console.error('Delete failed:', e); }
     }
 

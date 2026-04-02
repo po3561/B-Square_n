@@ -190,120 +190,120 @@ body,
   gap: var(--page-stack-gap);
 }
 
-.main-content > *,
-.class-list-main > *,
-.view-container > *,
-.contact-main > *,
-.notice-main > *,
-.create-content > * {
+.main-content>*,
+.class-list-main>*,
+.view-container>*,
+.contact-main>*,
+.notice-main>*,
+.create-content>* {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
 
 /* Shared surface utilities */
 :where(.auth-container,
-       .contact-container,
-       .contact-form-section,
-       .notice-left-panel,
-       .notice-right-panel,
-       .class-list-hero,
-       .sidebar-nav,
-       .class-lists-section,
-       .premium-hero,
-       .hero-brief-panel,
-       .content-card,
-       .tab-content,
-       .mypage-sidebar,
-       .mypage-content,
-       .mypage-panel-card,
-       .dashboard-stat-card,
-       .dashboard-commerce-shell,
-       .dashboard-commerce-list,
-       .dashboard-payment-summary,
-       .community-shell,
-       .comm-sidebar,
-       .comm-main,
-       .comm-info-panel,
-       .modal-card,
-       .chat-top-header,
-       .chat-search-bar,
-       .pinned-msg-bar,
-       .gathering-info-box,
-       .hero-slider-area,
-       .hero-brief-panel,
-       .home-main-banner,
-       .home-category-panel,
-       .bottom-banner-section .banner-inner,
-       .home-category-shell,
-       .home-category-grid,
-       .home-category-toggle-row,
-       .home-category-item) {
+  .contact-container,
+  .contact-form-section,
+  .notice-left-panel,
+  .notice-right-panel,
+  .class-list-hero,
+  .sidebar-nav,
+  .class-lists-section,
+  .premium-hero,
+  .hero-brief-panel,
+  .content-card,
+  .tab-content,
+  .mypage-sidebar,
+  .mypage-content,
+  .mypage-panel-card,
+  .dashboard-stat-card,
+  .dashboard-commerce-shell,
+  .dashboard-commerce-list,
+  .dashboard-payment-summary,
+  .community-shell,
+  .comm-sidebar,
+  .comm-main,
+  .comm-info-panel,
+  .modal-card,
+  .chat-top-header,
+  .chat-search-bar,
+  .pinned-msg-bar,
+  .gathering-info-box,
+  .hero-slider-area,
+  .hero-brief-panel,
+  .home-main-banner,
+  .home-category-panel,
+  .bottom-banner-section .banner-inner,
+  .home-category-shell,
+  .home-category-grid,
+  .home-category-toggle-row,
+  .home-category-item) {
   border-color: var(--bsq-border) !important;
 }
 
 html[data-theme="light"] :where(.auth-container,
-       .contact-container,
-       .contact-form-section,
-       .notice-left-panel,
-       .notice-right-panel,
-       .class-list-hero,
-       .sidebar-nav,
-       .class-lists-section,
-       .premium-hero,
-       .hero-brief-panel,
-       .content-card,
-       .tab-content,
-       .mypage-sidebar,
-       .mypage-content,
-       .mypage-panel-card,
-       .dashboard-stat-card,
-       .dashboard-commerce-shell,
-       .dashboard-commerce-list,
-       .dashboard-payment-summary,
-       .community-shell,
-       .comm-sidebar,
-       .comm-main,
-       .comm-info-panel,
-       .modal-card,
-       .chat-top-header,
-       .chat-search-bar,
-       .pinned-msg-bar,
-       .gathering-info-box,
-       .hero-slider-area,
-       .hero-brief-panel,
-       .home-main-banner,
-       .home-category-panel,
-       .bottom-banner-section .banner-inner,
-       .home-category-shell,
-       .home-category-grid,
-       .home-category-toggle-row,
-       .home-category-item) {
+  .contact-container,
+  .contact-form-section,
+  .notice-left-panel,
+  .notice-right-panel,
+  .class-list-hero,
+  .sidebar-nav,
+  .class-lists-section,
+  .premium-hero,
+  .hero-brief-panel,
+  .content-card,
+  .tab-content,
+  .mypage-sidebar,
+  .mypage-content,
+  .mypage-panel-card,
+  .dashboard-stat-card,
+  .dashboard-commerce-shell,
+  .dashboard-commerce-list,
+  .dashboard-payment-summary,
+  .community-shell,
+  .comm-sidebar,
+  .comm-main,
+  .comm-info-panel,
+  .modal-card,
+  .chat-top-header,
+  .chat-search-bar,
+  .pinned-msg-bar,
+  .gathering-info-box,
+  .hero-slider-area,
+  .hero-brief-panel,
+  .home-main-banner,
+  .home-category-panel,
+  .bottom-banner-section .banner-inner,
+  .home-category-shell,
+  .home-category-grid,
+  .home-category-toggle-row,
+  .home-category-item) {
   background-color: var(--bsq-surface) !important;
   box-shadow: var(--bsq-shadow-soft) !important;
 }
 
 html[data-theme="light"] :where(.btn-primary,
-       .btn-submit,
-       .hero-action-btn,
-       .tab-header-cta,
-       .btn-chat-link,
-       .btn-go-class,
-       .btn-cta-start,
-       .btn-cta-secondary,
-       .search-bar button,
-       .drawer-close,
-       .btn-login-main,
-       .btn-logout,
-       .btn-operator-mode,
-       .profile-mini-btn,
-       .settings-theme-btn,
-       .settings-select,
-       .hero-summary-chip,
-       .home-category-toggle,
-       .nav-btn,
-       .category-chip,
-       .btn-search,
-       .btn-admin) {
+  .btn-submit,
+  .hero-action-btn,
+  .tab-header-cta,
+  .btn-chat-link,
+  .btn-go-class,
+  .btn-cta-start,
+  .btn-cta-secondary,
+  .search-bar button,
+  .drawer-close,
+  .btn-login-main,
+  .btn-logout,
+  .btn-operator-mode,
+  .profile-mini-btn,
+  .settings-theme-btn,
+  .settings-select,
+  .hero-summary-chip,
+  .home-category-toggle,
+  .nav-btn,
+  .category-chip,
+  .btn-search,
+  .btn-admin) {
   color: var(--bsq-text) !important;
   border-color: var(--bsq-border) !important;
 }
@@ -343,10 +343,12 @@ html[data-theme="light"] body.home-page .class-card {
   border-color: rgba(15, 23, 42, 0.08) !important;
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06) !important;
 }
+
 html[data-theme="light"] body.home-page .title,
 html[data-theme="light"] body.home-page .price {
   color: var(--bsq-text) !important;
 }
+
 html[data-theme="light"] body.home-page .card-summary,
 html[data-theme="light"] body.home-page .meta,
 html[data-theme="light"] body.home-page .card-topline,
@@ -354,11 +356,13 @@ html[data-theme="light"] body.home-page .card-category,
 html[data-theme="light"] body.home-page .card-chip {
   color: var(--bsq-text-muted) !important;
 }
+
 html[data-theme="light"] body.home-page .btn-bookmark {
   background: rgba(255, 255, 255, 0.9) !important;
   border-color: rgba(15, 23, 42, 0.1) !important;
   color: var(--bsq-text) !important;
 }
+
 html[data-theme="light"] body.home-page .badge-coupon,
 html[data-theme="light"] body.home-page .badge-discount {
   background: rgba(255, 255, 255, 0.85) !important;
@@ -788,20 +792,21 @@ html[data-theme="light"] .mypage-page .nav-btn.active {
 }
 
 @media (max-width: 768px) {
+
   :where(.notice-left-panel,
-         .notice-right-panel,
-         .create-content,
-         .content-card,
-         .mypage-sidebar,
-         .mypage-hero,
-         .mypage-panel-card,
-         .dashboard-stat-card,
-         .dashboard-commerce-shell,
-         .commerce-shell,
-         .commerce-hero,
-         .security-card,
-         .class-banner-shell,
-         .class-banner-inner) {
+    .notice-right-panel,
+    .create-content,
+    .content-card,
+    .mypage-sidebar,
+    .mypage-hero,
+    .mypage-panel-card,
+    .dashboard-stat-card,
+    .dashboard-commerce-shell,
+    .commerce-shell,
+    .commerce-hero,
+    .security-card,
+    .class-banner-shell,
+    .class-banner-inner) {
     min-height: auto !important;
   }
 }
@@ -894,7 +899,8 @@ body.home-page #homeMainBannerStage[data-banner-variant="album"] .home-banner-sl
   width: min(1120px, 78vw) !important;
   aspect-ratio: 21 / 9;
   height: auto !important;
-  opacity: 1 !important; /* override fade stack defaults */
+  opacity: 1 !important;
+  /* override fade stack defaults */
   will-change: transform, opacity, filter;
   transition: transform 760ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 420ms ease, filter 520ms ease;
   transform: translate(-50%, -50%) translateX(0) scale(0.98);
@@ -967,14 +973,14 @@ body.home-page #homeMainBannerStage[data-banner-variant="album"] .home-banner-sl
 }
 
 body.home-page #homeMainBannerStage[data-banner-variant="album"] .home-banner-link,
-body.home-page #homeMainBannerStage[data-banner-variant="album"] .home-banner-link > img,
-body.home-page #homeMainBannerStage[data-banner-variant="album"] .home-banner-link > div {
+body.home-page #homeMainBannerStage[data-banner-variant="album"] .home-banner-link>img,
+body.home-page #homeMainBannerStage[data-banner-variant="album"] .home-banner-link>div {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-body.home-page #homeMainBannerStage[data-banner-variant="album"] .home-banner-link > img {
+body.home-page #homeMainBannerStage[data-banner-variant="album"] .home-banner-link>img {
   object-fit: cover;
   object-position: center;
   transform: translateZ(0);
@@ -1040,7 +1046,7 @@ body.home-page .home-category-panel::before {
 }
 
 
-body.home-page .home-category-panel > div,
+body.home-page .home-category-panel>div,
 body.home-page .home-category-shell,
 body.home-page .home-category-grid,
 body.home-page .home-category-toggle-row {
@@ -1050,7 +1056,7 @@ body.home-page .home-category-toggle-row {
   box-shadow: none !important;
 }
 
-body.home-page .home-category-panel > div,
+body.home-page .home-category-panel>div,
 body.home-page .home-category-shell,
 body.home-page .home-category-grid {
   width: 100%;
@@ -1069,6 +1075,7 @@ body.home-page .home-category-panel p {
 }
 
 @media (min-width: 769px) {
+
   body.home-page .home-category-grid-primary,
   body.home-page .home-category-grid-extra {
     grid-template-columns: repeat(auto-fit, minmax(120px, 136px)) !important;
@@ -1219,8 +1226,8 @@ body.home-page .home-banner-stage::after {
 
 /* Tighten home class-card grid spacing to match the dark reference layout. */
 body.home-page .class-lists-section .section-inner {
-  width: min(1880px, calc(100vw - 1.25rem)) !important;
-  max-width: 1880px !important;
+  width: min(100%, calc(100vw - 1.25rem)) !important;
+  max-width: 100% !important;
   padding-left: 0.25rem !important;
   padding-right: 0.25rem !important;
 }
@@ -1290,8 +1297,8 @@ html[data-theme="light"] body.home-page .home-category-count {
 }
 
 /* high-specificity lock against duplicated trailing rules */
-body.home-page .hero-inner > .home-category-panel,
-body.home-page .hero-inner > aside.home-category-panel {
+body.home-page .hero-inner>.home-category-panel,
+body.home-page .hero-inner>aside.home-category-panel {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
@@ -1418,7 +1425,7 @@ html[data-theme="light"] body.home-page .card-grid.large-grid .class-card {
 /* Worker 1 final pass: home hero/category/card cleanup */
 body.home-page .hero-inner,
 body.home-page .home-category-panel,
-body.home-page .home-category-panel > .category-grid {
+body.home-page .home-category-panel>.category-grid {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
@@ -1504,15 +1511,13 @@ body.home-page .home-banner-stage::after {
 }
 
 body.home-page .main-ad-banner.home-main-banner::before {
-  background: linear-gradient(
-    90deg,
-    rgba(5, 7, 11, 0.82) 0%,
-    rgba(5, 7, 11, 0.14) 14%,
-    rgba(5, 7, 11, 0) 28%,
-    rgba(5, 7, 11, 0) 72%,
-    rgba(5, 7, 11, 0.14) 86%,
-    rgba(5, 7, 11, 0.82) 100%
-  ) !important;
+  background: linear-gradient(90deg,
+      rgba(5, 7, 11, 0.82) 0%,
+      rgba(5, 7, 11, 0.14) 14%,
+      rgba(5, 7, 11, 0) 28%,
+      rgba(5, 7, 11, 0) 72%,
+      rgba(5, 7, 11, 0.14) 86%,
+      rgba(5, 7, 11, 0.82) 100%) !important;
 }
 
 body.home-page .class-lists-section,
@@ -1586,15 +1591,13 @@ html[data-theme="light"] body.home-page .home-category-extra-wrap {
 }
 
 html[data-theme="light"] body.home-page .main-ad-banner.home-main-banner::before {
-  background: linear-gradient(
-    90deg,
-    rgba(247, 251, 255, 0.92) 0%,
-    rgba(247, 251, 255, 0.14) 14%,
-    rgba(247, 251, 255, 0) 28%,
-    rgba(247, 251, 255, 0) 72%,
-    rgba(247, 251, 255, 0.14) 86%,
-    rgba(247, 251, 255, 0.92) 100%
-  ) !important;
+  background: linear-gradient(90deg,
+      rgba(247, 251, 255, 0.92) 0%,
+      rgba(247, 251, 255, 0.14) 14%,
+      rgba(247, 251, 255, 0) 28%,
+      rgba(247, 251, 255, 0) 72%,
+      rgba(247, 251, 255, 0.14) 86%,
+      rgba(247, 251, 255, 0.92) 100%) !important;
 }
 
 @media (max-width: 1460px) {
@@ -1803,7 +1806,7 @@ body.home-page .home-category-panel::before {
   z-index: 0;
 }
 
-body.home-page .home-category-panel > div,
+body.home-page .home-category-panel>div,
 body.home-page .home-category-shell,
 body.home-page .home-category-grid,
 body.home-page .home-category-extra-wrap {
@@ -1970,7 +1973,7 @@ body.home-page .home-category-panel::before {
   opacity: 0.85;
 }
 
-body.home-page .home-category-panel > div,
+body.home-page .home-category-panel>div,
 body.home-page .home-category-shell,
 body.home-page .home-category-grid,
 body.home-page .home-category-extra-wrap {

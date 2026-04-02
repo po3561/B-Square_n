@@ -127,8 +127,20 @@ export async function onRequest(context) {
     }
 
     if (request.method === 'DELETE') {
-      await env.DB.prepare('DELETE FROM chat_messages WHERE id = ?').bind(messageId).run();
-      return json(request, env, { success: true });
+      const deletedText = '메시지가 삭제되었습니다.';
+      await env.DB.prepare(`
+        UPDATE chat_messages
+        SET content = ?, message = ?, type = 'deleted',
+            reply_to = NULL, reply_data = NULL,
+            image_url = NULL, file_name = NULL, file_size = NULL, file_data = NULL,
+            is_pinned = 0, is_edited = 1, reactions = '{}', updated_at = datetime('now')
+        WHERE id = ?
+      `).bind(deletedText, deletedText, messageId).run();
+
+      const updated = await env.DB.prepare(`SELECT ${CHAT_MESSAGE_COLUMNS} FROM chat_messages WHERE id = ?`)
+        .bind(messageId)
+        .first();
+      return json(request, env, { success: true, data: updated ? normalizeChatMessage(updated) : null });
     }
 
     return json(request, env, { success: false, error: 'method not allowed' }, { status: 405 });
