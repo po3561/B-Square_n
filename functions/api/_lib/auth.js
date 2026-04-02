@@ -87,6 +87,28 @@ export function getSessionToken(request) {
   const headerToken = request.headers.get('X-Session-Token');
   if (headerToken) return headerToken.trim();
 
+  try {
+    const url = new URL(request.url);
+    const queryToken =
+      url.searchParams.get('session')
+      || url.searchParams.get('token')
+      || url.searchParams.get('bsq_token')
+      || url.searchParams.get('session_token');
+    if (queryToken) {
+      const accept = String(request.headers.get('Accept') || '').toLowerCase();
+      const streamFlag = String(url.searchParams.get('stream') || '').toLowerCase();
+      const isStreamRequest =
+        accept.includes('text/event-stream')
+        || streamFlag === '1'
+        || streamFlag === 'true'
+        || streamFlag === 'yes'
+        || url.pathname.endsWith('/messages/stream');
+      if (isStreamRequest) return queryToken.trim();
+    }
+  } catch {
+    // ignore URL parsing issues
+  }
+
   return null;
 }
 

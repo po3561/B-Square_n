@@ -17,6 +17,313 @@ function normalizeFloat(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function normalizeSettlementQuery(value) {
+  return String(value ?? '').normalize('NFKC').trim().toLowerCase();
+}
+
+function compactSettlementQuery(value) {
+  return normalizeSettlementQuery(value).replace(/[^0-9a-z가-힣]+/g, '');
+}
+
+function tokenizeSettlementQuery(value) {
+  return normalizeSettlementQuery(value)
+    .split(/[\s,./|()\-_:]+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
+}
+
+function buildBigramSet(value) {
+  const compact = compactSettlementQuery(value);
+  if (compact.length < 2) return compact ? new Set([compact]) : new Set();
+  const grams = new Set();
+  for (let index = 0; index < compact.length - 1; index += 1) {
+    grams.add(compact.slice(index, index + 2));
+  }
+  return grams;
+}
+
+function diceCoefficient(a, b) {
+  const gramsA = buildBigramSet(a);
+  const gramsB = buildBigramSet(b);
+  if (!gramsA.size || !gramsB.size) return 0;
+
+  let overlap = 0;
+  for (const gram of gramsA) {
+    if (gramsB.has(gram)) overlap += 1;
+  }
+
+  return (2 * overlap) / (gramsA.size + gramsB.size);
+}
+
+function settleNumber(value, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function settlementSearchFields(row = {}, scope = 'class') {
+  const scopeKey = String(scope || 'class').toLowerCase() === 'instructor' ? 'instructor' : 'class';
+  const common = [
+    row.class_name,
+    row.class_title,
+    row.instructor_name,
+    row.instructor_email,
+    row.instructor_phone,
+    row.bank_name,
+    row.bank_account,
+    row.bank_holder,
+    row.admin_code,
+    row.approval_code,
+    row.batch_id,
+    row.period_start,
+    row.period_end,
+    row.payout_date,
+    row.category,
+    row.keywords,
+    row.coupon_detail,
+    row.search_text,
+  ];
+
+  if (scopeKey === 'instructor') {
+    common.push(row.class_count, row.settlement_count, row.class_titles);
+  } else {
+    common.push(row.order_count, row.class_count, row.source_type);
+  }
+
+  return common;
+}
+
+function settlementSearchText(row = {}, scope = 'class') {
+  return settlementSearchFields(row, scope)
+    .map((value) => String(value || '').toLowerCase())
+    .join(' ');
+}
+
+function settlementSearchScore(row = {}, scope = 'class', query = '') {
+  const normalizedQuery = normalizeSettlementQuery(query);
+  if (!normalizedQuery) return 1;
+
+  const compactQuery = compactSettlementQuery(normalizedQuery);
+  if (!compactQuery) return 0;
+
+  const tokens = tokenizeSettlementQuery(normalizedQuery);
+  const queryDigits = compactQuery.replace(/[^0-9]+/g, '');
+  const queryFields = settlementSearchFields(row, scope);
+
+  let bestScore = 0;
+  let tokenHits = 0;
+  let digitHits = 0;
+
+  for (const field of queryFields) {
+    const normalizedField = normalizeSettlementQuery(field);
+    if (!normalizedField) continue;
+
+    const compactField = compactSettlementQuery(normalizedField);
+    if (!compactField) continue;
+
+    let score = 0;
+    if (compactField === compactQuery) score += 1000;
+    if (compactField.includes(compactQuery)) score += 350 + Math.min(100, compactQuery.length * 4);
+    if (compactQuery.includes(compactField)) score += 180 + Math.min(60, compactField.length * 2);
+    if (normalizedField.startsWith(normalizedQuery)) score += 120;
+    if (normalizedField.includes(normalizedQuery)) score += 80;
+
+    const fieldDigits = compactField.replace(/[^0-9]+/g, '');
+    if (queryDigits && fieldDigits) {
+      if (fieldDigits === queryDigits) score += 160;
+      else if (fieldDigits.includes(queryDigits)) score += 90;
+    }
+
+    const fieldTokenHits = tokens.filter((token) => {
+      const compactToken = compactSettlementQuery(token);
+      return compactToken && compactField.includes(compactToken);
+    }).length;
+
+    if (fieldTokenHits) {
+      tokenHits = Math.max(tokenHits, fieldTokenHits);
+      score += fieldTokenHits * 35;
+    }
+
+    if (queryDigits && fieldDigits && fieldDigits.includes(queryDigits)) {
+      digitHits = Math.max(digitHits, 1);
+    }
+
+    score += Math.round(diceCoefficient(compactField, compactQuery) * 120);
+
+    if (score > bestScore) bestScore = score;
+  }
+
+  if (!bestScore && tokens.length) {
+    const joined = compactSettlementQuery(queryFields.join(' '));
+    const matchedTokens = tokens.filter((token) => {
+      const compactToken = compactSettlementQuery(token);
+      return compactToken && joined.includes(compactToken);
+    }).length;
+    if (matchedTokens) {
+      tokenHits = Math.max(tokenHits, matchedTokens);
+      bestScore = matchedTokens * 20;
+    }
+  }
+
+  bestScore += tokenHits * 10;
+  bestScore += digitHits * 20;
+  return bestScore;
+}
+
+function settlementRowMatches(row = {}, scope = 'class', query = '') {
+  return settlementSearchScore(row, scope, query) > 0;
+}
+
+function mergeSettlementRow(target = {}, source = {}) {
+  if (!target || !source) return target || source;
+
+  const stringFields = [
+    'id',
+    'batch_id',
+    'batch_item_id',
+    'class_id',
+    'class_name',
+    'class_title',
+    'instructor_id',
+    'instructor_name',
+    'instructor_email',
+    'instructor_phone',
+    'profile_image_url',
+    'bank_name',
+    'bank_account',
+    'bank_holder',
+    'status',
+    'approval_result',
+    'admin_code',
+    'payout_date',
+    'period_start',
+    'period_end',
+    'source_type',
+    'source_label',
+    'coupon_detail',
+    'category',
+    'keywords',
+  ];
+
+  for (const field of stringFields) {
+    if ((!target[field] || target[field] === '-') && source[field]) {
+      target[field] = source[field];
+    }
+  }
+
+  const numericFields = [
+    'gross_revenue',
+    'total_revenue',
+    'refund_amount',
+    'card_fee_amount',
+    'tax_fee_amount',
+    'platform_fee_amount',
+    'net_revenue',
+    'total_fee',
+    'final_amount',
+    'settlement_amount',
+    'settlement_count',
+    'class_count',
+    'order_count',
+    'payment_count',
+    'refund_count',
+  ];
+
+  for (const field of numericFields) {
+    const sourceValue = settleNumber(source[field], 0);
+    const targetValue = settleNumber(target[field], 0);
+    if (sourceValue > targetValue) {
+      target[field] = sourceValue;
+    } else if (!targetValue && sourceValue) {
+      target[field] = sourceValue;
+    }
+  }
+
+  if (!target.summary && source.summary) {
+    target.summary = source.summary;
+  }
+
+  if (!target.search_text) {
+    target.search_text = source.search_text || '';
+  }
+
+  return target;
+}
+
+function settlementCandidateKey(row = {}, scope = 'class') {
+  const scopeKey = String(scope || 'class').toLowerCase() === 'instructor' ? 'instructor' : 'class';
+  if (scopeKey === 'instructor') {
+    return [
+      row.instructor_id,
+      row.instructor_email,
+      row.instructor_phone,
+      row.instructor_name,
+    ].map((value) => String(value || '').trim()).filter(Boolean).join('|') || `instructor:${row.id || row.batch_id || row.class_id || row.admin_code || Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  return [
+    row.class_id,
+    row.id,
+    row.batch_item_id,
+    row.class_title,
+    row.class_name,
+    row.instructor_name,
+  ].map((value) => String(value || '').trim()).filter(Boolean).join('|') || `class:${row.id || row.batch_id || row.admin_code || Math.random().toString(36).slice(2, 8)}`;
+}
+
+function mapClassSearchRow(row = {}, latest = null) {
+  const latestRow = latest || {};
+  const grossRevenue = Number(latestRow.gross_revenue || latestRow.total_revenue || 0);
+  const refundAmount = Number(latestRow.refund_amount || 0);
+  const cardFee = Number(latestRow.card_fee_amount || 0);
+  const taxFee = Number(latestRow.tax_fee_amount || 0);
+  const platformFee = Number(latestRow.platform_fee_amount || 0);
+  const totalFee = cardFee + taxFee + platformFee;
+  const finalAmount = Number(latestRow.settlement_amount || latestRow.final_amount || 0);
+
+  return {
+    id: row.id,
+    class_id: row.id,
+    batch_id: latestRow.batch_id || null,
+    batch_item_id: latestRow.batch_item_id || latestRow.id || null,
+    class_name: row.title || row.class_title || row.class_name || '-',
+    class_title: row.title || row.class_title || row.class_name || '-',
+    instructor_id: row.creator_id || latestRow.instructor_id || null,
+    instructor_name: row.instructor_name || latestRow.instructor_name || row.creator_name || '-',
+    instructor_email: row.instructor_email || latestRow.instructor_email || row.creator_email || '',
+    instructor_phone: row.instructor_phone || latestRow.instructor_phone || row.creator_phone || '',
+    profile_image_url: row.profile_image_url || latestRow.profile_image_url || row.creator_profile_image_url || '',
+    bank_name: row.payment_bank_name || latestRow.bank_name || '',
+    bank_account: row.payment_bank_account || latestRow.bank_account || '',
+    bank_holder: row.payment_bank_holder || latestRow.bank_holder || '',
+    gross_revenue: grossRevenue,
+    total_revenue: grossRevenue,
+    refund_amount: refundAmount,
+    card_fee_amount: cardFee,
+    tax_fee_amount: taxFee,
+    platform_fee_amount: platformFee,
+    net_revenue: Math.max(0, grossRevenue - refundAmount),
+    total_fee: totalFee,
+    final_amount: finalAmount,
+    settlement_amount: finalAmount,
+    settlement_count: Number(latestRow.settlement_count || latestRow.order_count || row.current_participants || 0),
+    class_count: Number(latestRow.class_count || 1),
+    order_count: Number(latestRow.order_count || 0),
+    payment_count: Number(latestRow.payment_count || 0),
+    refund_count: Number(latestRow.refund_count || 0),
+    status: latestRow.status || 'pending',
+    approval_result: latestRow.approval_result || 'pending',
+    admin_code: latestRow.admin_code || latestRow.manager_code || row.id || '-',
+    payout_date: latestRow.payout_date || null,
+    period_start: latestRow.period_start || null,
+    period_end: latestRow.period_end || null,
+    coupon_detail: row.coupon_detail || '',
+    category: row.category || '',
+    keywords: row.keywords || '',
+    source_type: 'class',
+    source_label: '클래스 정보',
+  };
+}
+
 function formatMonth(year, month) {
   return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}`;
 }
@@ -562,41 +869,6 @@ function mapDashboardInstructorRow(item = {}, classCount = 0, batch = null) {
   };
 }
 
-function settlementSearchText(row = {}, scope = 'class') {
-  const scopeKey = String(scope || 'class').toLowerCase() === 'instructor' ? 'instructor' : 'class';
-  const fields = scopeKey === 'instructor'
-    ? [
-        row.instructor_name,
-        row.name,
-        row.instructor_email,
-        row.instructor_phone,
-        row.bank_name,
-        row.bank_account,
-        row.bank_holder,
-        row.class_title,
-        row.class_name,
-        row.admin_code,
-      ]
-    : [
-        row.class_name,
-        row.class_title,
-        row.instructor_name,
-        row.instructor_email,
-        row.instructor_phone,
-        row.bank_name,
-        row.bank_account,
-        row.bank_holder,
-        row.admin_code,
-      ];
-  return fields.map((value) => String(value || '').toLowerCase()).join(' ');
-}
-
-function settlementRowMatches(row = {}, scope = 'class', query = '') {
-  const normalizedQuery = String(query || '').trim().toLowerCase();
-  if (!normalizedQuery) return true;
-  return settlementSearchText(row, scope).includes(normalizedQuery);
-}
-
 function summarizeSettlementRows(classes = [], instructors = []) {
   return {
     class_count: classes.length,
@@ -616,13 +888,202 @@ function summarizeSettlementRows(classes = [], instructors = []) {
   };
 }
 
-async function loadSettlementSearchData(db, query) {
-  const normalizedQuery = normalizeText(query);
+async function loadSettlementSearchData(db, query, options = {}) {
+  const normalizedQuery = normalizeSettlementQuery(query);
   if (!normalizedQuery) return null;
 
   const settings = await loadFeeSettings(db);
   const like = `%${normalizedQuery}%`;
-  const { results } = await db.prepare(`
+  const period = String(options.period || 'month').toLowerCase() === 'year' ? 'year' : 'month';
+  const year = normalizeInt(options.year);
+  const month = normalizeInt(options.month);
+  const currentDashboard = year && month
+    ? await loadDashboardData(db, period, year, month, { query: '' })
+    : null;
+
+  const currentClassRows = Array.isArray(currentDashboard?.classes) ? currentDashboard.classes : [];
+  const classCandidates = await db.prepare(`
+    SELECT
+      c.id,
+      c.creator_id,
+      c.creator_email,
+      c.title,
+      c.category,
+      c.keywords,
+      c.summary,
+      c.price,
+      c.discount_rate,
+      c.coupon_pack,
+      c.coupon_detail,
+      c.class_type,
+      c.operating_mode,
+      c.is_free,
+      c.payment_bank_name,
+      c.payment_bank_account,
+      c.payment_bank_holder,
+      c.instructor_phone,
+      c.instructor_name,
+      c.instructor_email,
+      c.current_participants,
+      c.thumbnail,
+      c.image_url,
+      c.created_at,
+      c.updated_at,
+      u.name AS creator_name,
+      u.username AS creator_username,
+      COALESCE(u.email, c.creator_email) AS resolved_email,
+      COALESCE(u.phone, '') AS creator_phone,
+      COALESCE(u.profile_image_url, '') AS profile_image_url,
+      COALESCE(s.avg_rating, 0) AS avg_rating,
+      COALESCE(s.review_count, 0) AS review_count,
+      COALESCE(s.bookmark_count, 0) AS bookmark_count
+    FROM classes c
+    LEFT JOIN users u ON u.id = c.creator_id
+    LEFT JOIN class_stats s ON s.class_id = c.id
+    WHERE (
+      c.title LIKE ?
+      OR c.category LIKE ?
+      OR c.keywords LIKE ?
+      OR c.summary LIKE ?
+      OR c.coupon_detail LIKE ?
+      OR c.instructor_name LIKE ?
+      OR c.instructor_email LIKE ?
+      OR c.instructor_phone LIKE ?
+      OR c.payment_bank_name LIKE ?
+      OR c.payment_bank_account LIKE ?
+      OR c.payment_bank_holder LIKE ?
+      OR u.name LIKE ?
+      OR u.username LIKE ?
+      OR u.email LIKE ?
+      OR u.phone LIKE ?
+    )
+    ORDER BY c.updated_at DESC, c.created_at DESC
+    LIMIT 120
+  `).bind(
+    like, like, like, like, like,
+    like, like, like, like, like, like,
+    like, like, like, like,
+  ).all().catch(() => ({ results: [] }));
+
+  const classMap = new Map();
+  for (const row of currentClassRows) {
+    const key = settlementCandidateKey(row, 'class');
+    const score = settlementSearchScore(row, 'class', normalizedQuery);
+    if (score <= 0) continue;
+    const copy = {
+      ...row,
+      source_type: row.source_type || 'current',
+      source_label: row.source_label || '현재 정산',
+      search_score: score,
+    };
+    classMap.set(key, copy);
+  }
+
+  const classCandidateIds = [];
+  for (const row of classCandidates.results || []) {
+    const latest = null;
+    const copy = mapClassSearchRow({
+      id: row.id,
+      creator_id: row.creator_id,
+      creator_email: row.creator_email || row.resolved_email || '',
+      title: row.title,
+      category: row.category,
+      keywords: row.keywords,
+      summary: row.summary,
+      price: row.price,
+      discount_rate: row.discount_rate,
+      coupon_pack: row.coupon_pack,
+      coupon_detail: row.coupon_detail,
+      class_type: row.class_type,
+      operating_mode: row.operating_mode,
+      is_free: row.is_free,
+      instructor_phone: row.instructor_phone || '',
+      instructor_name: row.instructor_name || row.creator_name || row.creator_username || '',
+      instructor_email: row.instructor_email || row.resolved_email || '',
+      current_participants: row.current_participants,
+      thumbnail: row.thumbnail,
+      image_url: row.image_url,
+      profile_image_url: row.profile_image_url || '',
+      creator_phone: row.creator_phone || '',
+    }, latest);
+    copy.creator_name = row.creator_name || row.creator_username || '';
+    copy.creator_email = row.resolved_email || row.creator_email || '';
+    copy.creator_phone = row.creator_phone || '';
+    copy.payment_bank_name = row.payment_bank_name || '';
+    copy.payment_bank_account = row.payment_bank_account || '';
+    copy.payment_bank_holder = row.payment_bank_holder || '';
+    copy.avg_rating = Number(row.avg_rating || 0);
+    copy.review_count = Number(row.review_count || 0);
+    copy.bookmark_count = Number(row.bookmark_count || 0);
+    copy.search_score = settlementSearchScore(copy, 'class', normalizedQuery);
+    copy.source_type = 'class';
+    copy.source_label = '클래스 정보';
+    if (copy.search_score > 0) {
+      const existing = classMap.get(settlementCandidateKey(copy, 'class'));
+      if (existing) {
+        mergeSettlementRow(existing, copy);
+        existing.search_score = Math.max(existing.search_score || 0, copy.search_score || 0);
+        existing.source_type = existing.source_type || copy.source_type;
+        existing.source_label = existing.source_label || copy.source_label;
+      } else {
+        classMap.set(settlementCandidateKey(copy, 'class'), copy);
+      }
+      if (copy.class_id) classCandidateIds.push(copy.class_id);
+    }
+  }
+
+  const uniqueClassIds = Array.from(new Set(classCandidateIds.filter(Boolean))).slice(0, 120);
+  const latestHistoryByClass = new Map();
+  if (uniqueClassIds.length) {
+    const placeholders = uniqueClassIds.map(() => '?').join(',');
+    const { results: latestResults } = await db.prepare(`
+      SELECT
+        i.*,
+        b.id AS batch_id,
+        b.year AS batch_year,
+        b.month AS batch_month,
+        b.period_start,
+        b.period_end,
+        b.payout_date,
+        b.status AS batch_status,
+        b.approval_result AS batch_approval_result,
+        b.manager_code
+      FROM settlement_batch_items i
+      INNER JOIN settlement_batches b
+        ON b.id = i.batch_id
+      WHERE i.class_id IN (${placeholders})
+      ORDER BY b.year DESC, b.month DESC, i.settlement_amount DESC, i.class_title ASC
+    `).bind(...uniqueClassIds).all().catch(() => ({ results: [] }));
+
+    for (const row of latestResults || []) {
+      if (!row.class_id || latestHistoryByClass.has(row.class_id)) continue;
+      latestHistoryByClass.set(row.class_id, row);
+    }
+  }
+
+  for (const [key, row] of classMap.entries()) {
+    if (!row.class_id) continue;
+    const latest = latestHistoryByClass.get(row.class_id);
+    if (!latest) continue;
+    mergeSettlementRow(row, mapDashboardClassRow(latest, {
+      id: latest.batch_id,
+      status: latest.batch_status,
+      approval_result: latest.batch_approval_result,
+      manager_code: latest.manager_code,
+      payout_date: latest.payout_date,
+    }));
+    row.batch_id = latest.batch_id || row.batch_id || null;
+    row.batch_item_id = latest.id || row.batch_item_id || null;
+    row.admin_code = latest.manager_code || row.admin_code || row.batch_id || row.id || '-';
+    row.status = latest.batch_status || row.status || 'pending';
+    row.approval_result = latest.batch_approval_result || row.approval_result || 'pending';
+    row.payout_date = latest.payout_date || row.payout_date || null;
+    row.period_start = latest.period_start || row.period_start || null;
+    row.period_end = latest.period_end || row.period_end || null;
+    row.search_score = Math.max(row.search_score || 0, settlementSearchScore(row, 'class', normalizedQuery));
+  }
+
+  const historyCandidates = await db.prepare(`
     SELECT
       i.*,
       b.id AS batch_id,
@@ -649,12 +1110,10 @@ async function loadSettlementSearchData(db, query) {
       OR b.id LIKE ?
     )
     ORDER BY b.year DESC, b.month DESC, i.settlement_amount DESC, i.class_title ASC
-    LIMIT 1000
+    LIMIT 200
   `).bind(like, like, like, like, like, like, like, like, like).all().catch(() => ({ results: [] }));
 
-  const classRows = [];
-  const instructorRows = [];
-  for (const row of results || []) {
+  for (const row of historyCandidates.results || []) {
     const batch = {
       id: row.batch_id,
       status: row.batch_status,
@@ -662,22 +1121,127 @@ async function loadSettlementSearchData(db, query) {
       manager_code: row.manager_code,
       payout_date: row.payout_date,
     };
-    classRows.push({
+    const mapped = {
       ...mapDashboardClassRow(row, batch),
       year: row.batch_year || null,
       month: row.batch_month || null,
-    });
-    instructorRows.push({
-      ...mapDashboardInstructorRow(row, 1, batch),
-      year: row.batch_year || null,
-      month: row.batch_month || null,
-    });
+      period_start: row.period_start || null,
+      period_end: row.period_end || null,
+      source_type: 'history',
+      source_label: `${row.batch_year || '-'}년 ${row.batch_month || '-'}월 정산`,
+      search_score: settlementSearchScore(row, 'class', normalizedQuery),
+    };
+    const key = settlementCandidateKey(mapped, 'class');
+    if (classMap.has(key)) {
+      const target = classMap.get(key);
+      mergeSettlementRow(target, mapped);
+      target.search_score = Math.max(target.search_score || 0, mapped.search_score || 0);
+      target.source_type = target.source_type === 'current' ? target.source_type : mapped.source_type;
+      target.source_label = target.source_label || mapped.source_label;
+      classMap.set(key, target);
+    } else if (mapped.search_score > 0) {
+      classMap.set(key, mapped);
+    }
   }
+
+  const classRows = Array.from(classMap.values())
+    .filter((row) => settlementSearchScore(row, 'class', normalizedQuery) > 0)
+    .sort((a, b) => {
+      const scoreDiff = (b.search_score || 0) - (a.search_score || 0);
+      if (scoreDiff !== 0) return scoreDiff;
+      return Number(b.final_amount || b.settlement_amount || 0) - Number(a.final_amount || a.settlement_amount || 0);
+    });
+
+  const instructorMap = new Map();
+  for (const row of classRows) {
+    const key = [
+      row.instructor_id,
+      row.instructor_email,
+      row.instructor_phone,
+      row.instructor_name,
+    ].map((value) => String(value || '').trim()).filter(Boolean).join('|') || `instructor:${row.class_id || row.id}`;
+
+    if (!instructorMap.has(key)) {
+      instructorMap.set(key, {
+        id: row.instructor_id || row.id || row.class_id || key,
+        batch_id: row.batch_id || null,
+        instructor_id: row.instructor_id || null,
+        instructor_name: row.instructor_name || '-',
+        instructor_email: row.instructor_email || '',
+        instructor_phone: row.instructor_phone || '',
+        profile_image_url: row.profile_image_url || '',
+        bank_name: row.bank_name || '',
+        bank_account: row.bank_account || '',
+        bank_holder: row.bank_holder || '',
+        class_count: 0,
+        settlement_count: 0,
+        total_revenue: 0,
+        gross_revenue: 0,
+        refund_amount: 0,
+        card_fee_amount: 0,
+        tax_fee_amount: 0,
+        platform_fee_amount: 0,
+        net_revenue: 0,
+        total_fee: 0,
+        final_amount: 0,
+        settlement_amount: 0,
+        status: row.status || 'pending',
+        approval_result: row.approval_result || 'pending',
+        admin_code: row.admin_code || row.batch_id || row.id || '-',
+        payout_date: row.payout_date || null,
+        class_titles: [],
+        search_score: 0,
+      });
+    }
+
+    const instructor = instructorMap.get(key);
+    instructor.class_count += 1;
+    instructor.settlement_count += Number(row.settlement_count || row.class_count || 0);
+    instructor.total_revenue += Number(row.total_revenue || row.gross_revenue || 0);
+    instructor.gross_revenue += Number(row.gross_revenue || 0);
+    instructor.refund_amount += Number(row.refund_amount || 0);
+    instructor.card_fee_amount += Number(row.card_fee_amount || 0);
+    instructor.tax_fee_amount += Number(row.tax_fee_amount || 0);
+    instructor.platform_fee_amount += Number(row.platform_fee_amount || 0);
+    instructor.net_revenue += Number(row.net_revenue || Math.max(0, Number(row.total_revenue || row.gross_revenue || 0) - Number(row.refund_amount || 0)));
+    instructor.total_fee += Number(row.total_fee || (Number(row.card_fee_amount || 0) + Number(row.tax_fee_amount || 0) + Number(row.platform_fee_amount || 0)));
+    instructor.final_amount += Number(row.final_amount || row.settlement_amount || 0);
+    instructor.settlement_amount += Number(row.settlement_amount || row.final_amount || 0);
+    if (row.class_title) instructor.class_titles.push(row.class_title);
+    instructor.bank_name = instructor.bank_name || row.bank_name || '';
+    instructor.bank_account = instructor.bank_account || row.bank_account || '';
+    instructor.bank_holder = instructor.bank_holder || row.bank_holder || '';
+    instructor.profile_image_url = instructor.profile_image_url || row.profile_image_url || '';
+    instructor.search_score = Math.max(
+      instructor.search_score || 0,
+      settlementSearchScore({
+        ...instructor,
+        class_titles: instructor.class_titles.join(' '),
+      }, 'instructor', normalizedQuery),
+    );
+  }
+
+  const instructorRows = Array.from(instructorMap.values())
+    .filter((row) => settlementSearchScore({
+      ...row,
+      class_titles: row.class_titles.join(' '),
+    }, 'instructor', normalizedQuery) > 0)
+    .map((row) => ({
+      ...row,
+      class_titles: row.class_titles.join(' · '),
+    }))
+    .sort((a, b) => {
+      const scoreDiff = (b.search_score || 0) - (a.search_score || 0);
+      if (scoreDiff !== 0) return scoreDiff;
+      return Number(b.final_amount || b.settlement_amount || 0) - Number(a.final_amount || a.settlement_amount || 0);
+    });
+
+  if (!classRows.length && !instructorRows.length) return null;
 
   return {
     period: 'search',
-    year: null,
-    month: null,
+    year: year || null,
+    month: month || null,
     period_label: `검색 결과: ${normalizedQuery}`,
     fee_rates: {
       pg_rate: settings.card_fee_rate,
@@ -688,15 +1252,37 @@ async function loadSettlementSearchData(db, query) {
     summary: summarizeSettlementRows(classRows, instructorRows),
     classes: classRows,
     instructors: instructorRows,
+    search_query: normalizedQuery,
   };
 }
 
 async function finalizeSettlementDashboard(db, dashboard, query) {
-  const normalizedQuery = normalizeText(query);
+  const normalizedQuery = normalizeSettlementQuery(query);
   if (!normalizedQuery) return dashboard;
 
-  const classRows = (dashboard.classes || []).filter((row) => settlementRowMatches(row, 'class', normalizedQuery));
-  const instructorRows = (dashboard.instructors || []).filter((row) => settlementRowMatches(row, 'instructor', normalizedQuery));
+  const classRows = (dashboard.classes || [])
+    .map((row) => ({ row, score: settlementSearchScore(row, 'class', normalizedQuery) }))
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return Number(b.row.final_amount || b.row.settlement_amount || 0) - Number(a.row.final_amount || a.row.settlement_amount || 0);
+    })
+    .map((entry) => ({ ...entry.row, search_score: entry.score }));
+
+  const instructorRows = (dashboard.instructors || [])
+    .map((row) => ({
+      row,
+      score: settlementSearchScore({
+        ...row,
+        class_titles: row.class_titles || row.class_title || row.class_name || '',
+      }, 'instructor', normalizedQuery),
+    }))
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return Number(b.row.final_amount || b.row.settlement_amount || 0) - Number(a.row.final_amount || a.row.settlement_amount || 0);
+    })
+    .map((entry) => ({ ...entry.row, search_score: entry.score }));
 
   if (classRows.length || instructorRows.length) {
     return {
@@ -709,7 +1295,11 @@ async function finalizeSettlementDashboard(db, dashboard, query) {
     };
   }
 
-  const fallback = await loadSettlementSearchData(db, normalizedQuery);
+  const fallback = await loadSettlementSearchData(db, normalizedQuery, {
+    period: dashboard.period,
+    year: dashboard.year,
+    month: dashboard.month,
+  });
   return fallback || dashboard;
 }
 

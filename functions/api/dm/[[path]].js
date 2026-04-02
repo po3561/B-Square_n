@@ -1,5 +1,5 @@
 ﻿import { requireSession } from '../_lib/auth.js';
-import { json, options } from '../_lib/http.js';
+import { createCorsHeaders, json, options } from '../_lib/http.js';
 import { ensureDmMessagesSchema, ensureUserChatsSchema } from '../_lib/schema.js';
 
 function getPathParts(params) {
@@ -161,11 +161,11 @@ async function streamMessages(context, roomId, roomType, initialSince) {
   });
 
   return new Response(stream, {
-    headers: {
+    headers: createCorsHeaders(request, env, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
       Connection: 'keep-alive',
-    },
+    }),
   });
 }
 

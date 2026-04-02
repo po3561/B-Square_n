@@ -132,6 +132,7 @@ window.CommunityModules.SyncBridge = (function () {
 
     function buildMessagesUrl(roomId, type, { since = '', limit = 100, pinnedOnly = false, stream = false } = {}) {
         const roomType = String(type || 'dm');
+        const token = stream ? (localStorage.getItem('bsq_token') || '') : '';
 
         if (roomType === 'class') {
             const params = new URLSearchParams();
@@ -140,6 +141,7 @@ window.CommunityModules.SyncBridge = (function () {
             if (since !== '' && since != null) params.set('since', String(since));
             if (pinnedOnly) params.set('pinned_only', '1');
             if (stream) params.set('stream', '1');
+            if (token) params.set('session', token);
             return `/api/chat?${params.toString()}`;
         }
 
@@ -150,6 +152,7 @@ window.CommunityModules.SyncBridge = (function () {
         if (pinnedOnly) params.set('pinned_only', '1');
         if (stream) {
             params.set('stream', '1');
+            if (token) params.set('session', token);
             return `/api/dm/${encodeURIComponent(String(roomId))}/messages/stream?${params.toString()}`;
         }
         return `/api/dm/${encodeURIComponent(String(roomId))}/messages?${params.toString()}`;

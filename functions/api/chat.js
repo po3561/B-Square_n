@@ -1,5 +1,5 @@
 ﻿import { requireSession } from './_lib/auth.js';
-import { json, options } from './_lib/http.js';
+import { createCorsHeaders, json, options } from './_lib/http.js';
 import { ensureChatMessagesSchema } from './_lib/schema.js';
 
 function parseMaybeJson(value, fallback = null) {
@@ -190,11 +190,11 @@ async function streamMessages(context, classId, since) {
   });
 
   return new Response(stream, {
-    headers: {
+    headers: createCorsHeaders(request, env, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
       Connection: 'keep-alive',
-    },
+    }),
   });
 }
 
