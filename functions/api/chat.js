@@ -341,18 +341,21 @@ export async function onRequestGet(context) {
   await ensureChatMessagesSchema(env.DB);
 
   const url = new URL(request.url);
-    const classId = url.searchParams.get('class_id');
-    const limit = Math.min(parseInt(url.searchParams.get('limit'), 10) || 50, 100);
-    const after = url.searchParams.get('after');
-    const since = url.searchParams.get('since');
-    const pinnedOnly = ['1', 'true', 'yes'].includes((url.searchParams.get('pinned_only') || '').toLowerCase());
-    const stream = ['1', 'true', 'yes'].includes((url.searchParams.get('stream') || '').toLowerCase());
+  const classId = url.searchParams.get('class_id');
+  const limit = Math.min(parseInt(url.searchParams.get('limit'), 10) || 50, 100);
+  const after = url.searchParams.get('after');
+  const since = url.searchParams.get('since');
+  const pinnedOnly = ['1', 'true', 'yes'].includes((url.searchParams.get('pinned_only') || '').toLowerCase());
+  const stream = ['1', 'true', 'yes'].includes((url.searchParams.get('stream') || '').toLowerCase());
 
   if (!classId) {
     return json(request, env, { success: false, error: 'class_id is required' }, { status: 400 });
   }
 
   try {
+    const access = await checkClassChatAccess(context, auth, classId);
+    if (!access.ok) return access.response;
+
     if (stream) {
       return streamMessages(context, classId, since);
     }
@@ -407,6 +410,9 @@ export async function onRequestPost(context) {
     if (!classId || (!message && !attachmentUrl)) {
       return json(request, env, { success: false, error: 'message or attachment is required' }, { status: 400 });
     }
+
+    const access = await checkClassChatAccess(context, auth, classId);
+    if (!access.ok) return access.response;
 
     const id = 'msg_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16);
     const replyData = typeof body.reply_data === 'string'
@@ -470,6 +476,16 @@ export async function onRequestPatch(context) {
     if (!hasPinState) {
       return json(request, env, { success: false, error: 'is_pinned is required' }, { status: 400 });
     }
+
+    const existing = await env.DB.prepare(`SELECT id, class_id FROM chat_messages WHERE id = ?`)
+      .bind(id)
+      .first();
+    if (!existing) {
+      return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
+    }
+
+    const access = await checkClassChatAccess(context, auth, existing.class_id, { managerOnly: true });
+    if (!access.ok) return access.response;
 
     await env.DB.prepare('UPDATE chat_messages SET is_pinned = ?, updated_at = datetime(\'now\') WHERE id = ?')
       .bind(isTruthyFlag(isPinned) ? 1 : 0, id)
