@@ -2255,3 +2255,145 @@
         font-size: 0.58rem;
     }
 }
+
+body[data-page="mypage"] .mypage-layout {
+    margin-top: clamp(0.55rem, 1vw, 0.95rem);
+    gap: clamp(1rem, 1.7vw, 1.35rem);
+}
+
+body[data-page="mypage"] .mypage-sidebar {
+    padding: clamp(0.9rem, 1.5vw, 1.15rem);
+    border: 0;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+}
+
+body[data-page="mypage"] .profile-summary {
+    padding: clamp(0.95rem, 1.4vw, 1.15rem);
+    border: 0;
+    border-bottom: 0;
+    box-shadow: none;
+}
+
+body[data-page="mypage"] .profile-summary-top {
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+body[data-page="mypage"] .profile-actions-stack {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4rem;
+}
+
+body[data-page="mypage"] .mypage-content {
+    gap: clamp(1rem, 1.6vw, 1.35rem);
+}
+
+body[data-page="mypage"] .tab-header-row {
+    margin-bottom: 0.8rem;
+}
+
+body[data-page="mypage"] .dashboard-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(0.9rem, 1.4vw, 1.2rem);
+}
+
+body[data-page="mypage"] .dashboard-profile-card,
+body[data-page="mypage"] .dashboard-accordion-card[data-accordion="friend"] {
+    grid-column: 1 / -1;
+}
+
+body[data-page="mypage"] .dashboard-stat-card,
+body[data-page="mypage"] .mypage-panel-card,
+body[data-page="mypage"] .dashboard-commerce-shell,
+body[data-page="mypage"] .mypage-hero,
+body[data-page="mypage"] .guest-gate {
+    border: 0;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
+}
+
+body[data-page="mypage"] .dashboard-summary-toggle {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+body[data-page="mypage"] .dashboard-accordion-body {
+    padding-top: 0.9rem;
+}
+
+body[data-page="mypage"] .dashboard-summary-item,
+body[data-page="mypage"] .payment-summary-row {
+    border: 0;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+body[data-page="mypage"] .dashboard-commerce-grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+    gap: clamp(0.9rem, 1.4vw, 1.2rem);
+}
+
+body[data-page="mypage"] .page-eyebrow,
+body[data-page="mypage"] .mypage-panel-eyebrow {
+    background: rgba(255, 255, 255, 0.04);
+    border: 0;
+}
+
+/* Final dashboard polish: clearer hierarchy, less wasted vertical space */
+body[data-page="mypage"] .mypage-layout {
+    margin-top: clamp(0.9rem, 1.6vw, 1.25rem);
+    gap: clamp(1.1rem, 1.9vw, 1.55rem);
+}
+
+body[data-page="mypage"] .mypage-content {
+    gap: clamp(1.1rem, 1.8vw, 1.45rem);
+}
+
+body[data-page="mypage"] .tab-header-row {
+    margin-bottom: 1rem;
+}
+
+body[data-page="mypage"] .dashboard-summary-grid {
+    grid-template-columns: minmax(300px, 1.08fr) repeat(2, minmax(0, 1fr));
+    gap: clamp(1rem, 1.5vw, 1.25rem);
+}
+
+body[data-page="mypage"] .dashboard-profile-card {
+    grid-column: auto;
+}
+
+body[data-page="mypage"] .dashboard-accordion-card[data-accordion="friend"] {
+    grid-column: 1 / -1;
+}
+
+body[data-page="mypage"] .dashboard-profile-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+}
+
+body[data-page="mypage"] .dashboard-stat-card,
+body[data-page="mypage"] .mypage-panel-card,
+body[data-page="mypage"] .dashboard-commerce-shell,
+body[data-page="mypage"] .mypage-hero,
+body[data-page="mypage"] .guest-gate {
+    border: 0;
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.18);
+}
+
+body[data-page="mypage"] .dashboard-summary-toggle {
+    background: rgba(255, 255, 255, 0.05);
+    border: 0;
+}
+
+body[data-page="mypage"] .dashboard-accordion-body {
+    padding-top: 1rem;
+}
+
+body[data-page="mypage"] .dashboard-summary-item,
+body[data-page="mypage"] .payment-summary-row {
+    border: 0;
+}
+
+body[data-page="mypage"] .dashboard-commerce-grid {
+    grid-template-columns: minmax(0, 1.12fr) minmax(300px, 0.88fr);
+    gap: clamp(1rem, 1.5vw, 1.25rem);
+}
