@@ -4,7 +4,7 @@
   const THEME_KEY = 'bsq_theme';
   const LANGUAGE_KEY = 'bsq_language';
   const USER_KEY = 'bsq_user';
-  const DEFAULT_THEME = 'dark';
+  const DEFAULT_THEME = 'light';
   const DEFAULT_LANGUAGE = 'ko';
   const LANGUAGE_ALIASES = new Map([
     ['zh', 'zh-CN'],
