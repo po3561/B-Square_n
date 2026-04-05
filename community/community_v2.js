@@ -53,6 +53,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     ChatList.init(async (roomId, type, roomInfo) => {
+        const currentId = ChatUI.getCurrentRoomId?.();
+        const currentType = ChatUI.getCurrentRoomType?.();
+        if (String(currentId || '') === String(roomId || '') && String(currentType || '') === String(type || '')) {
+            ChatList.setActiveRoom(roomId);
+            updateRoomQuery({ room: roomId, type });
+            if (window.innerWidth <= 1024) document.getElementById('commSidebar')?.classList.add('hidden');
+            return;
+        }
 
         ChatUI.openRoom(roomId, type, roomInfo);
 
@@ -105,8 +113,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (fallbackRoom?.roomId) {
 
             const type = fallbackRoom.type || lastType || 'dm';
+            const currentId = ChatUI.getCurrentRoomId?.();
+            const currentType = ChatUI.getCurrentRoomType?.();
 
-            ChatUI.openRoom(fallbackRoom.roomId, type, fallbackRoom);
+            if (String(currentId || '') !== String(fallbackRoom.roomId) || String(currentType || '') !== String(type)) {
+                ChatUI.openRoom(fallbackRoom.roomId, type, fallbackRoom);
+            }
 
             ChatList.setActiveRoom(fallbackRoom.roomId);
 
@@ -1147,7 +1159,13 @@ async function openInitialRoute(userId, { shared, ChatList, ChatUI, DM }) {
 
 
 
+    const isActiveRoom = (roomId, roomType) => (
+        String(ChatUI.getCurrentRoomId?.() || '') === String(roomId || '')
+        && String(ChatUI.getCurrentRoomType?.() || '') === String(roomType || '')
+    );
+
     if (room && type) {
+        const shouldOpenInfo = params.get('panel') === 'info';
 
         const roomInfo = ChatList.getRoom(room) || {
 
@@ -1167,11 +1185,13 @@ async function openInitialRoute(userId, { shared, ChatList, ChatUI, DM }) {
 
         };
 
-        ChatUI.openRoom(room, type, roomInfo);
+        if (!isActiveRoom(room, type)) {
+            ChatUI.openRoom(room, type, roomInfo);
+        }
 
         ChatList.setActiveRoom(room);
 
-        if (params.get('panel') === 'info') {
+        if (shouldOpenInfo) {
 
             setTimeout(() => ChatUI.renderInfoPanel(room, type, roomInfo, { open: true }), 0);
 
@@ -1198,14 +1218,17 @@ async function openInitialRoute(userId, { shared, ChatList, ChatUI, DM }) {
 
 
     if (classId) {
+        const shouldOpenInfo = params.get('panel') === 'info';
 
         const roomInfo = ChatList.getRoom(classId) || { roomId: classId, type: 'class', class_name: params.get('name') || '클래스' };
 
-        ChatUI.openRoom(classId, 'class', roomInfo);
+        if (!isActiveRoom(classId, 'class')) {
+            ChatUI.openRoom(classId, 'class', roomInfo);
+        }
 
         ChatList.setActiveRoom(classId);
 
-        if (params.get('panel') === 'info') {
+        if (shouldOpenInfo) {
 
             setTimeout(() => ChatUI.renderInfoPanel(classId, 'class', roomInfo, { open: true }), 0);
 
@@ -1232,14 +1255,17 @@ async function openInitialRoute(userId, { shared, ChatList, ChatUI, DM }) {
 
 
     if (groupId) {
+        const shouldOpenInfo = params.get('panel') === 'info';
 
         const roomInfo = ChatList.getRoom(groupId) || { roomId: groupId, type: 'group', group_name: params.get('name') || '그룹 채팅' };
 
-        ChatUI.openRoom(groupId, 'group', roomInfo);
+        if (!isActiveRoom(groupId, 'group')) {
+            ChatUI.openRoom(groupId, 'group', roomInfo);
+        }
 
         ChatList.setActiveRoom(groupId);
 
-        if (params.get('panel') === 'info') {
+        if (shouldOpenInfo) {
 
             setTimeout(() => ChatUI.renderInfoPanel(groupId, 'group', roomInfo, { open: true }), 0);
 

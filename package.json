@@ -1,4 +1,11 @@
 {
+  "name": "b-square-web",
+  "private": true,
+  "scripts": {
+    "dev": "npx wrangler pages dev .",
+    "functions-check": "npx wrangler pages functions build",
+    "deploy": "npx wrangler pages deploy ."
+  },
   "dependencies": {
     "xlsx": "^0.18.5"
   }

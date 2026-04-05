@@ -1,14 +1,18 @@
 ﻿// bsq_server.js - B-Square 브랜딩 공통 쉘 (클라우드플레어 D1 API 연동)
 // Firebase/Supabase 없이 직접 Cloudflare D1 API 연동
-// 사용 방법: window.BSQ.api('/api/classes'), await window.BSQ.ready
+// 사용 방법: window.BSQ.api('/api/classes'), await window.BSQ.shellReady / await window.BSQ.ready (auth)
 (function () {
     'use strict';
 
     // ---- 전역 변수 ----
     let _session = null;     // 세션 정보: { user: { id, email, name, ... }, expires_at }
+    let _shellReadyResolve = null;
+    const shellReadyPromise = new Promise(resolve => { _shellReadyResolve = resolve; });
+    let _shellReadyResolved = false;
     let _readyResolve = null;
     const readyPromise = new Promise(resolve => { _readyResolve = resolve; });
     let _readyResolved = false;
+    let _authReadyPromise = null;
     let _siteSettingsPromise = null;
     let _sessionBootstrapPromise = null;
     const OPERATOR_MODE_KEY = 'bsq_operator_view_mode';
@@ -550,6 +554,39 @@
         return _sessionBootstrapPromise;
     }
 
+    function resolveShellReady() {
+        if (_shellReadyResolved) return;
+        _shellReadyResolved = true;
+        _shellReadyResolve({
+            session: _session,
+            userId: _session?.user?.id || null,
+            userProfile: _session?.user || null
+        });
+    }
+
+    function resolveAuthReady() {
+        if (_readyResolved) return;
+        _readyResolved = true;
+        _readyResolve({
+            session: _session,
+            userId: _session?.user?.id || null,
+            userProfile: _session?.user || null
+        });
+    }
+
+    function ensureAuthReadyPromise() {
+        if (_authReadyPromise) return _authReadyPromise;
+        const bootstrap = ensureSessionBootstrapPromise();
+        _authReadyPromise = bootstrap
+            .catch((error) => {
+                console.warn('[BSQ Server] Session bootstrap failed:', error);
+            })
+            .finally(() => {
+                resolveAuthReady();
+            });
+        return _authReadyPromise;
+    }
+
     // ==================================================
     // [개발용] 연결 상태 허브 (Connection Hub) UI
     // ==================================================
@@ -599,18 +636,8 @@
 
         applyPreferences();
 
-        if (!_readyResolved) {
-            _readyResolved = true;
-            _readyResolve({
-                session: _session,
-                userId: _session?.user?.id || null,
-                userProfile: _session?.user || null
-            });
-        }
-
-        void ensureSessionBootstrapPromise().catch((error) => {
-            console.warn('[BSQ Server] Session bootstrap failed:', error);
-        });
+        resolveShellReady();
+        void ensureAuthReadyPromise();
 
         console.log('[BSQ Server] Shell ready; session bootstrap continues in background', {
             loggedIn: !!_session,
@@ -751,11 +778,9 @@
     // ---- 공개 API ----
     seedSessionFromStorage();
     applyPreferences();
-    void ensureSessionBootstrapPromise().catch((error) => {
-        console.warn('[BSQ Server] Session bootstrap failed:', error);
-    });
 
     window.BSQ = {
+        shellReady: shellReadyPromise,
         ready: readyPromise,
         apiBaseUrl: PUBLIC_API_BASE,
         get siteSettingsReady() {
@@ -789,6 +814,8 @@
     };
 
     // ---- 즉시 실행 시작 ----
+    resolveShellReady();
+    void ensureAuthReadyPromise();
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {

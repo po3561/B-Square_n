@@ -12,3 +12,7 @@ node_modules/
 .codex_tmp/
 .playwright-cli/
 client_secret_*.json
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.db

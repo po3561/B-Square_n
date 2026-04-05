@@ -1,174 +1,51 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="0; url=./index.html">
     <script src="/theme_bootstrap.js?v=20260331_01"></script>
-    <title>B-Square</title>
-    <link rel="stylesheet" href="style_mobile.css?v=20260331_02" media="(max-width: 768px)">
-    <link rel="stylesheet" href="style_pc.css?v=20260331_02" media="(min-width: 769px)">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>B-Square | 아카이브</title>
+    <style>
+        body {
+            background: #0b0d12;
+            color: #eef2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        }
+        .notice {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            max-width: 520px;
+        }
+        .notice h1 {
+            margin: 0 0 0.75rem;
+            font-size: 1.2rem;
+        }
+        .notice p {
+            margin: 0 0 1rem;
+            color: rgba(238, 242, 255, 0.72);
+            line-height: 1.6;
+        }
+        .notice a {
+            color: #9ebcff;
+        }
+    </style>
     <link rel="stylesheet" href="/theme_overrides.css?v=20260402_01">
     <script src="/i18n.js?v=20260331_01" defer></script>
 </head>
-
 <body>
-
-    <header class="site-header">
-        <div class="header-inner">
-            <h1 class="logo">
-                <a href="index.html"><span class="logo-icon">?뮔</span> ?대옒??/a>
-            </h1>
-
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="class/class_list.html">?대옒??/a></li>
-                    <li><a href="create_class/create_class.html">?깅줉</a></li>
-                    <li><a href="notice/notice.html">怨듭??ы빆</a></li>
-                    <li><a href="#">臾몄쓽</a></li>
-                    <li><a href="community/community.html">而ㅻ??덊떚</a></li>
-                </ul>
-            </nav>
-
-            <div class="header-utils">
-                <div class="search-bar">
-                    <input type="text" placeholder="寃?됱뼱瑜??낅젰?섏꽭??>
-                    <button type="button">?뵇</button>
-                </div>
-
-                <div class="user-menu" id="userMenu" style="display: flex; gap: 10px; align-items: center;">
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <main class="main-content">
-        <section class="hero-section">
-            <div class="hero-inner">
-                <article class="main-ad-banner">
-                    <div class="ad-content">
-                        <h2>愿묎퀬</h2>
-                    </div>
-                </article>
-                <nav class="category-grid">
-                    <ul>
-                        <li><a href="#"><span class="icon">?뮲</span>?붿옄??/a></li>
-                        <li><a href="#"><span class="icon">?뱢</span>?앹궛??/a></li>
-                        <li><a href="#"><span class="icon">??/span>?ㅽ룷痢?/a></li>
-                        <li><a href="#"><span class="icon">?렓</span>?붿????쒕줈??/a></li>
-                        <li><a href="#"><span class="icon">?뮕</span>?깃났 留덉씤??/a></li>
-                        <li><a href="#"><span class="icon">?렦</span>?뚯븙</a></li>
-                        <li><a href="#"><span class="icon">?쪖</span>踰좎씠??/a></li>
-                        <li><a href="#"><span class="icon">?벝</span>?ъ쭊</a></li>
-                        <li><a href="#"><span class="icon">?렗</span>?곸긽</a></li>
-                        <li><a href="#"><span class="icon">?㎍</span>怨듭삁</a></li>
-                    </ul>
-                </nav>
-            </div>
-        </section>
-
-        <section class="class-lists-section">
-            <div class="section-inner">
-                <article class="class-group popular-classes">
-                    <h3 class="group-title">吏湲??멸린 ?덈뒗</h3>
-                    <div class="card-grid">
-                        <div class="class-card">
-                            <div class="card-thumbnail placeholder-orange"></div>
-                            <div class="card-info">
-                                <span class="category">寃쎌젣/?ы뀒??/span>
-                                <h4 class="title">?대옒?ㅻ챸 ?낅젰</h4>
-                                <div class="stats">
-                                    <span class="likes">?ㅿ툘 120</span><span class="rating">狩?4.5</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="class-group recommended-classes">
-                    <h3 class="group-title">異붿쿇 ?대옒??/h3>
-                    <div class="recommend-columns">
-                        <div class="column">
-                            <div class="column-header">
-                                <h4>寃쎌젣 | ?ы뀒??/h4><a href="#" class="btn-more">?∽툘</a>
-                            </div>
-                            <ul class="column-list">
-                                <li class="list-item">
-                                    <div class="item-thumbnail placeholder-orange"></div>
-                                    <div class="item-info">
-                                        <p class="title">?대옒?ㅻ챸</p>
-                                        <p class="rating">狩?4.5</p>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="column">
-                            <div class="column-header">
-                                <h4>?쇱씠???ㅽ???/h4><a href="#" class="btn-more">?∽툘</a>
-                            </div>
-                        </div>
-                        <div class="column">
-                            <div class="column-header">
-                                <h4>?대룄鍮?而щ젆??/h4><a href="#" class="btn-more">?∽툘</a>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="class-group all-classes">
-                    <div class="card-grid large-grid"></div>
-                </article>
-            </div>
-        </section>
-
-        <section class="bottom-banner-section">
-            <div class="banner-inner">
-                <button class="btn-prev">燧낉툘</button>
-                <div class="banner-content">
-                    <p>諛곕꼫</p>
-                </div>
-                <button class="btn-next">?∽툘</button>
-            </div>
-        </section>
+    <main class="notice" role="main">
+        <h1>아카이브 페이지입니다.</h1>
+        <p>잠시만 기다려 주세요. 최신 홈으로 이동합니다.</p>
+        <p>이동이 되지 않으면 <a href="./index.html">여기를 눌러 주세요</a>.</p>
     </main>
-
-    <footer class="site-footer">
-        <div class="footer-top">
-            <div class="social-links">
-                <a href="#" class="social-icon"><span class="icon">?벜</span>
-                    <p>?몄뒪?洹몃옩</p>
-                </a>
-                <a href="#" class="social-icon"><span class="icon">?띰툘</span>
-                    <p>?좏뒠釉?/p>
-                </a>
-            </div>
-            <div class="cs-center">
-                <h4>怨좉컼?쇳꽣</h4>
-                <p>?ㅼ쟾 10??~ ?ㅽ썑 6??(二쇰쭚, 怨듯쑕???쒖쇅)</p>
-                <button type="button" class="btn-contact">臾몄쓽?섍린</button>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <ul class="footer-nav">
-                <li><a href="#">?뚯궗?뚭컻</a></li>
-                <li><a href="terms_use.html">?댁슜?쎄?</a></li>
-                <li><a href="terms_privacy.html"><strong>媛쒖씤?뺣낫泥섎━諛⑹묠</strong></a></li>
-                <li><a href="#">怨좉컼?쇳꽣</a></li>
-            </ul>
-            <div class="company-info">
-                <strong>鍮꾩뒪?섏뼱</strong>
-                <p>???: 502 | ?ъ뾽?먮벑濡앸쾲??: OOO-OO-OOOOO</p>
-                <p>?듭떊?먮ℓ?낆떊怨?: 2024-遺??0000 | ?대찓??: help@example.com</p>
-                <p>二쇱냼 : 遺?곌킅??떆 OOO OOO</p>
-            </div>
-            <p class="copyright">짤 Bisquare. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script src="main.js?v=20260331_02"></script>
-    <script src="dev_mode.js?v=20260331_02"></script>
+    <script>
+        window.location.replace('./index.html');
+    </script>
 </body>
-
 </html>

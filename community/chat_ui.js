@@ -706,13 +706,59 @@ window.CommunityModules.ChatUI = (function () {
         if (container) container.scrollTo({ top: container.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
     }
 
+    function applyRoomHeader(roomId, roomType, roomInfo) {
+        const name = roomInfo?.target_name || roomInfo?.class_name || roomInfo?.group_name || '채팅방';
+        const headerName = document.getElementById('chatHeaderName');
+        if (headerName) headerName.textContent = name;
+
+        const statusEl = document.getElementById('chatHeaderStatus');
+        const btnGathering = document.getElementById('btnGathering');
+        const btnGoToClass = document.getElementById('btnGoToClass');
+
+        if (roomType === 'class') {
+            if (statusEl) { statusEl.textContent = '클래스 채팅'; statusEl.className = 'chat-header-status'; }
+            if (btnGathering) {
+                btnGathering.style.display = (window.__BSQ_DEV_MODE__ || roomInfo?.is_instructor) ? 'inline-flex' : 'none';
+            }
+            if (btnGoToClass) {
+                btnGoToClass.style.display = 'inline-flex';
+                btnGoToClass.href = `../class_view/class_view.html?id=${encodeURIComponent(roomId)}`;
+            }
+        } else if (roomType === 'dm') {
+            if (statusEl) { statusEl.textContent = '1:1 채팅'; statusEl.className = 'chat-header-status'; }
+            if (btnGathering) btnGathering.style.display = 'none';
+            if (btnGoToClass) btnGoToClass.style.display = 'none';
+        } else if (roomType === 'group') {
+            if (statusEl) { statusEl.textContent = '그룹 채팅'; statusEl.className = 'chat-header-status'; }
+            if (btnGathering) btnGathering.style.display = 'none';
+            if (btnGoToClass) btnGoToClass.style.display = 'none';
+        }
+    }
+
     // ==== 채팅방 열기 (D1 API 기반) ====
     function openRoom(roomId, roomType, roomInfo) {
+        const normalizedRoomId = String(roomId || '');
+        const normalizedRoomType = String(roomType || '');
+        if (!normalizedRoomId) return;
+
+        const isSameRoom =
+            normalizedRoomId === String(currentRoomId || '')
+            && normalizedRoomType === String(currentRoomType || '');
+
+        if (isSameRoom && !roomInfo?.forceReload) {
+            currentRoomInfo = { ...(currentRoomInfo || {}), ...(roomInfo || {}) };
+            applyRoomHeader(normalizedRoomId, normalizedRoomType, currentRoomInfo);
+            if (document.getElementById('commInfoPanel')?.classList.contains('visible')) {
+                setTimeout(() => renderInfoPanel(normalizedRoomId, normalizedRoomType, currentRoomInfo), 0);
+            }
+            return;
+        }
+
         const roomToken = ++roomOpenSeq;
         stopMessageFeed();
         closeAllMenus();
-        currentRoomId = roomId;
-        currentRoomType = roomType;
+        currentRoomId = normalizedRoomId;
+        currentRoomType = normalizedRoomType;
         currentRoomInfo = roomInfo || {};
         editingMsgKey = null;
         clearReplyPreview();
@@ -754,34 +800,11 @@ window.CommunityModules.ChatUI = (function () {
         if (pinnedContent) pinnedContent.textContent = '';
 
         // 헤더 업데이트
-        const name = roomInfo?.target_name || roomInfo?.class_name || roomInfo?.group_name || '채팅방';
-        document.getElementById('chatHeaderName').textContent = name;
-        const statusEl = document.getElementById('chatHeaderStatus');
-        const btnGathering = document.getElementById('btnGathering');
-        const btnGoToClass = document.getElementById('btnGoToClass');
-
-        if (roomType === 'class') {
-            if (statusEl) { statusEl.textContent = '클래스 채팅'; statusEl.className = 'chat-header-status'; }
-            if (btnGathering) {
-                btnGathering.style.display = (window.__BSQ_DEV_MODE__ || roomInfo?.is_instructor) ? 'inline-flex' : 'none';
-            }
-            if (btnGoToClass) {
-                btnGoToClass.style.display = 'inline-flex';
-                btnGoToClass.href = `../class_view/class_view.html?id=${encodeURIComponent(roomId)}`;
-            }
-        } else if (roomType === 'dm') {
-            if (statusEl) { statusEl.textContent = '1:1 채팅'; statusEl.className = 'chat-header-status'; }
-            if (btnGathering) btnGathering.style.display = 'none';
-            if (btnGoToClass) btnGoToClass.style.display = 'none';
-        } else if (roomType === 'group') {
-            if (statusEl) { statusEl.textContent = '그룹 채팅'; statusEl.className = 'chat-header-status'; }
-            if (btnGathering) btnGathering.style.display = 'none';
-            if (btnGoToClass) btnGoToClass.style.display = 'none';
-        }
+        applyRoomHeader(normalizedRoomId, normalizedRoomType, currentRoomInfo);
 
         try {
-            localStorage.setItem('bsq_comm_last_room', String(roomId));
-            localStorage.setItem('bsq_comm_last_type', String(roomType));
+            localStorage.setItem('bsq_comm_last_room', normalizedRoomId);
+            localStorage.setItem('bsq_comm_last_type', normalizedRoomType);
         } catch {}
 
         loadMessages({ refreshAll: true, roomToken }).then((messages) => {

@@ -210,6 +210,14 @@ window.CommunityModules.SyncBridge = (function () {
         const key = roomKey(roomId, type);
         stopListeningMessages(roomId, type);
 
+        const initialHidden = (() => {
+            try {
+                return typeof document !== 'undefined' && document.visibilityState === 'hidden';
+            } catch {
+                return false;
+            }
+        })();
+        const hasSeedMessages = Array.isArray(options.seedMessages) && options.seedMessages.length > 0;
         const state = {
             roomId,
             type: String(type || 'dm'),
@@ -224,6 +232,8 @@ window.CommunityModules.SyncBridge = (function () {
             preferSse: options.preferSse !== false,
             fallbackActive: false,
             stopped: false,
+            paused: initialHidden,
+            hasSeed: hasSeedMessages,
             onAdd: typeof onAdd === 'function' ? onAdd : null,
             onStatus: typeof options.onStatus === 'function' ? options.onStatus : null,
             onError: typeof options.onError === 'function' ? options.onError : null,
@@ -271,10 +281,11 @@ window.CommunityModules.SyncBridge = (function () {
         };
 
         const pollOnce = async () => {
-            if (state.stopped || state.pollInFlight) return;
-            if (document.visibilityState !== 'visible') return;
+            if (state.stopped || state.pollInFlight || state.paused) return;
+            if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
 
             state.pollInFlight = true;
+            state.hasSeed = false;
             try {
                 const endpoint = buildMessagesUrl(roomId, state.type, {
                     since: replaySince(state.cursor, state.cursorOverlapMs),
@@ -328,11 +339,21 @@ window.CommunityModules.SyncBridge = (function () {
             }
 
             clearTimeout(state.pollTimer);
-            state.pollTimer = setTimeout(pollOnce, 0);
+            state.pollTimer = null;
+            if (state.paused || (typeof document !== 'undefined' && document.visibilityState !== 'visible')) {
+                return;
+            }
+            const delay = state.hasSeed ? state.pollInterval : 0;
+            state.pollTimer = setTimeout(pollOnce, delay);
         };
 
         const startStream = () => {
             if (state.stopped) return;
+            if (state.paused || (typeof document !== 'undefined' && document.visibilityState !== 'visible')) {
+                state.paused = true;
+                return;
+            }
+            if (state.stream) return;
             if (!state.preferSse || typeof EventSource === 'undefined') {
                 startFallback('unsupported');
                 return;
@@ -380,7 +401,30 @@ window.CommunityModules.SyncBridge = (function () {
 
         state.visibilityHandler = () => {
             if (state.stopped) return;
-            if (document.visibilityState === 'visible' && state.fallbackActive) {
+            const hidden = typeof document !== 'undefined' && document.visibilityState === 'hidden';
+            if (hidden) {
+                state.paused = true;
+                if (state.stream) {
+                    try {
+                        state.stream.close();
+                    } catch {}
+                    state.stream = null;
+                }
+                clearTimeout(state.pollTimer);
+                state.pollTimer = null;
+                return;
+            }
+
+            if (state.paused) {
+                state.paused = false;
+                if (state.preferSse) {
+                    startStream();
+                } else {
+                    startFallback('resume');
+                }
+            }
+
+            if (state.fallbackActive) {
                 clearTimeout(state.pollTimer);
                 state.pollTimer = setTimeout(pollOnce, 0);
             }
@@ -402,7 +446,9 @@ window.CommunityModules.SyncBridge = (function () {
         state.getMode = () => (state.fallbackActive ? 'polling' : (state.stream ? 'sse' : 'idle'));
         state.stop = () => stopListeningMessages(roomId, state.type);
 
-        startStream();
+        if (!state.paused) {
+            startStream();
+        }
 
         return {
             stop: state.stop,

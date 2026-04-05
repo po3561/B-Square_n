@@ -548,7 +548,13 @@
   }
 
   async function hydrateBookmarkStates(items = []) {
-    if (bookmarkProbeDisabled || !window.BSQ?.isLoggedIn) {
+    if (bookmarkProbeDisabled) return;
+    if (window.BSQ?.ready?.then) {
+      try {
+        await window.BSQ.ready;
+      } catch {}
+    }
+    if (!window.BSQ?.isLoggedIn) {
       bookmarkProbeDisabled = true;
       return;
     }
@@ -579,8 +585,13 @@
     if (!id) return;
     if (button?.dataset.pending === '1') return;
     if (!window.BSQ?.api) return;
+    if (window.BSQ?.ready?.then) {
+      try {
+        await window.BSQ.ready;
+      } catch {}
+    }
     if (!window.BSQ?.isLoggedIn) {
-      setNotice('李?湲곕뒫???ъ슜?섎젮硫?濡쒓렇?명븯?몄슂.', 'error');
+      setNotice('찜 기능을 사용하려면 로그인하세요.', 'error');
       return;
     }
 
