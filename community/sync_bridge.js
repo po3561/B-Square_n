@@ -1,4 +1,4 @@
-﻿window.CommunityModules = window.CommunityModules || {};
+window.CommunityModules = window.CommunityModules || {};
 
 window.CommunityModules.SyncBridge = (function () {
     let userId = null;
@@ -232,6 +232,7 @@ window.CommunityModules.SyncBridge = (function () {
             preferSse: options.preferSse !== false,
             fallbackActive: false,
             stopped: false,
+            consecutivePollErrors: 0,
             paused: initialHidden,
             hasSeed: hasSeedMessages,
             onAdd: typeof onAdd === 'function' ? onAdd : null,
@@ -312,14 +313,19 @@ window.CommunityModules.SyncBridge = (function () {
                 }
 
                 if (maxCursor > state.cursor) state.cursor = maxCursor;
+                state.consecutivePollErrors = 0;
             } catch (error) {
                 state.onError?.(error);
-                console.warn('SyncBridge poll error:', error);
+                state.consecutivePollErrors = Math.min((state.consecutivePollErrors || 0) + 1, 6);
+                console.warn('SyncBridge poll error (attempt %d):', state.consecutivePollErrors, error);
             } finally {
                 state.pollInFlight = false;
                 if (!state.stopped && state.fallbackActive) {
                     clearTimeout(state.pollTimer);
-                    state.pollTimer = setTimeout(pollOnce, state.pollInterval);
+                    const backoffDelay = state.consecutivePollErrors > 0
+                        ? Math.min(state.pollInterval * Math.pow(2, state.consecutivePollErrors - 1), 30000)
+                        : state.pollInterval;
+                    state.pollTimer = setTimeout(pollOnce, backoffDelay);
                 }
             }
         };
