@@ -476,10 +476,6 @@ select,
 .site-header.scrolled .header-top-left {
     order: 1;
 }
-.site-header.scrolled .header-top-left .search-bar {
-    display: flex;
-    margin-left: 1rem;
-}
 
 .site-header.scrolled .header-category-wrapper {
     order: 2;
@@ -494,6 +490,14 @@ select,
 
 .site-header.scrolled .header-top-right {
     order: 4;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.site-header.scrolled .header-top-right .search-bar {
+    display: flex;
+    width: 200px; /* Slimmer search bar on scroll */
 }
 
 .header-category-wrapper {

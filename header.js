@@ -49,7 +49,7 @@
 
   const NAV_ITEMS = [
     { id: 'class', label: '클래스', href: 'class/class_list.html' },
-    { id: 'create', label: '등록', href: 'create_class/create_class.html' },
+    { id: 'create', label: '무료행사개설', href: 'create_class/create_class.html' },
     { id: 'notice', label: '공지사항', href: 'notice/notice.html' },
     { id: 'contact', label: '문의', href: 'contact/contact.html' },
     { id: 'community', label: '커뮤니티', href: 'community/community.html' },
@@ -278,7 +278,9 @@
                   <span id="bsqHeaderLogoText" class="logo-text">B-Square</span>
                 </a>
               </h1>
-              
+            </div>
+
+            <div class="header-top-right">
               <!-- 검색창 -->
               <div class="search-bar desktop-only-flex">
                 <input
@@ -289,9 +291,6 @@
                 >
                 <button type="button" class="btn-search-inner" onclick="const q=document.getElementById('bsqSearchInput').value.trim();if(q)location.href='${prefix}class/class_list.html?q='+encodeURIComponent(q);">검색</button>
               </div>
-            </div>
-
-            <div class="header-top-right">
               <div class="user-menu" id="userMenu"></div>
             </div>
           </div>
@@ -317,7 +316,7 @@
                   </li>
                 `).join('')}
                 <li><span class="nav-divider"></span></li>
-                <li><a href="#" class="nav-highlight">무료행사개설</a></li>
+                <li><a href="#" class="nav-highlight">무료 모임 개설</a></li>
               </ul>
             </nav>
           </div>
