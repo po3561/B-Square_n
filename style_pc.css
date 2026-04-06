@@ -394,30 +394,34 @@ select,
 
 .main-nav ul {
     display: flex;
-    gap: 2.5rem;
-    font-weight: 500;
+    align-items: center;
+    gap: 1.8rem;
+    font-weight: 700;
 }
 
 .main-nav a {
     color: var(--text-secondary);
     font-size: 1.05rem;
+    text-decoration: none;
+    transition: color 0.2s;
 }
 
-.main-nav a:hover {
+.main-nav a:hover, .main-nav a.nav-active {
     color: var(--text-primary);
 }
 
 .nav-divider {
     display: inline-block;
     width: 1px;
-    height: 12px;
-    background: rgba(255, 255, 255, 0.2);
+    height: 14px;
+    background: rgba(255, 255, 255, 0.15);
     margin: 0 0.5rem;
+    vertical-align: middle;
 }
 
 .nav-highlight {
     color: #a78bfa !important;
-    font-weight: 600;
+    font-weight: 800 !important;
 }
 
 .header-utils {
@@ -503,12 +507,14 @@ select,
     align-items: center;
     gap: 0.6rem;
     color: var(--text-primary);
-    font-size: 1.05rem;
-    font-weight: 700;
-    padding: 0.5rem 1rem;
-    border-radius: var(--btn-radius);
-    background: transparent;
-    transition: background 0.2s;
+    font-size: 1rem;
+    font-weight: 800;
+    padding: 0.45rem 1.4rem;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.2s;
+    cursor: pointer;
 }
 
 .btn-header-category:hover,
