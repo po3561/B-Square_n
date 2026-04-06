@@ -264,45 +264,64 @@
   function buildHeaderHTML() {
     return `
       <header class="site-header" id="bsqHeader">
-        <div class="header-inner">
-          <!-- 좌측: 햄버거 버튼 / 로고 -->
-          <div class="header-left">
-            <button class="btn-hamburger mobile-only-flex" id="btnHamburger" aria-label="메뉴 열기">
-              <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
-            </button>
-            <h1 class="logo">
-              <a href="${homePrefix}index.html" class="logo-link" aria-label="B-Square 홈으로 이동">
-                <img id="bsqHeaderLogoImg" class="logo-image" alt="B-Square 로고" style="display:none;">
-                <span id="bsqHeaderLogoText" class="logo-text">B-Square</span>
-              </a>
-            </h1>
-          </div>
-
-          <!-- 중앙: 데스크톱 상단 메뉴 -->
-          <nav class="main-nav desktop-only-flex" aria-label="주요 메뉴">
-            <ul>
-              ${NAV_ITEMS.map((item) => `
-                <li>
-                  <a href="${prefix}${item.href}"${activeNav === item.id ? ' class="nav-active"' : ''}>${item.label}</a>
-                </li>
-              `).join('')}
-            </ul>
-          </nav>
-
-          <!-- 우측: 검색창 / 로그인 -->
-          <div class="header-right header-utils">
-            <!-- 검색창: 엔터 또는 검색 버튼으로 클래스 목록 검색 -->
-            <div class="search-bar desktop-only-flex">
-              <input
-                type="text"
-                id="bsqSearchInput"
-                placeholder="검색어를 입력하세요"
-                onkeydown="if(event.key==='Enter'){const q=this.value.trim();if(q)location.href='${prefix}class/class_list.html?q='+encodeURIComponent(q);}"
-              >
-              <button type="button" onclick="const el=document.getElementById('bsqSearchInput');const q=el ? el.value.trim() : '';if(q)location.href='${prefix}class/class_list.html?q='+encodeURIComponent(q);">검색</button>
+        <div class="header-inner header-two-row">
+          
+          <!-- 상단 1열: 로고, 검색창, 우측유틸 -->
+          <div class="header-top">
+            <div class="header-top-left">
+              <button class="btn-hamburger mobile-only-flex" id="btnHamburger" aria-label="메뉴 열기">
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+              </button>
+              <h1 class="logo">
+                <a href="${homePrefix}index.html" class="logo-link" aria-label="B-Square 홈으로 이동">
+                  <img id="bsqHeaderLogoImg" class="logo-image" alt="B-Square 로고" style="display:none;">
+                  <span id="bsqHeaderLogoText" class="logo-text">B-Square</span>
+                </a>
+              </h1>
+              
+              <!-- 검색창 -->
+              <div class="search-bar desktop-only-flex">
+                <input
+                  type="text"
+                  id="bsqSearchInput"
+                  placeholder="통합 검색"
+                  onkeydown="if(event.key==='Enter'){const q=this.value.trim();if(q)location.href='${prefix}class/class_list.html?q='+encodeURIComponent(q);}"
+                >
+                <button type="button" class="btn-search-inner" onclick="const q=document.getElementById('bsqSearchInput').value.trim();if(q)location.href='${prefix}class/class_list.html?q='+encodeURIComponent(q);">검색</button>
+              </div>
             </div>
-            <div class="user-menu" id="userMenu"></div>
+
+            <div class="header-top-right">
+              <div class="user-menu" id="userMenu"></div>
+            </div>
           </div>
+
+          <!-- 하단 2열: 카테고리 버튼, 메인 네비게이션 -->
+          <div class="header-bottom desktop-only-flex">
+            <!-- 카테고리 메뉴 시작 -->
+            <div class="header-category-wrapper">
+              <button type="button" class="btn-header-category" id="btnHeaderCategory" aria-expanded="false">
+                <span>카테고리 <span class="arrow">∨</span></span>
+              </button>
+              <div class="header-category-mega" id="headerCategoryMega">
+                <!-- JS가 다중 컬럼 카테고리를 주입 -->
+              </div>
+            </div>
+
+            <!-- 중앙 메인 네비게이션 -->
+            <nav class="main-nav" aria-label="주요 메뉴">
+              <ul>
+                ${NAV_ITEMS.map((item) => `
+                  <li>
+                    <a href="${prefix}${item.href}"${activeNav === item.id ? ' class="nav-active"' : ''}>${item.label}</a>
+                  </li>
+                `).join('')}
+                <li><span class="nav-divider"></span></li>
+                <li><a href="#" class="nav-highlight">무료행사개설</a></li>
+              </ul>
+            </nav>
+          </div>
+          
         </div>
       </header>`;
   }
@@ -768,7 +787,10 @@
     const menus = document.querySelectorAll('#userMenu');
     menus.forEach((menuEl) => {
       if (!session || !user) {
-        menuEl.innerHTML = `<a href="${prefix}login/login.html" class="btn-login-main">로그인</a>`;
+        menuEl.innerHTML = `
+          <a href="${prefix}login/login.html" class="btn-login-main">로그인</a>
+          <a href="${prefix}login/signup.html" class="btn-signup-main">회원가입</a>
+        `;
         window.__BSQ_DEV_MODE__ = isOperatorModeEnabled();
         if (window.__BSQ_DEV_MODE__) {
           window.__BSQ_OPERATOR_PROFILE__ = getStoredOperatorProfile();
@@ -798,7 +820,7 @@
           <div class="user-avatar" style="background-image:url(${profile.profile_image_url || ''});">
             ${!profile.profile_image_url ? '👤' : ''}
           </div>
-          <span class="user-name">${profile.name || user.name || '사용자'}</span>
+          <span class="user-name">${profile.name || user.name || '사용자'}님</span>
         </a>
         ${operatorEligible ? `<button type="button" id="btnOperatorModeToggle" class="btn-operator-mode">${modeLabel}</button>` : ''}
         <button type="button" class="btn-logout" onclick="handleGlobalLogout()">로그아웃</button>
@@ -892,6 +914,17 @@
     setupGlobalSearch();
     ensureHelperLoaded();
     initAuth();
+
+    window.addEventListener('scroll', () => {
+      const header = document.getElementById('bsqHeader');
+      if (header) {
+        if (window.scrollY > 50) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+      }
+    });
 
     window.addEventListener('bsq_preferences', () => {
       void applyShellBranding();

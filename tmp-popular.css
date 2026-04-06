@@ -1,0 +1,49 @@
+
+/* 5-Column Grid for Popular Classes */
+#popularClassGrid {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 1.2rem !important;
+}
+
+#popularSection .class-card-home .card-thumbnail {
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ff5a00; /* Orange background matching reference */
+    aspect-ratio: 4 / 3;
+}
+
+#popularSection .class-card-home .card-thumbnail img {
+    opacity: 0; /* Hide actual image if it's supposed to be just orange, or adjust to blend */
+}
+
+#popularSection .class-card-home .card-info {
+    padding: 0.8rem 0;
+}
+
+#popularSection .class-card-home .title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.3rem;
+}
+
+#popularSection .class-card-home .card-topline {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.5rem;
+}
+
+#popularSection .class-card-home .meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+#popularSection .class-card-home .meta-category {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    color: #fff;
+}

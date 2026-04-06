@@ -1,4 +1,4 @@
-﻿// main.js - homepage data loader (D1 API)
+// main.js - homepage data loader (D1 API)
 document.addEventListener('DOMContentLoaded', async () => {
     const currentCategory = getCurrentHomeCategory();
     const allGrid = document.getElementById('allClassGrid');
@@ -628,7 +628,7 @@ async function toggleHomeBookmark(classId, button) {
 }
 
 async function renderHomeCategoryMenu(currentCategory = 'all') {
-    const nav = document.querySelector('.category-grid');
+    const nav = document.getElementById('headerCategoryMega');
     if (!nav) return;
 
     let categories = [];
@@ -655,57 +655,44 @@ async function renderHomeCategoryMenu(currentCategory = 'all') {
 
     globalHomeCategories = categories;
 
-    const visibleLimit = 9;
-    const visibleCategories = categories.slice(0, visibleLimit);
-    const hiddenCategories = categories.slice(visibleLimit);
-    const expandedRequested = getHomeCategoryExpandedState();
-    const needsAutoExpand = currentCategory !== 'all'
-        && hiddenCategories.some((item) => String(item.name || '').trim() === currentCategory);
-    const expanded = expandedRequested || needsAutoExpand;
-
-    if (needsAutoExpand && !expandedRequested) {
-        setHomeCategoryExpandedState(true);
-    }
-
-    const renderCategoryCard = (item, index, activeCategory = currentCategory) => {
-        const meta = resolveHomeCategoryMeta(item.name, index);
+    const renderCategoryLink = (item, activeCategory = currentCategory) => {
         return `
-            <a href="#" class="home-category-item${activeCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">
-                ${renderHomeCategoryMedia(item, meta)}
-                <span class="home-category-name">${escapeHtml(item.name)}</span>
+            <a href="#" class="mega-text-link${activeCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">
+                ${escapeHtml(item.name)}
             </a>
         `;
     };
 
-    const moreCount = hiddenCategories.length;
-    const showMore = moreCount > 0;
-
     nav.innerHTML = `
-        <div class="home-category-shell" data-home-category-shell data-expanded="${expanded ? 'true' : 'false'}">
-            <div class="home-category-grid home-category-grid-primary">
-        <a href="#" class="home-category-item${currentCategory === 'all' ? ' is-active' : ''}" data-cat="all">
-                    ${renderHomeCategoryMedia({ name: '전체', image_url: '' }, { icon: 'spark', accent: '#f5f5f5' })}
-                    <span class="home-category-name">전체</span>
-                </a>
-                ${visibleCategories.map((item, index) => renderCategoryCard(item, index)).join('')}
-                ${showMore ? `
-                    <button type="button" class="home-category-item home-category-toggle${expanded ? ' is-expanded' : ''}" data-category-toggle aria-expanded="${expanded ? 'true' : 'false'}">
-                        <div class="home-category-icon home-category-icon-toggle">
-                            ${svgIcon(expanded ? 'chevron-up' : 'chevron-down')}
-                        </div>
-                        <span class="home-category-name">${expanded ? '접기' : '더보기'}</span>
-                    </button>
-                ` : ''}
+        <div class="mega-menu-content">
+            <div class="mega-menu-text-grid">
+                ${categories.map((item) => renderCategoryLink(item)).join('')}
             </div>
-            ${showMore ? `
-                <div class="home-category-extra-wrap" aria-hidden="${expanded ? 'false' : 'true'}">
-                    <div class="home-category-grid home-category-grid-extra">
-                        ${hiddenCategories.map((item, index) => renderCategoryCard(item, index + visibleLimit)).join('')}
-                    </div>
-                </div>
-            ` : ''}
+            <div class="mega-menu-footer">
+                <a href="${window.location.pathname}?cat=all" class="btn-all-categories">전체 카테고리</a>
+            </div>
         </div>
     `;
+
+    // 바인드 이벤트
+    const btn = document.getElementById('btnHeaderCategory');
+    if (btn && !btn.dataset.bound) {
+        btn.dataset.bound = 'true';
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const expanded = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', !expanded);
+            nav.hidden = expanded;
+            nav.classList.toggle('active', !expanded);
+        });
+        document.addEventListener('click', (e) => {
+            if (!btn.contains(e.target) && !nav.contains(e.target)) {
+                btn.setAttribute('aria-expanded', 'false');
+                nav.hidden = true;
+                nav.classList.remove('active');
+            }
+        });
+    }
 
     updateHomeHeroStats();
 }
@@ -734,9 +721,60 @@ async function initMainPage(currentCategory = 'all', forceRefresh = false) {
                 const filtered = globalAllClasses.filter(c => c.category === currentCategory);
                 renderClassCards(filtered, allGrid);
             }
+
+            const popGrid = document.getElementById('popularClassGrid');
+            if (popGrid && globalAllClasses.length > 0) {
+                const pops = [...globalAllClasses].sort((a,b) => (b.like_count || 0) - (a.like_count || 0)).slice(0, 5); // Take 5 items
+                renderClassCards(pops, popGrid);
+            }
+            
+            const recGrid = document.getElementById('dynamicRecommendContainer');
+            if (recGrid && globalAllClasses.length > 0) {
+                renderRecommendColumns(globalAllClasses, recGrid);
+            }
             updateHomeHeroStats();
         }
     } catch (e) { console.error(e); }
+}
+
+function renderRecommendColumns(classes, container) {
+    if (!container) return;
+    
+    // Group classes into 3 categories (simulated)
+    const columns = [
+        { title: '경제 | 제테크', subtitle: '돈이 되는 진짜 지식 💸', items: classes.slice(0, 4) },
+        { title: '라이프 스타일', subtitle: '취미를 나만의 특기로 ✨', items: classes.slice(4, 8) },
+        { title: '어도비 컬렉션', subtitle: '디자인의 모든 것 🎨', items: classes.slice(8, 12) }
+    ];
+
+    const renderColumnItem = (item, index) => {
+        return `
+            <a href="${prefix}class/class_detail.html?id=${item.id}" class="recommend-item">
+                <span class="recommend-num">${index + 1}</span>
+                <div class="recommend-thumb" style="background-image:url('${item.thumbnail_url || ''}')"></div>
+                <div class="recommend-info">
+                    <span class="recommend-author">${escapeHtml(item.host_name || 'B-Square')}님이 진행하는</span>
+                    <h4>${escapeHtml(item.title)}</h4>
+                </div>
+            </a>
+        `;
+    };
+
+    container.innerHTML = `
+        <div class="recommend-3col-grid">
+            ${columns.map(col => `
+                <div class="recommend-column">
+                    <div class="recommend-col-header">
+                        <h5>${col.title}</h5>
+                        <p>${col.subtitle}</p>
+                    </div>
+                    <div class="recommend-col-list">
+                        ${col.items.map((it, idx) => renderColumnItem(it, idx)).join('')}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 
 function renderClassCards(classes, container) {

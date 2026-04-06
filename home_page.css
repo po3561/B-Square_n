@@ -66,8 +66,8 @@
         body.home-page .home-banner-stage {
             position: relative;
             width: 100%;
-            aspect-ratio: 16 / 5;
-            min-height: 500px;
+            aspect-ratio: 21 / 9;
+            min-height: 600px;
             border-radius: 28px;
             overflow: hidden;
             background: #090c12;
@@ -126,7 +126,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: center;
+            object-position: top center;
             background: #0a0d12;
         }
 
@@ -299,3 +299,139 @@
         }
 
 /* __HOME_PAGE_CSS__ */
+
+/* 5-Column Grid for Popular Classes */
+#popularClassGrid {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 1.2rem !important;
+}
+
+#popularSection .class-card-home .card-thumbnail {
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ff5a00; /* Orange background matching reference */
+    aspect-ratio: 4 / 3;
+}
+
+#popularSection .class-card-home .card-info {
+    padding: 0.8rem 0;
+}
+
+#popularSection .class-card-home .title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.3rem;
+}
+
+#popularSection .class-card-home .card-topline {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.5rem;
+}
+
+#popularSection .class-card-home .meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+#popularSection .class-card-home .meta-category {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    color: #fff;
+}
+
+/* 3-Column Grid for Recommended Classes */
+.recommend-3col-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.recommend-column {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    color: #1f2937;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.recommend-col-header {
+    margin-bottom: 1.5rem;
+}
+
+.recommend-col-header h5 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem 0;
+    color: #111827;
+}
+
+.recommend-col-header p {
+    font-size: 0.9rem;
+    margin: 0;
+    color: #6b7280;
+}
+
+.recommend-col-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.recommend-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s;
+}
+
+.recommend-item:hover {
+    transform: translateY(-2px);
+}
+
+.recommend-num {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #a78bfa;
+    min-width: 1.5rem;
+}
+
+.recommend-thumb {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    background-color: #f3f4f6;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+}
+
+.recommend-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.recommend-author {
+    display: block;
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 0.2rem;
+}
+
+.recommend-info h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

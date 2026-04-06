@@ -45,12 +45,7 @@
                     </div>
                 </article>
 
-                <!-- 카테고리 패널: 11개 먼저 노출하고 나머지는 더보기 -->
-                <aside class="home-category-panel">
-
-                    <!-- JS가 카테고리 카드들을 렌더링 -->
-                    <nav class="category-grid" aria-label="메인 카테고리"></nav>
-                </aside>
+                <!-- 카테고리 패널 (헤더로 이동됨) -->
             </div>
         </section>
 
@@ -58,15 +53,15 @@
         <section class="class-lists-section">
             <div class="section-inner">
                 <!-- 큐레이션 영역 -->
-                <div class="curated-sections-dark" hidden>
-                    <article class="class-group popular-classes" id="popularSection" style="display:none;">
+                <div class="curated-sections-dark">
+                    <article class="class-group popular-classes" id="popularSection">
                         <h3 class="group-title" id="popularGroupTitle">지금 인기 있는</h3>
                         <div class="card-grid" id="popularClassGrid">
                             <p class="empty-state">인기 클래스를 불러오는 중...</p>
                         </div>
                     </article>
 
-                    <article class="class-group recommended-classes" id="recommendSection" style="display:none;">
+                    <article class="class-group recommended-classes" id="recommendSection">
                         <h3 class="group-title" id="recommendGroupTitle">추천 클래스</h3>
                         <div class="recommend-columns" id="dynamicRecommendContainer">
                             <!-- JS에서 동적으로 생성됨 -->
