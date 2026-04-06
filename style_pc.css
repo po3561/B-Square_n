@@ -406,7 +406,8 @@ select,
     transition: color 0.2s;
 }
 
-.main-nav a:hover, .main-nav a.nav-active {
+.main-nav a:hover,
+.main-nav a.nav-active {
     color: var(--text-primary);
 }
 
@@ -434,8 +435,8 @@ select,
 .header-inner.header-two-row {
     display: flex;
     flex-direction: column;
-    padding: 0.5rem 1rem 0;
-    max-width: 1400px;
+    padding: 0.5rem 2.5% 0;
+    max-width: none;
     margin: 0 auto;
     width: 100%;
 }
@@ -448,7 +449,8 @@ select,
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.header-top-left, .header-top-right {
+.header-top-left,
+.header-top-right {
     display: flex;
     align-items: center;
     gap: 1.5rem;
@@ -497,7 +499,8 @@ select,
 
 .site-header.scrolled .header-top-right .search-bar {
     display: flex;
-    width: 200px; /* Slimmer search bar on scroll */
+    width: 200px;
+    /* Slimmer search bar on scroll */
 }
 
 .header-category-wrapper {
@@ -531,8 +534,10 @@ select,
     top: 100%;
     left: 0;
     margin-top: 1rem;
-    width: 380px; /* Reduced width for 2-column text layout */
-    background: #ffffff; /* Reference image is white */
+    width: 380px;
+    /* Reduced width for 2-column text layout */
+    background: #ffffff;
+    /* Reference image is white */
     border: 1px solid rgba(0, 0, 0, 0.08);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     border-radius: 12px;
@@ -564,15 +569,18 @@ select,
 }
 
 .mega-text-link {
-    color: #4b5563; /* Gray text */
+    color: #4b5563;
+    /* Gray text */
     font-size: 1.05rem;
     font-weight: 500;
     text-decoration: none;
     transition: color 0.2s;
 }
 
-.mega-text-link:hover, .mega-text-link.is-active {
-    color: #8b5cf6; /* Purple hover */
+.mega-text-link:hover,
+.mega-text-link.is-active {
+    color: #8b5cf6;
+    /* Purple hover */
     font-weight: 600;
 }
 
@@ -613,8 +621,10 @@ select,
 .search-bar {
     display: flex;
     align-items: center;
-    background: #17171e; /* 깊은 다크 배경 */
-    border: 1px solid rgba(255, 255, 255, 0.05); /* 은은한 테두리 */
+    background: #17171e;
+    /* 깊은 다크 배경 */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    /* 은은한 테두리 */
     border-radius: 30px;
     padding: 0.15rem 0.15rem 0.15rem 1rem;
     height: 38px;
