@@ -751,9 +751,9 @@ function renderRecommendColumns(classes, container) {
         return `
             <a href="${prefix}class/class_detail.html?id=${item.id}" class="recommend-item">
                 <span class="recommend-num">${index + 1}</span>
-                <div class="recommend-thumb" style="background-image:url('${item.thumbnail_url || ''}')"></div>
+                <div class="recommend-thumb" style="background-image:url('${item.thumbnail || item.image_url || ''}')"></div>
                 <div class="recommend-info">
-                    <span class="recommend-author">${escapeHtml(item.host_name || 'B-Square')}님이 진행하는</span>
+                    <span class="recommend-author">${escapeHtml(item.instructor_name || item.creator_name || 'B-Square')}님이 진행하는</span>
                     <h4>${escapeHtml(item.title)}</h4>
                 </div>
             </a>
