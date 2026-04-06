@@ -49,7 +49,6 @@
 
   const NAV_ITEMS = [
     { id: 'class', label: '클래스', href: 'class/class_list.html' },
-    { id: 'create', label: '무료행사개설', href: 'create_class/create_class.html' },
     { id: 'notice', label: '공지사항', href: 'notice/notice.html' },
     { id: 'contact', label: '문의', href: 'contact/contact.html' },
     { id: 'community', label: '커뮤니티', href: 'community/community.html' },
@@ -316,7 +315,7 @@
                   </li>
                 `).join('')}
                 <li><span class="nav-divider"></span></li>
-                <li><a href="#" class="nav-highlight">무료 모임 개설</a></li>
+                <li><a href="${prefix}create_class/create_class.html" class="nav-highlight">무료 모임 개설</a></li>
               </ul>
             </nav>
           </div>
