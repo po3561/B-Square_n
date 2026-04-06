@@ -435,10 +435,10 @@ select,
 .header-inner.header-two-row {
     display: flex;
     flex-direction: column;
-    padding: 0.5rem 2.5% 0;
-    max-width: none;
-    margin: 0 auto;
-    width: 100%;
+    padding: 0.5rem 3% 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    width: 100% !important;
 }
 
 .header-top {
@@ -466,7 +466,7 @@ select,
 /* Scrolled 1-row layout */
 .site-header.scrolled .header-inner.header-two-row {
     flex-direction: row;
-    padding: 0.3rem 1rem;
+    padding: 0.3rem 3% !important;
     align-items: center;
 }
 
