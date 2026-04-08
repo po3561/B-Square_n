@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    ensureBsqHelperLoaded();
     bindHomeEvents();
 
     const currentCategory = getCurrentHomeCategory();
@@ -162,7 +161,7 @@ function getHomeSiteSettings() {
     return Promise.resolve(null);
 }
 
-function normalizeBannerItem(item = {}, fallbackLabel = 'Banner', index = 0) {
+function normalizeBannerItem(item = {}, fallbackLabel = '배너', index = 0) {
     const imageUrl = String(
         item.mobileImage ||
         item.desktopImage ||
@@ -177,7 +176,7 @@ function normalizeBannerItem(item = {}, fallbackLabel = 'Banner', index = 0) {
     return { imageUrl, linkUrl, alt };
 }
 
-function normalizeBannerItems(items = [], fallbackLabel = 'Banner') {
+function normalizeBannerItems(items = [], fallbackLabel = '배너') {
     return (Array.isArray(items) ? items : [])
         .map((item, index) => normalizeBannerItem(item, fallbackLabel, index))
         .filter((item) => item.imageUrl);
@@ -192,8 +191,8 @@ function normalizeClassCard(item = {}) {
 
     return {
         id: String(item.id || item.classId || item.class_id || item.slug || '').trim(),
-        title: String(item.title || item.name || 'Untitled class').trim(),
-        category: String(item.category || item.categoryName || 'General').trim(),
+        title: String(item.title || item.name || '제목 없음').trim(),
+        category: String(item.category || item.categoryName || '기본').trim(),
         instructor: String(item.instructor_name || item.creator_name || item.instructor || item.teacher || 'B-Square').trim(),
         imageUrl: String(item.thumbnail || item.coverImage || item.image || item.image_url || '/assets/default-cover.svg').trim(),
         rating: Number.isFinite(rating) ? rating : 0,
@@ -212,7 +211,7 @@ function normalizeRecommendationFolder(folder = {}) {
     const items = Array.isArray(folder.items) ? folder.items : (Array.isArray(folder.classes) ? folder.classes : []);
     return {
         id: String(folder.id || folder.folderId || folder.folder_id || '').trim(),
-        title: String(folder.title || folder.name || 'Recommended folder').trim(),
+        title: String(folder.title || folder.name || '추천 폴더').trim(),
         description: String(folder.description || '').trim(),
         imageUrl: String(folder.coverImage || folder.cover_image || folder.thumbnail || folder.icon || '').trim(),
         linkUrl: String(folder.url || folder.href || folder.link || '').trim(),
@@ -246,9 +245,6 @@ function renderBannerCarousel(kind, items, options = {}) {
     const dots = options.dotsId ? document.getElementById(options.dotsId) : null;
     const prev = options.prevId ? document.getElementById(options.prevId) : null;
     const next = options.nextId ? document.getElementById(options.nextId) : null;
-    const counter = options.counterId ? document.getElementById(options.counterId) : null;
-    const play = options.playId ? document.getElementById(options.playId) : null;
-    const interval = options.intervalId ? document.getElementById(options.intervalId) : null;
     if (!track) return;
 
     teardownBannerCarousel(kind);
@@ -257,7 +253,7 @@ function renderBannerCarousel(kind, items, options = {}) {
     const slides = banners.length ? banners : [{
         imageUrl: '',
         linkUrl: '',
-        alt: `${options.fallbackLabel || 'Banner'} loading`,
+        alt: `${options.fallbackLabel || '배너'}를 준비하는 중입니다.`,
     }];
 
     track.innerHTML = slides.map((item, index) => {
@@ -267,7 +263,7 @@ function renderBannerCarousel(kind, items, options = {}) {
             <div class="${kind === 'bottom' ? 'home-bottom-banner-slide' : 'home-banner-slide'}${index === 0 ? ' is-active' : ''}" data-banner-index="${index}">
                 ${item.imageUrl
                     ? `<${tag}${attrs} class="home-banner-link"><img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}"></${tag}>`
-                    : `<div class="home-banner-empty"><div><strong>B-Square</strong><div>${escapeHtml(options.emptyMessage || 'Preparing banner')}</div></div></div>`
+                    : `<div class="home-banner-empty"><div><strong>B-Square</strong><div>${escapeHtml(options.emptyMessage || '배너를 준비하는 중입니다.')}</div></div></div>`
                 }
             </div>
         `;
@@ -279,18 +275,13 @@ function renderBannerCarousel(kind, items, options = {}) {
         slides: slideEls,
         dots: [],
         timer: null,
-        intervalMs: Number(options.intervalMs || 5000),
-        isPlaying: slideEls.length > 1,
-        counterEl: counter,
-        playEl: play,
-        intervalEl: interval,
+        intervalMs: Number(options.intervalMs || 7000),
     };
 
     const setActive = (index) => {
         state.index = ((index % slideEls.length) + slideEls.length) % slideEls.length;
         slideEls.forEach((slide, slideIndex) => slide.classList.toggle('is-active', slideIndex === state.index));
         state.dots.forEach((dot, dotIndex) => dot.classList.toggle('is-active', dotIndex === state.index));
-        if (state.counterEl) state.counterEl.textContent = `${state.index + 1} / ${slideEls.length}`;
     };
 
     if (dots) {
@@ -299,7 +290,7 @@ function renderBannerCarousel(kind, items, options = {}) {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = `home-banner-dot${index === 0 ? ' is-active' : ''}`;
-            button.setAttribute('aria-label', `${options.fallbackLabel || 'Banner'} ${index + 1}`);
+            button.setAttribute('aria-label', `${options.fallbackLabel || '배너'} ${index + 1}`);
             button.addEventListener('click', () => setActive(index));
             dots.appendChild(button);
             return button;
@@ -309,16 +300,6 @@ function renderBannerCarousel(kind, items, options = {}) {
 
     if (prev) prev.onclick = () => setActive(state.index - 1);
     if (next) next.onclick = () => setActive(state.index + 1);
-    if (play) {
-        play.textContent = state.isPlaying ? 'Pause' : 'Play';
-        play.onclick = () => {
-            state.isPlaying = !state.isPlaying;
-            play.textContent = state.isPlaying ? 'Pause' : 'Play';
-            if (state.isPlaying) startTimer();
-            else stopTimer();
-        };
-    }
-    if (interval) interval.textContent = `${Math.round(state.intervalMs / 1000)}s`;
 
     function stopTimer() {
         if (state.timer) window.clearInterval(state.timer);
@@ -327,7 +308,7 @@ function renderBannerCarousel(kind, items, options = {}) {
 
     function startTimer() {
         stopTimer();
-        if (slideEls.length <= 1 || !state.isPlaying) return;
+        if (slideEls.length <= 1) return;
         state.timer = window.setInterval(() => setActive(state.index + 1), state.intervalMs);
     }
 
@@ -350,7 +331,7 @@ function renderHomeCategoryMenu(currentCategory = 'all') {
         nav.innerHTML = `
             <div class="mega-menu-content">
                 <div class="mega-menu-text-grid">
-                    <a href="#" class="mega-text-link${currentCategory === 'all' ? ' is-active' : ''}" data-cat="all">All classes</a>
+                    <a href="#" class="mega-text-link${currentCategory === 'all' ? ' is-active' : ''}" data-cat="all">전체 클래스</a>
                     ${categories.map((item) => `
                         <a href="#" class="mega-text-link${currentCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">${escapeHtml(item.name)}</a>
                     `).join('')}
@@ -368,7 +349,7 @@ function renderHomeCategoryMenu(currentCategory = 'all') {
         <div class="home-category-grid home-category-grid-primary">
             <button type="button" class="home-category-item${currentCategory === 'all' ? ' is-active' : ''}" data-cat="all">
                 <span class="home-category-icon" style="background:rgba(111,124,255,0.16); color:#6f7cff;">${svgIcon('spark')}</span>
-                <span class="home-category-name">All classes</span>
+                <span class="home-category-name">전체 클래스</span>
                 <span class="home-category-count">${globalAllClasses.length || 0}</span>
             </button>
             ${visibleItems.map((item, index) => {
@@ -384,7 +365,7 @@ function renderHomeCategoryMenu(currentCategory = 'all') {
             ${extraItems.length ? `
                 <button type="button" class="home-category-toggle" data-category-toggle="1">
                     <span class="home-category-icon" style="background:rgba(111,124,255,0.16); color:#6f7cff;">${svgIcon(getHomeCategoryExpandedState() ? 'chevron-up' : 'chevron-down')}</span>
-                    <span class="home-category-label">${getHomeCategoryExpandedState() ? 'Collapse' : 'More categories'}</span>
+                    <span class="home-category-label">${getHomeCategoryExpandedState() ? '접기' : '카테고리 더보기'}</span>
                 </button>
             ` : ''}
         </div>
@@ -478,13 +459,13 @@ function renderHomeClassSection(currentCategory = 'all') {
     }
 
     const title = document.getElementById('popularGroupTitle');
-    if (title) title.textContent = popularFolder?.title || 'Popular classes';
+    if (title) title.textContent = popularFolder?.title || '인기 클래스';
 }
 
 function renderRecommendColumns(folders, container) {
     const items = Array.isArray(folders) && folders.length ? folders.slice(0, 3) : buildFallbackFolders(globalAllClasses);
     if (!items.length) {
-        container.innerHTML = '<p class="empty-state">No recommendation folders yet.</p>';
+        container.innerHTML = '<p class="empty-state">아직 추천 폴더가 없습니다.</p>';
         return;
     }
 
@@ -523,7 +504,7 @@ function buildFallbackFolders(classes) {
     return Array.from(buckets.entries()).slice(0, 3).map(([name, items], index) => ({
         id: `fallback-${index}`,
         title: name,
-        description: 'Fallback grouping derived from current class data.',
+        description: '현재 클래스 데이터를 기준으로 자동 구성된 추천 묶음입니다.',
         imageUrl: items[0]?.imageUrl || '',
         items,
     }));
@@ -532,7 +513,7 @@ function buildFallbackFolders(classes) {
 function renderClassCards(classes, container) {
     if (!container) return;
     if (!Array.isArray(classes) || !classes.length) {
-        container.innerHTML = '<p class="empty-state">No classes available in this view.</p>';
+        container.innerHTML = '<p class="empty-state">현재 보이는 클래스가 없습니다.</p>';
         return;
     }
 
@@ -542,12 +523,12 @@ function renderClassCards(classes, container) {
         const likeCount = Number(cachedBookmark?.count ?? item.likeCount ?? 0);
         return `
             <article class="class-card class-card-home" data-class-id="${escapeHtml(item.id)}">
-                <a class="class-card-link" href="class_view/class_view.html?id=${encodeURIComponent(item.id)}" aria-label="${escapeHtml(item.title)} details">
+                <a class="class-card-link" href="class_view/class_view.html?id=${encodeURIComponent(item.id)}" aria-label="${escapeHtml(item.title)} 상세 보기">
                     <div class="card-thumbnail">
                         <img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.title)}" loading="lazy">
                         <div class="card-badges" aria-hidden="true">
-                            <span class="card-badge">B-Square Pick</span>
-                            ${item.isNew ? '<span class="card-badge-muted">New</span>' : ''}
+                            <span class="card-badge">추천</span>
+                            ${item.isNew ? '<span class="card-badge-muted">신규</span>' : ''}
                         </div>
                     </div>
                     <div class="card-info">
@@ -561,11 +542,11 @@ function renderClassCards(classes, container) {
                         <div class="meta">
                             <span class="rating">★ ${Number(item.rating || 0).toFixed(1)} (${Number(item.reviewCount || 0)})</span>
                             <span class="meta-category">${escapeHtml(item.category)}</span>
-                            <span class="meta-likes">Like ${likeCount.toLocaleString()}</span>
+                            <span class="meta-likes">찜 ${likeCount.toLocaleString()}</span>
                         </div>
                     </div>
                 </a>
-                <button type="button" class="btn-bookmark${bookmarked ? ' is-bookmarked' : ''}" data-action="bookmark-class" data-class-id="${escapeHtml(item.id)}" data-bookmarked="${bookmarked ? '1' : '0'}" data-like-count="${likeCount}" aria-pressed="${bookmarked ? 'true' : 'false'}" aria-label="${bookmarked ? 'Remove bookmark' : 'Add bookmark'}">${svgIcon(bookmarked ? 'heart-filled' : 'heart')}</button>
+                <button type="button" class="btn-bookmark${bookmarked ? ' is-bookmarked' : ''}" data-action="bookmark-class" data-class-id="${escapeHtml(item.id)}" data-bookmarked="${bookmarked ? '1' : '0'}" data-like-count="${likeCount}" aria-pressed="${bookmarked ? 'true' : 'false'}" aria-label="${bookmarked ? '찜 해제' : '찜하기'}">${svgIcon(bookmarked ? 'heart-filled' : 'heart')}</button>
             </article>
         `;
     }).join('');
@@ -577,21 +558,18 @@ async function initBanners() {
         trackId: 'homeMainBannerTrack',
         prevId: 'homeMainBannerPrev',
         nextId: 'homeMainBannerNext',
-        playId: 'homeMainBannerPlay',
-        counterId: 'homeMainBannerCounter',
-        intervalId: 'homeMainBannerInterval',
-        fallbackLabel: 'Main banner',
-        emptyMessage: 'Preparing main banner.',
-        intervalMs: 5000,
+        fallbackLabel: '메인 배너',
+        emptyMessage: '메인 배너를 준비하는 중입니다.',
+        intervalMs: 7000,
     });
     renderBannerCarousel('bottom', settings?.bottom_banners || [], {
         trackId: 'homeBottomBannerTrack',
         prevId: 'homeBottomBannerPrev',
         nextId: 'homeBottomBannerNext',
         dotsId: 'homeBottomBannerDots',
-        fallbackLabel: 'Bottom banner',
-        emptyMessage: 'Preparing bottom banner.',
-        intervalMs: 8000,
+        fallbackLabel: '하단 배너',
+        emptyMessage: '하단 배너를 준비하는 중입니다.',
+        intervalMs: 7000,
     });
 }
 
@@ -628,12 +606,12 @@ function getClassSummary(cls) {
 
 function formatHomeCardMode(item) {
     const classType = String(item?.class_type || item?.type || item?.mode || item?.onlineOffline || '').trim().toUpperCase();
-    if (classType === 'ONLINE') return 'Online';
-    if (classType === 'OFFLINE') return 'Offline';
+    if (classType === 'ONLINE') return '온라인';
+    if (classType === 'OFFLINE') return '오프라인';
     if (classType === 'VOD') return 'VOD';
-    if (classType === 'ONEDAY') return 'One day';
-    if (classType === 'WEEKLY') return 'Weekly';
-    if (classType === 'MONTHLY') return 'Monthly';
+    if (classType === 'ONEDAY') return '1일';
+    if (classType === 'WEEKLY') return '주간';
+    if (classType === 'MONTHLY') return '월간';
     return classType ? classType.charAt(0) + classType.slice(1).toLowerCase() : '';
 }
 
@@ -661,7 +639,7 @@ function syncHomeBookmarkUi(classId, bookmarked, count) {
         const button = card.querySelector('[data-action="bookmark-class"]');
         if (button) updateHomeBookmarkButton(button, id, bookmarked, nextCount);
         const likes = card.querySelector('.meta-likes');
-        if (likes) likes.textContent = `Like ${nextCount.toLocaleString()}`;
+        if (likes) likes.textContent = `찜 ${nextCount.toLocaleString()}`;
     });
 }
 
@@ -671,7 +649,7 @@ function updateHomeBookmarkButton(button, classId, bookmarked, count) {
     button.dataset.likeCount = String(Number(count || 0));
     button.classList.toggle('is-bookmarked', !!bookmarked);
     button.setAttribute('aria-pressed', bookmarked ? 'true' : 'false');
-    button.setAttribute('aria-label', bookmarked ? 'Remove bookmark' : 'Add bookmark');
+    button.setAttribute('aria-label', bookmarked ? '찜 해제' : '찜하기');
     button.innerHTML = svgIcon(bookmarked ? 'heart-filled' : 'heart');
 }
 

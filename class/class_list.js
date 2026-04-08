@@ -6,7 +6,7 @@
   const state = {
     categories: [],
     popularClasses: [],
-    popularTitle: 'Popular classes',
+    popularTitle: '인기 클래스',
     currentCategory: 'all',
     currentSort: 'newest',
     searchQuery: '',
@@ -29,19 +29,19 @@
   let bookmarkProbeDisabled = false;
 
   const FALLBACK_CATEGORIES = [
-    { name: 'Fitness', emoji: 'F' },
-    { name: 'Art', emoji: 'A' },
-    { name: 'Business', emoji: 'B' },
-    { name: 'Cooking', emoji: 'C' },
-    { name: 'Technology', emoji: 'T' },
-    { name: 'Music', emoji: 'M' },
+    { name: '운동', emoji: '운' },
+    { name: '미술', emoji: '미' },
+    { name: '비즈니스', emoji: '비' },
+    { name: '요리', emoji: '요' },
+    { name: '기술', emoji: '기' },
+    { name: '음악', emoji: '음' },
   ];
 
   const SORT_LABELS = {
-    newest: 'Newest',
-    popular: 'Popular',
-    'price-low': 'Price low',
-    'price-high': 'Price high',
+    newest: '최신순',
+    popular: '인기순',
+    'price-low': '가격 낮은 순',
+    'price-high': '가격 높은 순',
   };
 
   function $(id) {
@@ -70,7 +70,7 @@
     return `../class_view/class_view.html?id=${encodeURIComponent(id)}`;
   }
 
-  function normalizeBannerItem(item = {}, fallbackLabel = 'Banner', index = 0) {
+  function normalizeBannerItem(item = {}, fallbackLabel = '배너', index = 0) {
     const imageUrl = text(item.mobileImage || item.desktopImage || item.imageUrl || item.imgUrl || item.image || item.src || '');
     const linkUrl = text(item.url || item.href || item.link || item.linkUrl || '');
     const alt = text(item.alt || item.title || item.label || `${fallbackLabel} ${index + 1}`);
@@ -85,8 +85,8 @@
     const price = Number(item.salePrice ?? item.sale_price ?? item.discountPrice ?? item.discount_price ?? item.price ?? 0);
     return {
       id: text(item.id || item.classId || item.class_id || item.slug || ''),
-      title: text(item.title || item.name || 'Untitled class'),
-      category: text(item.category || item.categoryName || 'General'),
+      title: text(item.title || item.name || '제목 없음'),
+      category: text(item.category || item.categoryName || '기본'),
       instructor: text(item.instructor_name || item.creator_name || item.instructor || item.teacher || 'B-Square'),
       imageUrl: text(item.thumbnail || item.coverImage || item.image || item.image_url || '/assets/default-cover.svg'),
       rating: Number.isFinite(rating) ? rating : 0,
@@ -105,7 +105,7 @@
     const items = Array.isArray(folder.items) ? folder.items : (Array.isArray(folder.classes) ? folder.classes : []);
     return {
       id: text(folder.id || folder.folderId || folder.folder_id || ''),
-      title: text(folder.title || folder.name || 'Recommended folder'),
+      title: text(folder.title || folder.name || '추천 폴더'),
       type: text(folder.type || 'folder'),
       items: items.map((item) => normalizeClassCard(item)).filter((item) => item.id),
     };
@@ -137,12 +137,12 @@
 
   function formatMode(item = {}) {
     const raw = text(item.class_type || item.type || item.mode || item.onlineOffline || '').toUpperCase();
-    if (raw === 'ONLINE') return 'Online';
-    if (raw === 'OFFLINE') return 'Offline';
+    if (raw === 'ONLINE') return '온라인';
+    if (raw === 'OFFLINE') return '오프라인';
     if (raw === 'VOD') return 'VOD';
-    if (raw === 'ONEDAY') return 'One day';
-    if (raw === 'WEEKLY') return 'Weekly';
-    if (raw === 'MONTHLY') return 'Monthly';
+    if (raw === 'ONEDAY') return '1일';
+    if (raw === 'WEEKLY') return '주간';
+    if (raw === 'MONTHLY') return '월간';
     return raw ? raw.charAt(0) + raw.slice(1).toLowerCase() : '';
   }
 
@@ -217,7 +217,7 @@
   }
 
   function renderCategoryButton(item, active = false, all = false) {
-    const label = all ? 'All' : item.name;
+    const label = all ? '전체' : item.name;
     const count = all ? state.totalCount || state.classResults.length : Number(item.class_count || 0);
     return `
       <button type="button" class="class-category-tile${active ? ' is-active' : ''}" data-cat="${esc(all ? 'all' : item.name)}" aria-pressed="${active ? 'true' : 'false'}">
@@ -234,14 +234,14 @@
     overlay.className = 'class-category-overlay';
     overlay.hidden = true;
     overlay.innerHTML = `
-      <button type="button" class="class-category-overlay-backdrop" data-action="close-category-overlay" aria-label="Close category overlay"></button>
-      <div class="class-category-overlay-panel" role="dialog" aria-modal="true" aria-label="All categories">
+      <button type="button" class="class-category-overlay-backdrop" data-action="close-category-overlay" aria-label="카테고리 닫기"></button>
+      <div class="class-category-overlay-panel" role="dialog" aria-modal="true" aria-label="전체 카테고리">
         <div class="class-category-overlay-head">
           <div>
-            <span class="banner-eyebrow">Categories</span>
-            <h3>Browse all categories</h3>
+            <span class="banner-eyebrow">카테고리</span>
+            <h3>전체 카테고리 보기</h3>
           </div>
-          <button type="button" class="class-category-overlay-close" data-action="close-category-overlay">Close</button>
+          <button type="button" class="class-category-overlay-close" data-action="close-category-overlay">닫기</button>
         </div>
         <div class="class-category-overlay-grid" data-category-overlay-grid></div>
       </div>
@@ -262,7 +262,7 @@
         ${hasMore ? `
           <button type="button" class="class-category-tile${state.overlayOpen ? ' is-active' : ''}" data-action="toggle-category-overlay" aria-expanded="${state.overlayOpen ? 'true' : 'false'}">
             <span class="class-category-icon">${state.overlayOpen ? '−' : '+'}</span>
-            <span class="class-category-label">${state.overlayOpen ? 'Close' : 'More'}</span>
+            <span class="class-category-label">${state.overlayOpen ? '접기' : '더보기'}</span>
             <span class="class-category-count">${items.length - visible.length}</span>
           </button>
         ` : ''}
@@ -273,7 +273,7 @@
     const grid = document.querySelector('[data-category-overlay-grid]');
     if (grid) {
       grid.innerHTML = [
-        renderCategoryButton({ name: 'All', class_count: state.totalCount }, state.currentCategory === 'all', true),
+        renderCategoryButton({ name: '전체', class_count: state.totalCount }, state.currentCategory === 'all', true),
         ...items.map((item) => renderCategoryButton(item, state.currentCategory === item.name)),
       ].join('');
     }
@@ -298,13 +298,13 @@
   function renderBanner(slides) {
     if (!refs.bannerTrack) return;
     const list = (Array.isArray(slides) ? slides : [])
-      .map((item, index) => normalizeBannerItem(item, 'Class explorer banner', index))
+      .map((item, index) => normalizeBannerItem(item, '클래스 배너', index))
       .filter((item) => item.imageUrl);
 
     const fallback = list.length ? list : [{
       imageUrl: '',
       linkUrl: '',
-      alt: 'Class explorer banner',
+      alt: '클래스 배너',
     }];
 
     state.bannerIndex = Math.min(state.bannerIndex, fallback.length - 1);
@@ -317,7 +317,7 @@
 
     if (refs.bannerDots) {
       refs.bannerDots.innerHTML = fallback.map((_, index) => `
-        <button type="button" class="home-banner-dot${index === state.bannerIndex ? ' is-active' : ''}" data-banner-dot="${index}" aria-label="Banner ${index + 1}"></button>
+        <button type="button" class="home-banner-dot${index === state.bannerIndex ? ' is-active' : ''}" data-banner-dot="${index}" aria-label="배너 ${index + 1}"></button>
       `).join('');
       refs.bannerDots.hidden = fallback.length <= 1;
     }
@@ -374,7 +374,7 @@
       const popular = folders.find((item) => item.type === 'popular' || item.id === 'popular_main');
       if (popular?.items?.length) {
         state.popularClasses = popular.items.slice(0, 4);
-        state.popularTitle = popular.title || 'Popular classes';
+        state.popularTitle = popular.title || '인기 클래스';
         renderPopular();
         return;
       }
@@ -388,7 +388,7 @@
         ? (Array.isArray(res.data?.classes) ? res.data.classes : (Array.isArray(res.data) ? res.data : []))
         : [];
       state.popularClasses = rows.map((item) => normalizeClassCard(item)).filter((item) => item.id);
-      state.popularTitle = 'Popular classes';
+      state.popularTitle = '인기 클래스';
     } catch (error) {
       console.warn('[class_list] fallback popular load failed:', error);
       state.popularClasses = [];
@@ -415,8 +415,8 @@
           <div class="card-thumbnail">
             <img src="${esc(item.imageUrl)}" alt="${esc(item.title)}" loading="lazy">
             <div class="card-badges" aria-hidden="true">
-              <span class="card-badge">B-Square Pick</span>
-              ${item.isNew ? '<span class="badge-new">New</span>' : ''}
+              <span class="card-badge">추천</span>
+              ${item.isNew ? '<span class="badge-new">신규</span>' : ''}
             </div>
           </div>
           <div class="card-info">
@@ -430,32 +430,32 @@
             <div class="meta">
               <span class="rating">★ ${Number(item.rating || 0).toFixed(1)} (${Number(item.reviewCount || 0)})</span>
               <span class="meta-category">${esc(item.category)}</span>
-              <span class="likes">Like ${count.toLocaleString()}</span>
+              <span class="likes">찜 ${count.toLocaleString()}</span>
             </div>
           </div>
         </a>
-        <button type="button" class="btn-bookmark${bookmarked ? ' is-bookmarked' : ''}" data-action="bookmark-class" data-class-id="${esc(item.id)}" data-bookmarked="${bookmarked ? '1' : '0'}" data-like-count="${count}" aria-pressed="${bookmarked ? 'true' : 'false'}" aria-label="${bookmarked ? 'Remove bookmark' : 'Add bookmark'}">${bookmarkIcon(bookmarked)}</button>
+        <button type="button" class="btn-bookmark${bookmarked ? ' is-bookmarked' : ''}" data-action="bookmark-class" data-class-id="${esc(item.id)}" data-bookmarked="${bookmarked ? '1' : '0'}" data-like-count="${count}" aria-pressed="${bookmarked ? 'true' : 'false'}" aria-label="${bookmarked ? '찜 해제' : '찜하기'}">${bookmarkIcon(bookmarked)}</button>
       </article>
     `;
   }
 
   function updateHeader() {
     if (refs.sectionTitle) {
-      refs.sectionTitle.textContent = state.currentCategory === 'all' ? 'All classes' : `${state.currentCategory} classes`;
+      refs.sectionTitle.textContent = state.currentCategory === 'all' ? '전체 클래스' : `${state.currentCategory} 클래스`;
     }
     if (refs.sectionCopy) {
       refs.sectionCopy.textContent = state.searchQuery
-        ? `Results for "${state.searchQuery}" with ${SORT_LABELS[state.currentSort]}.`
-        : 'Filter by category, search, and sort without leaving the page rhythm.';
+        ? `"${state.searchQuery}" 검색 결과입니다. (${SORT_LABELS[state.currentSort]})`
+        : '카테고리, 검색, 정렬을 한 흐름 안에서 정리합니다.';
     }
-    if (refs.heroSort) refs.heroSort.textContent = SORT_LABELS[state.currentSort] || 'Newest';
+    if (refs.heroSort) refs.heroSort.textContent = SORT_LABELS[state.currentSort] || '최신순';
     if (refs.heroCategories) refs.heroCategories.textContent = String(state.categories.length || 0);
     if (refs.heroLoaded) refs.heroLoaded.textContent = String(state.classResults.length || 0);
   }
 
   function updateCount(value) {
     if (refs.totalClassCount) {
-      refs.totalClassCount.textContent = `${Number(value || 0).toLocaleString()} classes`;
+      refs.totalClassCount.textContent = `${Number(value || 0).toLocaleString()}개 클래스`;
     }
   }
 
@@ -481,12 +481,12 @@
       state.hasMore = true;
       state.totalCount = 0;
       state.classResults = [];
-      refs.allClassGrid.innerHTML = '<div class="empty-state">Loading classes...</div>';
+      refs.allClassGrid.innerHTML = '<div class="empty-state">클래스를 불러오는 중입니다...</div>';
       updateCount(0);
     }
 
     setLoading(true);
-    setNotice(reset ? 'Loading class list.' : 'Loading more classes.', 'loading');
+    setNotice(reset ? '클래스 목록을 불러오는 중입니다.' : '클래스를 더 불러오는 중입니다.', 'loading');
 
     try {
       const params = new URLSearchParams();
@@ -499,7 +499,7 @@
 
       const res = await window.BSQ.api(`/api/classes?${params.toString()}`);
       if (token !== state.requestToken) return;
-      if (!res?.success) throw new Error(text(res?.error || 'Failed to load classes'));
+      if (!res?.success) throw new Error(text(res?.error || '클래스를 불러오지 못했습니다.'));
 
       const rows = res?.success
         ? (Array.isArray(res.data?.classes) ? res.data.classes : (Array.isArray(res.data) ? res.data : []))
@@ -515,7 +515,7 @@
         refs.allClassGrid.insertAdjacentHTML('beforeend', normalized.map((item, index) => renderCard(item, state.offset + index)).join(''));
         void hydrateBookmarkStates(normalized);
       } else if (reset) {
-        refs.allClassGrid.innerHTML = '<div class="empty-state">No classes match this filter.</div>';
+        refs.allClassGrid.innerHTML = '<div class="empty-state">선택한 조건에 맞는 클래스가 없습니다.</div>';
       }
 
       state.offset += normalized.length;
@@ -528,8 +528,8 @@
     } catch (error) {
       if (token !== state.requestToken) return;
       console.error('[class_list] load error:', error);
-      setNotice(error?.message || 'Failed to load classes.', 'error');
-      if (reset) refs.allClassGrid.innerHTML = '<div class="empty-state">Failed to load classes.</div>';
+      setNotice(error?.message || '클래스를 불러오지 못했습니다.', 'error');
+      if (reset) refs.allClassGrid.innerHTML = '<div class="empty-state">클래스를 불러오지 못했습니다.</div>';
     } finally {
       if (token === state.requestToken) setLoading(false);
     }
@@ -541,7 +541,7 @@
     button.dataset.likeCount = String(Number(count || 0));
     button.classList.toggle('is-bookmarked', !!bookmarked);
     button.setAttribute('aria-pressed', bookmarked ? 'true' : 'false');
-    button.setAttribute('aria-label', bookmarked ? 'Remove bookmark' : 'Add bookmark');
+    button.setAttribute('aria-label', bookmarked ? '찜 해제' : '찜하기');
     button.innerHTML = bookmarkIcon(bookmarked);
   }
 
@@ -554,7 +554,7 @@
       const button = card.querySelector('[data-action="bookmark-class"]');
       if (button) updateBookmarkButton(button, id, bookmarked, nextCount);
       const likes = card.querySelector('.likes');
-      if (likes) likes.textContent = `Like ${nextCount.toLocaleString()}`;
+      if (likes) likes.textContent = `찜 ${nextCount.toLocaleString()}`;
     });
   }
 
@@ -575,7 +575,7 @@
       const cached = state.bookmarkMap.get(id);
       if (cached?.synced) return;
       const res = await window.BSQ.api(`/api/class-bookmarks?class_id=${encodeURIComponent(id)}`);
-      if (!res?.success || !res.data) throw new Error(res?.error || 'Failed to load bookmark state');
+      if (!res?.success || !res.data) throw new Error(res?.error || '찜 상태를 불러오지 못했습니다.');
       syncBookmarkUi(id, !!res.data.bookmarked, Number(res.data.count || 0));
     }));
 
@@ -608,12 +608,12 @@
 
     try {
       const res = await window.BSQ.api('/api/class-bookmarks', 'POST', { class_id: id });
-      if (!res?.success) throw new Error(res?.error || 'Failed to update bookmark');
+      if (!res?.success) throw new Error(res?.error || '찜을 업데이트하지 못했습니다.');
       syncBookmarkUi(id, !!res.data?.bookmarked, Number(res.data?.count || 0));
       setNotice(res.data?.bookmarked ? 'Class saved.' : 'Bookmark removed.', 'success');
     } catch (error) {
       syncBookmarkUi(id, previous.bookmarked, previous.count);
-      setNotice(error?.message || 'Failed to update bookmark.', 'error');
+      setNotice(error?.message || '찜을 업데이트하지 못했습니다.', 'error');
     } finally {
       button.dataset.pending = '0';
       button.disabled = false;

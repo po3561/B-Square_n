@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="/theme_bootstrap.js?v=20260331_01"></script>
-    <title>B-Square | Class Discovery</title>
+    <title>B-Square | 홈</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="style_mobile.css?v=20260331_02" media="(max-width: 768px)">
@@ -23,45 +23,39 @@
         <section class="home-hero-section">
             <div class="home-shell home-hero-shell">
                 <article class="home-intro-card">
-                    <p class="home-eyebrow">B-Square Curated</p>
-                    <h1 class="home-hero-title">Find the right class without fighting the layout.</h1>
+                    <p class="home-eyebrow">B-Square 추천</p>
+                    <h1 class="home-hero-title">흐름을 해치지 않는 방식으로 클래스를 찾으세요.</h1>
                     <p class="home-hero-copy">
-                        Curated picks, admin-managed banners, and the full class catalog now sit in one cleaner flow
-                        optimized for mobile first.
+                        운영자 설정 배너, 추천 묶음, 전체 클래스 목록을 한 흐름으로 정리해 모바일에서도 빠르게 읽히도록 맞췄습니다.
                     </p>
                     <div class="home-hero-actions">
-                        <a class="home-cta" href="class/class_list.html">Browse all classes</a>
-                        <a class="home-cta subtle" href="community/community.html">Open community</a>
+                        <a class="home-cta" href="class/class_list.html">전체 클래스 보기</a>
+                        <a class="home-cta subtle" href="community/community.html">커뮤니티 열기</a>
                     </div>
-                    <div class="home-hero-stats" aria-label="Home statistics">
+                    <div class="home-hero-stats" aria-label="홈 통계">
                         <article class="home-stat-card">
-                            <span class="home-stat-label">Classes</span>
+                            <span class="home-stat-label">클래스</span>
                             <strong id="homeClassTotal">0</strong>
                         </article>
                         <article class="home-stat-card">
-                            <span class="home-stat-label">Categories</span>
+                            <span class="home-stat-label">카테고리</span>
                             <strong id="homeCategoryTotal">0</strong>
                         </article>
                         <article class="home-stat-card">
-                            <span class="home-stat-label">New in 14 days</span>
+                            <span class="home-stat-label">14일 이내 신규</span>
                             <strong id="homeFreshCount">0</strong>
                         </article>
                     </div>
                 </article>
 
                 <article class="main-ad-banner home-main-banner">
-                    <div class="home-banner-stage" id="homeMainBannerStage" aria-label="Main banner">
+                    <div class="home-banner-stage" id="homeMainBannerStage" aria-label="메인 배너">
                         <div class="home-banner-track" id="homeMainBannerTrack"></div>
-                        <div class="home-banner-controls home-banner-controls-main" aria-label="Main banner controls">
+                        <div class="home-banner-controls home-banner-controls-main" aria-label="메인 배너 제어">
                             <button type="button" class="banner-nav banner-nav-prev" id="homeMainBannerPrev"
-                                aria-label="Previous banner">&lt;</button>
-                            <button type="button" class="banner-nav banner-nav-toggle" id="homeMainBannerPlay"
-                                aria-label="Pause autoplay" aria-pressed="true">Pause</button>
-                            <span class="home-banner-counter" id="homeMainBannerCounter" aria-live="polite">1 / 1</span>
-                            <button type="button" class="banner-nav banner-nav-interval" id="homeMainBannerInterval"
-                                aria-label="Change autoplay speed">5s</button>
+                                aria-label="이전 배너">&lt;</button>
                             <button type="button" class="banner-nav banner-nav-next" id="homeMainBannerNext"
-                                aria-label="Next banner">&gt;</button>
+                                aria-label="다음 배너">&gt;</button>
                         </div>
                     </div>
                 </article>
@@ -73,10 +67,10 @@
                 <article class="home-category-panel" id="homeCategoryPanel">
                     <div class="home-category-panel-head">
                         <div>
-                            <p class="home-eyebrow">Categories</p>
-                            <h2>Jump into the category you want.</h2>
+                            <p class="home-eyebrow">카테고리</p>
+                            <h2>원하는 분류로 바로 들어가세요.</h2>
                         </div>
-                        <p class="home-category-caption">Cards stay compact on mobile and map directly to the full list page.</p>
+                        <p class="home-category-caption">모바일에서는 한 줄로 읽히고, 전체 목록 페이지와 바로 연결됩니다.</p>
                     </div>
                     <div id="homeCategoryShell" class="home-category-shell"></div>
                 </article>
@@ -89,21 +83,21 @@
                     <article class="class-group popular-classes home-surface" id="popularSection">
                         <div class="home-section-head">
                             <div>
-                                <p class="home-eyebrow">Popular</p>
-                                <h3 class="group-title" id="popularGroupTitle">Popular classes</h3>
+                                <p class="home-eyebrow">인기</p>
+                                <h3 class="group-title" id="popularGroupTitle">인기 클래스</h3>
                             </div>
-                            <a class="home-inline-link" href="class/class_list.html?sort=popular">View ranking</a>
+                            <a class="home-inline-link" href="class/class_list.html?sort=popular">순위 보기</a>
                         </div>
                         <div class="card-grid home-card-grid" id="popularClassGrid">
-                            <p class="empty-state">Loading classes...</p>
+                            <p class="empty-state">클래스를 불러오는 중입니다...</p>
                         </div>
                     </article>
 
                     <article class="class-group recommended-classes home-surface" id="recommendSection">
                         <div class="home-section-head">
                             <div>
-                                <p class="home-eyebrow">Collections</p>
-                                <h3 class="group-title" id="recommendGroupTitle">Recommended folders</h3>
+                                <p class="home-eyebrow">추천 묶음</p>
+                                <h3 class="group-title" id="recommendGroupTitle">추천 폴더</h3>
                             </div>
                         </div>
                         <div class="recommend-columns" id="dynamicRecommendContainer"></div>
@@ -117,10 +111,10 @@
                 <article class="class-group all-classes home-surface">
                     <div class="home-section-head">
                         <div>
-                            <p class="home-eyebrow">Catalog</p>
-                            <h3 class="group-title">All classes</h3>
+                            <p class="home-eyebrow">전체</p>
+                            <h3 class="group-title">전체 클래스</h3>
                         </div>
-                        <a class="home-inline-link" href="class/class_list.html">Open full list</a>
+                        <a class="home-inline-link" href="class/class_list.html">전체 목록 열기</a>
                     </div>
                     <div class="card-grid large-grid home-card-grid" id="allClassGrid"></div>
                 </article>
@@ -132,28 +126,28 @@
                 <div class="banner-inner home-bottom-banner-inner">
                     <div class="home-bottom-banner-track" id="homeBottomBannerTrack"></div>
                     <div class="home-bottom-banner-overlay">
-                        <span class="banner-eyebrow">Explore more</span>
-                        <h2>Move from discovery to conversation without leaving the flow.</h2>
-                        <p>Community, recommendations, and the catalog keep the same visual language across desktop and mobile.</p>
+                        <span class="banner-eyebrow">더보기</span>
+                        <h2>탐색에서 대화까지 흐름이 끊기지 않도록 정리했습니다.</h2>
+                        <p>커뮤니티, 추천, 전체 목록이 PC와 모바일에서 같은 시각 언어로 이어집니다.</p>
                     </div>
                     <div class="banner-actions">
-                        <a class="banner-link" href="community/community.html">Open community</a>
-                        <a class="banner-link subtle" href="class/class_list.html">Open all classes</a>
+                        <a class="banner-link" href="community/community.html">커뮤니티 열기</a>
+                        <a class="banner-link subtle" href="class/class_list.html">전체 클래스 열기</a>
                     </div>
-                    <div class="home-banner-controls home-bottom-banner-controls" aria-label="Bottom banner controls">
+                    <div class="home-banner-controls home-bottom-banner-controls" aria-label="하단 배너 제어">
                         <button type="button" class="banner-nav banner-nav-prev" id="homeBottomBannerPrev"
-                            aria-label="Previous banner">&lt;</button>
-                        <div class="home-banner-dots" id="homeBottomBannerDots" aria-label="Bottom banner pages"></div>
+                            aria-label="이전 배너">&lt;</button>
+                        <div class="home-banner-dots" id="homeBottomBannerDots" aria-label="하단 배너 페이지"></div>
                         <button type="button" class="banner-nav banner-nav-next" id="homeBottomBannerNext"
-                            aria-label="Next banner">&gt;</button>
+                            aria-label="다음 배너">&gt;</button>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <script src="header.js?v=20260406_01" defer></script>
-    <script src="main.js?v=20260408_01" defer></script>
+    <script src="header.js?v=20260409_02" defer></script>
+    <script src="main.js?v=20260409_01" defer></script>
     <script src="dev_mode.js?v=20260331_02" defer></script>
 </body>
 

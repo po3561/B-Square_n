@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="/theme_bootstrap.js?v=20260331_01"></script>
-    <title>B-Square | Class List</title>
+    <title>B-Square | 클래스 목록</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -21,47 +21,28 @@
 <body class="class-list-page">
     <main class="class-list-main">
         <div class="section-inner class-list-shell">
-            <section class="class-explorer-hero" aria-label="Class explorer">
+            <section class="class-explorer-hero" aria-label="클래스 탐색">
                 <div class="class-list-banner-card">
                     <div class="class-list-banner-track" id="classListBannerTrack"></div>
-                    <div class="class-list-banner-overlay">
-                        <span class="banner-eyebrow">Class Explorer</span>
-                        <h1 id="classListHeroTitle">Find classes with less friction.</h1>
-                        <p id="classListHeroCopy">Browse by category, search quickly, and keep the same card language used on home.</p>
-                        <div class="class-list-hero-stats" aria-label="Class explorer statistics">
-                            <article class="class-list-stat">
-                                <span>Total loaded</span>
-                                <strong id="classListStatLoaded">0</strong>
-                            </article>
-                            <article class="class-list-stat">
-                                <span>Categories</span>
-                                <strong id="classListStatCategories">0</strong>
-                            </article>
-                            <article class="class-list-stat">
-                                <span>Sort</span>
-                                <strong id="classListStatSort">Newest</strong>
-                            </article>
-                        </div>
-                    </div>
-                    <div class="home-banner-controls class-list-banner-controls" aria-label="Class list banner controls">
+                    <div class="home-banner-controls class-list-banner-controls" aria-label="클래스 배너 제어">
                         <button type="button" class="banner-nav banner-nav-prev" id="classListBannerPrev"
-                            aria-label="Previous banner">&lt;</button>
-                        <div class="home-banner-dots" id="classListBannerDots" aria-label="Banner pages"></div>
+                            aria-label="이전 배너">&lt;</button>
+                        <div class="home-banner-dots" id="classListBannerDots" aria-label="배너 페이지"></div>
                         <button type="button" class="banner-nav banner-nav-next" id="classListBannerNext"
-                            aria-label="Next banner">&gt;</button>
+                            aria-label="다음 배너">&gt;</button>
                     </div>
                 </div>
 
-                <nav class="class-category-shell" id="categoryFilter" aria-label="Class categories"></nav>
+                <nav class="class-category-shell" id="categoryFilter" aria-label="클래스 카테고리"></nav>
             </section>
 
             <section class="class-lists-section class-page-overrides">
                 <article class="class-group popular-classes" id="popularSection" hidden>
                     <div class="class-grid-header popular-grid-header">
                         <div class="header-copy">
-                            <span class="banner-eyebrow">Popular</span>
-                            <h3 class="group-title" id="popularGroupTitle">Popular classes</h3>
-                            <p class="group-subtitle">Admin-managed picks stay ordered while the UI matches the home surface.</p>
+                            <span class="banner-eyebrow">인기</span>
+                            <h3 class="group-title" id="popularGroupTitle">인기 클래스</h3>
+                            <p class="group-subtitle">운영자 추천 순서를 유지하면서 홈과 같은 카드 흐름으로 보여줍니다.</p>
                         </div>
                     </div>
                     <div class="card-grid popular-grid" id="popularClassGrid"></div>
@@ -69,35 +50,35 @@
 
                 <div class="class-grid-header">
                     <div class="header-copy">
-                        <h3 class="group-title" id="classListSectionTitle">All classes</h3>
-                        <p class="group-subtitle" id="classListSectionCopy">Filter by category, sort, and search without breaking the list rhythm.</p>
+                        <h3 class="group-title" id="classListSectionTitle">전체 클래스</h3>
+                        <p class="group-subtitle" id="classListSectionCopy">카테고리, 정렬, 검색을 한 흐름 안에서 정리합니다.</p>
                     </div>
                     <div class="list-controls">
                         <div class="search-filter">
                             <input type="text" id="classSearchInput" class="class-search-input"
-                                placeholder="Search by title, teacher, or keyword">
+                                placeholder="제목, 강사, 키워드로 검색">
                         </div>
                         <select id="sortSelect" class="sort-select">
-                            <option value="newest">Newest</option>
-                            <option value="popular">Popular</option>
-                            <option value="price-low">Price low</option>
-                            <option value="price-high">Price high</option>
+                            <option value="newest">최신순</option>
+                            <option value="popular">인기순</option>
+                            <option value="price-low">가격 낮은 순</option>
+                            <option value="price-high">가격 높은 순</option>
                         </select>
-                        <span id="totalClassCount" class="total-count">0 classes</span>
+                        <span id="totalClassCount" class="total-count">0개 클래스</span>
                     </div>
                 </div>
 
                 <div id="classListNotice" class="class-list-notice" aria-live="polite"></div>
                 <div class="card-grid large-grid" id="allClassGrid">
-                    <div class="empty-state">Loading classes...</div>
+                    <div class="empty-state">클래스를 불러오는 중입니다...</div>
                 </div>
                 <div id="classListSentinel" class="class-list-sentinel" aria-hidden="true"></div>
             </section>
         </div>
     </main>
 
-    <script src="class_list.js?v=20260408_01" defer></script>
-    <script src="../header.js?v=20260402_01" defer></script>
+    <script src="class_list.js?v=20260409_01" defer></script>
+    <script src="../header.js?v=20260409_02" defer></script>
     <script src="../dev_mode.js?v=20260331_02" defer></script>
 </body>
 

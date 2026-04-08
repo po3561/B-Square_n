@@ -23,7 +23,7 @@
     classes: '클래스',
     notices: '공지사항',
     class_notices: '클래스 공지',
-    faqs: 'FAQ',
+    faqs: '자주 묻는 질문',
     inquiries: '문의',
     history: '최근 검색',
   };
@@ -33,7 +33,7 @@
     class: '클래스',
     notice: '공지',
     class_notice: '클래스 공지',
-    faq: 'FAQ',
+    faq: '자주 묻는 질문',
     inquiry: '문의',
   };
 
@@ -252,7 +252,7 @@
       return `
         <div class="bsq-search-empty">
           <strong>최근 검색 기록이 표시됩니다.</strong>
-          <p>검색어를 입력하면 클래스, 공지, FAQ, 문의를 함께 찾습니다.</p>
+          <p>검색어를 입력하면 클래스, 공지, 자주 묻는 질문, 문의를 함께 찾습니다.</p>
         </div>
       `;
     }
@@ -336,7 +336,7 @@
                 <li>
                   <a href="${prefix}create_class/create_class.html" class="nav-highlight">
                     <span class="nav-icon" aria-hidden="true">${navIconSvg('create')}</span>
-                    <span class="nav-label">무료 모임 개설</span>
+                    <span class="nav-label">모임개설</span>
                   </a>
                 </li>
               </ul>
@@ -635,10 +635,10 @@
 
               <div class="footer-social-links" aria-label="소셜 링크">
                 <a id="footerInstagramLink" href="https://www.instagram.com/b_square.01?igsh=MzZ4b3pod2FsMDQ1" class="footer-social-link" target="_blank" rel="noopener noreferrer">
-                  <span class="icon">IG</span><span>인스타그램</span>
+                  <span class="icon">인</span><span>인스타그램</span>
                 </a>
                 <a id="footerYoutubeLink" href="#" class="footer-social-link" target="_blank" rel="noopener noreferrer">
-                  <span class="icon">YT</span><span>유튜브</span>
+                  <span class="icon">유</span><span>유튜브</span>
                 </a>
               </div>
             </section>
@@ -684,7 +684,7 @@
             <p class="footer-company-more">
               <a href="${prefix}contact/contact.html">사업자 정보 자세히 보기 &gt;</a>
             </p>
-            <p class="copyright">© <span id="footerCopyrightBrand">B-Square</span>. All rights reserved.</p>
+            <p class="copyright">© <span id="footerCopyrightBrand">B-Square</span>. 모든 권리 보유.</p>
           </div>
         </div>
       </footer>`;
@@ -985,7 +985,6 @@
     setupDrawer();
     setupCategoryMenu();
     setupGlobalSearch();
-    ensureHelperLoaded();
     initAuth();
 
     window.addEventListener('scroll', () => {
