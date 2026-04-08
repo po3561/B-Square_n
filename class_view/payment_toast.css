@@ -247,3 +247,43 @@
         transform: scale(1) translateY(0);
     }
 }
+
+body.class-view-page .toast-container {
+    top: max(20px, env(safe-area-inset-top));
+}
+
+body.class-view-page .toast {
+    border-radius: 18px;
+    box-shadow: 0 22px 46px rgba(15, 23, 42, 0.22);
+}
+
+body.class-view-page .payment-overlay,
+body.class-view-page .free-enroll-modal {
+    background: rgba(7, 10, 16, 0.62);
+}
+
+body.class-view-page .free-modal-card {
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(17, 21, 31, 0.98), rgba(12, 15, 22, 0.98));
+}
+
+@media (max-width: 768px) {
+    body.class-view-page .toast-container {
+        left: 12px;
+        right: 12px;
+        top: max(12px, env(safe-area-inset-top));
+    }
+
+    body.class-view-page .toast {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+        padding: 14px 16px;
+    }
+
+    body.class-view-page .free-modal-card {
+        width: calc(100% - 24px);
+        padding: 1.4rem;
+        border-radius: 20px;
+    }
+}

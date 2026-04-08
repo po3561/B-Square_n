@@ -229,10 +229,12 @@ function bindNav() {
         if (!targetId) return;
         const target = document.getElementById(targetId);
         if (!target) return;
+        document.body.dataset.currentMypageTab = targetId;
 
         navButtons.forEach((btn) => {
             const active = btn.dataset.target === targetId;
             btn.classList.toggle('active', active);
+            btn.setAttribute('aria-selected', active ? 'true' : 'false');
             if (active) btn.setAttribute('aria-current', 'page');
             else btn.removeAttribute('aria-current');
         });

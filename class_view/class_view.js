@@ -130,6 +130,38 @@ const TAB_PARAM_MAP = {
     intro: 'tabIntro', curriculum: 'tabCurriculum', review: 'tabReview', notice: 'tabNotice', chat: 'tabChat', edit: 'tabEdit'
 };
 
+function setTextContent(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+}
+
+function activateTab(targetId, { updateHistory = true } = {}) {
+    const tabId = normalizeTabTargetId(targetId);
+    if (!tabId) return;
+
+    const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+    const tabContents = Array.from(document.querySelectorAll('.tab-content'));
+
+    tabBtns.forEach((btn) => {
+        const active = btn.getAttribute('data-target') === tabId;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+
+    tabContents.forEach((section) => {
+        const active = section.id === tabId;
+        section.classList.toggle('active', active);
+        section.setAttribute('aria-hidden', active ? 'false' : 'true');
+    });
+
+    if (updateHistory) {
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.set('tab', tabId.replace(/^tab/, '').toLowerCase());
+        nextUrl.hash = tabId;
+        window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+    }
+}
+
 function normalizeTabTargetId(rawValue) {
     const value = String(rawValue || '').trim().replace(/^#/, '');
     if (!value) return '';
@@ -270,22 +302,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Tab Logic
     const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabBtns.forEach(btn => {
+    tabBtns.forEach((btn) => {
         btn.addEventListener('click', () => {
             const trg = btn.getAttribute('data-target');
-            tabBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            tabContents.forEach(c => c.classList.remove('active'));
-            document.getElementById(trg)?.classList.add('active');
+            activateTab(trg);
         });
     });
 
     const initTab = getInitialTabTargetId();
-    if (initTab) document.querySelector(`[data-target="${initTab}"]`)?.click();
+    activateTab(initTab || 'tabIntro', { updateHistory: false });
 });
 
 function renderCorePageInfo(data) {
+    const title = String(data?.title || data?.name || '?대옒???쒕ぉ').trim();
+    const summary = getHeroSummary(data);
+    const instructor = data.creator_name || data.instructor_name || '媛뺤궗 ?뺣낫 ?놁쓬';
+    const category = data.category || '湲고?';
     document.getElementById('viewTitleSide').textContent = data.title;
     document.getElementById('heroSummarySide').textContent = getHeroSummary(data);
     document.getElementById('heroInstructorSide').textContent = data.creator_name || data.instructor_name || '강사 정보 없음';
@@ -296,6 +328,21 @@ function renderCorePageInfo(data) {
     document.getElementById('heroReviewCountSide').textContent = String(data.review_count || 0);
     document.getElementById('heroPriceSummarySide').textContent = getPriceSummary(data, price);
     document.getElementById('heroOfferSummarySide').textContent = getOfferSummary(data);
+    document.getElementById('heroCategoryTop').textContent = data.category || '카테고리';
+    document.getElementById('heroTitleTop').textContent = data.title || '클래스 제목';
+    document.getElementById('heroSummaryTop').textContent = getHeroSummary(data);
+    document.getElementById('heroInstructorTop').textContent = data.creator_name || data.instructor_name || '강사 정보 없음';
+    document.getElementById('heroRatingTop').textContent = Number(data.avg_rating || 0).toFixed(1);
+    document.getElementById('heroReviewTop').textContent = String(data.review_count || 0);
+    document.getElementById('heroPriceTop').textContent = getPriceSummary(data, price);
+
+    setTextContent('heroTitleTop', title);
+    setTextContent('heroSummaryTop', summary);
+    setTextContent('heroInstructorTop', instructor);
+    setTextContent('heroCategoryTop', category);
+    setTextContent('heroRatingTop', Number(data.avg_rating || 0).toFixed(1));
+    setTextContent('heroReviewTop', String(data.review_count || 0));
+    setTextContent('heroPriceTop', getPriceSummary(data, price));
 
     const images = Array.from(new Set([
         ...safeParseArray(data.image_urls, []).map((item) => {

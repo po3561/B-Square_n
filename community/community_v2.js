@@ -334,6 +334,11 @@ function wireShellActions(userId, deps) {
 
     });
 
+    document.getElementById('btnOpenFriends')?.addEventListener('click', () => {
+        openModal('friendsModal');
+        loadFriendsPanel(userId, SyncBridge);
+    });
+
     document.getElementById('hmSettings')?.addEventListener('click', () => {
 
         closeMenu();

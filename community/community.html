@@ -39,6 +39,18 @@
 
         <aside class="comm-sidebar" id="commSidebar">
             <div class="sidebar-header">
+                <div class="sidebar-intro">
+                    <span class="sidebar-intro-eyebrow">Community</span>
+                    <div class="sidebar-intro-row">
+                        <div>
+                            <h2>대화와 클래스가 이어지는 공간</h2>
+                            <p>수업 채팅, DM, 그룹 대화를 한 화면에서 관리하세요.</p>
+                        </div>
+                        <button class="btn-sidebar-utility" id="btnOpenFriends" type="button" aria-label="친구 목록 열기">
+                            <i class="fa-regular fa-address-book"></i>
+                        </button>
+                    </div>
+                </div>
                 <div class="sidebar-search">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="chatSearchInput" placeholder="채팅 검색" aria-label="채팅방 검색">
@@ -128,7 +140,10 @@
 
         <aside class="comm-info-panel" id="commInfoPanel">
             <div class="info-panel-header">
-                <h3 id="infoPanelTitle">프로필</h3>
+                <div class="info-panel-heading">
+                    <span class="info-panel-eyebrow">Room details</span>
+                    <h3 id="infoPanelTitle">프로필</h3>
+                </div>
                 <button class="btn-close-panel" id="btnClosePanel" aria-label="정보 패널 닫기"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="info-panel-body" id="infoPanelBody"></div>
@@ -258,7 +273,7 @@
     </main>
 
     <script src="../header.js?v=20260402_01" defer></script>
-    <script src="../kakao_quick.js?v=20260402_01" defer></script>
+    <script src="../kakao_quick.js?v=20260408_02" defer></script>
     <script src="../dev_mode.js?v=20260331_02" defer></script>
     <script src="community_shared_v2.js?v=20260331_02" defer></script>
     <script src="sync_bridge.js?v=20260401_03" defer></script>

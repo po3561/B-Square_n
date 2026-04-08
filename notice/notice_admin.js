@@ -123,6 +123,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btnEditorCancel')?.addEventListener('click', () => {
         editorModal.style.display = 'none';
     });
+    editorModal?.addEventListener('click', (event) => {
+        if (event.target === editorModal) editorModal.style.display = 'none';
+    });
 
     // Save Data (D1 API)
     document.getElementById('btnEditorSubmit')?.addEventListener('click', async () => {

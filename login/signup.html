@@ -14,9 +14,13 @@
     <script src="/i18n.js?v=20260331_01" defer></script>
 </head>
 
-<body class="auth-body auth-standalone auth-signup-page">
+<body class="auth-body auth-standalone auth-signup-page auth-signup-modern">
     <main class="auth-screen">
         <section class="auth-card auth-card--signup">
+            <div class="auth-card-topper">
+                <p class="auth-card-kicker">Verified Signup</p>
+                <p class="auth-card-copy">Social verification, account details, and referrer input stay in one compact flow.</p>
+            </div>
             <h1 class="auth-brand">
                 <a class="auth-brand-link" href="../index.html" aria-label="B-Square 홈으로 이동">
                     <span class="auth-brand-mark" aria-hidden="true">◆</span>
@@ -82,7 +86,7 @@
 
                 <div class="input-group">
                     <label for="signupReferrerCode">추천인 코드 (선택)</label>
-                    <select id="signupReferrerCode" name="referrer_code">
+                    <select id="signupReferrerCode" name="referrer_code" data-referrer-display="code-only">
                         <option value="">추천인 코드를 선택해 주세요 (선택사항)</option>
                     </select>
                     <p id="referrerCodeStatus" class="status-msg"></p>

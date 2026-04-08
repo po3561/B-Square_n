@@ -35,6 +35,8 @@
   --text-muted: var(--bsq-text-muted);
   --muted-text: var(--bsq-text-muted);
   --comm-accent-rgb: 123, 140, 255;
+  --shell-header-offset: clamp(88px, 6.8vw, 108px);
+  --shell-header-offset-mobile: 78px;
 }
 
 html[data-theme="light"] {
@@ -159,7 +161,7 @@ body:not(.home-page) .class-list-main,
 body:not(.home-page) .contact-main,
 body:not(.home-page) .notice-main,
 body:not(.home-page) .mypage-shell {
-  padding-top: 80px !important;
+  padding-top: var(--shell-header-offset) !important;
 }
 
 
@@ -878,7 +880,7 @@ body.home-page .home-banner-stage::after {
 
 /* Home main banner: album-style carousel (center + side peeks, smooth horizontal motion) */
 body.home-page #homeMainBannerStage[data-banner-variant="album"] {
-  overflow: visible !important;
+  overflow: hidden !important;
   --bsq-banner-shift: clamp(220px, 22vw, 360px);
   --bsq-banner-scale-side: 0.86;
   --bsq-banner-scale-far: 0.74;
@@ -887,7 +889,7 @@ body.home-page #homeMainBannerStage[data-banner-variant="album"] {
 body.home-page #homeMainBannerStage[data-banner-variant="album"] .home-banner-track {
   position: absolute !important;
   inset: 0 !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   perspective: 1200px;
   z-index: 0;
 }
@@ -2308,15 +2310,15 @@ body.home-page .hero-inner {
 }
 
 body.home-page .main-ad-banner.home-main-banner {
-  width: 100vw !important;
-  margin-left: calc(50% - 50vw) !important;
-  margin-right: calc(50% - 50vw) !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
   padding: 0 !important;
   background: transparent !important;
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  overflow: visible;
+  overflow: hidden;
 }
 
 body.home-page .main-ad-banner.home-main-banner::before {

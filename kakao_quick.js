@@ -176,6 +176,7 @@
   z-index: 99990;
   display: grid;
   gap: 10px;
+  width: 58px;
 }
 
 .bsq-helper-btn {
@@ -209,12 +210,14 @@ html[data-theme="light"] .bsq-helper-btn {
 
 .bsq-helper-pulse {
   position: absolute;
-  inset: -10px;
+  inset: 0;
   border-radius: 999px;
   pointer-events: none;
   background: radial-gradient(circle, rgba(142,165,255,0.25), transparent 65%);
   filter: blur(10px);
   opacity: 0.75;
+  transform: scale(1.24);
+  transform-origin: center;
   animation: bsqPulse 2.8s ease-in-out infinite;
 }
 
@@ -857,6 +860,7 @@ html[data-theme="light"] .bsq-helper-modal-card {
     }
 
     function maybeShowFirstTour() {
+        if (window.matchMedia?.('(max-width: 768px)')?.matches) return;
         let seen = false;
         try { seen = localStorage.getItem(STORAGE.tourSeen) === '1'; } catch { }
         if (seen) return;

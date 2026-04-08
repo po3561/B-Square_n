@@ -9,7 +9,7 @@
   const scriptDir = scriptTag ? scriptTag.src.substring(0, scriptTag.src.lastIndexOf('/') + 1) : '';
   
   // Use scriptDir for absolute-like relative paths for CSS dynamic injection
-  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260402_01';
+  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260408_01';
 
   const homePrefix = currentPath.split('/').length > 2 ? '../' : './';
   const prefix = homePrefix;
@@ -47,19 +47,34 @@
     currentRequestQuery: '',
   };
 
+  function navIconSvg(key) {
+    const icons = {
+      home: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10.25V20h12v-9.75"/><path d="M9.25 20v-5.25h5.5V20"/></svg>',
+      class: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="5" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>',
+      create: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.25"/><path d="M12 8.5v7M8.5 12h7"/></svg>',
+      notice: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5 4.5 8v6c0 4.1 3 7.1 7.5 8.5 4.5-1.4 7.5-4.4 7.5-8.5V8Z"/><path d="M12 8v5.25"/><circle cx="12" cy="16.8" r="1"/></svg>',
+      contact: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.25"/><path d="M9.4 9.2a2.8 2.8 0 0 1 5.2 1.4c0 1.9-2.4 2.3-2.4 4.1"/><path d="M12 17.15h.01"/></svg>',
+      community: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 7.5h10.2a2.8 2.8 0 0 1 2.8 2.8v2.3a2.8 2.8 0 0 1-2.8 2.8h-4.9l-3.7 2.8v-2.8H5.5A2.8 2.8 0 0 1 2.7 12.6v-2.3a2.8 2.8 0 0 1 2.8-2.8Z"/><path d="M8.2 11.5h4.2"/><path d="M8.2 13.8h2.8"/></svg>',
+      mypage: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.25" r="3.25"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>',
+      default: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.25"/></svg>',
+    };
+
+    return icons[key] || icons.default;
+  }
+
   const NAV_ITEMS = [
-    { id: 'class', label: '클래스', href: 'class/class_list.html' },
-    { id: 'notice', label: '공지사항', href: 'notice/notice.html' },
-    { id: 'contact', label: '문의', href: 'contact/contact.html' },
-    { id: 'community', label: '커뮤니티', href: 'community/community.html' },
+    { id: 'class', label: '클래스', href: 'class/class_list.html', icon: navIconSvg('class') },
+    { id: 'notice', label: '공지사항', href: 'notice/notice.html', icon: navIconSvg('notice') },
+    { id: 'contact', label: '문의', href: 'contact/contact.html', icon: navIconSvg('contact') },
+    { id: 'community', label: '커뮤니티', href: 'community/community.html', icon: navIconSvg('community') },
   ];
 
   const BOTTOM_NAV_ITEMS = [
-    { id: 'home', label: '홈', href: homePrefix + 'index.html', icon: '⌂' },
-    { id: 'class', label: '클래스', href: prefix + 'class/class_list.html', icon: '▦' },
-    { id: 'create', label: '등록', href: prefix + 'create_class/create_class.html', icon: '＋' },
-    { id: 'community', label: '커뮤니티', href: prefix + 'community/community.html', icon: '◎' },
-    { id: 'mypage', label: '마이페이지', href: prefix + 'mi_pesg/mypage.html', icon: '◔' },
+    { id: 'home', label: '홈', href: homePrefix + 'index.html', icon: navIconSvg('home') },
+    { id: 'class', label: '클래스', href: prefix + 'class/class_list.html', icon: navIconSvg('class') },
+    { id: 'create', label: '모임개설', href: prefix + 'create_class/create_class.html', icon: navIconSvg('create'), tone: 'accent' },
+    { id: 'community', label: '채팅', href: prefix + 'community/community.html', icon: navIconSvg('community') },
+    { id: 'mypage', label: '마이페이지', href: prefix + 'mi_pesg/mypage.html', icon: navIconSvg('mypage') },
   ];
 
   function getActiveNav() {
@@ -268,7 +283,7 @@
           <!-- 상단 1열: 로고, 검색창, 우측유틸 -->
           <div class="header-top">
             <div class="header-top-left">
-              <button class="btn-hamburger mobile-only-flex" id="btnHamburger" aria-label="메뉴 열기">
+              <button class="btn-hamburger mobile-only-flex" id="btnHamburger" type="button" aria-label="메뉴 열기" aria-controls="drawerMenu" aria-expanded="false">
                 <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
               </button>
               <h1 class="logo">
@@ -298,10 +313,10 @@
           <div class="header-bottom desktop-only-flex">
             <!-- 카테고리 메뉴 시작 -->
             <div class="header-category-wrapper">
-              <button type="button" class="btn-header-category" id="btnHeaderCategory" aria-expanded="false">
+              <button type="button" class="btn-header-category" id="btnHeaderCategory" aria-expanded="false" aria-controls="headerCategoryMega" aria-haspopup="true">
                 <span>카테고리 <span class="arrow">∨</span></span>
               </button>
-              <div class="header-category-mega" id="headerCategoryMega">
+              <div class="header-category-mega" id="headerCategoryMega" hidden>
                 <!-- JS가 다중 컬럼 카테고리를 주입 -->
               </div>
             </div>
@@ -311,11 +326,19 @@
               <ul>
                 ${NAV_ITEMS.map((item) => `
                   <li>
-                    <a href="${prefix}${item.href}"${activeNav === item.id ? ' class="nav-active"' : ''}>${item.label}</a>
+                    <a href="${prefix}${item.href}"${activeNav === item.id ? ' class="nav-active"' : ''}>
+                      <span class="nav-icon" aria-hidden="true">${item.icon}</span>
+                      <span class="nav-label">${item.label}</span>
+                    </a>
                   </li>
                 `).join('')}
                 <li><span class="nav-divider"></span></li>
-                <li><a href="${prefix}create_class/create_class.html" class="nav-highlight">무료 모임 개설</a></li>
+                <li>
+                  <a href="${prefix}create_class/create_class.html" class="nav-highlight">
+                    <span class="nav-icon" aria-hidden="true">${navIconSvg('create')}</span>
+                    <span class="nav-label">무료 모임 개설</span>
+                  </a>
+                </li>
               </ul>
             </nav>
           </div>
@@ -569,7 +592,7 @@
   function buildDrawerHTML() {
     return `
       <div class="drawer-overlay mobile-only" id="drawerOverlay"></div>
-      <aside class="drawer-menu mobile-only" id="drawerMenu">
+      <aside class="drawer-menu mobile-only" id="drawerMenu" aria-hidden="true">
         <div class="drawer-header">
           <h2 class="drawer-title">B-Square</h2>
           <button class="drawer-close" id="drawerClose" type="button">닫기</button>
@@ -578,7 +601,7 @@
         <nav class="drawer-nav" aria-label="모바일 메뉴">
           <a href="${homePrefix}index.html" class="drawer-nav-item${activeNav === 'home' ? ' active' : ''}">홈</a>
           <a href="${prefix}class/class_list.html" class="drawer-nav-item${activeNav === 'class' ? ' active' : ''}">클래스</a>
-          <a href="${prefix}create_class/create_class.html" class="drawer-nav-item${activeNav === 'create' ? ' active' : ''}">등록</a>
+          <a href="${prefix}create_class/create_class.html" class="drawer-nav-item${activeNav === 'create' ? ' active' : ''}">모임개설</a>
           <a href="${prefix}notice/notice.html" class="drawer-nav-item${activeNav === 'notice' ? ' active' : ''}">공지사항</a>
           <a href="${prefix}contact/contact.html" class="drawer-nav-item${activeNav === 'contact' ? ' active' : ''}">문의</a>
           <a href="${prefix}community/community.html" class="drawer-nav-item${activeNav === 'community' ? ' active' : ''}">커뮤니티</a>
@@ -591,8 +614,8 @@
     return `
       <nav class="bottom-nav mobile-only" id="bsqBottomNav" aria-label="하단 메뉴">
         ${BOTTOM_NAV_ITEMS.map((item) => `
-          <a href="${item.href}" class="nav-item${activeNav === item.id ? ' active' : ''}">
-            <span class="icon">${item.icon}</span>
+          <a href="${item.href}" class="nav-item${item.tone === 'accent' ? ' nav-item-accent' : ''}${activeNav === item.id ? ' active' : ''}"${activeNav === item.id ? ' aria-current="page"' : ''}>
+            <span class="icon" aria-hidden="true">${item.icon}</span>
             <span class="label">${item.label}</span>
           </a>
         `).join('')}
@@ -769,16 +792,67 @@
     function openDrawer() {
       overlay?.classList.add('active');
       menu?.classList.add('active');
+      hamburger?.setAttribute('aria-expanded', 'true');
+      menu?.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('shell-drawer-open');
     }
 
     function closeDrawer() {
       overlay?.classList.remove('active');
       menu?.classList.remove('active');
+      hamburger?.setAttribute('aria-expanded', 'false');
+      menu?.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('shell-drawer-open');
     }
 
     hamburger?.addEventListener('click', openDrawer);
     overlay?.addEventListener('click', closeDrawer);
     closeBtn?.addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeDrawer();
+    });
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) closeDrawer();
+    });
+  }
+
+  function setupCategoryMenu() {
+    const button = document.getElementById('btnHeaderCategory');
+    const menu = document.getElementById('headerCategoryMega');
+    const wrapper = document.querySelector('.header-category-wrapper');
+    if (!button || !menu || button.dataset.bsqCategoryBound === '1') return;
+
+    button.dataset.bsqCategoryBound = '1';
+
+    const setOpen = (open) => {
+      menu.hidden = !open;
+      button.setAttribute('aria-expanded', open ? 'true' : 'false');
+      button.classList.toggle('is-open', open);
+      menu.classList.toggle('active', open);
+    };
+
+    setOpen(false);
+
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      setOpen(menu.hidden);
+    });
+
+    document.addEventListener('pointerdown', (event) => {
+      if (menu.hidden) return;
+      if (wrapper?.contains(event.target)) return;
+      setOpen(false);
+    }, true);
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    });
+
+    window.addEventListener('scroll', () => {
+      if (!menu.hidden) setOpen(false);
+    }, { passive: true });
+
+    window.addEventListener('resize', () => setOpen(false));
   }
 
   function renderUserMenu(session, user) {
@@ -869,7 +943,7 @@
     const helperScript = document.createElement('script');
     helperScript.dataset.bsqHelper = '1';
     helperScript.async = true;
-    helperScript.src = `${homePrefix}kakao_quick.js?v=20260402_01`;
+    helperScript.src = `${homePrefix}kakao_quick.js?v=20260408_02`;
     helperScript.onload = () => {
       window.__BSQ_HELPER_LOADED__ = true;
     };
@@ -909,6 +983,7 @@
   function run() {
     injectUI();
     setupDrawer();
+    setupCategoryMenu();
     setupGlobalSearch();
     ensureHelperLoaded();
     initAuth();

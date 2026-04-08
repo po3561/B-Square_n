@@ -14,6 +14,7 @@
         editTargetId: null,
         isSending: false,
         deletePrompt: { id: null, at: 0 },
+        controlsBound: false,
     };
 
     const EMOJIS = ['😀', '😂', '🥰', '😍', '🤔', '😅', '😎', '🥳', '😢', '😡', '👍', '👎', '❤️', '🔥', '⭐', '🎉', '💯', '🙌', '👏', '🤝', '💪', '🙏', '✨', '💬'];
@@ -95,6 +96,42 @@
     function getContainer() { return q('chatMessagesContainer'); }
     function isNearBottom(container, threshold = 120) { return !container || (container.scrollHeight - container.scrollTop - container.clientHeight < threshold); }
     function scrollToBottom(smooth = false) { const c = getContainer(); if (c) c.scrollTo({ top: c.scrollHeight, behavior: smooth ? 'smooth' : 'auto' }); }
+
+    function syncViewportOffset() {
+        const wrapper = q('tabChat') || document.querySelector('.chat-tab-wrapper');
+        if (!wrapper) return;
+        const vv = window.visualViewport;
+        if (!vv) {
+            wrapper.style.removeProperty('--bsq-chat-keyboard-offset');
+            return;
+        }
+        const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+        wrapper.style.setProperty('--bsq-chat-keyboard-offset', `${Math.round(offset)}px`);
+    }
+
+    function bindViewportOffset() {
+        if (!window.visualViewport || window.__BSQ_CLASS_CHAT_VIEWPORT_BOUND__) return;
+        const onResize = () => syncViewportOffset();
+        window.visualViewport.addEventListener('resize', onResize);
+        window.visualViewport.addEventListener('scroll', onResize);
+        window.addEventListener('orientationchange', onResize);
+        window.__BSQ_CLASS_CHAT_VIEWPORT_BOUND__ = true;
+        syncViewportOffset();
+    }
+
+    function bindScrollBadge() {
+        const container = getContainer();
+        const badge = q('scrollBadge');
+        if (!container || !badge || container.dataset.badgeBound === '1') return;
+
+        container.dataset.badgeBound = '1';
+        container.addEventListener('scroll', () => {
+            if (isNearBottom(container, 40)) {
+                badge.style.display = 'none';
+                badge.textContent = '0';
+            }
+        });
+    }
 
     function setPendingState(pending) {
         const btn = q('btnSend');
@@ -415,7 +452,18 @@
         syncPinnedState(msg, !!msg.is_pinned);
         if (!existing) container.appendChild(row);
         else if (existing.dataset.signature !== signature) existing.replaceWith(row);
-        if (shouldStick) scrollToBottom();
+        const badge = q('scrollBadge');
+        if (shouldStick) {
+            scrollToBottom();
+            if (badge) {
+                badge.style.display = 'none';
+                badge.textContent = '0';
+            }
+        } else if (badge) {
+            const current = Number(badge.textContent || '0');
+            badge.textContent = String(current + 1);
+            badge.style.display = 'inline-flex';
+        }
         return row;
     }
 
@@ -712,6 +760,9 @@
     }
 
     function setupControls() {
+        if (state.controlsBound) return;
+        state.controlsBound = true;
+
         q('btnSend')?.addEventListener('click', () => sendMessage());
         q('msgInput')?.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
@@ -727,6 +778,8 @@
         q('btnChatInfo')?.addEventListener('click', () => toggleInfoPanel());
         q('btnClosePanel')?.addEventListener('click', () => { const panel = q('commInfoPanel'); if (panel) { panel.classList.remove('visible'); panel.style.display = 'none'; } });
         q('btnScrollBottom')?.addEventListener('click', () => { scrollToBottom(true); const badge = q('scrollBadge'); if (badge) badge.style.display = 'none'; });
+        bindScrollBadge();
+        bindViewportOffset();
 
         const btnEmoji = q('btnEmoji');
         const picker = q('emojiPicker');
@@ -890,6 +943,7 @@
         if (activeArea) activeArea.style.display = 'flex';
 
         setupControls();
+        syncViewportOffset();
         loadInitialMessages().then((rows) => startFeed(rows)).catch((error) => console.warn('loadInitialMessages failed:', error));
         loadPinnedMessages().catch(() => {});
         window.__BSQ_CLASS_CHAT_INITIALIZED__ = true;

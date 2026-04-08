@@ -138,7 +138,8 @@
         for (const option of options) {
           const opt = document.createElement('option');
           opt.value = String(option.value || '').trim();
-          opt.textContent = String(option.label || option.value || '').trim();
+          // User-facing signup flow stores the code value; labels stay admin-side.
+          opt.textContent = String(option.value || option.label || '').trim();
           optgroup.appendChild(opt);
         }
 
@@ -233,6 +234,7 @@
     };
 
     const loadReferrerCodes = async () => {
+      if (referrerSelect) referrerSelect.disabled = true;
       try {
         const result = await apiGet('/api/auth/referrer-codes');
         const groups = result?.data?.groups || [];

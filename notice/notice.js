@@ -163,6 +163,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="item-author">${escapeHtml(n.author_name || '관리자')}</div>
                     <div class="item-date">${dateStr}</div>
                     <div class="item-views">${n.views || 0}</div>
+                    <div class="item-meta-mobile">
+                        <span class="item-author">${escapeHtml(n.author_name || '관리자')}</span>
+                        <span class="item-date">${dateStr}</span>
+                        <span class="item-views">조회 ${n.views || 0}</span>
+                    </div>
                 </div>
             `;
         }).join('');
@@ -207,6 +212,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="item-author">${escapeHtml(n.author_name || '강사')}</div>
                     <div class="item-date">${dateStr}</div>
                     <div class="item-views">${n.views || 0}</div>
+                    <div class="item-meta-mobile">
+                        <span class="item-author">${escapeHtml(n.author_name || '강사')}</span>
+                        <span class="item-date">${dateStr}</span>
+                        <span class="item-views">조회 ${n.views || 0}</span>
+                    </div>
                 </div>
             `;
         }).join('');
@@ -333,6 +343,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btnViewerClose')?.addEventListener('click', () => {
         viewerModal.style.display = 'none';
         currentOpenNoticeId = null;
+    });
+
+    [viewerModal, document.getElementById('editorModal')].filter(Boolean).forEach((modal) => {
+        modal.addEventListener('click', (event) => {
+            if (event.target !== modal) return;
+            modal.style.display = 'none';
+            if (modal === viewerModal) currentOpenNoticeId = null;
+        });
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        if (viewerModal?.style.display === 'flex') {
+            viewerModal.style.display = 'none';
+            currentOpenNoticeId = null;
+        }
+        const editorModal = document.getElementById('editorModal');
+        if (editorModal?.style.display === 'flex') {
+            editorModal.style.display = 'none';
+        }
     });
 
     // ==== LIKES (D1 API) ====
