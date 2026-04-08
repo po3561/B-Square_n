@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     bindHomeEvents();
+    ensureBsqHelperLoaded();
 
     const currentCategory = getCurrentHomeCategory();
     await Promise.all([
@@ -449,8 +450,8 @@ function renderHomeClassSection(currentCategory = 'all') {
 
     const popularFolder = globalRecommendationFolders.find((item) => item.type === 'popular' || item.id === 'popular_main');
     const popularSource = popularFolder?.items?.length
-        ? popularFolder.items
-        : [...globalAllClasses].sort((left, right) => right.likeCount - left.likeCount).slice(0, 4);
+        ? popularFolder.items.slice(0, 5)
+        : [...globalAllClasses].sort((left, right) => right.likeCount - left.likeCount).slice(0, 5);
 
     if (popularGrid) renderClassCards(popularSource, popularGrid);
     if (recommendContainer) {

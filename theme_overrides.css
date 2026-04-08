@@ -1252,6 +1252,45 @@ html[data-theme="light"] body.home-page .home-category-item.is-active {
   border-color: rgba(79, 111, 255, 0.18) !important;
 }
 
+/* Shared home/class-list polish: keep the theme readable and remove extra hero clutter. */
+body.home-page .home-hero-shell {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+body.home-page .home-intro-card {
+  display: none !important;
+}
+
+body.home-page .home-main-banner {
+  grid-column: 1 / -1 !important;
+}
+
+body.home-page .home-category-panel {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+body.home-page .home-category-panel-head {
+  display: none !important;
+}
+
+body.home-page .home-category-shell {
+  gap: 0.6rem !important;
+}
+
+@media (min-width: 1440px) {
+  body.home-page .home-card-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+
+  body.class-list-page .class-page-overrides .card-grid,
+  body.class-list-page .popular-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+}
+
 /* Recommend page card polish */
 body.recommend-page {
   background:

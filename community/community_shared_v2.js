@@ -2,6 +2,8 @@
 
 (() => {
     const STORAGE_KEY = 'bsq_community_shell_settings_v2';
+    const BLOCK_STORAGE_KEY = 'bsq_comm_blocked_targets_v1';
+    const relationCache = new Map();
 
     function loadSettings() {
         const fallback = {
@@ -68,12 +70,13 @@
         return escapeHtml(value).replace(/`/g, '&#96;');
     }
 
-    function makePopupUrl({ roomId, roomType, name, avatar }) {
+    function makePopupUrl({ roomId, roomType, name, avatar, panel }) {
         const url = new URL('../community/message_popup.html', window.location.href);
         if (roomId) url.searchParams.set('room', roomId);
         if (roomType) url.searchParams.set('type', roomType);
         if (name) url.searchParams.set('name', name);
         if (avatar) url.searchParams.set('avatar', avatar);
+        if (panel) url.searchParams.set('panel', panel);
         return url.toString();
     }
 
@@ -98,6 +101,90 @@
         return window.CommunityModules?.SyncBridge?.getUserId?.() || window.BSQ?.session?.user?.id || '';
     }
 
+    function blockedStorageKey(userId = currentUserId()) {
+        return `${BLOCK_STORAGE_KEY}:${String(userId || 'guest')}`;
+    }
+
+    function readBlockedUserIds(userId = currentUserId()) {
+        try {
+            const raw = localStorage.getItem(blockedStorageKey(userId)) || '[]';
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed.map((item) => String(item)).filter(Boolean) : [];
+        } catch {
+            return [];
+        }
+    }
+
+    function writeBlockedUserIds(next, userId = currentUserId()) {
+        const unique = Array.from(new Set((Array.isArray(next) ? next : []).map((item) => String(item)).filter(Boolean)));
+        localStorage.setItem(blockedStorageKey(userId), JSON.stringify(unique));
+        return unique;
+    }
+
+    function isBlockedUser(targetUserId, userId = currentUserId()) {
+        if (!targetUserId) return false;
+        return readBlockedUserIds(userId).includes(String(targetUserId));
+    }
+
+    function clearFriendRelationCache(targetUserId = '') {
+        const normalized = String(targetUserId || '').trim();
+        if (!normalized) {
+            relationCache.clear();
+            return;
+        }
+        for (const key of relationCache.keys()) {
+            if (String(key).endsWith(`:${normalized}`)) {
+                relationCache.delete(key);
+            }
+        }
+    }
+
+    async function getFriendRelation(targetUserId, { force = false } = {}) {
+        const userId = currentUserId();
+        const targetId = String(targetUserId || '').trim();
+        if (!userId || !targetId || userId === targetId) {
+            return { status: 'none', friend: false, pending: false, blocked: false, direction: null };
+        }
+
+        if (isBlockedUser(targetId, userId)) {
+            return { status: 'blocked', friend: false, pending: false, blocked: true, direction: null, source: 'local' };
+        }
+
+        const cacheKey = `${userId}:${targetId}`;
+        if (!force && relationCache.has(cacheKey)) {
+            return relationCache.get(cacheKey);
+        }
+
+        const promise = (async () => {
+            try {
+                if (typeof window.BSQ?.api !== 'function') {
+                    return { status: 'none', friend: false, pending: false, blocked: false, direction: null };
+                }
+
+                const res = await window.BSQ.api('/api/friends', {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'check', user_id: userId, friend_id: targetId })
+                });
+                const data = res?.data || {};
+                const status = String(data.status || 'none');
+                return {
+                    status,
+                    friend: status === 'accepted',
+                    pending: status === 'pending',
+                    blocked: false,
+                    direction: data.direction || null,
+                };
+            } catch {
+                return { status: 'none', friend: false, pending: false, blocked: false, direction: null };
+            }
+        })();
+
+        relationCache.set(cacheKey, promise);
+        const result = await promise;
+        relationCache.set(cacheKey, Promise.resolve(result));
+        return result;
+    }
+
     async function requestFriend(targetUserId) {
         const userId = currentUserId();
         if (!userId || !targetUserId || userId === targetUserId) return { success: false, error: 'invalid_target' };
@@ -107,7 +194,59 @@
                 method: 'POST',
                 body: JSON.stringify({ action: 'request', user_id: userId, friend_id: targetUserId })
             });
+            clearFriendRelationCache(targetUserId);
             return res || { success: false, error: 'unknown_error' };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    async function blockUser(targetUserId) {
+        const userId = currentUserId();
+        const targetId = String(targetUserId || '').trim();
+        if (!userId || !targetId || userId === targetId) return { success: false, error: 'invalid_target' };
+
+        try {
+            if (typeof window.BSQ?.api !== 'function') {
+                return { success: false, error: 'api_unavailable' };
+            }
+
+            await window.BSQ.api('/api/contacts', {
+                method: 'POST',
+                body: JSON.stringify({ target_user_id: targetId })
+            }).catch(() => null);
+
+            const res = await window.BSQ.api('/api/contacts', {
+                method: 'PATCH',
+                body: JSON.stringify({ target_user_id: targetId, status: 'blocked' })
+            });
+
+            writeBlockedUserIds([...readBlockedUserIds(userId), targetId], userId);
+            clearFriendRelationCache(targetId);
+            return res || { success: true, blocked: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    async function unblockUser(targetUserId) {
+        const userId = currentUserId();
+        const targetId = String(targetUserId || '').trim();
+        if (!userId || !targetId || userId === targetId) return { success: false, error: 'invalid_target' };
+
+        try {
+            if (typeof window.BSQ?.api !== 'function') {
+                return { success: false, error: 'api_unavailable' };
+            }
+
+            const res = await window.BSQ.api('/api/contacts', {
+                method: 'PATCH',
+                body: JSON.stringify({ target_user_id: targetId, status: 'active' })
+            });
+
+            writeBlockedUserIds(readBlockedUserIds(userId).filter((item) => String(item) !== targetId), userId);
+            clearFriendRelationCache(targetId);
+            return res || { success: true, unblocked: true };
         } catch (error) {
             return { success: false, error: error.message };
         }
@@ -133,7 +272,14 @@
         makePopupUrl,
         openPopupRoom,
         currentUserId,
+        getFriendRelation,
+        isBlockedUser,
+        readBlockedUserIds,
+        writeBlockedUserIds,
+        clearFriendRelationCache,
         requestFriend,
+        blockUser,
+        unblockUser,
         toast,
     };
 

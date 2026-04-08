@@ -59,7 +59,23 @@ function setupPopupShell(shared, ChatUI) {
 
 function setupPopupHelpers({ userId, shared, SyncBridge, ChatUI, DM }) {
     window.addFriend = async function (targetUserId) {
-        const res = await shared.requestFriend?.(targetUserId);
+        const targetId = String(targetUserId || '').trim();
+        const relation = shared.getFriendRelation
+            ? await shared.getFriendRelation(targetId).catch(() => null)
+            : null;
+        if (!targetId || targetId === userId) return { success: false, error: 'invalid_target' };
+
+        if (relation?.blocked) {
+            shared.toast?.('차단된 사용자입니다. 먼저 차단을 해제해 주세요.');
+            return { success: false, error: 'blocked' };
+        }
+
+        if (relation?.friend) {
+            shared.toast?.('이미 프로필 창을 보고 있습니다.');
+            return { success: true, action: 'noop' };
+        }
+
+        const res = await shared.requestFriend?.(targetId);
         if (res?.success) shared.toast?.(res.message || '친구 요청을 보냈습니다.');
         else shared.toast?.(res?.error || '친구 요청에 실패했습니다.');
         return res;

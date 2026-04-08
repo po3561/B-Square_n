@@ -2770,7 +2770,7 @@ body.class-list-page .class-page-overrides .group-subtitle {
 }
 
 body.class-list-page .class-page-overrides .card-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   gap: 0.85rem !important;
 }
 
@@ -3131,7 +3131,7 @@ body.class-list-page .index-layout {
 }
 
 body.class-list-page .class-page-overrides .card-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   gap: 0.85rem !important;
 }
 

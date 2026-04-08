@@ -1,15 +1,7 @@
 import { json, options } from '../_lib/http.js';
 import { ensureAuthSchema } from '../_lib/schema.js';
 
-const GROUP_DEFINITIONS = [
-  { prefix: 'aj', label: '중부' },
-  { prefix: 'ab', label: '북부' },
-  { prefix: 'ac', label: '동부' },
-  { prefix: 'as', label: '대학' },
-  { prefix: 'cs', label: '행정' },
-];
-
-const FALLBACK_GROUPS = [
+const REFERRER_GROUPS = [
   {
     label: '중부',
     options: [
@@ -57,68 +49,37 @@ const FALLBACK_GROUPS = [
   },
 ];
 
-function normalizeText(value) {
-  return String(value ?? '').trim();
+function normalizeCode(value) {
+  return String(value ?? '').trim().toLowerCase();
 }
 
-function getGroupLabel(code) {
-  const value = normalizeText(code).toLowerCase();
-  const group = GROUP_DEFINITIONS.find((item) => value.startsWith(item.prefix));
-  return group?.label || '기타';
+function cloneGroups(groups) {
+  return groups.map((group) => ({
+    label: group.label,
+    options: group.options.map((option) => ({
+      value: option.value,
+      label: option.label,
+    })),
+  }));
 }
 
-function getCodeLabel(code) {
-  const value = normalizeText(code);
-  if (!value) return '';
+function buildGroupsWithUsage(rows) {
+  const usageMap = new Map();
 
-  const match = value.match(/^([a-z]{2})(\d+)$/i);
-  if (!match) return value;
-
-  const group = GROUP_DEFINITIONS.find((item) => item.prefix === match[1].toLowerCase());
-  if (!group) return value;
-
-  const number = String(Number(match[2]) || match[2]).replace(/^0+/, '') || '0';
-  return `${group.label}${number}`;
-}
-
-function buildGroupsFromRows(rows) {
-  const buckets = new Map();
-  const groupOrder = new Map(GROUP_DEFINITIONS.map((group, index) => [group.label, index]));
-
-  for (const row of rows) {
-    const code = normalizeText(row?.code);
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const code = normalizeCode(row?.code);
     if (!code) continue;
-
-    const label = getGroupLabel(code);
-    if (!buckets.has(label)) {
-      buckets.set(label, []);
-    }
-
-    buckets.get(label).push({
-      value: code,
-      label: getCodeLabel(code),
-      usage_count: Number(row?.usage_count || 0),
-    });
+    usageMap.set(code, Number(row?.usage_count || 0));
   }
 
-  return Array.from(buckets.entries())
-    .sort((left, right) => {
-      const leftIndex = groupOrder.has(left[0]) ? groupOrder.get(left[0]) : Number.MAX_SAFE_INTEGER;
-      const rightIndex = groupOrder.has(right[0]) ? groupOrder.get(right[0]) : Number.MAX_SAFE_INTEGER;
-      if (leftIndex !== rightIndex) return leftIndex - rightIndex;
-      return left[0].localeCompare(right[0], 'ko');
-    })
-    .map(([label, options]) => ({
-      label,
-      options: options
-        .sort((left, right) => {
-          if (right.usage_count !== left.usage_count) {
-            return right.usage_count - left.usage_count;
-          }
-          return left.label.localeCompare(right.label, 'ko');
-        })
-        .map(({ usage_count, ...option }) => option),
-    }));
+  return REFERRER_GROUPS.map((group) => ({
+    label: group.label,
+    options: group.options.map((option) => ({
+      value: option.value,
+      label: option.label,
+      usage_count: usageMap.get(normalizeCode(option.value)) || 0,
+    })),
+  }));
 }
 
 export async function onRequestGet(context) {
@@ -137,7 +98,7 @@ export async function onRequestGet(context) {
       LIMIT 200
     `).all();
 
-    const groups = results.length ? buildGroupsFromRows(results) : FALLBACK_GROUPS;
+    const groups = buildGroupsWithUsage(results);
 
     return json(request, env, {
       success: true,
@@ -152,7 +113,7 @@ export async function onRequestGet(context) {
       success: true,
       data: {
         source: 'fallback',
-        groups: FALLBACK_GROUPS,
+        groups: cloneGroups(REFERRER_GROUPS),
       },
     });
   }

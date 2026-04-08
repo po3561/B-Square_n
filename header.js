@@ -982,6 +982,7 @@
 
   function run() {
     injectUI();
+    ensureHelperLoaded();
     setupDrawer();
     setupCategoryMenu();
     setupGlobalSearch();

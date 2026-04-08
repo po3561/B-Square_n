@@ -9,6 +9,75 @@ async function waitForAuthBootstrap() {
     if (tasks.length) await Promise.all(tasks);
 }
 
+function getSearchContactMeta(relation = {}) {
+    if (relation?.blocked) {
+        return { label: '차단됨', disabled: true, state: 'blocked' };
+    }
+    if (relation?.friend) {
+        return { label: '프로필', disabled: false, state: 'friend' };
+    }
+    if (relation?.pending) {
+        const waiting = relation?.direction === 'sent' ? '요청됨' : '요청 대기';
+        return { label: waiting, disabled: true, state: 'pending' };
+    }
+    return { label: '친구 추가', disabled: false, state: 'none' };
+}
+
+async function renderSearchUserResults(container, users, shared, { emptyMessage = '검색 결과가 없습니다.', onActivate = null, shouldContinue = null } = {}) {
+    if (!container) return;
+
+    const resolved = await Promise.all((Array.isArray(users) ? users : []).map(async (user) => {
+        const relation = shared.getFriendRelation
+            ? await shared.getFriendRelation(user.id).catch(() => null)
+            : null;
+        return { user, relation };
+    }));
+
+    if (typeof shouldContinue === 'function' && !shouldContinue()) {
+        return;
+    }
+
+    container.innerHTML = resolved.length ? resolved.map(({ user, relation }) => {
+        const meta = getSearchContactMeta(relation || {});
+        return `
+            <div class="user-search-item" data-uid="${shared.escapeAttr(user.id)}" data-state="${shared.escapeAttr(meta.state)}">
+                <div class="user-avatar-mini" style="${user.profile_image_url ? `background-image:url(${shared.escapeAttr(user.profile_image_url)})` : ''}">${user.profile_image_url ? '' : '익명'}</div>
+                <div class="user-search-meta">
+                    <strong>${shared.escapeHtml(user.name || user.nickname || '사용자')}</strong>
+                    <span>${shared.escapeHtml(user.email || '')}</span>
+                </div>
+                <button class="btn-add-contact" type="button" data-uid="${shared.escapeAttr(user.id)}" ${meta.disabled ? 'disabled' : ''}>${shared.escapeHtml(meta.label)}</button>
+            </div>
+        `;
+    }).join('') : `<p class="empty-inline">${shared.escapeHtml(emptyMessage)}</p>`;
+
+    const activate = async (item, fromButton = false) => {
+        const uid = item?.dataset?.uid;
+        const state = item?.dataset?.state || 'none';
+        if (!uid) return;
+        if (state === 'blocked' || state === 'pending') {
+            if (state === 'blocked') shared.toast?.('차단된 사용자입니다.');
+            return;
+        }
+        await window.addFriend?.(uid);
+        if (fromButton) {
+            item?.blur?.();
+        }
+        await onActivate?.(uid, state, item);
+    };
+
+    container.querySelectorAll('.user-search-item').forEach((item) => {
+        item.addEventListener('click', async (event) => {
+            if (event.target.closest('button')) return;
+            await activate(item);
+        });
+        item.querySelector('.btn-add-contact')?.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            await activate(item, true);
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     await waitForAuthBootstrap();
 
@@ -58,7 +127,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (String(currentId || '') === String(roomId || '') && String(currentType || '') === String(type || '')) {
             ChatList.setActiveRoom(roomId);
             updateRoomQuery({ room: roomId, type });
-            if (window.innerWidth <= 1024) document.getElementById('commSidebar')?.classList.add('hidden');
+            ChatUI.setMobileViewMode?.('chat');
             return;
         }
 
@@ -68,7 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         updateRoomQuery({ room: roomId, type });
 
-        if (window.innerWidth <= 1024) document.getElementById('commSidebar')?.classList.add('hidden');
+        ChatUI.setMobileViewMode?.('chat');
 
     });
 
@@ -369,7 +438,10 @@ function wireShellActions(userId, deps) {
 
     document.getElementById('btnOpenPopup')?.addEventListener('click', () => openCurrentRoomPopup(ChatUI, shared));
 
-    document.getElementById('btnBackMobile')?.addEventListener('click', () => document.getElementById('commSidebar')?.classList.remove('hidden'));
+    document.getElementById('btnBackMobile')?.addEventListener('click', () => {
+        ChatUI.setMobileViewMode?.('list');
+        document.getElementById('commSidebar')?.classList.remove('hidden');
+    });
 
 
 
@@ -406,6 +478,7 @@ function setupNewChatModal({ userId, shared, SyncBridge, ChatList, ChatUI, DM, c
 
 
     let timer = null;
+    let searchSeq = 0;
 
     searchInput.addEventListener('input', () => {
 
@@ -426,45 +499,13 @@ function setupNewChatModal({ userId, shared, SyncBridge, ChatList, ChatUI, DM, c
 
 
             const users = await SyncBridge.searchUsers(query);
-
-            results.innerHTML = users.map(user => `
-
-                <div class="user-search-item" data-uid="${shared.escapeAttr(user.id)}" data-name="${shared.escapeAttr(user.name || user.nickname || '사용자')}" data-avatar="${shared.escapeAttr(user.profile_image_url || '')}">
-
-                    <div class="user-avatar-mini" style="${user.profile_image_url ? `background-image:url(${shared.escapeAttr(user.profile_image_url)})` : ''}">${user.profile_image_url ? '' : '익명'}</div>
-
-                    <div class="user-search-meta">
-
-                        <strong>${shared.escapeHtml(user.name || user.nickname || '사용자')}</strong>
-
-                        <span>${shared.escapeHtml(user.email || '')}</span>
-
-                    </div>
-
-                    <button class="btn-add-contact" data-uid="${shared.escapeAttr(user.id)}">친구 추가</button>
-
-                </div>
-
-            `).join('') || '<p class="empty-inline">검색 결과가 없습니다.</p>';
-
-
-
-            results.querySelectorAll('.btn-add-contact').forEach(btn => {
-
-                btn.addEventListener('click', async (event) => {
-
-                    event.stopPropagation();
-
-                    const uid = btn.dataset.uid;
-
-                    await openDirectChat(uid, { userId, shared, SyncBridge, ChatList, ChatUI, DM });
-
+            await renderSearchUserResults(results, users, shared, {
+                emptyMessage: '검색 결과가 없습니다.',
+                shouldContinue: () => seq === searchSeq,
+                onActivate: async () => {
                     modal.style.display = 'none';
-
                     closeMenu?.();
-
-                });
-
+                }
             });
 
         }, 180);
@@ -719,6 +760,7 @@ function setupFriendsModal({ userId, shared, SyncBridge, ChatUI, ChatList, DM })
 
 
     let timer = null;
+    let searchSeq = 0;
 
     searchInput.addEventListener('input', () => {
 
@@ -739,43 +781,9 @@ function setupFriendsModal({ userId, shared, SyncBridge, ChatUI, ChatList, DM })
 
 
             const users = await SyncBridge.searchUsers(query);
-
-            searchResults.innerHTML = users.map(user => `
-
-                <div class="user-search-item" data-uid="${shared.escapeAttr(user.id)}">
-
-                    <div class="user-avatar-mini" style="${user.profile_image_url ? `background-image:url(${shared.escapeAttr(user.profile_image_url)})` : ''}">${user.profile_image_url ? '' : '익명'}</div>
-
-                    <div class="user-search-meta">
-
-                        <strong>${shared.escapeHtml(user.name || user.nickname || '사용자')}</strong>
-
-                        <span>${shared.escapeHtml(user.email || '')}</span>
-
-                    </div>
-
-                    <button class="btn-add-contact">친구 추가</button>
-
-                </div>
-
-            `).join('') || '<p class="empty-inline">검색 결과가 없습니다.</p>';
-
-
-
-            searchResults.querySelectorAll('.user-search-item').forEach(item => {
-
-                item.addEventListener('click', async () => {
-
-                    const uid = item.dataset.uid;
-
-                    if (!uid) return;
-
-                    await window.addFriend?.(uid);
-
-                    await loadFriendsPanel(userId, SyncBridge);
-
-                });
-
+            await renderSearchUserResults(searchResults, users, shared, {
+                emptyMessage: '검색 결과가 없습니다.',
+                shouldContinue: () => seq === searchSeq
             });
 
         }, 180);
@@ -880,7 +888,7 @@ async function loadFriendsPanel(userId, SyncBridge) {
 
         return `
 
-            <div class="friend-card">
+            <div class="friend-card" data-friend-id="${shared.escapeAttr(item.friend_id)}" tabindex="0" role="button" aria-label="${shared.escapeAttr(name)} 프로필 열기">
 
                 <div class="friend-avatar" style="${avatar ? `background-image:url(${shared.escapeAttr(avatar)})` : ''}">${avatar ? '' : '익명'}</div>
 
@@ -987,6 +995,22 @@ async function loadFriendsPanel(userId, SyncBridge) {
 
         });
 
+    });
+
+    friendArea.querySelectorAll('.friend-card').forEach(card => {
+        card.addEventListener('click', async (event) => {
+            if (event.target.closest('button')) return;
+            const friendId = card.dataset.friendId;
+            if (!friendId) return;
+            await window.addFriend?.(friendId);
+        });
+        card.addEventListener('keydown', async (event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            const friendId = card.dataset.friendId;
+            if (!friendId) return;
+            await window.addFriend?.(friendId);
+        });
     });
 
 }
@@ -1103,7 +1127,7 @@ async function openDirectChat(targetUserId, { userId, shared, SyncBridge, ChatLi
 
     updateRoomQuery({ room: roomId, type: 'dm' });
 
-    document.getElementById('commSidebar')?.classList.add('hidden');
+    ChatUI.setMobileViewMode?.('chat');
 
 }
 
@@ -1407,8 +1431,49 @@ function syncSettingsPanel() {
 window.addFriend = async function (targetUserId) {
 
     const shared = window.BSQCommunityShared || {};
+    const userId = shared.currentUserId?.() || '';
+    const targetId = String(targetUserId || '').trim();
 
-    const res = await shared.requestFriend?.(targetUserId);
+    if (!userId || !targetId || userId === targetId) {
+        return { success: false, error: 'invalid_target' };
+    }
+
+    const relation = shared.getFriendRelation
+        ? await shared.getFriendRelation(targetId).catch(() => null)
+        : null;
+    if (relation?.blocked) {
+        shared.toast?.('차단된 사용자입니다. 먼저 차단을 해제해 주세요.');
+        return { success: false, error: 'blocked' };
+    }
+
+    if (relation?.friend) {
+        if (document.body.dataset.layout === 'popup') {
+            shared.toast?.('이미 프로필 창을 보고 있습니다.');
+            return { success: true, action: 'noop' };
+        }
+
+        const profile = window.CommunityModules.SyncBridge?.getUserProfile
+            ? await window.CommunityModules.SyncBridge.getUserProfile(targetId).catch(() => null)
+            : null;
+        const roomId = window.CommunityModules.DM?.openOrCreateRoom
+            ? await window.CommunityModules.DM.openOrCreateRoom(targetId).catch(() => null)
+            : null;
+        if (!roomId) {
+            shared.toast?.('프로필을 열 수 없습니다.');
+            return { success: false, error: 'room_unavailable' };
+        }
+
+        shared.openPopupRoom?.({
+            roomId,
+            roomType: 'dm',
+            name: profile?.name || profile?.nickname || '사용자',
+            avatar: profile?.profile_image_url || '',
+            panel: 'info',
+        });
+        return { success: true, action: 'open_profile' };
+    }
+
+    const res = await shared.requestFriend?.(targetId);
 
     if (res?.success) {
 

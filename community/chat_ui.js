@@ -12,6 +12,7 @@ window.CommunityModules.ChatUI = (function () {
     let editingMsgKey = null;
     let isSending = false;
     let currentPins = [];
+    let currentInfoPanelMode = 'default';
     let messageCache = new Map();
     let senderProfileCache = new Map();
     let senderProfileRequests = new Map();
@@ -402,7 +403,7 @@ window.CommunityModules.ChatUI = (function () {
 
         renderPinnedBar();
         if (document.getElementById('commInfoPanel')?.classList.contains('visible')) {
-            renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo).catch(() => {});
+            renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo, { open: true, mode: currentInfoPanelMode }).catch(() => {});
         }
         return true;
     }
@@ -565,6 +566,26 @@ window.CommunityModules.ChatUI = (function () {
         return panel;
     }
 
+    function setMobileViewMode(mode = '') {
+        const shell = document.querySelector('.community-shell');
+        const sidebar = document.getElementById('commSidebar');
+        const isMobile = window.innerWidth <= 1024;
+
+        if (shell) {
+            shell.dataset.mobileView = isMobile ? String(mode || '') : '';
+            shell.classList.toggle('mobile-chat-open', isMobile && mode === 'chat');
+            shell.classList.toggle('mobile-list-open', isMobile && mode === 'list');
+        }
+
+        if (sidebar && isMobile) {
+            sidebar.classList.toggle('hidden', mode === 'chat');
+        } else if (sidebar && !isMobile) {
+            sidebar.classList.remove('hidden');
+        }
+
+        return mode;
+    }
+
     function toggleInfoPanel() {
         const panel = document.getElementById('commInfoPanel');
         if (!panel) return;
@@ -573,7 +594,8 @@ window.CommunityModules.ChatUI = (function () {
         setInfoPanelVisibility(isVisible);
 
         if (isVisible) {
-            renderInfoPanel().catch(() => {});
+            currentInfoPanelMode = 'default';
+            renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo, { open: true, mode: 'default' }).catch(() => {});
         }
     }
 
@@ -749,7 +771,7 @@ window.CommunityModules.ChatUI = (function () {
             currentRoomInfo = { ...(currentRoomInfo || {}), ...(roomInfo || {}) };
             applyRoomHeader(normalizedRoomId, normalizedRoomType, currentRoomInfo);
             if (document.getElementById('commInfoPanel')?.classList.contains('visible')) {
-                setTimeout(() => renderInfoPanel(normalizedRoomId, normalizedRoomType, currentRoomInfo), 0);
+                setTimeout(() => renderInfoPanel(normalizedRoomId, normalizedRoomType, currentRoomInfo, { open: true, mode: currentInfoPanelMode }), 0);
             }
             return;
         }
@@ -760,6 +782,7 @@ window.CommunityModules.ChatUI = (function () {
         currentRoomId = normalizedRoomId;
         currentRoomType = normalizedRoomType;
         currentRoomInfo = roomInfo || {};
+        currentInfoPanelMode = 'default';
         editingMsgKey = null;
         clearReplyPreview();
         lastMsgTimestamp = 0;
@@ -783,6 +806,8 @@ window.CommunityModules.ChatUI = (function () {
             const infoPanelBody = document.getElementById('infoPanelBody');
             if (infoPanelBody) infoPanelBody.innerHTML = '';
         }
+
+        setMobileViewMode('chat');
 
         lastScrollTop = 0; unreadCount = 0;
         const inputArea = document.querySelector('.chat-input-area');
@@ -812,7 +837,7 @@ window.CommunityModules.ChatUI = (function () {
             startMessageStream(messages || []);
         });
         loadPinnedMessages(roomToken);
-        setTimeout(() => renderInfoPanel(roomId, roomType, roomInfo), 0);
+        setTimeout(() => renderInfoPanel(roomId, roomType, roomInfo, { open: true, mode: currentInfoPanelMode }), 0);
     }
 
     function startMessageStream(seedMessages = []) {
@@ -934,7 +959,7 @@ window.CommunityModules.ChatUI = (function () {
                 renderPinnedBar();
 
                 if (document.getElementById('commInfoPanel')?.classList.contains('visible')) {
-                    await renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo);
+                    await renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo, { open: true, mode: currentInfoPanelMode });
                 }
             }
         } catch (error) {
@@ -958,7 +983,8 @@ window.CommunityModules.ChatUI = (function () {
         content.textContent = `고정 메시지 ${currentPins.length}개 · ${text || '메시지 확인'}`;
         bar.style.display = 'flex';
         bar.onclick = () => {
-            document.getElementById(`msg-${top.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            currentInfoPanelMode = 'pins';
+            renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo, { open: true, mode: 'pins' }).catch(() => {});
         };
     }
 
@@ -1120,29 +1146,37 @@ window.CommunityModules.ChatUI = (function () {
         const currentCount = msgData.current_count || 0;
         const status = msgData.status || 'open';
         const isFull = maxCap > 0 && currentCount >= maxCap;
+        const placeButton = placeInfo
+            ? `<button type="button" class="btn-gathering-action secondary" onclick="window.open('https://map.naver.com/v5/search/${encodeURIComponent(placeInfo)}')">
+                    <i class="fas fa-map-marked-alt"></i> 장소 정보
+               </button>`
+            : '<button type="button" class="btn-gathering-action secondary" disabled><i class="fas fa-map-marked-alt"></i> 장소 정보 없음</button>';
+        const joinButton = status === 'closed'
+            ? '<button type="button" disabled class="btn-gathering-action primary">마감됨</button>'
+            : isFull
+                ? '<button type="button" disabled class="btn-gathering-action primary">정원 초과</button>'
+                : `<button type="button" class="btn-gathering-action primary" onclick="window.CommunityModules.ChatUI.joinGathering('${currentRoomId}', '${gatherId}')">모임 참여</button>`;
 
         return `
         <div class="msg-bubble gathering-card">
-            <div class="gathering-header"><h4>${title}</h4></div>
+            <div class="gathering-header">
+                <h4>${escapeHtml(title)}</h4>
+            </div>
             <div class="gathering-content">
-                <div class="gathering-detail-item"><i class="fas fa-clock"></i><span>${timeInfo}</span></div>
-                <div class="gathering-detail-item"><i class="fas fa-map-marker-alt"></i><span>${placeInfo}</span></div>
-                <div class="gathering-detail-item"><i class="fas fa-users"></i><span>${minCap} - ${maxCap}명</span></div>
+                <div class="gathering-detail-item"><i class="fas fa-clock"></i><span>${escapeHtml(timeInfo)}</span></div>
+                <div class="gathering-detail-item"><i class="fas fa-map-marker-alt"></i><span>${escapeHtml(placeInfo)}</span></div>
+                <div class="gathering-detail-item"><i class="fas fa-users"></i><span>${escapeHtml(`${minCap} - ${maxCap}명`)}</span></div>
                 <div class="gathering-progress-container">
-                    <div style="display:flex;justify-content:space-between;font-size:0.75rem;font-weight:700;color:var(--comm-text2);margin-bottom:4px;">
-                        <span>참여현황</span><span>${currentCount} / ${maxCap}명</span>
+                    <div class="gathering-progress-meta">
+                        <span>참여현황</span><span>${escapeHtml(`${currentCount} / ${maxCap}명`)}</span>
                     </div>
                     <div class="gathering-progress-bar"><div class="gathering-progress-fill" style="width:${Math.min((currentCount / (maxCap || 1)) * 100, 100)}%;"></div></div>
                 </div>
             </div>
             <div class="gathering-footer">
-                <div class="gathering-actions" style="flex-direction:column;">
-                    <button class="btn-gathering-action" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--comm-accent);margin-bottom:8px;" onclick="window.open('https://map.naver.com/v5/search/${encodeURIComponent(placeInfo)}')">
-                        <i class="fas fa-map-marked-alt"></i> 장소 정보 확인
-                    </button>
-                    ${status === 'closed' ? '<button disabled class="btn-gathering-action">마감됨</button>'
-                    : isFull ? '<button disabled class="btn-gathering-action">정원 초과</button>'
-                    : `<button class="btn-gathering-action" style="background:var(--comm-accent);color:#fff;" onclick="window.CommunityModules.ChatUI.joinGathering('${currentRoomId}', '${gatherId}')">모임 참여</button>`}
+                <div class="gathering-actions">
+                    ${placeButton}
+                    ${joinButton}
                 </div>
             </div>
         </div>`;
@@ -1160,9 +1194,9 @@ window.CommunityModules.ChatUI = (function () {
             const isMine = Array.isArray(users)
                 ? users.map(String).includes(String(currentUserId))
                 : !!(users && typeof users === 'object' && (users[currentUserId] === true || users[currentUserId] === 1));
-            html += `<div class="reaction-pill ${isMine ? 'mine' : ''}" onclick="window.CommunityModules.ChatUI.toggleEmojiReaction('${msgId}', '${emoji}')">
+            html += `<button type="button" class="reaction-pill ${isMine ? 'mine' : ''}" aria-label="${escapeAttr(`${emoji} ${count}개 반응`) }" onclick="window.CommunityModules.ChatUI.toggleEmojiReaction('${msgId}', '${emoji}')">
                 <span class="reaction-emoji-sm">${emoji}</span><span class="reaction-count-sm">${count}</span>
-            </div>`;
+            </button>`;
         }
         html += '</div>';
         return html;
@@ -1181,7 +1215,7 @@ window.CommunityModules.ChatUI = (function () {
             currentPins = currentPins.filter(pin => String(pin.id || pin.key || '') !== removedId);
             renderPinnedBar();
             if (document.getElementById('commInfoPanel')?.classList.contains('visible')) {
-                renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo).catch(() => {});
+                renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo, { open: true, mode: currentInfoPanelMode }).catch(() => {});
             }
         }
     }
@@ -1744,14 +1778,42 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     async function renderDmProfile(body, roomInfo = {}) {
+        const shared = window.BSQCommunityShared || {};
+        const targetId = String(roomInfo?.target_id || roomInfo?.target_user_id || '').trim();
         const name = roomInfo?.target_name || roomInfo?.dm_name || '상대 프로필';
         const avatar = roomInfo?.target_avatar || roomInfo?.avatar_url || roomInfo?.profile_image || '';
         const lastMessage = roomInfo?.last_message || '최근 대화를 선택하면 요약을 확인할 수 있습니다.';
+        const relation = targetId && shared.getFriendRelation
+            ? await shared.getFriendRelation(targetId).catch(() => null)
+            : null;
+        const isBlocked = !!relation?.blocked;
+        const isFriend = !!relation?.friend;
+        const isPending = !!relation?.pending;
+        const isPopupLayout = document.body?.dataset?.layout === 'popup';
+        const relationLabel = isBlocked
+            ? '차단됨'
+            : isFriend
+                ? '친구'
+                : isPending
+                    ? '요청 보류'
+                    : '친구 아님';
+        const statusLabel = isBlocked ? '차단 상태' : isFriend ? '친구 상태' : '관계 상태';
         const detailItems = [
             { label: '대화 유형', value: '1:1 채팅' },
             { label: '읽지 않음', value: Number(roomInfo?.unread_count || 0) },
+            { label: statusLabel, value: relationLabel },
             { label: '최근 메시지', value: lastMessage },
         ];
+
+        const primaryLabel = isBlocked
+            ? '차단 해제'
+            : isFriend
+                ? (isPopupLayout ? '프로필 표시 중' : '친구 프로필')
+                : isPending
+                    ? '요청 보류'
+                    : '친구 추가';
+        const primaryDisabled = isPending || (isPopupLayout && isFriend);
+        const showBlockAction = !isBlocked;
 
         body.innerHTML = `
             <div class="info-profile-section">
@@ -1764,14 +1826,38 @@ window.CommunityModules.ChatUI = (function () {
                 ${renderInfoSectionHTML(detailItems)}
             </div>
             <div class="info-actions">
-                <button type="button" class="btn-info-action" id="btnInfoOpenProfile">프로필 보기</button>
+                <button type="button" class="btn-info-action primary" id="btnInfoPrimary" ${primaryDisabled ? 'disabled' : ''}>${escapeHtml(primaryLabel)}</button>
+                ${showBlockAction ? '<button type="button" class="btn-info-action secondary" id="btnInfoBlock">차단</button>' : ''}
             </div>
         `;
 
-        body.querySelector('#btnInfoOpenProfile')?.addEventListener('click', () => {
-            const targetId = roomInfo?.target_id || roomInfo?.target_user_id || '';
-            if (targetId && window.CommunityModules?.ChatUI?.v2ToggleContact) {
-                window.CommunityModules.ChatUI.v2ToggleContact(targetId);
+        body.querySelector('#btnInfoPrimary')?.addEventListener('click', async () => {
+            if (!targetId || primaryDisabled) return;
+
+            if (isBlocked) {
+                const res = await shared.unblockUser?.(targetId);
+                if (res?.success) {
+                    shared.toast?.(res.message || '차단을 해제했습니다.');
+                    await renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo, { open: true, mode: currentInfoPanelMode });
+                } else {
+                    shared.toast?.(res?.error || '차단 해제에 실패했습니다.');
+                }
+                return;
+            }
+
+            await window.addFriend?.(targetId);
+            await renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo, { open: true, mode: currentInfoPanelMode }).catch(() => {});
+        });
+
+        body.querySelector('#btnInfoBlock')?.addEventListener('click', async () => {
+            if (!targetId) return;
+            const res = await shared.blockUser?.(targetId);
+            if (res?.success) {
+                shared.toast?.(res.message || '차단했습니다.');
+                await renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo, { open: true, mode: currentInfoPanelMode });
+                await window.__BSQ_FRIENDS_REFRESH__?.();
+            } else {
+                shared.toast?.(res?.error || '차단에 실패했습니다.');
             }
         });
     }
@@ -1809,7 +1895,7 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     // ==== 정보 패널 렌더링 (D1 API) ====
-        async function renderInfoPanel(roomId, roomType, roomInfo, options = {}) {
+    async function renderInfoPanel(roomId, roomType, roomInfo, options = {}) {
         const hasExplicitTarget = arguments.length > 0;
         roomId = roomId || currentRoomId;
         roomType = roomType || currentRoomType;
@@ -1820,12 +1906,23 @@ window.CommunityModules.ChatUI = (function () {
         const body = document.getElementById('infoPanelBody');
         if (!panel || !body) return;
 
+        currentInfoPanelMode = String(options.mode || currentInfoPanelMode || 'default');
+
         const shouldOpenPanel = !!options.open || panel.classList.contains('visible') || !hasExplicitTarget;
         if (shouldOpenPanel) {
             setInfoPanelVisibility(true);
         }
 
         body.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--comm-text2);"><i class="fas fa-circle-notch fa-spin"></i></div>';
+
+        if (currentInfoPanelMode === 'pins') {
+            if (title) title.textContent = '고정 메시지';
+            body.innerHTML = currentPins.length
+                ? buildPinnedMessagesSectionHtml(roomType)
+                : '<div class="empty-inline">고정 메시지가 없습니다.</div>';
+            bindPinnedMessageItems(body);
+            return;
+        }
 
         if (roomType === 'dm') {
             if (title) title.textContent = '상대 프로필';
@@ -1864,11 +1961,11 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     return {
-        init, openRoom, sendCurrentMessage, renderInfoPanel, toggleInfoPanel,
+        init, openRoom, sendCurrentMessage, renderInfoPanel, toggleInfoPanel, setMobileViewMode,
         getCurrentRoomId: () => currentRoomId,
         getCurrentRoomType: () => currentRoomType,
         sendGatheringCard, joinGathering, closeGathering,
         toggleEmojiReaction, closeAllMenus, showEmojiPickerAt,
-        v2ToggleContact: async (targetId) => { window.addFriend?.(targetId); }
+        v2ToggleContact: async (targetId) => window.addFriend?.(targetId)
     };
 })();

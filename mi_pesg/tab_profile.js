@@ -8,13 +8,41 @@
 
     function syncStoredUserProfile(patch) {
         try {
+            const currentSession = window.BSQ?.session || null;
+            const currentUser = currentSession?.user && typeof currentSession.user === 'object'
+                ? currentSession.user
+                : null;
             const raw = localStorage.getItem('bsq_user');
             const current = raw ? JSON.parse(raw) : {};
-            const next = { ...(current || {}), ...(patch || {}) };
+            const next = {
+                ...(current || {}),
+                ...(currentUser || {}),
+                ...(patch || {}),
+            };
+
+            if (currentUser) {
+                Object.assign(currentUser, next);
+            }
+
             localStorage.setItem('bsq_user', JSON.stringify(next));
+            window.dispatchEvent(new CustomEvent('bsq_session', {
+                detail: {
+                    reason: 'profile-update',
+                    session: currentSession,
+                    user: currentUser || next,
+                    timestamp: Date.now(),
+                },
+            }));
         } catch (error) {
             console.warn('[tab_profile] bsq_user sync failed:', error);
         }
+    }
+
+    function normalizeUserProfile(payload) {
+        if (payload && typeof payload === 'object' && payload.user && typeof payload.user === 'object') {
+            return payload.user;
+        }
+        return payload && typeof payload === 'object' ? payload : {};
     }
 
     if (!profileForm) return;
@@ -342,7 +370,7 @@
 
             const res = await window.BSQ.api(`/api/users/${userId}`);
             if (res && res.success && res.data) {
-                const data = res.data;
+                const data = normalizeUserProfile(res.data);
                 const nameEl = document.getElementById('profileName');
                 const phoneEl = document.getElementById('profilePhone');
                 const usernameEl = document.getElementById('profileUsername');
@@ -396,10 +424,10 @@
     profileForm.onsubmit = async (e) => {
         e.preventDefault();
         const submitBtn = profileForm.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = '저장 중...';
-        }
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '저장 중...';
+                }
 
         try {
             const activeChips = categoryChips
@@ -426,24 +454,14 @@
             });
 
             if (res && res.success) {
-                if (res.data) {
-                    syncStoredUserProfile({
-                        name: res.data.name || updates.name,
-                        phone: res.data.phone || updates.phone,
-                        username: res.data.username || updates.username,
-                        email: res.data.email || user?.email || '',
-                        sns_link: res.data.sns_link || updates.sns_link,
-                        referrer_code: res.data.referrer_code || updates.referrer_code,
-                        preferred_category: res.data.preferred_category || updates.preferred_category,
-                        profile_image_url: res.data.profile_image_url || updates.profile_image_url || '',
-                    });
-                }
-                showMypageNotice?.('success', '프로필 저장 완료', '프로필 정보가 안전하게 저장되었습니다.');
-                updateSidebarUI({
-                    ...(res.data || {}),
+                const savedProfile = normalizeUserProfile(res.data);
+                const nextProfile = {
+                    ...savedProfile,
                     ...updates,
-                    email: res.data?.email || user?.email || '',
-                });
+                    email: savedProfile.email || user?.email || '',
+                };
+                showMypageNotice?.('success', '프로필 저장 완료', '프로필 정보가 안전하게 저장되었습니다.');
+                updateSidebarUI(nextProfile);
                 selectedCategories = activeChips.map((value) => String(value || '').trim()).filter(Boolean);
             } else {
                 throw new Error(res?.error || '저장에 실패했습니다.');
@@ -464,11 +482,29 @@
             ? profileOrName
             : { name: profileOrName, username };
         const nicknameEl = document.getElementById('displayNickname');
+        const displayNameEl = document.getElementById('displayName');
+        const emailEl = document.getElementById('displayEmail');
         const usernameEl = document.getElementById('displayUsername');
-        const displayLabel = profile.name || profile.username || '사용자';
+        const profileImgEl = document.getElementById('profileImg');
+        const displayLabel = profile.name || profile.username || user?.name || user?.username || '사용자';
+        const emailLabel = profile.email || user?.email || '';
         if (nicknameEl) nicknameEl.textContent = displayLabel + ' 님';
-        if (document.getElementById('displayName')) document.getElementById('displayName').textContent = displayLabel;
+        if (displayNameEl) displayNameEl.textContent = displayLabel;
+        if (emailEl) emailEl.textContent = emailLabel;
         if (usernameEl) usernameEl.textContent = 'ID: ' + (profile.username || username || '-');
+        if (profileImgEl) {
+            const imageUrl = String(profile.profile_image_url || '').trim();
+            if (imageUrl) {
+                profileImgEl.style.backgroundImage = `url("${imageUrl.replace(/"/g, '%22')}")`;
+                profileImgEl.style.backgroundSize = 'cover';
+                profileImgEl.style.backgroundPosition = 'center';
+                profileImgEl.textContent = '';
+            } else {
+                profileImgEl.style.backgroundImage = '';
+                profileImgEl.textContent = '👤';
+            }
+        }
+        syncStoredUserProfile(profile);
         window.updateDashboardProfileCard?.(profile, { guest: false, isOperatorEligible: false });
     }
 

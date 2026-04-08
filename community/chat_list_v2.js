@@ -307,6 +307,7 @@ window.CommunityModules.ChatList = (() => {
                 const room = roomsCache.get(item.dataset.roomId);
                 if (onRoomSelect && room) onRoomSelect(room.roomId, room.type, room);
                 if (window.innerWidth <= 1024) {
+                    window.CommunityModules.ChatUI?.setMobileViewMode?.('chat');
                     document.getElementById('commSidebar')?.classList.add('hidden');
                 }
             });

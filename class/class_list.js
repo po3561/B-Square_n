@@ -385,7 +385,7 @@
       const folders = res?.success && Array.isArray(res.data) ? res.data.map((item) => normalizeRecommendationFolder(item)) : [];
       const popular = folders.find((item) => item.type === 'popular' || item.id === 'popular_main');
       if (popular?.items?.length) {
-        state.popularClasses = popular.items.slice(0, 4);
+        state.popularClasses = popular.items.slice(0, 5);
         state.popularTitle = popular.title || '인기 클래스';
         renderPopular();
         return;
@@ -395,7 +395,7 @@
     }
 
     try {
-      const res = await window.BSQ.api('/api/classes?sort=popular&limit=4');
+      const res = await window.BSQ.api('/api/classes?sort=popular&limit=5');
       const rows = res?.success
         ? (Array.isArray(res.data?.classes) ? res.data.classes : (Array.isArray(res.data) ? res.data : []))
         : [];
