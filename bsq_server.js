@@ -306,14 +306,17 @@
         if (typeof document === 'undefined') return null;
 
         const root = document.documentElement;
-        const storedTheme = localStorage.getItem(THEME_STORAGE_KEY) || 'dark';
+        const storedThemeRaw = localStorage.getItem(THEME_STORAGE_KEY);
+        const hasStoredTheme = storedThemeRaw !== null && String(storedThemeRaw).trim() !== '';
+        const storedTheme = hasStoredTheme ? storedThemeRaw : '';
         const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'ko';
 
         const requestedTheme = theme === undefined || theme === null ? '' : String(theme).trim().toLowerCase();
         const requestedLanguage = language === undefined || language === null ? '' : String(language).trim();
 
         const languageValue = normalizeLanguage(requestedLanguage) || normalizeLanguage(storedLanguage) || 'ko';
-        const themeValue = resolveThemeName(requestedTheme) || resolveThemeName(storedTheme) || 'dark';
+        const rootTheme = resolveThemeName(root.dataset.theme || document.body?.dataset.theme || '') || '';
+        const themeValue = resolveThemeName(requestedTheme) || resolveThemeName(storedTheme) || rootTheme || 'dark';
 
         root.dataset.theme = themeValue;
         root.dataset.language = languageValue;
@@ -325,7 +328,7 @@
         }
 
         if (persistStorage) {
-            if (requestedTheme || storedTheme) localStorage.setItem(THEME_STORAGE_KEY, themeValue);
+            if (requestedTheme || hasStoredTheme) localStorage.setItem(THEME_STORAGE_KEY, themeValue);
             if (requestedLanguage) localStorage.setItem(LANGUAGE_STORAGE_KEY, languageValue);
         }
 
@@ -525,8 +528,9 @@
         }
 
         updateConnectionHub();
+        const hasExplicitTheme = localStorage.getItem(THEME_STORAGE_KEY) !== null;
         applyPreferences({
-            theme: _session?.user?.preferred_theme || undefined,
+            theme: hasExplicitTheme ? undefined : (_session?.user?.preferred_theme || undefined),
             language: _session?.user?.preferred_language || undefined,
         });
         emitSessionEvent('session-check');

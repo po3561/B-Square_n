@@ -353,7 +353,12 @@ window.CommunityModules.ChatList = (() => {
             item.onclick = async () => {
                 const action = item.dataset.action;
                 if (action === 'open-new') {
-                    shared().openPopupRoom({ roomId, roomType: type, name: room.target_name || room.class_name || room.group_name });
+                    shared().openPopupRoom({
+                        roomId,
+                        roomType: type,
+                        name: room.target_name || room.class_name || room.group_name,
+                        is_instructor: !!room.is_instructor,
+                    });
                 } else if (action === 'pin') {
                     togglePin(roomId);
                 } else if (action === 'mute') {

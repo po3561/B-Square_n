@@ -103,6 +103,7 @@ async function openInitialPopupRoute({ userId, shared, SyncBridge, ChatUI, DM })
             class_name: params.get('name') || '',
             class_image: params.get('avatar') || '',
             group_name: params.get('name') || '',
+            is_instructor: params.get('is_instructor') === '1' || params.get('is_instructor') === 'true',
         };
         ChatUI.openRoom(room, type, roomInfo);
         if (params.get('panel') === 'info') {
@@ -120,7 +121,12 @@ async function openInitialPopupRoute({ userId, shared, SyncBridge, ChatUI, DM })
     }
 
     if (classId) {
-        const roomInfo = { roomId: classId, type: 'class', class_name: params.get('name') || '클래스' };
+        const roomInfo = {
+            roomId: classId,
+            type: 'class',
+            class_name: params.get('name') || '클래스',
+            is_instructor: params.get('is_instructor') === '1' || params.get('is_instructor') === 'true',
+        };
         ChatUI.openRoom(classId, 'class', roomInfo);
         if (params.get('panel') === 'info') {
             setTimeout(() => ChatUI.renderInfoPanel(classId, 'class', roomInfo), 0);
@@ -137,7 +143,11 @@ async function openInitialPopupRoute({ userId, shared, SyncBridge, ChatUI, DM })
     }
 
     if (groupId) {
-        const roomInfo = { roomId: groupId, type: 'group', group_name: params.get('name') || '그룹' };
+        const roomInfo = {
+            roomId: groupId,
+            type: 'group',
+            group_name: params.get('name') || '그룹',
+        };
         ChatUI.openRoom(groupId, 'group', roomInfo);
         if (params.get('panel') === 'info') {
             setTimeout(() => ChatUI.renderInfoPanel(groupId, 'group', roomInfo), 0);

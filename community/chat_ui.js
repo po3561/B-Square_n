@@ -1925,35 +1925,98 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     async function renderClassInfoPanel(body, roomId, roomInfo = {}) {
-        const title = roomInfo?.class_name || roomInfo?.target_name || '클래스 정보';
-        const category = roomInfo?.class_category || roomInfo?.category || '카테고리 정보 없음';
-        const instructor = roomInfo?.instructor_name || roomInfo?.teacher_name || (roomInfo?.is_instructor ? '나' : '강사 정보 없음');
-        const description = roomInfo?.class_summary || roomInfo?.summary || roomInfo?.last_message || '클래스 채팅방의 핵심 정보를 확인하세요.';
-        const image = roomInfo?.class_image || roomInfo?.image_url || roomInfo?.thumbnail || '/assets/default-cover.svg';
+        const shared = window.BSQCommunityShared || {};
         const classId = roomInfo?.class_id || roomId;
-        const classUrl = `../class_view/class_view.html?id=${encodeURIComponent(classId || roomId || '')}`;
-        const detailItems = [
-            { label: '카테고리', value: category },
-            { label: '강사', value: instructor },
-            { label: '읽지 않음', value: Number(roomInfo?.unread_count || 0) },
-            { label: '최근 메시지', value: roomInfo?.last_message || '새 메시지를 확인해 보세요.' },
-        ];
+        const view = (roomInfo?.is_instructor || roomInfo?.view === 'instructor' || window.__BSQ_DEV_MODE__) ? 'instructor' : 'student';
 
-        body.innerHTML = `
-            <div class="info-profile-section">
-                <div class="info-avatar"${image ? ` style="background-image:url(${escapeHtml(image)})"` : ''}>${image ? '' : '🏫'}</div>
-                <h4 class="info-name">${escapeHtml(title)}</h4>
-                <div class="info-id">${escapeHtml(category)}</div>
-                <div class="info-description">${escapeHtml(description)}</div>
-            </div>
-            <div class="info-class-hero" style="background-image:url(${escapeHtml(image)});"></div>
-            <div class="info-detail-grid">
-                ${renderInfoSectionHTML(detailItems)}
-            </div>
-            <div class="info-actions">
-                <a class="btn-info-action primary" href="${escapeHtml(classUrl)}">클래스 페이지 보기</a>
-            </div>
-        `;
+        body.innerHTML = '<div class="class-info-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> 데이터 로딩 중...</div>';
+
+        try {
+            const [memberRes, gatherRes] = await Promise.all([
+                window.BSQ.api(`/api/classes/members?class_id=${encodeURIComponent(classId)}&view=${encodeURIComponent(view)}`),
+                window.BSQ.api(`/api/gatherings?class_id=${encodeURIComponent(classId)}`).catch(() => null),
+            ]);
+
+            if (!memberRes?.success) {
+                body.innerHTML = '<div class="class-info-empty">멤버 정보를 불러올 수 없습니다.</div>';
+                return;
+            }
+
+            const members = Array.isArray(memberRes.data?.members) ? memberRes.data.members : [];
+            const totalMembers = Number(memberRes.data?.total_members || 0) || 0;
+            const passStats = memberRes.data?.pass_stats || {};
+            const classInfo = memberRes.data?.class_info || roomInfo || {};
+            const gatherings = gatherRes?.success && Array.isArray(gatherRes.data) ? gatherRes.data : [];
+
+            body.innerHTML = shared.renderClassInfoPanelHtml?.({
+                classInfo,
+                members,
+                totalMembers,
+                passStats,
+                view,
+                roomInfo,
+                gatherings,
+                currentChatCount: totalMembers,
+            }) || '<div class="class-info-empty">정보를 표시할 수 없습니다.</div>';
+
+            body.querySelectorAll('[data-friend-add]').forEach((btn) => {
+                btn.addEventListener('click', async (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const targetId = String(btn.dataset.friendAdd || '').trim();
+                    if (!targetId) return;
+                    await window.addFriend?.(targetId);
+                });
+            });
+
+            body.querySelectorAll('[data-gathering-preview="1"]').forEach((card) => {
+                const openCard = () => {
+                    const payload = {
+                        gathering_id: card.dataset.gatheringId || '',
+                        title: card.dataset.title || '모집 카드',
+                        gathering_at: card.dataset.time || '',
+                        location: card.dataset.place || '',
+                        current_count: Number(card.dataset.count || 0),
+                        min_capacity: Number(card.dataset.min || 0),
+                        max_capacity: Number(card.dataset.max || 0),
+                        status: card.dataset.status || 'open',
+                        description: card.dataset.desc || '',
+                        created_by: card.dataset.createdBy || '',
+                    };
+
+                    shared.openGatheringPreview?.(payload, {
+                        onJoin: view !== 'instructor' ? async (data) => {
+                            const targetId = data?.gathering_id || data?.id || card.dataset.gatheringId || '';
+                            if (!targetId) return;
+                            await joinGathering(classId, targetId);
+                        } : null,
+                        onClose: view === 'instructor' ? async (data) => {
+                            const targetId = data?.gathering_id || data?.id || card.dataset.gatheringId || '';
+                            if (!targetId) return;
+                            await closeGathering(classId, targetId);
+                        } : null,
+                        onMap: async (data) => {
+                            const place = String(data?.location || '').trim();
+                            if (!place) return;
+                            window.open(`https://map.naver.com/v5/search/${encodeURIComponent(place)}`, '_blank', 'noopener');
+                        },
+                    });
+                };
+
+                card.addEventListener('click', (event) => {
+                    if (event.target.closest('button, a')) return;
+                    openCard();
+                });
+                card.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openCard();
+                    }
+                });
+            });
+        } catch (err) {
+            body.innerHTML = `<div class="class-info-empty">오류 발생: ${escapeHtml(err.message || '알 수 없는 오류')}</div>`;
+        }
     }
 
     // ==== 정보 패널 렌더링 (D1 API) ====

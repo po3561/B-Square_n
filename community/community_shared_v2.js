@@ -70,13 +70,27 @@
         return escapeHtml(value).replace(/`/g, '&#96;');
     }
 
-    function makePopupUrl({ roomId, roomType, name, avatar, panel }) {
+    function makePopupUrl(options = {}) {
+        const {
+            roomId,
+            roomType,
+            name,
+            avatar,
+            panel,
+            ...rest
+        } = options || {};
         const url = new URL('../community/message_popup.html', window.location.href);
         if (roomId) url.searchParams.set('room', roomId);
         if (roomType) url.searchParams.set('type', roomType);
         if (name) url.searchParams.set('name', name);
         if (avatar) url.searchParams.set('avatar', avatar);
         if (panel) url.searchParams.set('panel', panel);
+        Object.entries(rest).forEach(([key, value]) => {
+            if (['roomId', 'roomType', 'name', 'avatar', 'panel'].includes(key)) return;
+            if (value === undefined || value === null || value === '') return;
+            if (typeof value === 'object' || typeof value === 'function') return;
+            url.searchParams.set(key, String(value));
+        });
         return url.toString();
     }
 
@@ -155,6 +169,166 @@
             minute: '2-digit',
             weekday: 'short',
         });
+    }
+
+    function formatKoreanDateTime(value) {
+        if (!value) return '일정 미정';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return String(value);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const hour = String(date.getHours()).padStart(2, '0');
+        const minute = String(date.getMinutes()).padStart(2, '0');
+        return `${year}년 ${month}월 ${day}일 / ${hour}:${minute}`;
+    }
+
+    function pickPrimaryGathering(gatherings = []) {
+        const items = (Array.isArray(gatherings) ? gatherings : [])
+            .map((item) => normalizeGatheringData(item))
+            .filter(Boolean)
+            .sort((a, b) => new Date(b.gathering_at || 0).getTime() - new Date(a.gathering_at || 0).getTime());
+        return items[0] || null;
+    }
+
+    function renderClassInfoPanelHtml({
+        classInfo = {},
+        members = [],
+        totalMembers = 0,
+        passStats = {},
+        view = 'student',
+        roomInfo = {},
+        gatherings = [],
+        currentChatCount = null,
+    } = {}) {
+        const normalizedMembers = Array.isArray(members) ? members : [];
+        const primaryGathering = pickPrimaryGathering(gatherings);
+        const memberTotal = Number(totalMembers || normalizedMembers.length || 0) || 0;
+        const chatTotal = Number(currentChatCount ?? totalMembers ?? normalizedMembers.length ?? 0) || 0;
+        const category = String(
+            classInfo?.category
+            || classInfo?.class_category
+            || roomInfo?.class_category
+            || roomInfo?.category
+            || '카테고리명'
+        ).trim() || '카테고리명';
+        const meetingDate = primaryGathering ? formatKoreanDateTime(primaryGathering.gathering_at || primaryGathering.gather_time || '') : '일정 미정';
+        const meetingPlace = String(primaryGathering?.location || primaryGathering?.gather_place || '장소 미정').trim() || '장소 미정';
+        const currentCount = Number(primaryGathering?.current_count || 0) || 0;
+        const maxCapacity = Number(primaryGathering?.max_capacity || primaryGathering?.capacity_max || 0) || 0;
+        const minCapacity = Number(primaryGathering?.min_capacity || primaryGathering?.capacity_min || 0) || 0;
+        const statusLabel = primaryGathering?.status === 'closed' || primaryGathering?.isFull ? '모집 마감' : '진행중';
+        const participantLabel = maxCapacity > 0 ? `${currentCount} / ${maxCapacity}명` : `${currentCount}명`;
+        const progress = maxCapacity > 0 ? Math.min((currentCount / maxCapacity) * 100, 100) : 0;
+        const memberRows = normalizedMembers.length
+            ? normalizedMembers.map((member) => {
+                const memberId = String(member?.user_id || member?.id || '').trim();
+                const nickname = String(member?.nickname || member?.display_name || member?.name || '닉네임').trim() || '닉네임';
+                const realName = String(member?.name || member?.user_name || member?.full_name || '').trim();
+                const phone = String(member?.phone || member?.phone_number || member?.mobile || '').trim();
+                const avatar = String(member?.profile_image_url || member?.avatar_url || member?.user_avatar || '').trim();
+                const remainingPasses = Number(member?.remaining_passes ?? member?.remaining_pass_count ?? 0) || 0;
+                const isInstructor = member?.role === 'instructor' || member?.is_instructor;
+
+                return `
+                    <div class="class-member-row">
+                        <div class="class-member-avatar${avatar ? ' has-image' : ''}"${avatar ? ` style="background-image:url(${escapeAttr(avatar)})"` : ''}>${avatar ? '' : '👤'}</div>
+                        <div class="class-member-main">
+                            <div class="class-member-head">
+                                <span class="class-member-nickname">${escapeHtml(nickname)}</span>
+                                ${isInstructor ? '<span class="class-member-badge">강사</span>' : ''}
+                            </div>
+                            <div class="class-member-meta-list">
+                                ${realName ? `
+                                    <div class="class-member-meta">
+                                        <span class="class-member-meta-label">사용자 이름</span>
+                                        <span class="class-member-meta-value">${escapeHtml(realName)}</span>
+                                    </div>
+                                ` : ''}
+                                ${phone ? `
+                                    <div class="class-member-meta">
+                                        <span class="class-member-meta-label">전화번호</span>
+                                        <span class="class-member-meta-value">${escapeHtml(phone)}</span>
+                                    </div>
+                                ` : ''}
+                                <div class="class-member-meta class-member-meta-pill">
+                                    <span class="class-member-meta-label">잔여</span>
+                                    <span class="class-member-meta-value">수강권 수 ${escapeHtml(String(remainingPasses))}</span>
+                                </div>
+                            </div>
+                        </div>
+                        ${memberId ? `<button type="button" class="class-member-friend-btn" data-friend-add="${escapeAttr(memberId)}">친구 추가</button>` : '<span class="class-member-friend-spacer"></span>'}
+                    </div>
+                `;
+            }).join('')
+            : '<div class="class-info-empty">참여자 정보가 없습니다.</div>';
+
+        const passStatsHtml = view === 'instructor'
+            ? `
+                <div class="class-pass-stats">
+                    <div class="class-pass-stat-row">
+                        <span>발행된 수강권 수량</span>
+                        <strong>${escapeHtml(String(passStats?.total_issued ?? 0))}개</strong>
+                    </div>
+                    <div class="class-pass-stat-row">
+                        <span>사용된 수강권 수량</span>
+                        <strong>${escapeHtml(String(passStats?.total_used ?? 0))}개</strong>
+                    </div>
+                </div>
+            `
+            : '';
+
+        return `
+            <div class="class-info-shell">
+                <section class="class-info-roster">
+                    <div class="class-info-roster-head">
+                        <div class="class-info-roster-head-main">
+                            <span class="class-info-dot"></span>
+                            <div class="class-info-roster-copy">
+                                <h4 class="class-info-roster-title">클래스 참여자 / 총 ${escapeHtml(String(memberTotal))}명 수강</h4>
+                                <div class="class-info-roster-subtitle">${escapeHtml(category)}</div>
+                            </div>
+                        </div>
+                        <div class="class-info-roster-status">현재 ${escapeHtml(String(chatTotal))}명 채팅중</div>
+                    </div>
+                    <div class="class-member-list">${memberRows}</div>
+                </section>
+
+                <section class="class-info-details">
+                    <div class="class-gathering-card"
+                        data-gathering-preview="1"
+                        role="button"
+                        tabindex="0"
+                        data-gathering-id="${escapeAttr(String(primaryGathering?.gathering_id || primaryGathering?.id || ''))}"
+                        data-title="${escapeAttr(String(primaryGathering?.title || primaryGathering?.gather_title || '모집 카드'))}"
+                        data-time="${escapeAttr(String(primaryGathering?.gathering_at || primaryGathering?.gather_time || ''))}"
+                        data-place="${escapeAttr(String(primaryGathering?.location || primaryGathering?.gather_place || ''))}"
+                        data-count="${escapeAttr(String(currentCount))}"
+                        data-min="${escapeAttr(String(minCapacity))}"
+                        data-max="${escapeAttr(String(maxCapacity))}"
+                        data-status="${escapeAttr(String(primaryGathering?.status || 'open'))}"
+                        data-desc="${escapeAttr(String(primaryGathering?.description || ''))}"
+                        data-created-by="${escapeAttr(String(primaryGathering?.created_by || ''))}">
+                        <div class="class-gathering-line">
+                            <span class="class-gathering-dot"></span>
+                            <span class="class-gathering-label">모임일시 : ${escapeHtml(meetingDate)}</span>
+                        </div>
+                        <div class="class-gathering-line">
+                            <span class="class-gathering-dot"></span>
+                            <span class="class-gathering-label">모임장소 : ${escapeHtml(meetingPlace)}</span>
+                        </div>
+                        <button type="button" class="class-gathering-map-btn" data-gathering-map="1"${meetingPlace && meetingPlace !== '장소 미정' ? ` data-map-place="${escapeAttr(meetingPlace)}"` : ' disabled'}>지도 바로가기</button>
+                        ${passStatsHtml}
+                        <button type="button" class="class-gathering-status-btn">${escapeHtml(statusLabel)}</button>
+                        <div class="class-gathering-progress-head">
+                            <span>참여 : ${escapeHtml(participantLabel)}</span>
+                            ${minCapacity ? `<span>최소 ${escapeHtml(String(minCapacity))}명 필요</span>` : ''}
+                        </div>
+                        <div class="class-gathering-progress"><span style="width:${progress}%;"></span></div>
+                    </div>
+                </section>
+            </div>
+        `;
     }
 
     function renderGatheringPreviewHtml(input = {}, options = {}) {
@@ -461,6 +635,7 @@
         currentUserId,
         normalizeGatheringData,
         renderGatheringPreviewHtml,
+        renderClassInfoPanelHtml,
         setupGatheringPreviewShell,
         openGatheringPreview: null,
         closeGatheringPreview: null,

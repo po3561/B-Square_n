@@ -790,16 +790,98 @@
         const title = q('infoPanelTitle');
         const body = q('infoPanelBody');
         if (!panel || !body) return;
-        if (title) title.textContent = roomType === 'class' ? 'Class Info' : 'Room Info';
-        body.innerHTML = `
-            <div class="info-profile-section">
-                <div class="info-name">${escapeHtml(state.userProfile?.name || 'User')}</div>
-                <div class="info-meta">Class ID: ${escapeHtml(roomId || '')}</div>
-                <div class="info-meta">Pinned: ${state.pinnedMessages.length}</div>
-            </div>
-            <div class="info-pinned-list" id="classPinnedList"></div>
-        `;
-        renderPinnedList(body.querySelector('#classPinnedList'));
+        if (title) title.textContent = roomType === 'class' ? '클래스 정보' : 'Room Info';
+        const shared = window.BSQCommunityShared || {};
+        const view = (state.isInstructor || window.__BSQ_DEV_MODE__) ? 'instructor' : 'student';
+
+        body.innerHTML = '<div class="class-info-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> 데이터 로딩 중...</div>';
+
+        try {
+            const [memberRes, gatherRes] = await Promise.all([
+                window.BSQ.api(`/api/classes/members?class_id=${encodeURIComponent(roomId)}&view=${encodeURIComponent(view)}`),
+                window.BSQ.api(`/api/gatherings?class_id=${encodeURIComponent(roomId)}`).catch(() => null),
+            ]);
+
+            if (!memberRes?.success) {
+                body.innerHTML = '<div class="class-info-empty">멤버 정보를 불러올 수 없습니다.</div>';
+                return;
+            }
+
+            const members = Array.isArray(memberRes.data?.members) ? memberRes.data.members : [];
+            const totalMembers = Number(memberRes.data?.total_members || 0) || 0;
+            const passStats = memberRes.data?.pass_stats || {};
+            const classInfo = memberRes.data?.class_info || {};
+            const gatherings = gatherRes?.success && Array.isArray(gatherRes.data) ? gatherRes.data : [];
+
+            body.innerHTML = shared.renderClassInfoPanelHtml?.({
+                classInfo,
+                members,
+                totalMembers,
+                passStats,
+                view,
+                roomInfo: { is_instructor: state.isInstructor, class_id: roomId },
+                gatherings,
+                currentChatCount: totalMembers,
+            }) || '<div class="class-info-empty">정보를 표시할 수 없습니다.</div>';
+
+            body.querySelectorAll('[data-friend-add]').forEach((btn) => {
+                btn.addEventListener('click', async (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const targetId = String(btn.dataset.friendAdd || '').trim();
+                    if (!targetId) return;
+                    await window.addFriend?.(targetId);
+                });
+            });
+
+            body.querySelectorAll('[data-gathering-preview="1"]').forEach((card) => {
+                const openCard = () => {
+                    const payload = {
+                        gathering_id: card.dataset.gatheringId || '',
+                        title: card.dataset.title || '모집 카드',
+                        gathering_at: card.dataset.time || '',
+                        location: card.dataset.place || '',
+                        current_count: Number(card.dataset.count || 0),
+                        min_capacity: Number(card.dataset.min || 0),
+                        max_capacity: Number(card.dataset.max || 0),
+                        status: card.dataset.status || 'open',
+                        description: card.dataset.desc || '',
+                        created_by: card.dataset.createdBy || '',
+                    };
+
+                    shared.openGatheringPreview?.(payload, {
+                        onJoin: view !== 'instructor' ? async (data) => {
+                            const targetId = data?.gathering_id || data?.id || card.dataset.gatheringId || '';
+                            if (!targetId) return;
+                            await joinGathering(state.classId, targetId);
+                        } : null,
+                        onClose: view === 'instructor' ? async (data) => {
+                            const targetId = data?.gathering_id || data?.id || card.dataset.gatheringId || '';
+                            if (!targetId) return;
+                            await closeGathering(state.classId, targetId);
+                        } : null,
+                        onMap: async (data) => {
+                            const place = String(data?.location || '').trim();
+                            if (!place) return;
+                            window.open(`https://map.naver.com/v5/search/${encodeURIComponent(place)}`, '_blank', 'noopener');
+                        },
+                    });
+                };
+
+                card.addEventListener('click', (event) => {
+                    if (event.target.closest('button, a')) return;
+                    openCard();
+                });
+                card.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openCard();
+                    }
+                });
+            });
+        } catch (err) {
+            body.innerHTML = `<div class="class-info-empty">오류 발생: ${escapeHtml(err.message || '알 수 없는 오류')}</div>`;
+        }
     }
 
     function toggleInfoPanel() {
@@ -1019,6 +1101,34 @@
         syncChatTheme();
         observeThemeChanges();
         window.BSQCommunityShared?.setupGatheringPreviewShell?.();
+        if (typeof window.addFriend !== 'function') {
+            window.addFriend = async function (targetUserId) {
+                const shared = window.BSQCommunityShared || {};
+                const targetId = String(targetUserId || '').trim();
+                const currentUserId = state.userId || bridge()?.getUserId?.() || '';
+                if (!currentUserId || !targetId || currentUserId === targetId) {
+                    return { success: false, error: 'invalid_target' };
+                }
+
+                const relation = shared.getFriendRelation
+                    ? await shared.getFriendRelation(targetId).catch(() => null)
+                    : null;
+                if (relation?.blocked) {
+                    shared.toast?.('차단된 사용자입니다. 먼저 차단을 해제해 주세요.');
+                    return { success: false, error: 'blocked' };
+                }
+
+                if (relation?.friend) {
+                    shared.toast?.('이미 친구입니다.');
+                    return { success: true, action: 'noop' };
+                }
+
+                const res = await shared.requestFriend?.(targetId);
+                if (res?.success) shared.toast?.(res.message || '친구 요청을 보냈습니다.');
+                else shared.toast?.(res?.error || '친구 요청에 실패했습니다.');
+                return res;
+            };
+        }
 
         const unlocked = q('chatUnlocked');
         const locked = q('chatLockedOverlay');
