@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="mypage.css?v=20260402_01">
+    <link rel="stylesheet" href="mypage.css?v=20260410_01">
     <script src="../bsq_server.js?v=20260402_01" defer></script>
     <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
     <link rel="stylesheet" href="/theme_overrides.css?v=20260402_01">
@@ -52,14 +52,6 @@
                         <span class="nav-icon"><i class="fa-solid fa-shield-halved"></i></span>
                         <span class="nav-label">보안/설정</span>
                     </button>
-                    <a class="nav-btn nav-link" href="../community/community.html">
-                        <span class="nav-icon"><i class="fa-solid fa-comments"></i></span>
-                        <span class="nav-label">커뮤니티</span>
-                    </a>
-                    <a class="nav-btn nav-link" href="../class/class_list.html">
-                        <span class="nav-icon"><i class="fa-solid fa-compass"></i></span>
-                        <span class="nav-label">클래스 목록</span>
-                    </a>
                     <button type="button" class="nav-btn" id="sessionNavButton" data-action="session">
                         <span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
                         <span class="nav-label">로그아웃</span>
@@ -230,20 +222,7 @@
                 <section id="tabClasses" class="mypage-tab" aria-labelledby="classesTitle">
                     <div class="class-banner-shell">
                         <div class="banner-inner home-bottom-banner-inner class-banner-inner">
-                            <div class="home-bottom-banner-track class-banner-track" id="classTabBannerTrack">
-                                <div class="home-banner-slide is-active">
-                                    <div class="class-banner-fallback">
-                                        <span class="banner-eyebrow">더 보기</span>
-                                        <h2>커뮤니티에서 질문하고, 클래스에서 바로 시작하세요.</h2>
-                                        <p>수강 흐름과 실시간 소통을 끊지 않고 이어가도록 설계했습니다.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="home-bottom-banner-overlay class-banner-overlay">
-                                <span class="banner-eyebrow">더 보기</span>
-                                <h2>커뮤니티에서 질문하고, 클래스에서 바로 시작하세요.</h2>
-                                <p>수강 흐름과 실시간 소통을 끊지 않고 이어가도록 설계했습니다.</p>
-                            </div>
+                            <div class="home-bottom-banner-track class-banner-track" id="classTabBannerTrack"></div>
                             <div class="banner-actions class-banner-actions">
                                 <a class="banner-link" href="../community/community.html">커뮤니티 둘러보기</a>
                                 <a class="banner-link subtle" href="../class/class_list.html">전체 클래스 보기</a>
@@ -398,7 +377,9 @@
 
                         <div class="input-group">
                             <label for="profileReferrerCode">추천인 코드</label>
-                            <input type="text" id="profileReferrerCode" placeholder="추천인 코드를 입력하세요" autocomplete="off">
+                            <select id="profileReferrerCode" data-referrer-display="code-only" aria-label="추천인 코드 선택">
+                                <option value="">추천인 코드를 선택해 주세요</option>
+                            </select>
                         </div>
 
                         <div class="input-group full-width">
@@ -635,7 +616,7 @@
     </div>
 
     <script src="mypage.js?v=20260401_03" defer></script>
-    <script src="tab_profile.js?v=20260401_03" defer></script>
+    <script src="tab_profile.js?v=20260410_01" defer></script>
     <script src="tab_classes.js?v=20260330_11" defer></script>
     <script src="tab_security.js?v=20260402_01" defer></script>
     <script src="tab_chat_sub.js?v=20260330_11" defer></script>

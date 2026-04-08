@@ -114,17 +114,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        editorModal.style.display = 'flex';
+        if (window.NoticeUI?.openModal) window.NoticeUI.openModal(editorModal);
+        else editorModal.style.display = 'flex';
     }
 
     document.getElementById('btnEditorClose')?.addEventListener('click', () => {
-        editorModal.style.display = 'none';
+        if (window.NoticeUI?.closeModal) window.NoticeUI.closeModal(editorModal);
+        else editorModal.style.display = 'none';
     });
     document.getElementById('btnEditorCancel')?.addEventListener('click', () => {
-        editorModal.style.display = 'none';
+        if (window.NoticeUI?.closeModal) window.NoticeUI.closeModal(editorModal);
+        else editorModal.style.display = 'none';
     });
     editorModal?.addEventListener('click', (event) => {
-        if (event.target === editorModal) editorModal.style.display = 'none';
+        if (event.target !== editorModal) return;
+        if (window.NoticeUI?.closeModal) window.NoticeUI.closeModal(editorModal);
+        else editorModal.style.display = 'none';
     });
 
     // Save Data (D1 API)
@@ -179,7 +184,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (!res || !res.success) throw new Error(res?.error || "Save failed");
 
-            editorModal.style.display = 'none';
+            if (window.NoticeUI?.closeModal) window.NoticeUI.closeModal(editorModal);
+            else editorModal.style.display = 'none';
             alert('성공적으로 저장되었습니다.');
             
             // 페이지 새로고침 또는 UI 갱신 (관찰자/이벤트 처리 권장)

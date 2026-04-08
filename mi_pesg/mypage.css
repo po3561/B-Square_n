@@ -2369,6 +2369,49 @@ body[data-page="mypage"] .dashboard-accordion-card[data-accordion="friend"] {
 }
 
 body[data-page="mypage"] .mypage-layout {
+    width: min(calc(100% - 1.1rem), var(--mp-page-max));
+}
+
+body[data-page="mypage"] .mypage-sidebar {
+    padding: clamp(1rem, 1.55vw, 1.25rem);
+}
+
+body[data-page="mypage"] .mypage-content {
+    gap: clamp(0.95rem, 1.45vw, 1.2rem);
+}
+
+body[data-page="mypage"] .dashboard-summary-grid,
+body[data-page="mypage"] .dashboard-commerce-grid {
+    gap: clamp(0.9rem, 1.3vw, 1.15rem);
+}
+
+body[data-page="mypage"] .dashboard-accordion-body {
+    padding-top: 0.9rem;
+}
+
+body[data-page="mypage"] .class-banner-fallback,
+body[data-page="mypage"] .class-banner-overlay {
+    display: none !important;
+}
+
+body[data-page="mypage"] .class-banner-shell {
+    min-height: clamp(190px, 22vw, 300px);
+}
+
+body[data-page="mypage"] #profileReferrerCode {
+    min-height: 48px;
+    padding: 0.78rem 0.95rem;
+    border-radius: 16px;
+    border: 1px solid var(--mp-border);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--mp-text);
+}
+
+body[data-page="mypage"] #profileReferrerCode option {
+    color: #101419;
+}
+
+body[data-page="mypage"] .mypage-layout {
     gap: clamp(1rem, 1.8vw, 1.4rem);
 }
 

@@ -77,12 +77,15 @@
     const phoneInput = document.getElementById('signupPhone');
     const referrerSelect = document.getElementById('signupReferrerCode');
     const referrerStatus = document.getElementById('referrerCodeStatus');
+    const referrerDisplayMode = String(referrerSelect?.dataset.referrerDisplay || 'code-only').trim().toLowerCase();
     const banner = document.querySelector('[data-auth-banner]');
     const verificationCard = document.querySelector('[data-signup-verification]');
     const verificationProvider = document.querySelector('[data-signup-provider]');
     const verificationSummary = document.querySelector('[data-signup-summary]');
     const verificationEmail = document.querySelector('[data-signup-email]');
     const verificationName = document.querySelector('[data-signup-name]');
+    const verificationUsername = document.querySelector('[data-signup-username]');
+    const verificationPhone = document.querySelector('[data-signup-phone]');
 
     if (!form) return;
 
@@ -115,20 +118,71 @@
       setIdStatus('', '');
     };
 
+    const pickProfileValue = (profile, keys = []) => {
+      for (const key of keys) {
+        const value = String(profile?.[key] || '').trim();
+        if (value) return value;
+      }
+      return '';
+    };
+
+    const normalizeReferrerGroups = (groups) => {
+      return (Array.isArray(groups) ? groups : [])
+        .map((group) => {
+          const label = String(group?.label || group?.name || '').trim();
+          const options = (Array.isArray(group?.options) ? group.options : [])
+            .map((option) => {
+              const value = String(option?.value || option?.code || '').trim();
+              if (!value) return null;
+              return {
+                value,
+                label: String(option?.label || option?.name || '').trim() || value,
+              };
+            })
+            .filter(Boolean);
+          return label && options.length ? { label, options } : null;
+        })
+        .filter(Boolean);
+    };
+
+    const ensureReferrerValue = (value, label = '') => {
+      if (!referrerSelect) return;
+      const normalized = String(value || '').trim();
+      if (!normalized) {
+        referrerSelect.value = '';
+        return;
+      }
+
+      const exists = Array.from(referrerSelect.options || []).some((option) => String(option.value || '').trim() === normalized);
+      if (!exists) {
+        const customOption = document.createElement('option');
+        customOption.value = normalized;
+        customOption.textContent = normalized;
+        customOption.dataset.referrerLabel = label || '직접 선택';
+        customOption.title = label ? `${label} · ${normalized}` : normalized;
+        referrerSelect.appendChild(customOption);
+      }
+
+      referrerSelect.value = normalized;
+    };
+
     const renderReferrerGroups = (groups, source = 'database') => {
       if (!referrerSelect) return;
 
-      const safeGroups = Array.isArray(groups) && groups.length ? groups : FALLBACK_REFERRER_GROUPS;
+      const safeGroups = normalizeReferrerGroups(groups);
       const fragment = document.createDocumentFragment();
+      const currentValue = String(referrerSelect.value || '').trim();
 
       referrerSelect.innerHTML = '';
 
       const placeholder = document.createElement('option');
       placeholder.value = '';
-      placeholder.textContent = '추천인 코드를 선택해 주세요 (선택사항)';
+      placeholder.textContent = '추천인 코드를 선택해 주세요';
+      placeholder.selected = !currentValue;
       fragment.appendChild(placeholder);
 
-      for (const group of safeGroups) {
+      const groupsToRender = safeGroups.length ? safeGroups : normalizeReferrerGroups(FALLBACK_REFERRER_GROUPS);
+      for (const group of groupsToRender) {
         const options = Array.isArray(group?.options) ? group.options : [];
         if (!options.length) continue;
 
@@ -138,8 +192,12 @@
         for (const option of options) {
           const opt = document.createElement('option');
           opt.value = String(option.value || '').trim();
-          // User-facing signup flow stores the code value; labels stay admin-side.
-          opt.textContent = String(option.value || option.label || '').trim();
+          opt.textContent = referrerDisplayMode === 'label-code'
+            ? `${group.label} · ${opt.value}`
+            : opt.value;
+          opt.dataset.referrerLabel = String(group.label || '').trim();
+          opt.dataset.referrerName = String(option.label || '').trim();
+          opt.title = `${group.label} · ${option.label || opt.value} · ${opt.value}`;
           optgroup.appendChild(opt);
         }
 
@@ -154,6 +212,12 @@
           : '기본 추천인 코드 목록을 표시하고 있습니다.',
         'info',
       );
+
+      if (currentValue) {
+        ensureReferrerValue(currentValue);
+      } else {
+        referrerSelect.value = '';
+      }
     };
 
     const suggestId = (context) => {
@@ -172,6 +236,19 @@
       return '';
     };
 
+    const loadReferrerCodes = async () => {
+      if (referrerSelect) referrerSelect.disabled = true;
+
+      try {
+        const result = await apiGet('/api/auth/referrer-codes');
+        const groups = result?.data?.groups || [];
+        renderReferrerGroups(groups, result?.data?.source || 'fallback');
+      } catch (error) {
+        console.warn('[Signup] referrer codes unavailable:', error);
+        renderReferrerGroups(FALLBACK_REFERRER_GROUPS, 'fallback');
+      }
+    };
+
     const renderSignupContext = (context) => {
       if (!verificationCard) return;
 
@@ -188,18 +265,28 @@
       const providerLabel = context.provider?.label || context.profile?.provider || '소셜';
       const profileEmail = String(context.profile?.provider_email || context.profile?.masked_email || '').trim();
       const profileName = String(context.profile?.name || context.profile?.nickname || '').trim();
+      const profilePhone = pickProfileValue(context.profile, ['phone', 'provider_phone', 'masked_phone', 'phone_number', 'mobile', 'tel']);
+      const profileUsername = suggestId(context);
       const verifiedEmail = Boolean(context.profile?.email_verified && context.profile?.provider_email);
 
       verificationCard.hidden = false;
       if (verificationProvider) verificationProvider.textContent = `${providerLabel} 본인 인증 완료`;
       if (verificationSummary) {
-        verificationSummary.textContent = `${providerLabel}에서 확인한 정보로 가입 정보를 이어서 입력할 수 있습니다.`;
+        verificationSummary.textContent = profilePhone
+          ? `${providerLabel}에서 확인한 정보로 이메일, 이름, 아이디 후보, 휴대폰 번호를 바로 이어서 입력할 수 있습니다.`
+          : `${providerLabel}에서 확인한 정보로 이메일, 이름, 아이디 후보를 바로 이어서 입력할 수 있습니다.`;
       }
       if (verificationEmail) {
         verificationEmail.textContent = profileEmail || '인증 이메일 없음';
       }
       if (verificationName) {
         verificationName.textContent = profileName || '인증 이름 없음';
+      }
+      if (verificationUsername) {
+        verificationUsername.textContent = profileUsername || '자동 생성 예정';
+      }
+      if (verificationPhone) {
+        verificationPhone.textContent = profilePhone || '없음';
       }
 
       if (emailInput) {
@@ -219,7 +306,11 @@
       }
 
       if (idInput && !idInput.value) {
-        idInput.value = suggestId(context);
+        idInput.value = profileUsername;
+      }
+
+      if (phoneInput && !phoneInput.value && profilePhone) {
+        phoneInput.value = profilePhone;
       }
     };
 
@@ -230,18 +321,6 @@
       } catch (error) {
         console.warn('[Signup] social context unavailable:', error);
         renderSignupContext(null);
-      }
-    };
-
-    const loadReferrerCodes = async () => {
-      if (referrerSelect) referrerSelect.disabled = true;
-      try {
-        const result = await apiGet('/api/auth/referrer-codes');
-        const groups = result?.data?.groups || [];
-        renderReferrerGroups(groups, result?.data?.source || 'fallback');
-      } catch (error) {
-        console.warn('[Signup] referrer codes unavailable:', error);
-        renderReferrerGroups(FALLBACK_REFERRER_GROUPS, 'fallback');
       }
     };
 

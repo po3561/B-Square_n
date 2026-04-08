@@ -1491,12 +1491,18 @@ body.auth-signup-modern {
     margin-bottom: 0;
 }
 
+.auth-signup-modern .input-group label {
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 0.84rem;
+}
+
 .auth-signup-modern .input-group input,
 .auth-signup-modern .input-group select {
     min-height: 54px;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.035);
     border-color: rgba(255, 255, 255, 0.08);
+    padding-inline: 1rem;
 }
 
 .auth-signup-modern .input-group input::placeholder {
@@ -1526,6 +1532,21 @@ body.auth-signup-modern {
 .auth-signup-modern .social-verification-card,
 .auth-signup-modern .social-auth-shell {
     border-radius: 18px;
+}
+
+.auth-signup-modern .social-verification-card__summary {
+    line-height: 1.7;
+}
+
+.auth-signup-modern .social-verification-card__list {
+    gap: 0.7rem;
+}
+
+.auth-signup-modern .social-verification-card__list div {
+    min-height: 82px;
+    display: grid;
+    align-content: start;
+    gap: 0.25rem;
 }
 
 .auth-signup-modern .status-msg {

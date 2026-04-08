@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 전역 State
     const state = { notices: [], classNotices: [], faqs: [], searchQuery: initialSearchQuery };
+    const modalState = window.__BSQ_NOTICE_MODAL_STATE__ || (window.__BSQ_NOTICE_MODAL_STATE__ = { openModals: new Set() });
 
     function escapeHtml(value = '') {
         return String(value)
@@ -35,6 +36,36 @@ document.addEventListener('DOMContentLoaded', async () => {
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
     }
+
+    function syncModalLock() {
+        document.body.classList.toggle('notice-modal-open', modalState.openModals.size > 0);
+    }
+
+    function openNoticeModal(modal) {
+        if (!modal) return;
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        modal.dataset.noticeOpen = 'true';
+        modalState.openModals.add(modal);
+        syncModalLock();
+        return true;
+    }
+
+    function closeNoticeModal(modal) {
+        if (!modal) return;
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        modal.dataset.noticeOpen = 'false';
+        modalState.openModals.delete(modal);
+        syncModalLock();
+        return true;
+    }
+
+    window.NoticeUI = {
+        openModal: openNoticeModal,
+        closeModal: closeNoticeModal,
+        isOpen: (modal) => Boolean(modal && modal.dataset.noticeOpen === 'true'),
+    };
 
     // DOM Elements
     const noticeListEl = document.getElementById('noticeList');
@@ -82,6 +113,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
         document.querySelectorAll('.faq-item').forEach((node) => node.classList.remove('active'));
         item.classList.add('active');
+        const questionButton = item.querySelector('.faq-question');
+        const answer = item.querySelector('.faq-answer');
+        if (questionButton) questionButton.setAttribute('aria-expanded', 'true');
+        if (answer) answer.hidden = false;
         item.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return true;
     }
@@ -245,21 +280,36 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        faqListEl.innerHTML = items.map(f => `
-            <div class="faq-item" data-id="${f.id}">
-                <div class="faq-question">
-                    <div class="faq-question-text">Q. ${escapeHtml(f.question || '')}</div>
-                    <div class="faq-toggle">▼</div>
-                </div>
-                <div class="faq-answer">${escapeHtml(f.answer || '').replace(/\n/g, '<br>')}</div>
-            </div>
+        faqListEl.innerHTML = items.map((f) => `
+            <article class="faq-item" data-id="${f.id}">
+                <button type="button" class="faq-question" aria-expanded="false">
+                    <span class="faq-question-text"><span class="faq-prefix">Q.</span> ${escapeHtml(f.question || '')}</span>
+                    <span class="faq-toggle" aria-hidden="true">⌄</span>
+                </button>
+                <div class="faq-answer" hidden>${escapeHtml(f.answer || '').replace(/\n/g, '<br>')}</div>
+            </article>
         `).join('');
 
-        document.querySelectorAll('.faq-item').forEach(item => {
-            item.querySelector('.faq-question').addEventListener('click', () => {
+        document.querySelectorAll('.faq-item').forEach((item) => {
+            const button = item.querySelector('.faq-question');
+            const answer = item.querySelector('.faq-answer');
+            if (!button || !answer) return;
+
+            button.addEventListener('click', () => {
                 const isActive = item.classList.contains('active');
-                document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
-                if (!isActive) item.classList.add('active');
+                document.querySelectorAll('.faq-item').forEach((node) => {
+                    node.classList.remove('active');
+                    const nodeButton = node.querySelector('.faq-question');
+                    const nodeAnswer = node.querySelector('.faq-answer');
+                    if (nodeButton) nodeButton.setAttribute('aria-expanded', 'false');
+                    if (nodeAnswer) nodeAnswer.hidden = true;
+                });
+
+                if (!isActive) {
+                    item.classList.add('active');
+                    button.setAttribute('aria-expanded', 'true');
+                    answer.hidden = false;
+                }
             });
         });
     }
@@ -312,7 +362,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (window.NoticeAdmin && window.NoticeAdmin.onViewerOpen) window.NoticeAdmin.onViewerOpen(notice);
 
-        viewerModal.style.display = 'flex';
+        openNoticeModal(viewerModal);
         loadNoticeDetail(noticeId);
     }
 
@@ -341,27 +391,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     document.getElementById('btnViewerClose')?.addEventListener('click', () => {
-        viewerModal.style.display = 'none';
+        closeNoticeModal(viewerModal);
         currentOpenNoticeId = null;
     });
 
     [viewerModal, document.getElementById('editorModal')].filter(Boolean).forEach((modal) => {
         modal.addEventListener('click', (event) => {
             if (event.target !== modal) return;
-            modal.style.display = 'none';
+            closeNoticeModal(modal);
             if (modal === viewerModal) currentOpenNoticeId = null;
         });
     });
 
     document.addEventListener('keydown', (event) => {
         if (event.key !== 'Escape') return;
-        if (viewerModal?.style.display === 'flex') {
-            viewerModal.style.display = 'none';
+        if (window.NoticeUI?.isOpen(viewerModal)) {
+            closeNoticeModal(viewerModal);
             currentOpenNoticeId = null;
         }
         const editorModal = document.getElementById('editorModal');
-        if (editorModal?.style.display === 'flex') {
-            editorModal.style.display = 'none';
+        if (window.NoticeUI?.isOpen(editorModal)) {
+            closeNoticeModal(editorModal);
         }
     });
 

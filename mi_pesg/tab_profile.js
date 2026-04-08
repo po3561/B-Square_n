@@ -4,6 +4,7 @@
     const profileImageInput = document.getElementById('profileImage');
     const profileImagePreview = document.getElementById('profileImagePreview');
     const profileReferrerCode = document.getElementById('profileReferrerCode');
+    const referrerDisplayMode = String(profileReferrerCode?.dataset.referrerDisplay || 'code-only').trim().toLowerCase();
 
     function syncStoredUserProfile(patch) {
         try {
@@ -34,6 +35,54 @@
         { name: '글쓰기', emoji: '✍️' },
         { name: '교육', emoji: '📚' },
         { name: '기타', emoji: '✨' },
+    ];
+
+    const FALLBACK_REFERRER_GROUPS = [
+        {
+            label: '중부',
+            options: [
+                { value: 'aj001', label: '중부1' },
+                { value: 'aj002', label: '중부2' },
+                { value: 'aj003', label: '중부3' },
+                { value: 'aj004', label: '중부4' },
+                { value: 'aj005', label: '중부5' },
+            ],
+        },
+        {
+            label: '북부',
+            options: [
+                { value: 'ab001', label: '북부1' },
+                { value: 'ab002', label: '북부2' },
+                { value: 'ab003', label: '북부3' },
+                { value: 'ab004', label: '북부4' },
+                { value: 'ab005', label: '북부5' },
+            ],
+        },
+        {
+            label: '동부',
+            options: [
+                { value: 'ac001', label: '동부1' },
+                { value: 'ac002', label: '동부2' },
+                { value: 'ac003', label: '동부3' },
+                { value: 'ac004', label: '동부4' },
+                { value: 'ac005', label: '동부5' },
+            ],
+        },
+        {
+            label: '대학',
+            options: [
+                { value: 'as001', label: '대학1' },
+                { value: 'as002', label: '대학2' },
+                { value: 'as003', label: '대학3' },
+                { value: 'as004', label: '대학4' },
+            ],
+        },
+        {
+            label: '행정',
+            options: [
+                { value: 'cs020', label: '행정' },
+            ],
+        },
     ];
 
     let selectedCategories = [];
@@ -69,6 +118,129 @@
                 emoji: String(item.emoji || '✨').trim() || '✨',
             }))
             .filter((item) => item.name);
+    }
+
+    function normalizeReferrerGroups(rows) {
+        return (Array.isArray(rows) ? rows : [])
+            .map((group) => {
+                const label = String(group?.label || group?.name || '').trim();
+                const options = Array.isArray(group?.options) ? group.options : [];
+                const normalizedOptions = options
+                    .map((option) => {
+                        const value = String(option?.value || option?.code || '').trim();
+                        if (!value) return null;
+                        return {
+                            value,
+                            label: String(option?.label || option?.name || '').trim() || value,
+                        };
+                    })
+                    .filter(Boolean);
+
+                return label && normalizedOptions.length
+                    ? { label, options: normalizedOptions }
+                    : null;
+            })
+            .filter(Boolean);
+    }
+
+    function ensureReferrerValue(value, label = '') {
+        if (!profileReferrerCode) return;
+
+        const normalizedValue = String(value || '').trim();
+        if (!normalizedValue) {
+            profileReferrerCode.value = '';
+            return;
+        }
+
+        const currentOptions = Array.from(profileReferrerCode.options || []);
+        const exists = currentOptions.some((option) => String(option.value || '').trim() === normalizedValue);
+
+        if (!exists) {
+            const customOption = document.createElement('option');
+            customOption.value = normalizedValue;
+            customOption.textContent = normalizedValue;
+            customOption.dataset.referrerLabel = label || '직접 선택';
+            customOption.title = label ? `${label} · ${normalizedValue}` : normalizedValue;
+            profileReferrerCode.appendChild(customOption);
+        }
+
+        profileReferrerCode.value = normalizedValue;
+    }
+
+    function renderReferrerOptions(groups, source = 'database') {
+        if (!profileReferrerCode) return;
+
+        const currentValue = String(profileReferrerCode.value || '').trim();
+        const safeGroups = normalizeReferrerGroups(groups);
+        const fragment = document.createDocumentFragment();
+
+        profileReferrerCode.innerHTML = '';
+
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = '추천인 코드를 선택해 주세요';
+        placeholder.selected = !currentValue;
+        fragment.appendChild(placeholder);
+
+        const displayMode = referrerDisplayMode || 'code-only';
+        for (const group of (safeGroups.length ? safeGroups : normalizeReferrerGroups(FALLBACK_REFERRER_GROUPS))) {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = group.label;
+
+            for (const option of group.options) {
+                const opt = document.createElement('option');
+                opt.value = option.value;
+                opt.textContent = displayMode === 'label-code'
+                    ? `${group.label} · ${option.value}`
+                    : option.value;
+                opt.dataset.referrerLabel = group.label;
+                opt.dataset.referrerName = option.label;
+                opt.title = `${group.label} · ${option.label} · ${option.value}`;
+                optgroup.appendChild(opt);
+            }
+
+            fragment.appendChild(optgroup);
+        }
+
+        profileReferrerCode.appendChild(fragment);
+        profileReferrerCode.disabled = false;
+        setReferrerStatus(
+            source === 'database'
+                ? '추천인 코드 목록을 불러왔습니다.'
+                : '기본 추천인 코드 목록을 표시합니다.',
+            'info',
+        );
+
+        if (currentValue) {
+            ensureReferrerValue(currentValue);
+        } else {
+            profileReferrerCode.value = '';
+        }
+    }
+
+    async function loadReferrerOptions() {
+        if (!window.__BSQ_MYPAGE_REFERRER_PROMISE__) {
+            window.__BSQ_MYPAGE_REFERRER_PROMISE__ = (async () => {
+                try {
+                    const res = await window.BSQ.api('/api/auth/referrer-codes');
+                    if (res && res.success && res.data && Array.isArray(res.data.groups)) {
+                        return {
+                            groups: normalizeReferrerGroups(res.data.groups),
+                            source: res.data.source || 'database',
+                        };
+                    }
+                } catch (error) {
+                    console.warn('[tab_profile] referrer load failed, using fallback:', error);
+                }
+
+                return {
+                    groups: normalizeReferrerGroups(FALLBACK_REFERRER_GROUPS),
+                    source: 'fallback',
+                };
+            })();
+        }
+
+        return window.__BSQ_MYPAGE_REFERRER_PROMISE__;
     }
 
     function escapeHtml(value = '') {
@@ -165,6 +337,9 @@
 
     async function loadProfile() {
         try {
+            const referrerData = await loadReferrerOptions();
+            renderReferrerOptions(referrerData.groups, referrerData.source);
+
             const res = await window.BSQ.api(`/api/users/${userId}`);
             if (res && res.success && res.data) {
                 const data = res.data;
@@ -178,7 +353,7 @@
                 if (phoneEl) phoneEl.value = data.phone || '';
                 if (usernameEl) usernameEl.value = data.username || '';
                 if (snsEl) snsEl.value = data.sns_link || '';
-                if (referrerEl) referrerEl.value = data.referrer_code || '';
+                if (referrerEl) ensureReferrerValue(data.referrer_code || '', data.referrer_name || '');
 
                 selectedCategories = String(data.preferred_category || '')
                     .split(',')
@@ -197,6 +372,7 @@
                 const usernameEl = document.getElementById('profileUsername');
                 if (nameEl) nameEl.value = defaultName;
                 if (usernameEl) usernameEl.value = defaultName;
+                if (profileReferrerCode) profileReferrerCode.value = '';
                 selectedCategories = [];
                 await refreshCategoryChips([]);
             }
