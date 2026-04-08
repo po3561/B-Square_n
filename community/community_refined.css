@@ -3648,3 +3648,71 @@ body[data-layout="popup"] .btn-add-contact:disabled {
         padding-right: 16px;
     }
 }
+
+/* Light mode visibility fixes for rail menu and reply surfaces */
+[data-theme="light"] body[data-layout="community"] .comm-nav-rail .btn-hamburger,
+[data-theme="light"] body[data-layout="popup"] .comm-nav-rail .btn-hamburger {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 247, 252, 0.96)) !important;
+    border: 1px solid color-mix(in srgb, var(--comm-border) 80%, var(--comm-accent) 20%) !important;
+    color: var(--comm-text) !important;
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] body[data-layout="community"] .comm-nav-rail .btn-hamburger i,
+[data-theme="light"] body[data-layout="popup"] .comm-nav-rail .btn-hamburger i {
+    color: var(--comm-text) !important;
+}
+
+[data-theme="light"] body[data-layout="community"] .comm-nav-rail .btn-hamburger:hover,
+[data-theme="light"] body[data-layout="popup"] .comm-nav-rail .btn-hamburger:hover {
+    background: rgba(65, 105, 255, 0.11) !important;
+    transform: translateY(-1px);
+}
+
+[data-theme="light"] body[data-layout="community"] .msg-reply-quote,
+[data-theme="light"] body[data-layout="popup"] .msg-reply-quote {
+    background: rgba(65, 105, 255, 0.08) !important;
+    border-left-color: rgba(65, 105, 255, 0.8) !important;
+    color: var(--comm-text) !important;
+}
+
+[data-theme="light"] body[data-layout="community"] .msg-row.mine .msg-reply-quote,
+[data-theme="light"] body[data-layout="popup"] .msg-row.mine .msg-reply-quote {
+    background: rgba(255, 255, 255, 0.82) !important;
+    border-left-color: rgba(65, 105, 255, 0.78) !important;
+    color: var(--comm-text) !important;
+}
+
+[data-theme="light"] body[data-layout="community"] .reply-quote-user,
+[data-theme="light"] body[data-layout="popup"] .reply-quote-user {
+    color: var(--comm-accent) !important;
+}
+
+[data-theme="light"] body[data-layout="community"] .reply-quote-content,
+[data-theme="light"] body[data-layout="popup"] .reply-quote-content {
+    color: var(--comm-text-2) !important;
+}
+
+[data-theme="light"] body[data-layout="community"] .reply-preview,
+[data-theme="light"] body[data-layout="popup"] .reply-preview {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border-color: color-mix(in srgb, var(--comm-border) 84%, var(--comm-accent) 16%) !important;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] body[data-layout="community"] .reply-preview-name,
+[data-theme="light"] body[data-layout="popup"] .reply-preview-name {
+    color: var(--comm-accent) !important;
+}
+
+[data-theme="light"] body[data-layout="community"] .reply-preview-snippet,
+[data-theme="light"] body[data-layout="popup"] .reply-preview-snippet {
+    color: var(--comm-text) !important;
+}
+
+[data-theme="light"] body[data-layout="community"] .msg-reactions .reaction-pill,
+[data-theme="light"] body[data-layout="popup"] .msg-reactions .reaction-pill {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border-color: color-mix(in srgb, var(--comm-border) 78%, var(--comm-accent) 22%) !important;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05) !important;
+}

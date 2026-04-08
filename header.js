@@ -9,7 +9,7 @@
   const scriptDir = scriptTag ? scriptTag.src.substring(0, scriptTag.src.lastIndexOf('/') + 1) : '';
   
   // Use scriptDir for absolute-like relative paths for CSS dynamic injection
-  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260408_01';
+  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260408_02';
 
   const homePrefix = currentPath.split('/').length > 2 ? '../' : './';
   const prefix = homePrefix;
@@ -46,6 +46,22 @@
     history: [],
     currentRequestQuery: '',
   };
+
+  let headerScrollFrame = 0;
+
+  function updateHeaderScrollState() {
+    headerScrollFrame = 0;
+
+    const header = document.getElementById('bsqHeader');
+    if (!header) return;
+
+    header.classList.toggle('scrolled', (window.scrollY || 0) > 12);
+  }
+
+  function scheduleHeaderScrollState() {
+    if (headerScrollFrame) return;
+    headerScrollFrame = window.requestAnimationFrame(updateHeaderScrollState);
+  }
 
   function navIconSvg(key) {
     const icons = {
@@ -988,16 +1004,9 @@
     setupGlobalSearch();
     initAuth();
 
-    window.addEventListener('scroll', () => {
-      const header = document.getElementById('bsqHeader');
-      if (header) {
-        if (window.scrollY > 50) {
-          header.classList.add('scrolled');
-        } else {
-          header.classList.remove('scrolled');
-        }
-      }
-    });
+    updateHeaderScrollState();
+    window.addEventListener('scroll', scheduleHeaderScrollState, { passive: true });
+    window.addEventListener('resize', scheduleHeaderScrollState);
 
     window.addEventListener('bsq_preferences', () => {
       void applyShellBranding();

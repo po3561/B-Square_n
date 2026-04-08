@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     ensureBsqHelperLoaded();
 
     const currentCategory = getCurrentHomeCategory();
+    setHomeCategoryExpandedState(false);
+    syncHomeCategoryBackdrop(false);
     await Promise.all([
         renderHomeCategoryMenu(currentCategory),
         initMainPage(currentCategory, true),

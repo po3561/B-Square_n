@@ -158,6 +158,7 @@
         };
 
         let lastError = null;
+        const isKnownMissingMessage = (message) => /message not found/i.test(String(message || ''));
 
         for (const baseUrl of candidateBases) {
             try {
@@ -177,7 +178,11 @@
                             errMsg = errorText.substring(0, 100);
                         }
                     }
-                    throw new Error(errMsg);
+                    const error = new Error(errMsg);
+                    if (response.status === 404 && isKnownMissingMessage(errMsg)) {
+                        error.__bsqSilent = true;
+                    }
+                    throw error;
                 }
 
                 const result = await response.json();
@@ -185,9 +190,9 @@
                     console.warn(`[BSQ API] ${endpoint} warning:`, result.error, result.detail || '');
                     if (method !== 'GET') {
                         const warningText = [result.error, result.detail].filter(Boolean).join(' / ') || 'Request failed.';
-                if (method !== 'GET' || window.__BSQ_SHOW_API_ALERTS__ === true) {
-                    showOnScreenAlert(`[API] ${warningText}`);
-                }
+                        if ((method !== 'GET' || window.__BSQ_SHOW_API_ALERTS__ === true) && !isKnownMissingMessage(warningText)) {
+                            showOnScreenAlert(`[API] ${warningText}`);
+                        }
                     }
                 } else if (result.data) {
                     result.data = fixImageUrls(result.data);
@@ -215,7 +220,7 @@
                     ? `API connection failed. Tried: ${triedBases}`
                     : `[BSQ API] ${error.message}`;
 
-                if (method !== 'GET' || window.__BSQ_SHOW_API_ALERTS__ === true) {
+                if ((method !== 'GET' || window.__BSQ_SHOW_API_ALERTS__ === true) && !error.__bsqSilent && !isKnownMissingMessage(error.message)) {
                     showOnScreenAlert(msg);
                 } else {
                     console.warn(msg);
@@ -225,7 +230,7 @@
         }
 
         const fallbackError = lastError || new Error('Unknown error');
-        if (method !== 'GET' || window.__BSQ_SHOW_API_ALERTS__ === true) {
+        if ((method !== 'GET' || window.__BSQ_SHOW_API_ALERTS__ === true) && !isKnownMissingMessage(fallbackError.message)) {
             showOnScreenAlert(`[BSQ API] ${fallbackError.message}`);
         } else {
             console.warn(`[BSQ API] ${fallbackError.message}`);
