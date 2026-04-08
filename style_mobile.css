@@ -1013,15 +1013,19 @@ option {
 .bottom-nav {
     display: none;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
+    bottom: max(0.45rem, env(safe-area-inset-bottom, 0px));
+    left: max(0.55rem, env(safe-area-inset-left, 0px));
+    right: max(0.55rem, env(safe-area-inset-right, 0px));
+    width: auto;
     background: rgba(255, 255, 255, 0.97);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-top: 1px solid #eee;
+    border: 1px solid #eee;
+    border-radius: 24px;
     z-index: 1000;
-    padding-bottom: env(safe-area-inset-bottom, 12px);
+    padding: 0.35rem;
+    padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
 }
 
 .bottom-nav .nav-item {
@@ -1033,8 +1037,10 @@ option {
     font-size: 0.7rem;
     font-weight: 500;
     gap: 3px;
-    padding: 0.6rem 0;
+    padding: 0.5rem 0;
+    min-height: 54px;
     text-decoration: none;
+    border-radius: 18px;
 }
 
 .bottom-nav .nav-item .icon {
@@ -1044,6 +1050,8 @@ option {
 .bottom-nav .nav-item.active {
     color: #1a1a1a;
     font-weight: 700;
+    background: rgba(59, 109, 245, 0.12);
+    border: 1px solid rgba(59, 109, 245, 0.18);
 }
 
 .bottom-nav .nav-item.active .icon {
@@ -1586,14 +1594,15 @@ option {
     .bottom-nav {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
-        padding: 0.4rem 0;
-        padding-bottom: calc(0.4rem + env(safe-area-inset-bottom));
+        padding: 0.35rem;
+        padding-bottom: calc(0.35rem + env(safe-area-inset-bottom));
     }
 
     .bottom-nav .nav-item {
         font-size: 0.7rem;
         gap: 3px;
         padding: 0.5rem 0;
+        min-height: 54px;
     }
 
     .bottom-nav .nav-item .icon {

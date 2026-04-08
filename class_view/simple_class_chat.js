@@ -812,9 +812,21 @@
             commMain.addEventListener('drop', (e) => { e.preventDefault(); overlay.classList.remove('active'); handleFileSelect(e.dataTransfer.files); });
         }
 
-        q('btnPinnedList')?.addEventListener('click', () => { const overlay = q('pinnedListOverlay'); if (overlay) { overlay.style.display = 'block'; renderPinnedList(q('pinnedListBody')); } });
+        q('btnPinnedList')?.addEventListener('click', () => {
+            const overlay = q('pinnedListOverlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+                renderPinnedList(q('pinnedListBody'));
+            }
+        });
         q('btnClosePinnedList')?.addEventListener('click', () => { const overlay = q('pinnedListOverlay'); if (overlay) overlay.style.display = 'none'; });
-        q('pinnedMsgBar')?.addEventListener('click', () => { const overlay = q('pinnedListOverlay'); if (overlay) { overlay.style.display = 'block'; renderPinnedList(q('pinnedListBody')); } });
+        q('pinnedMsgBar')?.addEventListener('click', () => {
+            const overlay = q('pinnedListOverlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+                renderPinnedList(q('pinnedListBody'));
+            }
+        });
 
         const resizer = q('chatResizer');
         const wrapper = document.querySelector('.chat-tab-wrapper');

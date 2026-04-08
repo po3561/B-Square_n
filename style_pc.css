@@ -343,7 +343,12 @@ select,
     position: sticky;
     top: 0;
     z-index: 100;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition:
+        background-color 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease,
+        transform 180ms ease,
+        backdrop-filter 180ms ease;
 }
 
 .site-header.scrolled {
@@ -433,16 +438,16 @@ select,
 
 /* 2-row layout */
 .header-inner.header-two-row {
+    width: min(calc(100% - 2rem), var(--bsq-content-width, 1400px));
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-rows: auto auto;
     column-gap: 2rem;
     row-gap: 0.35rem;
     align-items: center;
-    padding: 0.5rem 3% 0 !important;
+    padding: 0.5rem 0 0 !important;
     max-width: none !important;
-    margin: 0 !important;
-    width: 100% !important;
+    margin: 0 auto !important;
 }
 
 .header-top {
@@ -495,7 +500,7 @@ select,
     grid-template-rows: auto auto;
     column-gap: 2rem;
     row-gap: 0.25rem;
-    padding: 0.3rem 3% 0 !important;
+    padding: 0.3rem 0 0 !important;
     align-items: center;
 }
 
@@ -798,8 +803,7 @@ option {
    2. MAIN CONTENT
 =========================================== */
 .main-content {
-    max-width: 1400px;
-    /* 사이드바를 위해 조금 더 넓게 조정 */
+    width: min(calc(100% - 2rem), var(--bsq-content-width, 1400px));
     margin: 0 auto;
 }
 

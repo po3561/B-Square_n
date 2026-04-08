@@ -483,8 +483,13 @@ function renderRecommendColumns(folders, container) {
                             <span class="recommend-num">${index + 1}</span>
                             <div class="recommend-thumb" style="${item.imageUrl ? `background-image:url('${escapeHtml(item.imageUrl)}')` : ''}"></div>
                             <div class="recommend-info">
-                                <span class="recommend-author">${escapeHtml(item.instructor)}</span>
                                 <h4>${escapeHtml(item.title)}</h4>
+                                <div class="recommend-meta">
+                                    <span>${escapeHtml(item.category)}</span>
+                                    <span>${escapeHtml(item.mode || '온라인/오프라인')}</span>
+                                    <span>${Number(item.reviewCount || 0).toLocaleString()}개 후기</span>
+                                    <span class="recommend-price">${escapeHtml(formatClassPriceLabel(item))}</span>
+                                </div>
                             </div>
                         </a>
                     `).join('')}
@@ -527,22 +532,16 @@ function renderClassCards(classes, container) {
                     <div class="card-thumbnail">
                         <img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.title)}" loading="lazy">
                         <div class="card-badges" aria-hidden="true">
-                            <span class="card-badge">추천</span>
-                            ${item.isNew ? '<span class="card-badge-muted">신규</span>' : ''}
+                            ${item.isNew ? '<span class="card-badge card-badge-new">NEW</span>' : ''}
                         </div>
                     </div>
                     <div class="card-info">
                         <h4 class="title">${escapeHtml(item.title)}</h4>
-                        <div class="card-topline">
-                            <span class="card-author">${escapeHtml(item.instructor)}</span>
-                            ${item.mode ? '<span class="card-divider">|</span>' : ''}
-                            ${item.mode ? `<span class="card-mode">${escapeHtml(item.mode)}</span>` : ''}
-                        </div>
-                        ${item.summary ? `<p class="card-summary">${escapeHtml(item.summary)}</p>` : ''}
-                        <div class="meta">
-                            <span class="rating">★ ${Number(item.rating || 0).toFixed(1)} (${Number(item.reviewCount || 0)})</span>
-                            <span class="meta-category">${escapeHtml(item.category)}</span>
-                            <span class="meta-likes">찜 ${likeCount.toLocaleString()}</span>
+                        <div class="card-meta">
+                            <span class="card-meta-item card-meta-category">${escapeHtml(item.category)}</span>
+                            <span class="card-meta-item card-meta-mode">${escapeHtml(item.mode || '온라인/오프라인')}</span>
+                            <span class="card-meta-item card-meta-review">후기 ${Number(item.reviewCount || 0).toLocaleString()}</span>
+                            <span class="card-meta-item card-meta-price">${escapeHtml(formatClassPriceLabel(item))}</span>
                         </div>
                     </div>
                 </a>
@@ -615,6 +614,12 @@ function formatHomeCardMode(item) {
     return classType ? classType.charAt(0) + classType.slice(1).toLowerCase() : '';
 }
 
+function formatClassPriceLabel(item = {}) {
+    const price = Number(item?.price ?? item?.salePrice ?? item?.sale_price ?? item?.discountPrice ?? item?.discount_price ?? 0);
+    if (!Number.isFinite(price) || price <= 0) return '무료';
+    return `${price.toLocaleString()}원`;
+}
+
 function updateHomeHeroStats() {
     const classTotal = document.getElementById('homeClassTotal');
     const categoryTotal = document.getElementById('homeCategoryTotal');
@@ -638,8 +643,6 @@ function syncHomeBookmarkUi(classId, bookmarked, count) {
     document.querySelectorAll(`.class-card[data-class-id="${id.replace(/"/g, '\\"')}"]`).forEach((card) => {
         const button = card.querySelector('[data-action="bookmark-class"]');
         if (button) updateHomeBookmarkButton(button, id, bookmarked, nextCount);
-        const likes = card.querySelector('.meta-likes');
-        if (likes) likes.textContent = `찜 ${nextCount.toLocaleString()}`;
     });
 }
 

@@ -146,6 +146,12 @@
     return raw ? raw.charAt(0) + raw.slice(1).toLowerCase() : '';
   }
 
+  function formatPriceLabel(item = {}) {
+    const price = Number(item?.price ?? item?.salePrice ?? item?.sale_price ?? item?.discountPrice ?? item?.discount_price ?? 0);
+    if (!Number.isFinite(price) || price <= 0) return '무료';
+    return `${price.toLocaleString()}원`;
+  }
+
   function cacheRefs() {
     refs.categoryFilter = $('categoryFilter');
     refs.notice = $('classListNotice');
@@ -218,12 +224,10 @@
 
   function renderCategoryButton(item, active = false, all = false) {
     const label = all ? '전체' : item.name;
-    const count = all ? state.totalCount || state.classResults.length : Number(item.class_count || 0);
     return `
       <button type="button" class="class-category-tile${active ? ' is-active' : ''}" data-cat="${esc(all ? 'all' : item.name)}" aria-pressed="${active ? 'true' : 'false'}">
         ${all ? '<span class="class-category-icon">+</span>' : renderCategoryMedia(item)}
         <span class="class-category-label">${esc(label)}</span>
-        <span class="class-category-count">${Number(count || 0).toLocaleString()}</span>
       </button>
     `;
   }
@@ -263,7 +267,6 @@
           <button type="button" class="class-category-tile${state.overlayOpen ? ' is-active' : ''}" data-action="toggle-category-overlay" aria-expanded="${state.overlayOpen ? 'true' : 'false'}">
             <span class="class-category-icon">${state.overlayOpen ? '−' : '+'}</span>
             <span class="class-category-label">${state.overlayOpen ? '접기' : '더보기'}</span>
-            <span class="class-category-count">${items.length - visible.length}</span>
           </button>
         ` : ''}
       </div>
@@ -311,7 +314,16 @@
 
     refs.bannerTrack.innerHTML = fallback.map((slide, index) => `
       <article class="class-list-banner-slide${index === state.bannerIndex ? ' is-active' : ''}">
-        <div class="class-list-banner-media${slide.imageUrl ? '' : ' is-fallback'}" ${slide.imageUrl ? `style="background-image:url('${esc(slide.imageUrl)}')"` : ''}></div>
+        ${slide.imageUrl
+          ? slide.linkUrl
+            ? `<a class="class-list-banner-link" href="${esc(slide.linkUrl)}" aria-label="${esc(slide.alt)}">
+                <img src="${esc(slide.imageUrl)}" alt="${esc(slide.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}">
+              </a>`
+            : `<div class="class-list-banner-link">
+                <img src="${esc(slide.imageUrl)}" alt="${esc(slide.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}">
+              </div>`
+          : `<div class="class-list-banner-link is-fallback" aria-hidden="true"></div>`
+        }
       </article>
     `).join('');
 
@@ -415,22 +427,16 @@
           <div class="card-thumbnail">
             <img src="${esc(item.imageUrl)}" alt="${esc(item.title)}" loading="lazy">
             <div class="card-badges" aria-hidden="true">
-              <span class="card-badge">추천</span>
-              ${item.isNew ? '<span class="badge-new">신규</span>' : ''}
+              ${item.isNew ? '<span class="card-badge card-badge-new">NEW</span>' : ''}
             </div>
           </div>
           <div class="card-info">
             <h4 class="title">${esc(item.title)}</h4>
-            <div class="card-topline">
-              <span class="card-author">${esc(item.instructor)}</span>
-              ${item.mode ? '<span class="card-divider">|</span>' : ''}
-              ${item.mode ? `<span class="card-mode">${esc(item.mode)}</span>` : ''}
-            </div>
-            ${item.summary ? `<p class="card-summary">${esc(item.summary)}</p>` : ''}
-            <div class="meta">
-              <span class="rating">★ ${Number(item.rating || 0).toFixed(1)} (${Number(item.reviewCount || 0)})</span>
-              <span class="meta-category">${esc(item.category)}</span>
-              <span class="likes">찜 ${count.toLocaleString()}</span>
+            <div class="card-meta">
+              <span class="card-meta-item card-meta-category">${esc(item.category)}</span>
+              <span class="card-meta-item card-meta-mode">${esc(item.mode || '온라인/오프라인')}</span>
+              <span class="card-meta-item card-meta-review">후기 ${Number(item.reviewCount || 0).toLocaleString()}</span>
+              <span class="card-meta-item card-meta-price">${esc(formatPriceLabel(item))}</span>
             </div>
           </div>
         </a>
@@ -553,8 +559,6 @@
     document.querySelectorAll(`.class-card[data-class-id="${cssEsc(id)}"]`).forEach((card) => {
       const button = card.querySelector('[data-action="bookmark-class"]');
       if (button) updateBookmarkButton(button, id, bookmarked, nextCount);
-      const likes = card.querySelector('.likes');
-      if (likes) likes.textContent = `찜 ${nextCount.toLocaleString()}`;
     });
   }
 

@@ -23,6 +23,7 @@
   --card-radius: 24px;
   --btn-radius: 16px;
   --pill-radius: 999px;
+  --bsq-content-width: 1400px;
   --comm-accent-rgb: 123, 140, 255;
   --container-width: 1400px;
   --container-wide: 1400px;
@@ -301,7 +302,12 @@ body,
   backdrop-filter: blur(20px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   border-bottom: none !important;
-  transition: background 0.3s ease;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease,
+    backdrop-filter 180ms ease;
 }
 
 
@@ -309,7 +315,7 @@ body,
 .hero-inner,
 .section-inner,
 .footer-inner {
-  width: min(calc(100% - (var(--page-gutter) * 2)), var(--container-wide));
+  width: min(calc(100% - (var(--page-gutter) * 2)), var(--bsq-content-width, var(--container-wide)));
   margin-inline: auto;
 }
 
@@ -2991,6 +2997,10 @@ body.home-page .home-category-panel {
   overflow: visible;
 }
 
+body.home-page .home-shell {
+  width: min(calc(100% - (var(--page-gutter) * 2)), var(--bsq-content-width, var(--container-wide)));
+}
+
 /* Class list final pass: 5-column desktop grid, shadow-only separation, light-mode readability */
 body.class-list-page .class-category-grid {
   gap: 0.6rem;
@@ -3420,10 +3430,14 @@ body:not(.home-page):not([data-layout="community"]):not([data-layout="popup"]) {
 }
 
 .header-inner.header-two-row {
+  width: min(calc(100% - (var(--page-gutter) * 2)), var(--bsq-content-width, var(--container-wide))) !important;
+  max-width: none !important;
+  margin-inline: auto !important;
+  padding-inline: 0 !important;
   grid-template-columns: minmax(0, 1fr) auto;
   column-gap: clamp(1rem, 2vw, 2rem);
   row-gap: 0.4rem;
-  padding: max(0.5rem, var(--shell-safe-top)) 3% 0.2rem !important;
+  padding: max(0.5rem, var(--shell-safe-top)) 0 0.2rem !important;
 }
 
 .header-top-right {
@@ -3623,6 +3637,10 @@ body:not(.home-page):not([data-layout="community"]):not([data-layout="popup"]) {
   .bottom-nav .nav-item {
     min-height: 54px;
     padding-block: 0.45rem;
+  }
+
+  body.home-page .home-shell {
+    width: calc(100vw - 0.9rem);
   }
 }
 

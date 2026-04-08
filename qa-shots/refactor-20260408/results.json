@@ -1,0 +1,413 @@
+[
+  {
+    "name": "home-guest-390",
+    "url": "/index.html",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "status": 200,
+    "state": {
+      "title": "B-Square | Class Discovery",
+      "path": "/",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "scrollHeight": 5855,
+      "bodyScrollHeight": 5855,
+      "bodyClass": "home-page",
+      "theme": "dark",
+      "authState": "",
+      "layout": ""
+    },
+    "pageErrors": [],
+    "consoleEntries": [],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\home-guest-390.png"
+  },
+  {
+    "name": "home-guest-1440",
+    "url": "/index.html",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "status": 200,
+    "state": {
+      "title": "B-Square | Class Discovery",
+      "path": "/",
+      "innerWidth": 1440,
+      "innerHeight": 960,
+      "scrollWidth": 1440,
+      "bodyScrollWidth": 1440,
+      "scrollHeight": 4301,
+      "bodyScrollHeight": 4301,
+      "bodyClass": "home-page",
+      "theme": "dark",
+      "authState": "",
+      "layout": ""
+    },
+    "pageErrors": [],
+    "consoleEntries": [],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\home-guest-1440.png"
+  },
+  {
+    "name": "class-list-overlay-390",
+    "url": "/class/class_list.html",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "status": 200,
+    "state": {
+      "title": "B-Square | Class List",
+      "path": "/class/class_list",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "scrollHeight": 3293,
+      "bodyScrollHeight": 3293,
+      "bodyClass": "class-list-page class-category-overlay-open",
+      "theme": "dark",
+      "authState": "",
+      "layout": ""
+    },
+    "pageErrors": [],
+    "consoleEntries": [],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\class-list-overlay-390.png"
+  },
+  {
+    "name": "class-list-1440",
+    "url": "/class/class_list.html",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "status": 200,
+    "state": {
+      "title": "B-Square | Class List",
+      "path": "/class/class_list",
+      "innerWidth": 1440,
+      "innerHeight": 960,
+      "scrollWidth": 1440,
+      "bodyScrollWidth": 1440,
+      "scrollHeight": 2492,
+      "bodyScrollHeight": 2492,
+      "bodyClass": "class-list-page",
+      "theme": "dark",
+      "authState": "",
+      "layout": ""
+    },
+    "pageErrors": [],
+    "consoleEntries": [],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\class-list-1440.png"
+  },
+  {
+    "name": "signup-390",
+    "url": "/login/signup.html",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "status": 200,
+    "state": {
+      "title": "회원가입 | B-Square",
+      "path": "/login/signup",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "scrollHeight": 1777,
+      "bodyScrollHeight": 1777,
+      "bodyClass": "auth-body auth-standalone auth-signup-page auth-signup-modern",
+      "theme": "dark",
+      "authState": "",
+      "layout": ""
+    },
+    "pageErrors": [],
+    "consoleEntries": [],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\signup-390.png"
+  },
+  {
+    "name": "signup-1440",
+    "url": "/login/signup.html",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "status": 200,
+    "state": {
+      "title": "회원가입 | B-Square",
+      "path": "/login/signup",
+      "innerWidth": 1440,
+      "innerHeight": 960,
+      "scrollWidth": 1440,
+      "bodyScrollWidth": 1440,
+      "scrollHeight": 1723,
+      "bodyScrollHeight": 1723,
+      "bodyClass": "auth-body auth-standalone auth-signup-page auth-signup-modern",
+      "theme": "dark",
+      "authState": "",
+      "layout": ""
+    },
+    "pageErrors": [],
+    "consoleEntries": [],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\signup-1440.png"
+  },
+  {
+    "name": "class-view-chat-390",
+    "url": "/class_view/class_view.html?id=cls_d0dd9d28fe8a42fb",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "status": 200,
+    "state": {
+      "title": "클래스 상세 정보 | B-Square",
+      "path": "/class_view/class_view?id=cls_d0dd9d28fe8a42fb",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "scrollHeight": 3228,
+      "bodyScrollHeight": 3228,
+      "bodyClass": "class-view-page",
+      "theme": "dark",
+      "authState": "",
+      "layout": ""
+    },
+    "pageErrors": [],
+    "consoleEntries": [],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\class-view-chat-390.png"
+  },
+  {
+    "name": "class-view-chat-1440",
+    "url": "/class_view/class_view.html?id=cls_d0dd9d28fe8a42fb",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "status": 200,
+    "state": {
+      "title": "클래스 상세 정보 | B-Square",
+      "path": "/class_view/class_view?id=cls_d0dd9d28fe8a42fb",
+      "innerWidth": 1440,
+      "innerHeight": 960,
+      "scrollWidth": 1440,
+      "bodyScrollWidth": 1440,
+      "scrollHeight": 2519,
+      "bodyScrollHeight": 2519,
+      "bodyClass": "class-view-page",
+      "theme": "dark",
+      "authState": "",
+      "layout": ""
+    },
+    "pageErrors": [],
+    "consoleEntries": [],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\class-view-chat-1440.png"
+  },
+  {
+    "name": "community-390",
+    "url": "/community/community.html",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "status": 200,
+    "state": {
+      "title": "커뮤니티 | B-Square",
+      "path": "/community/community",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "scrollHeight": 1702,
+      "bodyScrollHeight": 1702,
+      "bodyClass": "",
+      "theme": "dark",
+      "authState": "",
+      "layout": "community"
+    },
+    "pageErrors": [],
+    "consoleEntries": [],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\community-390.png"
+  },
+  {
+    "name": "community-1440",
+    "url": "/community/community.html",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "status": 200,
+    "state": {
+      "title": "커뮤니티 | B-Square",
+      "path": "/community/community",
+      "innerWidth": 1440,
+      "innerHeight": 960,
+      "scrollWidth": 1440,
+      "bodyScrollWidth": 1440,
+      "scrollHeight": 1530,
+      "bodyScrollHeight": 1530,
+      "bodyClass": "",
+      "theme": "dark",
+      "authState": "",
+      "layout": "community"
+    },
+    "pageErrors": [],
+    "consoleEntries": [],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\community-1440.png"
+  },
+  {
+    "name": "community-popup-390",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "status": 200,
+    "state": {
+      "title": "커뮤니티 | B-Square",
+      "path": "/community/community",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "scrollHeight": 1702,
+      "bodyScrollHeight": 1702,
+      "bodyClass": "",
+      "theme": "dark",
+      "authState": "",
+      "layout": "community"
+    },
+    "pageErrors": [],
+    "consoleEntries": [
+      "warning: popup window did not open"
+    ],
+    "file": ""
+  },
+  {
+    "name": "mypage-390",
+    "url": "/mi_pesg/mypage.html",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "status": 200,
+    "state": {
+      "title": "마이페이지 | B-Square",
+      "path": "/mi_pesg/mypage",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "scrollHeight": 2956,
+      "bodyScrollHeight": 2956,
+      "bodyClass": "mypage-page",
+      "theme": "dark",
+      "authState": "member",
+      "layout": ""
+    },
+    "pageErrors": [],
+    "consoleEntries": [
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: [BSQ API] /api/users/OPERATOR_GHOST fetch error: Error: 사용자를 찾을 수 없습니다.\n    at Object.apiCall [as api] (http://127.0.0.1:8788/bsq_server.js?v=20260402_01:180:27)\n    at async loadProfile (http://127.0.0.1:8788/mi_pesg/tab_profile.js?v=20260401_03:168:25)",
+      "warning: [BSQ API] 사용자를 찾을 수 없습니다.",
+      "error: [BSQ API] /api/users/OPERATOR_GHOST fetch error: Error: 사용자를 찾을 수 없습니다.\n    at Object.apiCall [as api] (http://127.0.0.1:8788/bsq_server.js?v=20260402_01:180:27)\n    at async loadSecurityState (http://127.0.0.1:8788/mi_pesg/tab_security.js?v=20260402_01:51:25)",
+      "warning: [BSQ API] 사용자를 찾을 수 없습니다.",
+      "error: [BSQ API] /api/users/OPERATOR_GHOST fetch error: Error: 사용자를 찾을 수 없습니다.\n    at Object.apiCall [as api] (http://127.0.0.1:8788/bsq_server.js?v=20260402_01:180:27)\n    at async loadUserProfile (http://127.0.0.1:8788/mi_pesg/tab_chat_sub.js?v=20260330_11:16:25)\n    at async Promise.all (index 0)\n    at async loadMethods (http://127.0.0.1:8788/mi_pesg/tab_chat_sub.js?v=20260330_11:29:43)",
+      "warning: [BSQ API] 사용자를 찾을 수 없습니다."
+    ],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\mypage-390.png"
+  },
+  {
+    "name": "mypage-1440",
+    "url": "/mi_pesg/mypage.html",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "status": 200,
+    "state": {
+      "title": "마이페이지 | B-Square",
+      "path": "/mi_pesg/mypage",
+      "innerWidth": 1440,
+      "innerHeight": 960,
+      "scrollWidth": 1440,
+      "bodyScrollWidth": 1440,
+      "scrollHeight": 2050,
+      "bodyScrollHeight": 2050,
+      "bodyClass": "mypage-page",
+      "theme": "dark",
+      "authState": "member",
+      "layout": ""
+    },
+    "pageErrors": [],
+    "consoleEntries": [
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: [BSQ API] /api/users/OPERATOR_GHOST fetch error: Error: 사용자를 찾을 수 없습니다.\n    at Object.apiCall [as api] (http://127.0.0.1:8788/bsq_server.js?v=20260402_01:180:27)\n    at async loadProfile (http://127.0.0.1:8788/mi_pesg/tab_profile.js?v=20260401_03:168:25)",
+      "warning: [BSQ API] 사용자를 찾을 수 없습니다.",
+      "error: [BSQ API] /api/users/OPERATOR_GHOST fetch error: Error: 사용자를 찾을 수 없습니다.\n    at Object.apiCall [as api] (http://127.0.0.1:8788/bsq_server.js?v=20260402_01:180:27)\n    at async loadSecurityState (http://127.0.0.1:8788/mi_pesg/tab_security.js?v=20260402_01:51:25)",
+      "warning: [BSQ API] 사용자를 찾을 수 없습니다.",
+      "error: [BSQ API] /api/users/OPERATOR_GHOST fetch error: Error: 사용자를 찾을 수 없습니다.\n    at Object.apiCall [as api] (http://127.0.0.1:8788/bsq_server.js?v=20260402_01:180:27)\n    at async loadUserProfile (http://127.0.0.1:8788/mi_pesg/tab_chat_sub.js?v=20260330_11:16:25)\n    at async Promise.all (index 0)\n    at async loadMethods (http://127.0.0.1:8788/mi_pesg/tab_chat_sub.js?v=20260330_11:29:43)",
+      "warning: [BSQ API] 사용자를 찾을 수 없습니다."
+    ],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\mypage-1440.png"
+  },
+  {
+    "name": "notice-editor-390",
+    "url": "/notice/notice.html",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "status": 200,
+    "state": {
+      "title": "B-Square 공지사항",
+      "path": "/notice/notice",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "scrollHeight": 1899,
+      "bodyScrollHeight": 1899,
+      "bodyClass": "notice-page",
+      "theme": "dark",
+      "authState": "",
+      "layout": ""
+    },
+    "pageErrors": [],
+    "consoleEntries": [],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\notice-editor-390.png"
+  },
+  {
+    "name": "notice-1440",
+    "url": "/notice/notice.html",
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "status": 200,
+    "state": {
+      "title": "B-Square 공지사항",
+      "path": "/notice/notice",
+      "innerWidth": 1440,
+      "innerHeight": 960,
+      "scrollWidth": 1440,
+      "bodyScrollWidth": 1440,
+      "scrollHeight": 1490,
+      "bodyScrollHeight": 1490,
+      "bodyClass": "notice-page",
+      "theme": "dark",
+      "authState": "",
+      "layout": ""
+    },
+    "pageErrors": [],
+    "consoleEntries": [],
+    "file": "C:\\Users\\po356\\Desktop\\B-Square\\사이트\\개발\\B-Square_n\\qa-shots\\refactor-20260408\\notice-1440.png"
+  }
+]

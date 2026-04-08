@@ -14,6 +14,22 @@
   --bsq-success: #21c18b;
   --bsq-shadow: var(--shadow-md);
   --bsq-shadow-soft: var(--shadow-sm);
+  --bsq-content-width: 1400px;
+  --bsq-page-gutter: clamp(1rem, 2.1vw, 2.25rem);
+  --bsq-section-gap: clamp(2rem, 4.25vw, 4.75rem);
+  --bsq-control-h: 44px;
+  --bsq-control-h-lg: 48px;
+  --bsq-control-radius: 16px;
+  --bsq-pill-radius: 999px;
+  --bsq-card-radius: 24px;
+  --bsq-panel-radius: 28px;
+  --bsq-z-header: 9000;
+  --bsq-z-dropdown: 9100;
+  --bsq-z-drawer: 9200;
+  --bsq-z-bottom-nav: 9300;
+  --bsq-z-modal: 9400;
+  --bsq-z-toast: 9500;
+  --bsq-focus-ring: 0 0 0 4px rgba(158, 188, 255, 0.18);
 
   /* Legacy aliases used by older page-specific stylesheets */
   --bg-card: var(--bsq-surface);
@@ -35,8 +51,17 @@
   --text-muted: var(--bsq-text-muted);
   --muted-text: var(--bsq-text-muted);
   --comm-accent-rgb: 123, 140, 255;
+  --page-gutter: var(--bsq-page-gutter);
+  --page-stack-gap: clamp(1rem, 2vw, 2rem);
+  --container-width: var(--bsq-content-width);
+  --container-wide: var(--bsq-content-width);
   --shell-header-offset: clamp(88px, 6.8vw, 108px);
   --shell-header-offset-mobile: 78px;
+  --shell-bottom-nav-offset: calc(74px + var(--shell-safe-bottom));
+  --shell-safe-top: env(safe-area-inset-top, 0px);
+  --shell-safe-right: env(safe-area-inset-right, 0px);
+  --shell-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --shell-safe-left: env(safe-area-inset-left, 0px);
 }
 
 html[data-theme="light"] {
@@ -110,6 +135,7 @@ html[data-theme="dark"] {
   --text-muted: var(--bsq-text-muted);
   --muted-text: var(--bsq-text-muted);
   --comm-accent-rgb: 123, 140, 255;
+  --page-stack-gap: clamp(1rem, 2vw, 2rem);
 }
 
 html[data-theme] {
@@ -136,6 +162,44 @@ body {
     box-shadow 180ms ease,
     fill 180ms ease,
     stroke 180ms ease;
+}
+
+:where(button, a, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: var(--bsq-focus-ring);
+}
+
+:where(
+  .btn-primary,
+  .btn-submit,
+  .btn-login-main,
+  .btn-logout,
+  .btn-operator-mode,
+  .btn-search,
+  .btn-search-inner,
+  .btn-header-category,
+  .btn-contact,
+  .hero-action-btn,
+  .btn-go-class,
+  .btn-cta-start,
+  .btn-cta-secondary,
+  .home-cta,
+  .banner-link,
+  .btn-admin,
+  .settings-theme-btn,
+  .profile-mini-btn,
+  .tab-btn,
+  .nav-btn,
+  .drawer-nav-item,
+  .bottom-nav .nav-item
+) {
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease;
 }
 
 /* 1. Header always on top and fixed */
