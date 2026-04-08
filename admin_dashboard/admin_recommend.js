@@ -1,6 +1,6 @@
 ﻿;(function () {
 
-const RECOMMEND_ADMIN_VERSION = '2026.03.23-05';
+const RECOMMEND_ADMIN_VERSION = '2026.04.10-01';
 const POPULAR_TARGET = Object.freeze({
     folderId: 'popular_main',
     listId: 'popularClassList',
@@ -284,7 +284,7 @@ function renderEmpty(container, type) {
 function selectedCardHtml(folderId, c, type = 'regular') {
     const thumb = c?.thumbnail || c?.image_url || 'https://placehold.co/200x120?text=No+Image';
     return `
-        <div class="selected-class-card" data-cid="${esc(c?.id || '')}" style="position:relative; background:#fff; border:1px solid #eee; border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:8px; transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+        <div class="selected-class-card" data-cid="${esc(c?.id || '')}" style="position:relative; background:linear-gradient(180deg, #ffffff, #f9fbff); border:1px solid rgba(226,232,240,0.95); border-radius:18px; padding:12px; display:flex; flex-direction:column; gap:8px; transition:all 0.2s; box-shadow:0 8px 18px rgba(15,23,42,0.06);">
             <div style="width:100%; height:100px; background:#f0f0f0; border-radius:8px; overflow:hidden;">
                 <img src="${esc(thumb)}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://placehold.co/200x120?text=No+Image'">
             </div>
@@ -332,8 +332,8 @@ function searchCardHtml(c, selected) {
 
 function folderCardHtml(folder) {
     return `
-        <div class="recommend-folder-item" data-id="${esc(folder.id)}" data-type="regular" style="background:#fff; border:1px solid #eef0f7; border-radius:16px; padding:2rem; position:relative; box-shadow:0 4px 20px rgba(0,0,0,0.03);">
-            <div style="display:flex; flex-direction:column; gap:1.5rem; margin-bottom:2rem;">
+        <div class="recommend-folder-item" data-id="${esc(folder.id)}" data-type="regular" style="background:linear-gradient(180deg, #ffffff, #f8fbff); border:1px solid rgba(226,232,240,0.95); border-radius:22px; padding:1.25rem; position:relative; box-shadow:0 12px 30px rgba(15,23,42,0.06); overflow:hidden;">
+            <div style="display:flex; flex-direction:column; gap:1.1rem;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">
                     <div style="display:flex; flex-direction:column; gap:10px; flex:1;">
                         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
@@ -352,7 +352,7 @@ function folderCardHtml(folder) {
                     </div>
                 </div>
             </div>
-            <div class="selected-class-list" id="${esc(folderListId(folder.id))}" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:1rem; background:#fcfcfe; padding:1.5rem; border-radius:12px; border:1px dashed #e2e8f0; min-height:120px;"></div>
+            <div class="selected-class-list" id="${esc(folderListId(folder.id))}" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:1rem; background:#fcfcfe; padding:1rem; border-radius:16px; border:1px solid rgba(226,232,240,0.95); min-height:120px;"></div>
         </div>
     `;
 }

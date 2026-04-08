@@ -111,6 +111,36 @@
     };
   }
 
+  function mergePopularClasses(primaryItems = [], fallbackItems = [], limit = 10) {
+    const seen = new Set();
+    const merged = [];
+
+    const append = (item) => {
+      const id = text(item?.id || '');
+      if (!id || seen.has(id)) return false;
+      seen.add(id);
+      merged.push(item);
+      return merged.length >= limit;
+    };
+
+    for (const item of Array.isArray(primaryItems) ? primaryItems : []) {
+      if (append(item)) return merged;
+    }
+
+    for (const item of Array.isArray(fallbackItems) ? fallbackItems : []) {
+      if (append(item)) return merged;
+    }
+
+    if (!merged.length) return merged;
+    if (merged.length >= limit) return merged.slice(0, limit);
+
+    const padded = merged.slice();
+    for (let index = 0; padded.length < limit; index += 1) {
+      padded.push(merged[index % merged.length]);
+    }
+    return padded.slice(0, limit);
+  }
+
   function parseDateValue(value) {
     if (!value) return null;
     if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
@@ -385,7 +415,15 @@
       const folders = res?.success && Array.isArray(res.data) ? res.data.map((item) => normalizeRecommendationFolder(item)) : [];
       const popular = folders.find((item) => item.type === 'popular' || item.id === 'popular_main');
       if (popular?.items?.length) {
-        state.popularClasses = popular.items.slice(0, 5);
+        state.popularClasses = popular.items.slice(0, 10);
+        if (state.popularClasses.length < 10) {
+          const fallbackRes = await window.BSQ.api('/api/classes?sort=popular&limit=10');
+          const fallbackRows = fallbackRes?.success
+            ? (Array.isArray(fallbackRes.data?.classes) ? fallbackRes.data.classes : (Array.isArray(fallbackRes.data) ? fallbackRes.data : []))
+            : [];
+          const fallbackClasses = fallbackRows.map((item) => normalizeClassCard(item)).filter((item) => item.id);
+          state.popularClasses = mergePopularClasses(state.popularClasses, fallbackClasses, 10);
+        }
         state.popularTitle = popular.title || '인기 클래스';
         renderPopular();
         return;
@@ -395,7 +433,7 @@
     }
 
     try {
-      const res = await window.BSQ.api('/api/classes?sort=popular&limit=5');
+      const res = await window.BSQ.api('/api/classes?sort=popular&limit=10');
       const rows = res?.success
         ? (Array.isArray(res.data?.classes) ? res.data.classes : (Array.isArray(res.data) ? res.data : []))
         : [];
@@ -404,6 +442,10 @@
     } catch (error) {
       console.warn('[class_list] fallback popular load failed:', error);
       state.popularClasses = [];
+    }
+
+    if (state.popularClasses.length && state.popularClasses.length < 10) {
+      state.popularClasses = mergePopularClasses(state.popularClasses, [], 10);
     }
     renderPopular();
   }

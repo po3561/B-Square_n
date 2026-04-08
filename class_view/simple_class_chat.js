@@ -198,20 +198,71 @@
     }
 
     function renderGatheringCard(msg) {
-        const title = msg.gather_title || 'Meeting';
-        const place = msg.gather_place || 'Unknown location';
-        const time = msg.gather_time || 'Date unknown';
+        const title = msg.gather_title || msg.title || 'Meeting';
+        const place = msg.gather_place || msg.location || 'Unknown location';
+        const time = msg.gather_time || msg.gathering_at || 'Date unknown';
+        const currentCount = Number(msg.current_count || 0);
+        const maxCap = Number(msg.capacity_max || msg.max_capacity || 0);
+        const minCap = Number(msg.capacity_min || msg.min_capacity || 0);
+        const status = String(msg.status || 'open').toLowerCase();
+        const isFull = maxCap > 0 && currentCount >= maxCap;
+        const progress = Math.min((currentCount / (maxCap || 1)) * 100, 100);
+        const statusLabel = status === 'closed' ? '마감' : isFull ? '정원 마감' : '진행중';
         return `
-            <div class="msg-bubble gathering-card">
+            <div class="msg-bubble gathering-card" data-gathering-card="1" role="button" tabindex="0" aria-label="모집 카드 자세히 보기">
                 <div class="gathering-title-row">
                     <div class="gathering-main-icon"><i class="fas fa-users"></i></div>
-                    <div class="gathering-title-text">${escapeHtml(title)}</div>
+                    <div class="gathering-title-stack">
+                        <div class="gathering-title-text">${escapeHtml(title)}</div>
+                        <div class="gathering-subtitle">${escapeHtml(time)}</div>
+                    </div>
+                    <span class="gathering-status-pill">${escapeHtml(statusLabel)}</span>
                 </div>
                 <div class="gathering-info-box">
                     <div class="gathering-info-line"><i class="fas fa-map-marker-alt"></i><span>${escapeHtml(place)}</span></div>
                     <div class="gathering-info-line"><i class="fas fa-calendar-alt"></i><span>${escapeHtml(time)}</span></div>
+                    <div class="gathering-info-line"><i class="fas fa-users"></i><span>${escapeHtml(maxCap > 0 ? `${minCap || 0} - ${maxCap}명` : `${currentCount}명`)}</span></div>
                 </div>
+                <div class="gathering-progress-container">
+                    <div class="gathering-progress-meta">
+                        <span>참여현황</span><span>${escapeHtml(maxCap > 0 ? `${currentCount} / ${maxCap}명` : `${currentCount}명`)}</span>
+                    </div>
+                    <div class="gathering-progress-bar"><div class="gathering-progress-fill" style="width:${progress}%;"></div></div>
+                </div>
+                ${msg.description ? `<div class="gathering-snippet">${escapeHtml(String(msg.description).slice(0, 80))}</div>` : ''}
+                <div class="gathering-preview-cta"><button type="button" class="btn-gathering-action preview" data-gathering-preview="open">자세히 보기</button></div>
             </div>`;
+    }
+
+    function openGatheringPreview(msg) {
+        const shared = window.BSQCommunityShared || {};
+        const normalized = { ...msg };
+        const canManage = !!state.isInstructor;
+        const canJoin = !state.isInstructor;
+        const payload = {
+            ...normalized,
+            room_id: state.classId,
+            title: normalized.gather_title || normalized.title || '모집 카드',
+            description: normalized.description || '',
+        };
+
+        shared.openGatheringPreview?.(payload, {
+            onJoin: canJoin ? async (data) => {
+                const targetId = data?.gathering_id || data?.id || normalized.gathering_id || normalized.id;
+                if (!targetId) return;
+                await joinGathering(state.classId, targetId);
+            } : null,
+            onClose: canManage ? async (data) => {
+                const targetId = data?.gathering_id || data?.id || normalized.gathering_id || normalized.id;
+                if (!targetId) return;
+                await closeGathering(state.classId, targetId);
+            } : null,
+            onMap: async (data) => {
+                const place = String(data?.location || data?.gather_place || '').trim();
+                if (!place) return;
+                window.open(`https://map.naver.com/v5/search/${encodeURIComponent(place)}`, '_blank', 'noopener');
+            },
+        });
     }
 
     function clearReplyPreview() {
@@ -434,6 +485,35 @@
         row.querySelectorAll('.msg-image').forEach((img) => {
             img.addEventListener('click', () => window.open(img.src, '_blank', 'noopener'));
         });
+
+        const gatheringCard = row.querySelector('[data-gathering-card="1"]');
+        if (gatheringCard) {
+            const openCard = () => openGatheringPreview(msg);
+            gatheringCard.addEventListener('click', (event) => {
+                if (event.target.closest('button, a')) return;
+                openCard();
+            });
+            gatheringCard.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openCard();
+                }
+            });
+            gatheringCard.querySelectorAll('[data-gathering-preview]').forEach((btn) => {
+                btn.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (btn.dataset.gatheringPreview === 'map') {
+                        const place = String(msg.gather_place || msg.location || '').trim();
+                        if (place) {
+                            window.open(`https://map.naver.com/v5/search/${encodeURIComponent(place)}`, '_blank', 'noopener');
+                            return;
+                        }
+                    }
+                    openCard();
+                });
+            });
+        }
 
         row.querySelectorAll('[data-action]').forEach((btn) => {
             btn.addEventListener('click', async (ev) => {
@@ -938,6 +1018,7 @@
         state.hasAccess = !!hasAccess;
         syncChatTheme();
         observeThemeChanges();
+        window.BSQCommunityShared?.setupGatheringPreviewShell?.();
 
         const unlocked = q('chatUnlocked');
         const locked = q('chatLockedOverlay');

@@ -451,9 +451,8 @@ function renderHomeClassSection(currentCategory = 'all') {
     if (allGrid) renderClassCards(filteredClasses, allGrid);
 
     const popularFolder = globalRecommendationFolders.find((item) => item.type === 'popular' || item.id === 'popular_main');
-    const popularSource = popularFolder?.items?.length
-        ? popularFolder.items.slice(0, 5)
-        : [...globalAllClasses].sort((left, right) => right.likeCount - left.likeCount).slice(0, 5);
+    const fallbackPopular = [...globalAllClasses].sort((left, right) => right.likeCount - left.likeCount);
+    const popularSource = mergePopularItems(popularFolder?.items || [], fallbackPopular, 10);
 
     if (popularGrid) renderClassCards(popularSource, popularGrid);
     if (recommendContainer) {
@@ -463,6 +462,35 @@ function renderHomeClassSection(currentCategory = 'all') {
 
     const title = document.getElementById('popularGroupTitle');
     if (title) title.textContent = popularFolder?.title || '인기 클래스';
+}
+
+function mergePopularItems(primaryItems = [], fallbackItems = [], limit = 10) {
+    const seen = new Set();
+    const merged = [];
+    const appendItem = (item) => {
+        const id = String(item?.id || '').trim();
+        if (!id || seen.has(id)) return false;
+        seen.add(id);
+        merged.push(item);
+        return merged.length >= limit;
+    };
+
+    for (const item of Array.isArray(primaryItems) ? primaryItems : []) {
+        if (appendItem(item)) return merged;
+    }
+
+    for (const item of Array.isArray(fallbackItems) ? fallbackItems : []) {
+        if (appendItem(item)) return merged;
+    }
+
+    if (!merged.length) return merged;
+    if (merged.length >= limit) return merged.slice(0, limit);
+
+    const padded = merged.slice();
+    for (let index = 0; padded.length < limit; index += 1) {
+      padded.push(merged[index % merged.length]);
+    }
+    return padded.slice(0, limit);
 }
 
 function renderRecommendColumns(folders, container) {

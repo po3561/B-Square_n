@@ -184,6 +184,40 @@ async function renderClassInfoPanel(classId, isInstructor) {
             ${passStatsHtml}
         `;
 
+        panelBody.querySelectorAll('[data-gathering-preview="1"]').forEach((item) => {
+            const openGathering = () => {
+                const shared = window.BSQCommunityShared || {};
+                shared.openGatheringPreview?.({
+                    title: item.dataset.title || '모집 카드',
+                    gathering_at: item.dataset.time || '',
+                    location: item.dataset.place || '',
+                    current_count: Number(item.dataset.count || 0),
+                    min_capacity: Number(item.dataset.min || 0),
+                    max_capacity: Number(item.dataset.max || 0),
+                    status: item.dataset.status || 'open',
+                    description: item.dataset.desc || '',
+                    created_by: classId ? '클래스 정보' : '',
+                }, {
+                    onMap: async (data) => {
+                        const place = String(data?.location || '').trim();
+                        if (!place) return;
+                        window.open(`https://map.naver.com/v5/search/${encodeURIComponent(place)}`, '_blank', 'noopener');
+                    },
+                });
+            };
+
+            item.addEventListener('click', (event) => {
+                if (event.target.closest('button, a')) return;
+                openGathering();
+            });
+            item.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openGathering();
+                }
+            });
+        });
+
     } catch (err) {
         panelBody.innerHTML = `<div style="padding:20px; color:#ff4d4d;">오류 발생: ${err.message}</div>`;
     }
@@ -195,7 +229,17 @@ function renderGatheringsSection(gatherings) {
             ${gatherings.map(g => {
                 const dateStr = g.gathering_at ? new Date(g.gathering_at).toLocaleString('ko-KR') : '미정';
                 return `
-                    <div style="margin-bottom:12px;">
+                    <div class="class-gathering-preview-item"
+                        data-gathering-preview="1"
+                        data-title="${escapeAttr(g.title || g.gather_title || '모집 카드')}"
+                        data-time="${escapeAttr(g.gathering_at || g.gather_time || '')}"
+                        data-place="${escapeAttr(g.location || g.gather_place || '')}"
+                        data-count="${escapeAttr(String(g.current_count || 0))}"
+                        data-min="${escapeAttr(String(g.min_capacity || g.capacity_min || 0))}"
+                        data-max="${escapeAttr(String(g.max_capacity || g.capacity_max || 0))}"
+                        data-status="${escapeAttr(String(g.status || 'open'))}"
+                        data-desc="${escapeAttr(g.description || '')}"
+                        style="margin-bottom:12px; cursor:pointer;">
                         <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                             <div style="width:8px;height:8px;border-radius:50%;background:#aaa;"></div>
                             <span style="color:#fff; font-size:0.9rem;">모임일시 : ${dateStr}</span>

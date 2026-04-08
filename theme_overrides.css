@@ -2081,12 +2081,19 @@ body.home-page .main-ad-banner.home-main-banner::before {
 
 body.home-page .class-lists-section,
 body.home-page .curated-sections-dark,
-body.home-page .all-classes,
-body.home-page .popular-classes,
-body.home-page .recommended-classes {
+body.home-page .all-classes {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
+}
+
+body.home-page .popular-classes,
+body.home-page .recommended-classes {
+  background: linear-gradient(180deg, rgba(13, 19, 29, 0.98), rgba(8, 12, 20, 0.98)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22) !important;
+  padding: clamp(1rem, 1.8vw, 1.35rem) !important;
 }
 
 body.home-page .section-inner {
@@ -2102,6 +2109,14 @@ body.home-page .class-group {
 body.home-page .card-grid.large-grid {
   grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   gap: 0.72rem !important;
+}
+
+body.class-list-page .popular-classes {
+  background: linear-gradient(180deg, rgba(13, 19, 29, 0.98), rgba(8, 12, 20, 0.98)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22) !important;
+  padding: clamp(1rem, 1.8vw, 1.35rem) !important;
 }
 
 body.home-page .class-card {

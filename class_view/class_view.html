@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="view_intro.css?v=20260402_05">
     <link rel="stylesheet" href="view_curriculum.css?v=20260402_05">
     <link rel="stylesheet" href="view_reviews.css?v=20260402_05">
-    <link rel="stylesheet" href="view_chat.css?v=20260402_05">
+    <link rel="stylesheet" href="view_chat.css?v=20260408_06">
     <link rel="stylesheet" href="payment_toast.css?v=20260331_02">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -634,6 +634,20 @@
         </div>
     </div>
 
+    <div class="modal-overlay gathering-preview-modal" id="gatheringPreviewModal"
+        style="display:none; z-index: 10001; align-items:center; justify-content:center;" aria-hidden="true">
+        <div class="modal-content gathering-preview-card">
+            <div class="modal-header gathering-preview-header">
+                <div class="gathering-preview-header-copy">
+                    <span class="gathering-preview-badge">모집 카드</span>
+                    <h3 id="gatheringPreviewTitle">모집 카드 미리보기</h3>
+                </div>
+                <button class="btn-close-modal" id="btnGatheringPreviewClose" type="button" aria-label="닫기"></button>
+            </div>
+            <div class="modal-body gathering-preview-body" id="gatheringPreviewBody"></div>
+        </div>
+    </div>
+
     <!-- Notice Viewer Modal (공지사항 상세 보기) -->
     <div id="classNoticeViewerModal" class="modal-overlay" style="display:none;">
         <div class="modal-content large"
@@ -712,10 +726,11 @@
 
     <!-- Scripts Load: 각 탭 모듈 + 공통 셸 -->
     <script src="../community/sync_bridge.js?v=20260401_03"></script>
+    <script src="../community/community_shared_v2.js?v=20260408_05"></script>
     <script src="view_intro.js?v=20260331_02"></script>
     <script src="view_curriculum.js?v=20260402_05"></script>
     <script src="view_reviews.js?v=20260402_05"></script>
-    <script src="simple_class_chat.js?v=20260402_01"></script>
+    <script src="simple_class_chat.js?v=20260408_06"></script>
     <script src="view_edit.js?v=20260402_05"></script>
     <script src="view_notice.js?v=20260331_02"></script>
     <script src="class_view.js?v=20260402_05"></script>

@@ -452,6 +452,7 @@ window.CommunityModules.ChatUI = (function () {
         setupReply();
         setupMessageSearch();
         setupInfoPanelToggle();
+        window.BSQCommunityShared?.setupGatheringPreviewShell?.();
         setupGatheringUI();
         setupScrollUX();
         setupLightbox();
@@ -528,6 +529,38 @@ window.CommunityModules.ChatUI = (function () {
                 }
             });
         }
+    }
+
+    function openGatheringPreview(msgData) {
+        const shared = window.BSQCommunityShared || {};
+        const normalized = normalizeIncomingMessage(msgData);
+        const roomType = String(currentRoomType || normalized.room_type || normalized.type || '').trim();
+        const canManage = !!(currentRoomInfo?.is_instructor || window.__BSQ_DEV_MODE__);
+        const canJoin = roomType === 'class' && !canManage;
+        const payload = {
+            ...normalized,
+            room_id: currentRoomId,
+            title: normalized.gather_title || normalized.title || '모집 카드',
+            description: normalized.description || '',
+        };
+
+        shared.openGatheringPreview?.(payload, {
+            onJoin: canJoin ? async (data) => {
+                const targetId = data?.gathering_id || data?.id || msgData?.gathering_id || msgData?.id;
+                if (!targetId) return;
+                await joinGathering(currentRoomId, targetId);
+            } : null,
+            onClose: canManage ? async (data) => {
+                const targetId = data?.gathering_id || data?.id || msgData?.gathering_id || msgData?.id;
+                if (!targetId) return;
+                await closeGathering(currentRoomId, targetId);
+            } : null,
+            onMap: async (data) => {
+                const place = String(data?.location || data?.gather_place || '').trim();
+                if (!place) return;
+                window.open(`https://map.naver.com/v5/search/${encodeURIComponent(place)}`, '_blank', 'noopener');
+            },
+        });
     }
 
     function setupInputUI() {
@@ -1048,6 +1081,34 @@ window.CommunityModules.ChatUI = (function () {
             targetRow.querySelectorAll('.msg-image').forEach(img => {
                 img.addEventListener('click', () => openLightbox(img.src));
             });
+            const gatheringCard = targetRow.querySelector('[data-gathering-card="1"]');
+            if (gatheringCard) {
+                const openCard = () => openGatheringPreview(msgData);
+                gatheringCard.addEventListener('click', (event) => {
+                    if (event.target.closest('button, a')) return;
+                    openCard();
+                });
+                gatheringCard.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openCard();
+                    }
+                });
+                gatheringCard.querySelectorAll('[data-gathering-preview]').forEach((btn) => {
+                    btn.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        if (btn.dataset.gatheringPreview === 'map') {
+                            const place = String(msgData.gather_place || msgData.location || '').trim();
+                            if (place) {
+                                window.open(`https://map.naver.com/v5/search/${encodeURIComponent(place)}`, '_blank', 'noopener');
+                                return;
+                            }
+                        }
+                        openCard();
+                    });
+                });
+            }
             if (!targetRow.dataset.ctxBound) {
                 setupMsgContextMenu(targetRow, normalizedId, msgData, isMine);
                 targetRow.dataset.ctxBound = '1';
@@ -1138,45 +1199,46 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     function renderGatheringCardHtml(gatherId, msgData) {
-        const title = msgData.gather_title || '클래스 모임';
-        const timeInfo = msgData.gather_time || '-';
-        const placeInfo = msgData.gather_place || '-';
+        const title = msgData.gather_title || msgData.title || '클래스 모임';
+        const timeInfo = msgData.gather_time || msgData.gathering_at || '-';
+        const placeInfo = msgData.gather_place || msgData.location || '-';
         const minCap = msgData.capacity_min || msgData.min_capacity || 0;
         const maxCap = msgData.capacity_max || msgData.max_capacity || 0;
         const currentCount = msgData.current_count || 0;
         const status = msgData.status || 'open';
         const isFull = maxCap > 0 && currentCount >= maxCap;
-        const placeButton = placeInfo
-            ? `<button type="button" class="btn-gathering-action secondary" onclick="window.open('https://map.naver.com/v5/search/${encodeURIComponent(placeInfo)}')">
-                    <i class="fas fa-map-marked-alt"></i> 장소 정보
-               </button>`
-            : '<button type="button" class="btn-gathering-action secondary" disabled><i class="fas fa-map-marked-alt"></i> 장소 정보 없음</button>';
-        const joinButton = status === 'closed'
-            ? '<button type="button" disabled class="btn-gathering-action primary">마감됨</button>'
-            : isFull
-                ? '<button type="button" disabled class="btn-gathering-action primary">정원 초과</button>'
-                : `<button type="button" class="btn-gathering-action primary" onclick="window.CommunityModules.ChatUI.joinGathering('${currentRoomId}', '${gatherId}')">모임 참여</button>`;
+        const progress = Math.min((currentCount / (maxCap || 1)) * 100, 100);
+        const statusLabel = status === 'closed' ? '마감' : isFull ? '정원 마감' : '진행중';
 
         return `
-        <div class="msg-bubble gathering-card">
-            <div class="gathering-header">
-                <h4>${escapeHtml(title)}</h4>
+        <div class="msg-bubble gathering-card" data-gathering-card="1" role="button" tabindex="0" aria-label="모집 카드 자세히 보기">
+            <div class="gathering-header gathering-header-row">
+                <div class="gathering-main-icon"><i class="fas fa-users"></i></div>
+                <div class="gathering-title-stack">
+                    <h4>${escapeHtml(title)}</h4>
+                    <span class="gathering-subtitle">${escapeHtml(timeInfo || '일정 미정')}</span>
+                </div>
+                <span class="gathering-status-pill">${escapeHtml(statusLabel)}</span>
             </div>
             <div class="gathering-content">
-                <div class="gathering-detail-item"><i class="fas fa-clock"></i><span>${escapeHtml(timeInfo)}</span></div>
                 <div class="gathering-detail-item"><i class="fas fa-map-marker-alt"></i><span>${escapeHtml(placeInfo)}</span></div>
-                <div class="gathering-detail-item"><i class="fas fa-users"></i><span>${escapeHtml(`${minCap} - ${maxCap}명`)}</span></div>
+                <div class="gathering-detail-item"><i class="fas fa-users"></i><span>${escapeHtml(maxCap > 0 ? `${minCap || 0} - ${maxCap}명` : `${currentCount}명`)}</span></div>
                 <div class="gathering-progress-container">
                     <div class="gathering-progress-meta">
-                        <span>참여현황</span><span>${escapeHtml(`${currentCount} / ${maxCap}명`)}</span>
+                        <span>참여현황</span><span>${escapeHtml(maxCap > 0 ? `${currentCount} / ${maxCap}명` : `${currentCount}명`)}</span>
                     </div>
-                    <div class="gathering-progress-bar"><div class="gathering-progress-fill" style="width:${Math.min((currentCount / (maxCap || 1)) * 100, 100)}%;"></div></div>
+                    <div class="gathering-progress-bar"><div class="gathering-progress-fill" style="width:${progress}%;"></div></div>
                 </div>
+                ${msgData.description ? `<div class="gathering-snippet">${escapeHtml(String(msgData.description).slice(0, 80))}</div>` : ''}
             </div>
             <div class="gathering-footer">
                 <div class="gathering-actions">
-                    ${placeButton}
-                    ${joinButton}
+                    <button type="button" class="btn-gathering-action secondary" data-gathering-preview="map" ${placeInfo ? '' : 'disabled'}>
+                        <i class="fas fa-map-marked-alt"></i> 장소 보기
+                    </button>
+                    <button type="button" class="btn-gathering-action primary" data-gathering-preview="open">
+                        <i class="fas fa-up-right-from-square"></i> 자세히 보기
+                    </button>
                 </div>
             </div>
         </div>`;

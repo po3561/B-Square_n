@@ -3663,7 +3663,7 @@ body.class-list-page .class-list-main {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 5em;
   padding: 0.4rem 0.5rem 0.4rem 0.85rem;
   border-radius: var(--pill-radius);
   background: rgba(255, 255, 255, 0.06);
@@ -4354,6 +4354,7 @@ html[data-theme="light"] body.class-list-page .class-category-media-stack {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .site-header,
   .header-inner.header-two-row,
   .header-top-left,

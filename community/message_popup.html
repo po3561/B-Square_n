@@ -7,8 +7,8 @@
     <title>메시지 팝업 | B-Square</title>
     <link rel="stylesheet" href="../style_mobile.css?v=20260331_02" media="(max-width: 768px)">
     <link rel="stylesheet" href="../style_pc.css?v=20260331_02" media="(min-width: 769px)">
-    <link rel="stylesheet" href="../class_view/view_chat.css?v=20260331_02">
-    <link rel="stylesheet" href="community_refined.css?v=20260408_04">
+    <link rel="stylesheet" href="../class_view/view_chat.css?v=20260408_06">
+    <link rel="stylesheet" href="community_refined.css?v=20260408_05">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="../bsq_server.js?v=20260402_01"></script>
     <link rel="stylesheet" href="/theme_overrides.css?v=20260402_03">
@@ -124,6 +124,19 @@
             </div>
         </div>
 
+        <div class="new-chat-modal gathering-preview-modal" id="gatheringPreviewModal" style="display:none;" aria-hidden="true">
+            <div class="modal-card gathering-preview-card">
+                <div class="modal-header gathering-preview-header">
+                    <div class="gathering-preview-header-copy">
+                        <span class="gathering-preview-badge">모집 카드</span>
+                        <h3 id="gatheringPreviewTitle">모집 카드 미리보기</h3>
+                    </div>
+                    <button class="btn-close-modal" id="btnGatheringPreviewClose" type="button" aria-label="닫기"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="modal-body gathering-preview-body" id="gatheringPreviewBody"></div>
+            </div>
+        </div>
+
         <div class="emoji-picker" id="emojiPicker" style="display:none;">
             <div class="emoji-grid" id="emojiGrid"></div>
         </div>
@@ -131,10 +144,10 @@
 
     <script src="../kakao_quick.js?v=20260408_02"></script>
     <script src="../dev_mode.js?v=20260331_02"></script>
-    <script src="community_shared_v2.js?v=20260408_04"></script>
+    <script src="community_shared_v2.js?v=20260408_05"></script>
     <script src="sync_bridge.js?v=20260401_03"></script>
     <script src="dm_private.js?v=20260401_03"></script>
-    <script src="chat_ui.js?v=20260408_04"></script>
+    <script src="chat_ui.js?v=20260408_05"></script>
     <script src="message_popup_v2.js?v=20260408_04"></script>
 </body>
 </html>

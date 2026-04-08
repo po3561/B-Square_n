@@ -67,48 +67,48 @@
 
     const FALLBACK_REFERRER_GROUPS = [
         {
-            label: '중부',
+            label: '추천코드 그룹 A',
             options: [
-                { value: 'aj001', label: '중부1' },
-                { value: 'aj002', label: '중부2' },
-                { value: 'aj003', label: '중부3' },
-                { value: 'aj004', label: '중부4' },
-                { value: 'aj005', label: '중부5' },
+                { value: 'aj001', label: '추천코드 01' },
+                { value: 'aj002', label: '추천코드 02' },
+                { value: 'aj003', label: '추천코드 03' },
+                { value: 'aj004', label: '추천코드 04' },
+                { value: 'aj005', label: '추천코드 05' },
             ],
         },
         {
-            label: '북부',
+            label: '추천코드 그룹 B',
             options: [
-                { value: 'ab001', label: '북부1' },
-                { value: 'ab002', label: '북부2' },
-                { value: 'ab003', label: '북부3' },
-                { value: 'ab004', label: '북부4' },
-                { value: 'ab005', label: '북부5' },
+                { value: 'ab001', label: '추천코드 06' },
+                { value: 'ab002', label: '추천코드 07' },
+                { value: 'ab003', label: '추천코드 08' },
+                { value: 'ab004', label: '추천코드 09' },
+                { value: 'ab005', label: '추천코드 10' },
             ],
         },
         {
-            label: '동부',
+            label: '추천코드 그룹 C',
             options: [
-                { value: 'ac001', label: '동부1' },
-                { value: 'ac002', label: '동부2' },
-                { value: 'ac003', label: '동부3' },
-                { value: 'ac004', label: '동부4' },
-                { value: 'ac005', label: '동부5' },
+                { value: 'ac001', label: '추천코드 11' },
+                { value: 'ac002', label: '추천코드 12' },
+                { value: 'ac003', label: '추천코드 13' },
+                { value: 'ac004', label: '추천코드 14' },
+                { value: 'ac005', label: '추천코드 15' },
             ],
         },
         {
-            label: '대학',
+            label: '추천코드 그룹 D',
             options: [
-                { value: 'as001', label: '대학1' },
-                { value: 'as002', label: '대학2' },
-                { value: 'as003', label: '대학3' },
-                { value: 'as004', label: '대학4' },
+                { value: 'as001', label: '추천코드 16' },
+                { value: 'as002', label: '추천코드 17' },
+                { value: 'as003', label: '추천코드 18' },
+                { value: 'as004', label: '추천코드 19' },
             ],
         },
         {
-            label: '행정',
+            label: '추천코드 그룹 E',
             options: [
-                { value: 'cs020', label: '행정' },
+                { value: 'cs020', label: '추천코드 20' },
             ],
         },
     ];
@@ -187,8 +187,9 @@
             const customOption = document.createElement('option');
             customOption.value = normalizedValue;
             customOption.textContent = normalizedValue;
-            customOption.dataset.referrerLabel = label || '직접 선택';
-            customOption.title = label ? `${label} · ${normalizedValue}` : normalizedValue;
+            customOption.dataset.referrerLabel = '';
+            customOption.dataset.referrerName = label || '';
+            customOption.title = normalizedValue;
             profileReferrerCode.appendChild(customOption);
         }
 
@@ -210,24 +211,21 @@
         placeholder.selected = !currentValue;
         fragment.appendChild(placeholder);
 
-        const displayMode = referrerDisplayMode || 'code-only';
+        const seenValues = new Set();
         for (const group of (safeGroups.length ? safeGroups : normalizeReferrerGroups(FALLBACK_REFERRER_GROUPS))) {
-            const optgroup = document.createElement('optgroup');
-            optgroup.label = group.label;
-
-            for (const option of group.options) {
+            const options = Array.isArray(group?.options) ? group.options : [];
+            for (const option of options) {
+                const value = String(option.value || '').trim();
+                if (!value || seenValues.has(value)) continue;
+                seenValues.add(value);
                 const opt = document.createElement('option');
-                opt.value = option.value;
-                opt.textContent = displayMode === 'label-code'
-                    ? `${group.label} · ${option.value}`
-                    : option.value;
-                opt.dataset.referrerLabel = group.label;
-                opt.dataset.referrerName = option.label;
-                opt.title = `${group.label} · ${option.label} · ${option.value}`;
-                optgroup.appendChild(opt);
+                opt.value = value;
+                opt.textContent = value;
+                opt.dataset.referrerLabel = '';
+                opt.dataset.referrerName = String(option.label || '').trim();
+                opt.title = value;
+                fragment.appendChild(opt);
             }
-
-            fragment.appendChild(optgroup);
         }
 
         profileReferrerCode.appendChild(fragment);

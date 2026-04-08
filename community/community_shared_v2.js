@@ -97,6 +97,193 @@
         return win;
     }
 
+    function normalizeGatheringData(input = {}) {
+        const raw = input && typeof input === 'object' ? { ...input } : {};
+        const contentPayload = typeof raw.content === 'string' ? tryParseJson(raw.content) : null;
+        const messagePayload = typeof raw.message === 'string' ? tryParseJson(raw.message) : null;
+        const payload = contentPayload || messagePayload || {};
+        const joinedCount = Number(raw.current_count ?? raw.joined_count ?? payload.current_count ?? 0) || 0;
+        const minCapacity = Number(raw.capacity_min ?? raw.min_capacity ?? payload.capacity_min ?? payload.min_capacity ?? 0) || 0;
+        const maxCapacity = Number(raw.capacity_max ?? raw.max_capacity ?? payload.capacity_max ?? payload.max_capacity ?? 0) || 0;
+        const gatheringAt = String(raw.gathering_at || raw.gather_time || payload.gathering_at || payload.gather_time || '').trim();
+        const location = String(raw.location || raw.gather_place || payload.location || payload.gather_place || '').trim();
+        const title = String(raw.title || raw.gather_title || payload.title || payload.gather_title || '모집 카드').trim() || '모집 카드';
+        const description = String(raw.description || payload.description || '').trim();
+        const status = String(raw.status || payload.status || 'open').trim().toLowerCase() || 'open';
+        const roomId = String(raw.room_id || raw.class_id || payload.class_id || '').trim();
+        const gatherId = String(raw.gathering_id || raw.id || payload.gathering_id || payload.id || '').trim();
+        const createdBy = String(raw.user_name || raw.sender_name || payload.user_name || payload.sender_name || '').trim();
+        const participantLabel = maxCapacity > 0 ? `${joinedCount} / ${maxCapacity}명` : `${joinedCount}명`;
+        return {
+            ...raw,
+            title,
+            description,
+            location,
+            gathering_at: gatheringAt,
+            current_count: joinedCount,
+            capacity_min: minCapacity,
+            min_capacity: minCapacity,
+            capacity_max: maxCapacity,
+            max_capacity: maxCapacity,
+            status,
+            room_id: roomId,
+            gathering_id: gatherId,
+            created_by: createdBy,
+            participantLabel,
+            isFull: maxCapacity > 0 && joinedCount >= maxCapacity,
+        };
+    }
+
+    function tryParseJson(value) {
+        if (!value || typeof value !== 'string') return null;
+        try {
+            const parsed = JSON.parse(value);
+            return parsed && typeof parsed === 'object' ? parsed : null;
+        } catch {
+            return null;
+        }
+    }
+
+    function formatGatheringDate(value) {
+        if (!value) return '일정 미정';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return String(value);
+        return date.toLocaleString('ko-KR', {
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            weekday: 'short',
+        });
+    }
+
+    function renderGatheringPreviewHtml(input = {}, options = {}) {
+        const data = normalizeGatheringData(input);
+        const canJoin = typeof options.onJoin === 'function';
+        const canClose = typeof options.onClose === 'function';
+        const statusLabel = data.status === 'closed'
+            ? '마감'
+            : data.isFull
+                ? '정원 마감'
+                : '진행중';
+        const statusTone = data.status === 'closed' || data.isFull ? 'danger' : 'primary';
+        const locationHtml = data.location
+            ? `<button type="button" class="gathering-preview-action secondary" data-gathering-action="map"><i class="fa-solid fa-location-dot"></i><span>장소 보기</span></button>`
+            : `<button type="button" class="gathering-preview-action secondary" disabled><i class="fa-solid fa-location-dot"></i><span>장소 정보 없음</span></button>`;
+        const joinLabel = data.status === 'closed'
+            ? '마감됨'
+                : data.isFull
+                    ? '정원 초과'
+                    : '모임 참여';
+        const joinDisabled = !canJoin || data.status === 'closed' || data.isFull;
+        const closeDisabled = !canClose;
+        const closeLabel = data.status === 'closed' ? '마감 완료' : '모임 마감';
+
+        return `
+            <div class="gathering-preview-shell">
+                <div class="gathering-preview-hero">
+                    <div class="gathering-preview-head">
+                        <span class="gathering-preview-kicker">모집 카드</span>
+                        <span class="gathering-preview-status ${statusTone}">${escapeHtml(statusLabel)}</span>
+                    </div>
+                    <h4 class="gathering-preview-title">${escapeHtml(data.title)}</h4>
+                    <p class="gathering-preview-subtitle">${escapeHtml(data.gathering_at ? formatGatheringDate(data.gathering_at) : '일정 미정')}</p>
+                </div>
+                <div class="gathering-preview-grid">
+                    <div class="gathering-preview-card">
+                        <span class="gathering-preview-label">시간</span>
+                        <strong class="gathering-preview-value">${escapeHtml(data.gathering_at ? formatGatheringDate(data.gathering_at) : '일정 미정')}</strong>
+                    </div>
+                    <div class="gathering-preview-card">
+                        <span class="gathering-preview-label">장소</span>
+                        <strong class="gathering-preview-value">${escapeHtml(data.location || '장소 미정')}</strong>
+                    </div>
+                    <div class="gathering-preview-card">
+                        <span class="gathering-preview-label">인원</span>
+                        <strong class="gathering-preview-value">${escapeHtml(data.participantLabel)}</strong>
+                    </div>
+                </div>
+                ${data.description ? `
+                    <div class="gathering-preview-description">
+                        <span class="gathering-preview-label">상세 설명</span>
+                        <p>${escapeHtml(data.description)}</p>
+                    </div>
+                ` : ''}
+                <div class="gathering-preview-actions">
+                    ${locationHtml}
+                    <button type="button" class="gathering-preview-action primary" data-gathering-action="join" ${joinDisabled ? 'disabled' : ''}>
+                        <i class="fa-solid fa-user-plus"></i><span>${escapeHtml(joinLabel)}</span>
+                    </button>
+                    ${canClose ? `<button type="button" class="gathering-preview-action danger" data-gathering-action="close" ${closeDisabled ? 'disabled' : ''}><i class="fa-solid fa-flag-checkered"></i><span>${escapeHtml(closeLabel)}</span></button>` : ''}
+                </div>
+                ${data.created_by ? `<div class="gathering-preview-footer">작성자 · ${escapeHtml(data.created_by)}</div>` : ''}
+            </div>
+        `;
+    }
+
+    function setupGatheringPreviewShell() {
+        const modal = document.getElementById('gatheringPreviewModal');
+        const body = document.getElementById('gatheringPreviewBody');
+        if (!modal || !body || modal.dataset.bsqBound === '1') return;
+        modal.dataset.bsqBound = '1';
+
+        const close = () => {
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('gathering-preview-open');
+        };
+
+        const open = (data = {}, actions = {}) => {
+            body.innerHTML = renderGatheringPreviewHtml(data, actions);
+            modal.style.display = 'flex';
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('gathering-preview-open');
+
+            const actionMap = {
+                join: actions.onJoin,
+                close: actions.onClose,
+                map: actions.onMap,
+            };
+
+            body.querySelectorAll('[data-gathering-action]').forEach((btn) => {
+                btn.addEventListener('click', async (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const action = btn.dataset.gatheringAction;
+                    const handler = actionMap[action];
+                    if (typeof handler === 'function') {
+                        await handler(normalizeGatheringData(data), btn);
+                    } else if (action === 'map') {
+                        const normalized = normalizeGatheringData(data);
+                        if (normalized.location) {
+                            window.open(`https://map.naver.com/v5/search/${encodeURIComponent(normalized.location)}`, '_blank', 'noopener');
+                        }
+                    } else if (action === 'join') {
+                        const normalized = normalizeGatheringData(data);
+                        if (normalized.status === 'closed' || normalized.isFull) {
+                            toast(normalized.status === 'closed' ? '마감된 모집입니다.' : '정원이 가득 찼습니다.');
+                        }
+                    }
+                });
+            });
+        };
+
+        const closeButtons = modal.querySelectorAll('#btnGatheringPreviewClose, [data-gathering-action="close"]');
+        closeButtons.forEach((btn) => btn.addEventListener('click', close));
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) close();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal.style.display !== 'none') close();
+        });
+
+        window.BSQCommunityShared.openGatheringPreview = open;
+        window.BSQCommunityShared.closeGatheringPreview = close;
+        return { open, close };
+    }
+
     function currentUserId() {
         return window.CommunityModules?.SyncBridge?.getUserId?.() || window.BSQ?.session?.user?.id || '';
     }
@@ -272,6 +459,11 @@
         makePopupUrl,
         openPopupRoom,
         currentUserId,
+        normalizeGatheringData,
+        renderGatheringPreviewHtml,
+        setupGatheringPreviewShell,
+        openGatheringPreview: null,
+        closeGatheringPreview: null,
         getFriendRelation,
         isBlockedUser,
         readBlockedUserIds,

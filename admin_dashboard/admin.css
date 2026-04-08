@@ -4276,33 +4276,42 @@ input:checked+.mac-slider:before {
 
 #tabRecommend #popularClassList {
     background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
-    border: 1px dashed rgba(148, 163, 184, 0.5) !important;
-    border-radius: 16px !important;
+    border: 1px solid rgba(148, 163, 184, 0.42) !important;
+    border-radius: 22px !important;
+    padding: 1rem !important;
+    gap: 0.9rem !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
     min-height: 168px !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
 
 #tabRecommend #recommendFolderList {
-    padding: 1.2rem !important;
-    gap: 1.2rem !important;
+    padding: 0.9rem !important;
+    gap: 1rem !important;
     background: linear-gradient(180deg, rgba(248, 250, 252, 0.66), rgba(248, 250, 252, 0.24)) !important;
 }
 
 #tabRecommend .recommend-folder-item {
-    border-radius: 18px !important;
-    padding: 1rem !important;
+    border-radius: 22px !important;
+    padding: 1.15rem !important;
+    border: 1px solid rgba(226, 232, 240, 0.95) !important;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06) !important;
 }
 
 #tabRecommend .recommend-folder-item .selected-class-list {
-    border-radius: 14px !important;
-    border: 1px dashed rgba(148, 163, 184, 0.45) !important;
-    padding: 0.9rem !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(226, 232, 240, 0.95) !important;
+    padding: 1rem !important;
+    background: #fcfcfe !important;
 }
 
 #tabRecommend .selected-class-card {
-    border-radius: 14px !important;
+    border-radius: 16px !important;
     border: 1px solid rgba(226, 232, 240, 0.95) !important;
     overflow: hidden;
     background: #ffffff;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
 }
 
 #tabRecommend .selected-class-card .class-name,
@@ -4367,6 +4376,12 @@ body.admin-body[data-theme="dark"] #tabRecommend .recommend-folder-item {
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     background: linear-gradient(180deg, rgba(24, 30, 44, 0.92), rgba(16, 21, 34, 0.92)) !important;
     box-shadow: 0 16px 30px rgba(0, 0, 0, 0.24) !important;
+}
+
+html[data-theme="dark"] #tabRecommend .recommend-folder-item .selected-class-list,
+body.admin-body[data-theme="dark"] #tabRecommend .recommend-folder-item .selected-class-list {
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
 }
 
 html[data-theme="dark"] #tabRecommend .selected-class-card,
