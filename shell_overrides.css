@@ -4366,3 +4366,672 @@ html[data-theme="light"] body.class-list-page .class-category-media-stack {
     transition: none !important;
   }
 }
+
+@media (max-width: 768px) {
+  html[data-theme="light"] body.class-list-page,
+  body.class-list-page {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #0f172a !important;
+  }
+
+  body.class-list-page .class-list-main {
+    padding-top: 0.35rem !important;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important;
+    background: #ffffff !important;
+  }
+
+  body.class-list-page .section-inner {
+    width: calc(100vw - 1rem) !important;
+  }
+
+  body.class-list-page .class-list-shell {
+    gap: 0.8rem !important;
+  }
+
+  body.class-list-page .class-explorer-hero,
+  body.class-list-page .class-page-overrides,
+  body.class-list-page .class-category-shell,
+  body.class-list-page .class-category-overlay-panel,
+  body.class-list-page .class-list-banner-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  body.class-list-page .class-explorer-hero {
+    padding: 0.75rem !important;
+    display: grid !important;
+    gap: 0.75rem !important;
+    border-radius: 24px !important;
+    overflow: hidden;
+  }
+
+  body.class-list-page .class-list-banner-card {
+    min-height: 132px !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
+  }
+
+  body.class-list-page .class-list-banner-controls {
+    top: 0.6rem !important;
+    right: 0.6rem !important;
+    left: auto !important;
+    bottom: auto !important;
+    gap: 0.35rem !important;
+  }
+
+  body.class-list-page .banner-nav {
+    min-height: 34px !important;
+    min-width: 34px !important;
+    padding: 0.35rem 0.6rem !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    color: #0f172a !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08) !important;
+  }
+
+  body.class-list-page .home-banner-dots {
+    gap: 0.3rem !important;
+  }
+
+  body.class-list-page .home-banner-dot {
+    width: 8px !important;
+    height: 8px !important;
+    background: rgba(79, 111, 255, 0.22) !important;
+  }
+
+  body.class-list-page .home-banner-dot.is-active {
+    width: 24px !important;
+    background: #4f6fff !important;
+  }
+
+  body.class-list-page .class-category-shell {
+    min-width: 0;
+    display: grid !important;
+    gap: 0.45rem !important;
+    padding: 0.85rem !important;
+    border-radius: 24px !important;
+  }
+
+  body.class-list-page .class-category-panel-head {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 0.7rem !important;
+    margin-bottom: 0.15rem !important;
+  }
+
+  body.class-list-page .class-category-panel-head h2 {
+    margin: 0.1rem 0 0 !important;
+    color: #0f172a !important;
+    font-size: clamp(1.02rem, 4vw, 1.22rem) !important;
+    letter-spacing: -0.05em !important;
+  }
+
+  body.class-list-page .class-category-panel-head p {
+    margin: 0 !important;
+    color: #64748b !important;
+    font-size: 0.76rem !important;
+    line-height: 1.38 !important;
+    max-width: 17ch !important;
+  }
+
+  body.class-list-page .class-category-strip,
+  body.class-list-page .class-category-overlay-grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 0.42rem !important;
+  }
+
+  body.class-list-page .class-category-tile {
+    min-height: 84px !important;
+    padding: 0.54rem 0.32rem 0.58rem !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-radius: 18px !important;
+    background: #f8fafc !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    color: #0f172a !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  body.class-list-page .class-category-tile:hover,
+  body.class-list-page .class-category-tile.is-active {
+    transform: translateY(-2px);
+  }
+
+  body.class-list-page .class-category-tile.is-active {
+    background: linear-gradient(135deg, #4f6fff, #3b6df5) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    box-shadow: 0 14px 28px rgba(59, 109, 245, 0.24) !important;
+  }
+
+  body.class-list-page .class-category-icon {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 14px !important;
+    background: rgba(79, 111, 255, 0.10) !important;
+    color: #2848d8 !important;
+    font-size: 0.96rem !important;
+  }
+
+  body.class-list-page .class-category-tile.is-active .class-category-icon {
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #ffffff !important;
+  }
+
+  body.class-list-page .class-category-label {
+    width: 100%;
+    min-height: 2.2em;
+    font-size: 0.68rem !important;
+    line-height: 1.16 !important;
+    font-weight: 700 !important;
+    color: inherit !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  body.class-list-page .class-category-count {
+    display: none !important;
+  }
+
+  body.class-list-page .class-category-overlay {
+    z-index: 120 !important;
+  }
+
+  body.class-list-page .class-category-overlay-backdrop {
+    background: rgba(15, 23, 42, 0.28) !important;
+  }
+
+  body.class-list-page .class-category-overlay-panel {
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    top: auto !important;
+    bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px)) !important;
+    transform: none !important;
+    width: auto !important;
+    max-height: min(74vh, 560px) !important;
+    padding: 0.85rem !important;
+    border-radius: 26px 26px 20px 20px !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 28px 70px rgba(15, 23, 42, 0.18) !important;
+  }
+
+  body.class-list-page .class-category-overlay-head {
+    margin-bottom: 0.75rem !important;
+  }
+
+  body.class-list-page .class-category-overlay-head h3 {
+    margin: 0.25rem 0 0 !important;
+    color: #0f172a !important;
+    letter-spacing: -0.04em !important;
+    font-size: 1rem !important;
+  }
+
+  body.class-list-page .class-category-overlay-close {
+    min-height: 40px !important;
+    padding: 0.45rem 0.8rem !important;
+    border-radius: 14px !important;
+    background: #f8fafc !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    color: #0f172a !important;
+  }
+
+  body.class-list-page .class-category-overlay-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.42rem !important;
+  }
+
+  body.class-list-page .class-page-overrides {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    padding: 0.85rem !important;
+    border-radius: 24px !important;
+  }
+
+  body.class-list-page .class-page-overrides > * {
+    min-width: 0;
+  }
+
+  body.class-list-page .class-grid-header {
+    order: 1;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.65rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  body.class-list-page .header-copy {
+    gap: 0.18rem !important;
+  }
+
+  body.class-list-page .group-title {
+    margin: 0 !important;
+    color: #0f172a !important;
+    font-size: clamp(1.02rem, 4.2vw, 1.18rem) !important;
+    letter-spacing: -0.05em !important;
+  }
+
+  body.class-list-page .group-subtitle {
+    margin: 0 !important;
+    color: #64748b !important;
+    font-size: 0.78rem !important;
+    line-height: 1.42 !important;
+    max-width: none !important;
+  }
+
+  body.class-list-page .list-controls {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.45rem !important;
+    width: 100% !important;
+    align-items: center !important;
+  }
+
+  body.class-list-page .search-filter {
+    grid-column: 1 / -1;
+  }
+
+  body.class-list-page .class-search-input,
+  body.class-list-page .sort-select,
+  body.class-list-page .total-count {
+    min-height: 44px !important;
+    border-radius: 16px !important;
+  }
+
+  body.class-list-page .class-search-input {
+    width: 100% !important;
+    padding: 0.72rem 0.9rem !important;
+    background: #f8fafc !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    color: #0f172a !important;
+  }
+
+  body.class-list-page .class-search-input::placeholder {
+    color: rgba(100, 116, 139, 0.72) !important;
+  }
+
+  body.class-list-page .sort-select {
+    width: 100% !important;
+    padding: 0.72rem 0.85rem !important;
+    background: #f8fafc !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    color: #0f172a !important;
+  }
+
+  body.class-list-page .total-count {
+    justify-self: end;
+    padding: 0 0.8rem !important;
+    background: #edf4ff !important;
+    border: 1px solid rgba(79, 111, 255, 0.14) !important;
+    color: #2848d8 !important;
+    font-weight: 700 !important;
+  }
+
+  body.class-list-page .class-list-notice {
+    order: 2;
+    margin: 0 !important;
+  }
+
+  body.class-list-page .notice-chip {
+    min-height: 40px !important;
+    padding: 0.6rem 0.85rem !important;
+    border-radius: 14px !important;
+    background: #f8fafc !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    color: #0f172a !important;
+  }
+
+  body.class-list-page .notice-chip.loading {
+    border-color: rgba(79, 111, 255, 0.22) !important;
+    background: rgba(79, 111, 255, 0.10) !important;
+    color: #2848d8 !important;
+  }
+
+  body.class-list-page .notice-chip.error {
+    border-color: rgba(239, 68, 68, 0.22) !important;
+    background: rgba(239, 68, 68, 0.10) !important;
+    color: #b91c1c !important;
+  }
+
+  body.class-list-page .notice-chip.success {
+    border-color: rgba(34, 197, 94, 0.22) !important;
+    background: rgba(34, 197, 94, 0.10) !important;
+    color: #15803d !important;
+  }
+
+  body.class-list-page .popular-classes {
+    order: 3;
+    padding: 0.85rem !important;
+    border-radius: 22px !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  body.class-list-page .popular-grid {
+    display: flex !important;
+    gap: 0.75rem !important;
+    overflow-x: auto !important;
+    padding-bottom: 0.1rem !important;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-snap-type: x proximity;
+  }
+
+  body.class-list-page .popular-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.class-list-page .popular-grid .class-card {
+    flex: 0 0 clamp(148px, 56vw, 180px);
+    scroll-snap-align: start;
+  }
+
+  body.class-list-page .popular-grid .class-card .card-info {
+    padding: 0.72rem 0.75rem 0.8rem !important;
+  }
+
+  body.class-list-page .popular-grid .class-card .title {
+    font-size: 0.88rem !important;
+    line-height: 1.28 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  body.class-list-page .popular-grid .card-meta-item.card-meta-review {
+    display: none !important;
+  }
+
+  body.class-list-page #allClassGrid {
+    order: 4;
+  }
+
+  body.class-list-page #classListSentinel {
+    order: 5;
+  }
+
+  body.class-list-page .class-page-overrides .card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.65rem !important;
+  }
+
+  body.class-list-page .class-page-overrides .class-card {
+    border-radius: 20px !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  body.class-list-page .class-page-overrides .card-thumbnail {
+    aspect-ratio: 16 / 10 !important;
+  }
+
+  body.class-list-page .class-page-overrides .card-info {
+    gap: 0.38rem !important;
+    padding: 0.72rem 0.74rem 0.8rem !important;
+    background: #ffffff !important;
+  }
+
+  body.class-list-page .class-page-overrides .title {
+    font-size: 0.88rem !important;
+    line-height: 1.28 !important;
+    color: #0f172a !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  body.class-list-page .class-page-overrides .card-meta {
+    gap: 0.3rem !important;
+  }
+
+  body.class-list-page .class-page-overrides .card-meta-item {
+    min-height: 22px !important;
+    padding: 0.12rem 0.46rem !important;
+    border-radius: 999px !important;
+    background: #f8fafc !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    color: #334155 !important;
+    font-size: 0.68rem !important;
+  }
+
+  body.class-list-page .class-page-overrides .card-meta-item.card-meta-category {
+    background: rgba(79, 111, 255, 0.10) !important;
+    border-color: rgba(79, 111, 255, 0.16) !important;
+    color: #2848d8 !important;
+  }
+
+  body.class-list-page .class-page-overrides .card-meta-item.card-meta-price {
+    background: rgba(34, 197, 94, 0.10) !important;
+    border-color: rgba(34, 197, 94, 0.16) !important;
+    color: #15803d !important;
+  }
+
+  body.class-list-page .class-page-overrides .card-meta-item.card-meta-review {
+    display: none !important;
+  }
+
+  body.class-list-page .class-page-overrides .btn-bookmark {
+    width: 36px !important;
+    height: 36px !important;
+    top: 0.7rem !important;
+    right: 0.7rem !important;
+  }
+
+  body.class-list-page .class-list-sentinel {
+    order: 5;
+  }
+
+  body.class-list-page .empty-state {
+    margin: 0 !important;
+    padding: 1.15rem 0.85rem !important;
+    text-align: center !important;
+    color: #64748b !important;
+    border: 1px dashed rgba(79, 111, 255, 0.16) !important;
+    background: #ffffff !important;
+    border-radius: 18px !important;
+  }
+}
+
+@media (max-width: 230px) {
+  body.class-list-page .class-category-strip,
+  body.class-list-page .class-category-overlay-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  body.class-list-page .class-page-overrides .card-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.class-list-page .list-controls {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.class-list-page .total-count {
+    justify-self: start !important;
+  }
+}
+
+@media (max-width: 320px) {
+  body.class-list-page .class-explorer-hero {
+    padding: 0.7rem !important;
+    gap: 0.65rem !important;
+    border-radius: 22px !important;
+  }
+
+  body.class-list-page .class-list-banner-card {
+    min-height: 126px !important;
+    border-radius: 18px !important;
+  }
+
+  body.class-list-page .class-category-shell {
+    padding: 0.72rem !important;
+    gap: 0.38rem !important;
+    border-radius: 22px !important;
+  }
+
+  body.class-list-page .class-category-strip,
+  body.class-list-page .class-category-overlay-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0.38rem !important;
+  }
+
+  body.class-list-page .class-category-tile {
+    min-height: 78px !important;
+    padding: 0.5rem 0.28rem !important;
+    border-radius: 17px !important;
+  }
+
+  body.class-list-page .class-category-icon {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 12px !important;
+    font-size: 0.9rem !important;
+  }
+
+  body.class-list-page .class-category-label {
+    min-height: 2.1em !important;
+    white-space: normal !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    font-size: 0.64rem !important;
+    line-height: 1.08 !important;
+  }
+
+  body.class-list-page .class-page-overrides {
+    gap: 0.65rem !important;
+    padding: 0.72rem !important;
+    border-radius: 22px !important;
+  }
+
+  body.class-list-page .popular-classes {
+    padding: 0.72rem !important;
+    border-radius: 20px !important;
+  }
+
+  body.class-list-page .popular-grid {
+    gap: 0.6rem !important;
+  }
+
+  body.class-list-page .popular-grid .class-card {
+    flex-basis: clamp(136px, 64vw, 160px) !important;
+  }
+
+  body.class-list-page #allClassGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.class-list-page .class-page-overrides .card-grid {
+    gap: 0.58rem !important;
+  }
+
+  body.class-list-page .class-page-overrides .class-card {
+    border-radius: 18px !important;
+  }
+
+  body.class-list-page .class-page-overrides .card-info {
+    padding: 0.65rem 0.66rem 0.72rem !important;
+  }
+
+  body.class-list-page .class-page-overrides .card-meta-item {
+    padding: 0.1rem 0.4rem !important;
+    font-size: 0.66rem !important;
+  }
+}
+
+@media (max-width: 280px) {
+  body.class-list-page .class-explorer-hero {
+    padding: 0.66rem !important;
+  }
+
+  body.class-list-page .class-list-banner-card {
+    min-height: 120px !important;
+  }
+
+  body.class-list-page .class-category-strip,
+  body.class-list-page .class-category-overlay-grid {
+    gap: 0.34rem !important;
+  }
+
+  body.class-list-page .class-category-tile {
+    min-height: 74px !important;
+    padding: 0.46rem 0.24rem !important;
+  }
+
+  body.class-list-page .class-category-icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  body.class-list-page .class-page-overrides {
+    padding: 0.68rem !important;
+  }
+
+  body.class-list-page .popular-grid .class-card {
+    flex-basis: clamp(128px, 64vw, 150px) !important;
+  }
+
+  body.class-list-page #allClassGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.class-list-page .class-page-overrides .title {
+    font-size: 0.84rem !important;
+  }
+}
+
+@media (max-width: 230px) {
+  body.class-list-page .class-list-banner-card {
+    min-height: 116px !important;
+  }
+
+  body.class-list-page .class-category-strip,
+  body.class-list-page .class-category-overlay-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  body.class-list-page .class-category-tile {
+    min-height: 72px !important;
+    padding: 0.42rem 0.2rem !important;
+  }
+
+  body.class-list-page .class-category-label {
+    font-size: 0.61rem !important;
+  }
+
+  body.class-list-page .class-page-overrides .card-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.class-list-page #allClassGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.class-list-page .popular-grid .class-card {
+    flex-basis: clamp(128px, 76vw, 148px) !important;
+  }
+
+  body.class-list-page .list-controls {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.class-list-page .total-count {
+    justify-self: start !important;
+  }
+}

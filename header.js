@@ -687,8 +687,8 @@
 
   function buildDrawerHTML() {
     return `
-      <div class="drawer-overlay mobile-only" id="drawerOverlay"></div>
-      <aside class="drawer-menu mobile-only" id="drawerMenu" aria-hidden="true">
+      <div class="drawer-overlay mobile-only" id="drawerOverlay" hidden></div>
+      <aside class="drawer-menu mobile-only" id="drawerMenu" aria-hidden="true" hidden>
         <div class="drawer-header">
           <h2 class="drawer-title">B-Square</h2>
           <button class="drawer-close" id="drawerClose" type="button">닫기</button>
@@ -916,6 +916,29 @@
     if (footer) footer.insertAdjacentHTML('beforebegin', buildBottomNavHTML());
   }
 
+  function syncMobileAppSurface() {
+    const isMobileShell = window.matchMedia?.('(max-width: 768px)')?.matches;
+    const html = document.documentElement;
+    const body = document.body;
+    if (!html || !body) return;
+
+    if (isMobileShell) {
+      html.style.setProperty('background', '#ffffff', 'important');
+      html.style.setProperty('background-image', 'none', 'important');
+      html.style.setProperty('background-color', '#ffffff', 'important');
+      body.style.setProperty('background', '#ffffff', 'important');
+      body.style.setProperty('background-image', 'none', 'important');
+      body.style.setProperty('background-color', '#ffffff', 'important');
+    } else {
+      html.style.removeProperty('background');
+      html.style.removeProperty('background-image');
+      html.style.removeProperty('background-color');
+      body.style.removeProperty('background');
+      body.style.removeProperty('background-image');
+      body.style.removeProperty('background-color');
+    }
+  }
+
   function setupDrawer() {
     const hamburgerButtons = Array.from(document.querySelectorAll('#btnHamburger, #btnMobileHamburger, #btnMobileDrawer'));
     const backButton = document.getElementById('btnMobileBack');
@@ -944,6 +967,8 @@
     function openDrawer(trigger = null) {
       lastDrawerTrigger = trigger || document.activeElement || hamburgerButtons[0] || null;
       setDrawerInteractivity(true);
+      overlay?.removeAttribute('hidden');
+      menu?.removeAttribute('hidden');
       overlay?.classList.add('active');
       menu?.classList.add('active');
       setExpandedState(true);
@@ -958,6 +983,8 @@
       menu?.classList.remove('active');
       setExpandedState(false);
       menu?.setAttribute('aria-hidden', 'true');
+      overlay?.setAttribute('hidden', '');
+      menu?.setAttribute('hidden', '');
       document.body.classList.remove('shell-drawer-open');
       const focusTarget = (lastDrawerTrigger && lastDrawerTrigger.isConnected)
         ? lastDrawerTrigger
@@ -1183,6 +1210,7 @@
 
   function run() {
     injectUI();
+    syncMobileAppSurface();
     ensureHelperLoaded();
     setupMobileKeyboardState();
     setupDrawer();
@@ -1193,6 +1221,7 @@
     updateHeaderScrollState();
     window.addEventListener('scroll', scheduleHeaderScrollState, { passive: true });
     window.addEventListener('resize', scheduleHeaderScrollState);
+    window.addEventListener('resize', syncMobileAppSurface);
 
     window.addEventListener('bsq_preferences', () => {
       void applyShellBranding();

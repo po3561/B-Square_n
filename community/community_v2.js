@@ -23,6 +23,15 @@ function getSearchContactMeta(relation = {}) {
     return { label: '친구 추가', disabled: false, state: 'none' };
 }
 
+function ensureStylesheetLink(id, href) {
+    if (!href || document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = new URL(href, window.location.href).toString();
+    document.head.appendChild(link);
+}
+
 async function renderSearchUserResults(container, users, shared, { emptyMessage = '검색 결과가 없습니다.', onActivate = null, shouldContinue = null } = {}) {
     if (!container) return;
 
@@ -112,6 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.body.dataset.layout = document.body.dataset.layout || 'community';
 
     shared.applySettings?.();
+    ensureStylesheetLink('community-mobile-app-css', './community_mobile_app.css?v=20260411_01');
 
 
 
@@ -144,6 +154,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     wireShellActions(userId, { shared, SyncBridge, ChatList, ChatUI, DM });
+    const syncMobileChrome = () => setupMobileCommunityChrome({ userId, shared, ChatList, ChatUI });
+    syncMobileChrome();
+    window.addEventListener('resize', syncMobileChrome, { passive: true });
 
     const roomsPromise = ChatList.loadChatRooms();
 
@@ -486,6 +499,8 @@ function setupNewChatModal({ userId, shared, SyncBridge, ChatList, ChatUI, DM, c
 
         timer = setTimeout(async () => {
 
+            const seq = ++searchSeq;
+
             const query = searchInput.value.trim();
 
             if (query.length < 2) {
@@ -768,6 +783,8 @@ function setupFriendsModal({ userId, shared, SyncBridge, ChatUI, ChatList, DM })
 
         timer = setTimeout(async () => {
 
+            const seq = ++searchSeq;
+
             const query = searchInput.value.trim();
 
             if (query.length < 2) {
@@ -1013,6 +1030,114 @@ async function loadFriendsPanel(userId, SyncBridge) {
         });
     });
 
+}
+
+
+
+function setupMobileCommunityChrome({ shared, ChatList, ChatUI }) {
+    if (document.body?.dataset?.layout !== 'community') return;
+    if (window.innerWidth > 768 && !window.matchMedia?.('(max-width: 768px)')?.matches) return;
+
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.body.dataset.theme = 'light';
+    window.CommunityShellSettings = { ...(window.CommunityShellSettings || {}), theme: 'light' };
+
+    const shell = document.querySelector('.community-shell');
+    const sidebar = document.getElementById('commSidebar');
+    const introRow = sidebar?.querySelector('.sidebar-intro-row');
+    const searchInput = document.getElementById('chatSearchInput');
+    const roomList = document.getElementById('chatRoomList');
+    if (!shell || !sidebar || !introRow || !roomList) return;
+
+    if (!document.getElementById('communityMobileSearchBtn')) {
+        const searchBtn = document.createElement('button');
+        searchBtn.type = 'button';
+        searchBtn.id = 'communityMobileSearchBtn';
+        searchBtn.className = 'btn-sidebar-utility community-mobile-search-btn';
+        searchBtn.setAttribute('aria-label', '검색');
+        searchBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i>';
+        introRow.appendChild(searchBtn);
+        searchBtn.addEventListener('click', () => {
+            searchInput?.focus();
+            searchInput?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    }
+
+    if (!document.getElementById('communityMobileBanner')) {
+        const banner = document.createElement('button');
+        banner.type = 'button';
+        banner.id = 'communityMobileBanner';
+        banner.className = 'community-mobile-banner';
+        banner.innerHTML = `
+            <div class="community-mobile-banner-copy">
+                <span class="community-mobile-banner-eyebrow">추천</span>
+                <strong class="community-mobile-banner-title">클래스와 대화를 한곳에서 확인하세요</strong>
+                <span class="community-mobile-banner-subtitle">새 대화와 그룹 채팅도 바로 시작할 수 있습니다.</span>
+            </div>
+            <span class="community-mobile-banner-action">클래스 탐색</span>
+        `;
+        banner.addEventListener('click', () => {
+            location.href = '../class/class_list.html';
+        });
+        sidebar.insertBefore(banner, roomList);
+    }
+
+    if (!document.getElementById('communityMobileChips')) {
+        const chipWrap = document.createElement('div');
+        chipWrap.id = 'communityMobileChips';
+        chipWrap.className = 'community-mobile-chips';
+        chipWrap.innerHTML = `
+            <button type="button" class="community-mobile-chip active" data-filter="all">최신</button>
+            <button type="button" class="community-mobile-chip" data-filter="class">클래스</button>
+            <button type="button" class="community-mobile-chip" data-filter="group">그룹</button>
+            <button type="button" class="community-mobile-chip" data-filter="dm">1:1</button>
+            <button type="button" class="community-mobile-chip" data-filter="pinned">고정</button>
+        `;
+        sidebar.insertBefore(chipWrap, roomList);
+
+        const syncChipState = (filter = 'all') => {
+            chipWrap.querySelectorAll('.community-mobile-chip').forEach((btn) => {
+                const active = String(btn.dataset.filter || 'all') === String(filter || 'all');
+                btn.classList.toggle('active', active);
+                btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+            shell.dataset.mobileFilter = String(filter || 'all');
+        };
+
+        const initialFilter = ChatList?.getCurrentFilter?.() || 'all';
+        syncChipState(initialFilter);
+
+        chipWrap.querySelectorAll('.community-mobile-chip').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const filter = String(btn.dataset.filter || 'all');
+                ChatList?.setFilter?.(filter);
+                syncChipState(filter);
+                ChatUI?.setMobileViewMode?.('list');
+            });
+        });
+
+        chipWrap.dataset.bound = '1';
+    }
+
+    const bannerNode = document.getElementById('communityMobileBanner');
+    if (bannerNode) {
+        sidebar.insertBefore(bannerNode, roomList);
+    }
+
+    if (!document.getElementById('communityMobileFab')) {
+        const fab = document.createElement('button');
+        fab.type = 'button';
+        fab.id = 'communityMobileFab';
+        fab.className = 'community-mobile-fab';
+        fab.setAttribute('aria-label', '새 대화 시작');
+        fab.innerHTML = '<i class="fa-solid fa-plus"></i><span class="fab-label">새 대화</span>';
+        fab.addEventListener('click', () => {
+            const trigger = document.getElementById('hmNewChat');
+            if (trigger) trigger.click();
+            else document.getElementById('newChatModal')?.style && (document.getElementById('newChatModal').style.display = 'flex');
+        });
+        document.body.appendChild(fab);
+    }
 }
 
 

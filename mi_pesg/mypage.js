@@ -103,6 +103,7 @@ function updateDashboardProfileCard(currentUser, { guest = false, isOperatorElig
     const usernameEl = document.getElementById('dashProfileUsername');
     const emailEl = document.getElementById('dashProfileEmail');
     const roleEl = document.getElementById('dashProfileRole');
+    const referrerCodeEl = document.getElementById('displayReferrerCode');
 
     const profile = currentUser || {};
     const displayLabel = guest ? '로그인이 필요합니다' : (profile.name || profile.username || '사용자');
@@ -131,6 +132,16 @@ function updateDashboardProfileCard(currentUser, { guest = false, isOperatorElig
     if (usernameEl) usernameEl.textContent = usernameLabel;
     if (emailEl) emailEl.textContent = emailLabel;
     if (roleEl) roleEl.textContent = roleLabel;
+    if (referrerCodeEl) {
+        const referrerLabel = guest ? '' : String(profile.referrer_code || profile.referrerCode || '').trim();
+        if (referrerLabel) {
+            referrerCodeEl.hidden = false;
+            referrerCodeEl.textContent = `추천인 코드: ${referrerLabel}`;
+        } else {
+            referrerCodeEl.hidden = true;
+            referrerCodeEl.textContent = '';
+        }
+    }
 
     window.__BSQ_MYPAGE_PROFILE_STATE__ = {
         ...(window.__BSQ_MYPAGE_PROFILE_STATE__ || {}),
@@ -149,6 +160,7 @@ function bindSidebarProfile(currentUser, { guest = false, isOperatorEligible = f
     const displayName = document.getElementById('displayName');
     const email = document.getElementById('displayEmail');
     const username = document.getElementById('displayUsername');
+    const referrerCode = document.getElementById('displayReferrerCode');
     const profileImg = document.getElementById('profileImg');
     const guestGate = document.getElementById('guestGate');
     const logoutButton = document.getElementById('logoutButton');
@@ -165,6 +177,16 @@ function bindSidebarProfile(currentUser, { guest = false, isOperatorEligible = f
     if (displayName) displayName.textContent = guest ? '-' : displayLabel;
     if (email) email.textContent = guest ? '로그인 후 이메일 정보를 확인할 수 있습니다.' : (currentUser?.email || '');
     if (username) username.textContent = guest ? 'ID: -' : `ID: ${currentUser?.username || currentUser?.id || '-'}`;
+    if (referrerCode) {
+        const referrerLabel = guest ? '' : String(currentUser?.referrer_code || currentUser?.referrerCode || '').trim();
+        if (referrerLabel) {
+            referrerCode.hidden = false;
+            referrerCode.textContent = `추천인 코드: ${referrerLabel}`;
+        } else {
+            referrerCode.hidden = true;
+            referrerCode.textContent = '';
+        }
+    }
 
     if (profileImg) {
         if (!guest && currentUser?.profile_image_url) {

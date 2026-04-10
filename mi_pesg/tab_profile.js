@@ -47,6 +47,19 @@
 
     if (!profileForm) return;
 
+    function renderProfileImagePreview(imageUrl) {
+        if (!profileImagePreview) return;
+        const safeImageUrl = String(imageUrl || '').trim();
+        profileImagePreview.innerHTML = safeImageUrl
+            ? `<img src="${escapeHtml(safeImageUrl)}" alt="Profile preview">`
+            : '<span class="placeholder-icon">👤</span>';
+        profileImagePreview.insertAdjacentHTML('beforeend', `
+            <label for="profileImage" class="profile-image-camera" aria-label="프로필 사진 변경">
+                <i class="fa-solid fa-camera" aria-hidden="true"></i>
+            </label>
+        `);
+    }
+
     const FALLBACK_PROFILE_CATEGORIES = [
         { name: '댄스', emoji: '💃' },
         { name: '사진', emoji: '📷' },
@@ -354,7 +367,7 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    profileImagePreview.innerHTML = `<img src="${event.target.result}" alt="Preview">`;
+                    renderProfileImagePreview(event.target.result);
                 };
                 reader.readAsDataURL(file);
             }
@@ -387,9 +400,7 @@
                     .filter(Boolean);
                 await refreshCategoryChips(selectedCategories);
 
-                if (data.profile_image_url && profileImagePreview) {
-                    profileImagePreview.innerHTML = `<img src="${escapeHtml(data.profile_image_url)}" alt="Profile">`;
-                }
+                renderProfileImagePreview(data.profile_image_url || '');
 
                 updateSidebarUI(data);
             } else {
@@ -401,6 +412,7 @@
                 if (profileReferrerCode) profileReferrerCode.value = '';
                 selectedCategories = [];
                 await refreshCategoryChips([]);
+                renderProfileImagePreview('');
             }
         } catch (error) {
             console.warn('[tab_profile] profile load error:', error);
@@ -483,13 +495,24 @@
         const displayNameEl = document.getElementById('displayName');
         const emailEl = document.getElementById('displayEmail');
         const usernameEl = document.getElementById('displayUsername');
+        const referrerCodeEl = document.getElementById('displayReferrerCode');
         const profileImgEl = document.getElementById('profileImg');
         const displayLabel = profile.name || profile.username || user?.name || user?.username || '사용자';
         const emailLabel = profile.email || user?.email || '';
+        const referrerLabel = String(profile.referrer_code || profile.referrerCode || '').trim();
         if (nicknameEl) nicknameEl.textContent = displayLabel + ' 님';
         if (displayNameEl) displayNameEl.textContent = displayLabel;
         if (emailEl) emailEl.textContent = emailLabel;
         if (usernameEl) usernameEl.textContent = 'ID: ' + (profile.username || username || '-');
+        if (referrerCodeEl) {
+            if (referrerLabel) {
+                referrerCodeEl.hidden = false;
+                referrerCodeEl.textContent = `추천인 코드: ${referrerLabel}`;
+            } else {
+                referrerCodeEl.hidden = true;
+                referrerCodeEl.textContent = '';
+            }
+        }
         if (profileImgEl) {
             const imageUrl = String(profile.profile_image_url || '').trim();
             if (imageUrl) {

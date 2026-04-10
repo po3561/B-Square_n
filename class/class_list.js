@@ -292,7 +292,7 @@
 
     refs.categoryFilter.innerHTML = `
       <div class="class-category-strip">
-        ${renderCategoryButton({ name: 'All', class_count: state.totalCount }, state.currentCategory === 'all', true)}
+        ${renderCategoryButton({ name: '전체', class_count: state.totalCount }, state.currentCategory === 'all', true)}
         ${visible.map((item) => renderCategoryButton(item, state.currentCategory === item.name)).join('')}
         ${hasMore ? `
           <button type="button" class="class-category-tile${state.overlayOpen ? ' is-active' : ''}" data-action="toggle-category-overlay" aria-expanded="${state.overlayOpen ? 'true' : 'false'}">
@@ -494,15 +494,38 @@
     `;
   }
 
+  function isMobileClassListLayout() {
+    try {
+      return window.matchMedia?.('(max-width: 768px)')?.matches || document.body?.dataset?.mobileShellMode === 'discover';
+    } catch {
+      return false;
+    }
+  }
+
+  function getClassListSummaryText() {
+    const categoryLabel = state.currentCategory === 'all' ? '전체 카테고리' : state.currentCategory;
+    const sortLabel = SORT_LABELS[state.currentSort] || '최신순';
+    if (state.searchQuery) {
+      return `"${state.searchQuery}" 검색 · ${categoryLabel} · ${sortLabel}`;
+    }
+    return `${categoryLabel} · ${sortLabel}`;
+  }
+
   function updateHeader() {
+    const mobileLayout = isMobileClassListLayout();
+    const currentTitle = state.currentCategory === 'all' ? '전체 클래스' : `${state.currentCategory} 클래스`;
+    const desktopCopy = state.searchQuery
+      ? `"${state.searchQuery}" 검색 결과입니다. (${SORT_LABELS[state.currentSort] || '최신순'})`
+      : '카테고리, 검색, 정렬을 한 흐름 안에서 정리합니다.';
+
     if (refs.sectionTitle) {
-      refs.sectionTitle.textContent = state.currentCategory === 'all' ? '전체 클래스' : `${state.currentCategory} 클래스`;
+      refs.sectionTitle.textContent = currentTitle;
     }
+
     if (refs.sectionCopy) {
-      refs.sectionCopy.textContent = state.searchQuery
-        ? `"${state.searchQuery}" 검색 결과입니다. (${SORT_LABELS[state.currentSort]})`
-        : '카테고리, 검색, 정렬을 한 흐름 안에서 정리합니다.';
+      refs.sectionCopy.textContent = mobileLayout ? getClassListSummaryText() : desktopCopy;
     }
+
     if (refs.heroSort) refs.heroSort.textContent = SORT_LABELS[state.currentSort] || '최신순';
     if (refs.heroCategories) refs.heroCategories.textContent = String(state.categories.length || 0);
     if (refs.heroLoaded) refs.heroLoaded.textContent = String(state.classResults.length || 0);

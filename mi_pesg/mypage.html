@@ -24,11 +24,18 @@
                 <section class="profile-summary" aria-label="사용자 정보">
                     <div class="profile-summary-top">
                         <div class="profile-img-placeholder" id="profileImg" aria-hidden="true">👤</div>
-                        <div class="profile-actions-stack">
-                            <button type="button" id="guestLoginButton" class="profile-mini-btn">로그인</button>
-                            <button type="button" id="logoutButton" class="profile-mini-btn subtle">로그아웃</button>
-                            <button type="button" id="operatorModeToggle" class="profile-mini-btn subtle" hidden>일반 모드</button>
+                        <div class="profile-summary-copy">
+                            <p class="profile-summary-eyebrow" id="displayNickname">사용자</p>
+                            <strong class="profile-summary-name" id="displayName">사용자</strong>
+                            <p class="profile-summary-meta" id="displayUsername">ID: -</p>
+                            <p class="profile-summary-email" id="displayEmail">로그인 이후에 이메일 정보를 확인할 수 있습니다.</p>
+                            <p class="profile-summary-referrer" id="displayReferrerCode" hidden></p>
                         </div>
+                    </div>
+                    <div class="profile-actions-stack">
+                        <button type="button" id="guestLoginButton" class="profile-mini-btn">로그인</button>
+                        <button type="button" id="logoutButton" class="profile-mini-btn subtle">로그아웃</button>
+                        <button type="button" id="operatorModeToggle" class="profile-mini-btn subtle" hidden>일반 모드</button>
                     </div>
                 </section>
                 <nav class="mypage-nav" aria-label="마이페이지 탐색">
@@ -348,6 +355,9 @@
                         <div class="profile-upload-wrapper">
                             <div class="profile-image-container" id="profileImagePreview">
                                 <span class="placeholder-icon">👤</span>
+                                <label for="profileImage" class="profile-image-camera" aria-label="프로필 사진 변경">
+                                    <i class="fa-solid fa-camera" aria-hidden="true"></i>
+                                </label>
                             </div>
                             <div class="profile-image-actions">
                                 <label for="profileImage" class="btn-image-upload">사진 변경</label>

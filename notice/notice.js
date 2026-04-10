@@ -8,6 +8,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.BSQ?.sessionBootstrapPromise?.then) authBootstrapTasks.push(window.BSQ.sessionBootstrapPromise.catch(() => null));
     if (authBootstrapTasks.length) await Promise.all(authBootstrapTasks);
 
+    ensureStylesheetLink('notice-mobile-app-css', './notice_mobile_app.css?v=20260411_01');
+    if (window.matchMedia?.('(max-width: 768px)')?.matches) {
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.body.dataset.theme = 'light';
+    }
+
     let currentUser = null;
     const session = window.BSQ?.session;
     if (session) {
@@ -457,3 +463,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadNoticeDetail(currentOpenNoticeId);
     });
 });
+function ensureStylesheetLink(id, href) {
+    if (!href || document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = new URL(href, window.location.href).toString();
+    document.head.appendChild(link);
+}

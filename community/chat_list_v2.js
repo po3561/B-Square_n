@@ -33,6 +33,26 @@ window.CommunityModules.ChatList = (() => {
     function getRoomFolders() { return getSettings().roomFolders || {}; }
     const AUTO_CLASS_FOLDER = '클래스';
 
+    function syncTabButtons() {
+        document.querySelectorAll('.stab').forEach(btn => {
+            btn.classList.toggle('active', String(btn.dataset.filter || 'all') === String(currentFilter || 'all'));
+        });
+        document.querySelectorAll('.folder-tab').forEach(folderBtn => folderBtn.classList.remove('active'));
+    }
+
+    function setFilter(filter = 'all') {
+        currentFilter = String(filter || 'all');
+        currentFolder = null;
+        syncTabButtons();
+        document.querySelectorAll('.community-mobile-chip').forEach(btn => {
+            const active = String(btn.dataset.filter || 'all') === String(currentFilter || 'all');
+            btn.classList.toggle('active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        renderRooms(activeSearchQuery);
+        return currentFilter;
+    }
+
     function ensureAutoClassFolder(room) {
         if (!room || room.type !== 'class' || !room.is_instructor || !room.roomId) return false;
 
@@ -161,12 +181,7 @@ window.CommunityModules.ChatList = (() => {
     function setupFilterTabs() {
         document.querySelectorAll('.stab').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.stab').forEach(el => el.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = btn.dataset.filter || 'all';
-                currentFolder = null;
-                document.querySelectorAll('.folder-tab').forEach(folderBtn => folderBtn.classList.remove('active'));
-                renderRooms(activeSearchQuery);
+                setFilter(btn.dataset.filter || 'all');
             });
         });
     }
@@ -229,8 +244,12 @@ window.CommunityModules.ChatList = (() => {
         const roomFolders = getRoomFolders();
         let filtered = rooms;
 
-        if (currentFilter !== 'all') {
+        if (currentFilter !== 'all' && currentFilter !== 'pinned') {
             filtered = filtered.filter(room => room.type === currentFilter);
+        }
+
+        if (currentFilter === 'pinned') {
+            filtered = filtered.filter(room => pinned.includes(room.roomId));
         }
 
         if (currentFolder) {
@@ -250,16 +269,54 @@ window.CommunityModules.ChatList = (() => {
         });
 
         if (filtered.length === 0) {
+            const emptyTitle = query
+                ? '검색 결과가 없습니다'
+                : currentFilter === 'pinned'
+                    ? '고정된 대화가 없습니다'
+                    : currentFilter === 'dm'
+                        ? '1:1 대화가 없습니다'
+                        : currentFilter === 'class'
+                            ? '클래스 대화가 없습니다'
+                            : currentFilter === 'group'
+                                ? '그룹 대화가 없습니다'
+                                : '아직 대화가 없습니다';
+            const emptyCopy = query
+                ? '다른 검색어로 찾아보세요.'
+                : currentFilter === 'pinned'
+                    ? '자주 보는 대화를 고정하면 여기에서 빠르게 다시 볼 수 있습니다.'
+                    : currentFilter === 'dm'
+                        ? '새 대화를 시작하면 1:1 채팅이 여기에 표시됩니다.'
+                        : currentFilter === 'class'
+                            ? '수강 중인 클래스가 생기면 여기에서 바로 이어집니다.'
+                            : currentFilter === 'group'
+                                ? '그룹 채팅을 만들면 이 목록에 정리됩니다.'
+                                : '클래스 수강 또는 친구 추가 후 대화를 시작할 수 있습니다.';
+            const emptyAction = query ? '' : currentFilter === 'pinned'
+                ? `<button class="btn-primary btn-room-empty" id="btnClearRoomFilter">전체 보기</button>`
+                : currentFilter === 'class'
+                    ? `<button class="btn-primary btn-room-empty" id="btnExploreClasses">클래스 탐색하기</button>`
+                    : currentFilter === 'group'
+                        ? `<button class="btn-primary btn-room-empty" id="btnStartGroup">그룹 만들기</button>`
+                    : `<button class="btn-primary btn-room-empty" id="btnStartChat">새 대화 시작</button>`;
             list.innerHTML = `
-                <div class="chat-list-empty">
-                    <div class="empty-ico">💬</div>
-                    <h4>${query ? '검색 결과가 없습니다' : '아직 채팅방이 없습니다'}</h4>
-                    <p>${query ? '다른 검색어로 찾아보세요.' : '클래스 수강 또는 친구 추가 후 대화를 시작할 수 있습니다.'}</p>
-                    ${!query ? '<button class="btn-primary btn-room-empty" id="btnExploreClasses">새로운 클래스 탐색하기</button>' : ''}
+                <div class="comm-empty-state">
+                    <div class="comm-empty-icon"><i class="fa-regular fa-comments"></i></div>
+                    <h4>${shared().escapeHtml(emptyTitle)}</h4>
+                    <p>${shared().escapeHtml(emptyCopy)}</p>
+                    ${emptyAction}
                 </div>
             `;
             document.getElementById('btnExploreClasses')?.addEventListener('click', () => {
                 location.href = '../class/class_list.html';
+            });
+            document.getElementById('btnClearRoomFilter')?.addEventListener('click', () => {
+                setFilter('all');
+            });
+            document.getElementById('btnStartChat')?.addEventListener('click', () => {
+                document.getElementById('hmNewChat')?.click();
+            });
+            document.getElementById('btnStartGroup')?.addEventListener('click', () => {
+                document.getElementById('hmGroupChat')?.click();
             });
             return;
         }
@@ -270,6 +327,12 @@ window.CommunityModules.ChatList = (() => {
             const folderName = roomFolders[room.roomId];
             const title = room.target_name || room.class_name || room.group_name || '채팅방';
             const avatar = room.target_avatar || room.class_image || '';
+            const metaParts = [
+                room.class_category,
+                room.type === 'class' ? '클래스' : room.type === 'group' ? '그룹' : room.type === 'dm' ? '1:1' : '',
+                folderName || '',
+            ].filter(Boolean);
+            const meta = metaParts.slice(0, 2).join(' · ');
             const badge = room.type === 'class'
                 ? '<span class="room-type-badge">클래스</span>'
                 : room.type === 'group'
@@ -295,6 +358,7 @@ window.CommunityModules.ChatList = (() => {
                             <span class="room-time">${time}</span>
                         </div>
                         <div class="room-preview">${shared().escapeHtml(preview)}</div>
+                        ${meta ? `<div class="room-meta-row">${shared().escapeHtml(meta)}</div>` : ''}
                     </div>
                     ${room.unread_count > 0 ? `<div class="room-badge">${room.unread_count}</div>` : ''}
                 </div>
@@ -481,6 +545,10 @@ window.CommunityModules.ChatList = (() => {
         bridge()?.markAsRead?.(roomId);
     }
 
+    function getCurrentFilter() {
+        return currentFilter;
+    }
+
     function getRoom(roomId) {
         return roomsCache.get(roomId) || null;
     }
@@ -491,6 +559,8 @@ window.CommunityModules.ChatList = (() => {
         renderRooms,
         setActiveRoom,
         getRoom,
+        setFilter,
+        getCurrentFilter,
         removeFolder,
         addFolder,
         renderFolderManagerList,

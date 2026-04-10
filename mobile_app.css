@@ -1497,8 +1497,496 @@
     body.home-page .home-category-grid-extra,
     body.class-list-page .class-category-grid,
     body.mypage-page .dashboard-stats,
-    body.mypage-page .dashboard-quick-links {
+      body.mypage-page .dashboard-quick-links {
       grid-template-columns: 1fr !important;
     }
   }
+}
+
+@media (max-width: 768px) {
+  body.mypage-page {
+    background: #f5f7fb !important;
+    color: #101522 !important;
+  }
+
+  body.mypage-page .mypage-shell {
+    padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  body.mypage-page .mypage-layout {
+    width: min(calc(100% - 0.8rem), 760px) !important;
+    margin: 0.5rem auto 0 !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.65rem !important;
+  }
+
+  body.mypage-page .mypage-sidebar,
+  body.mypage-page .mypage-content,
+  body.mypage-page .guest-gate,
+  body.mypage-page .mypage-hero,
+  body.mypage-page .mypage-panel-card,
+  body.mypage-page .dashboard-stat-card,
+  body.mypage-page .dashboard-commerce-shell,
+  body.mypage-page .security-card,
+  body.mypage-page .profile-upload-wrapper,
+  body.mypage-page .my-class-card,
+  body.mypage-page .cart-item-card,
+  body.mypage-page .friend-card {
+    background: #fff !important;
+    color: #101522 !important;
+    border: 1px solid rgba(16, 24, 40, 0.08) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  body.mypage-page .mypage-sidebar {
+    position: static !important;
+    overflow: hidden !important;
+    padding: 0.95rem !important;
+  }
+
+  body.mypage-page .profile-summary {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body.mypage-page .profile-summary-top {
+    display: grid !important;
+    grid-template-columns: 64px minmax(0, 1fr) !important;
+    gap: 0.75rem !important;
+    align-items: center !important;
+  }
+
+  body.mypage-page .profile-img-placeholder {
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 22px !important;
+    background: linear-gradient(180deg, rgba(37, 99, 235, 0.12), rgba(37, 99, 235, 0.05)) !important;
+    color: #1d4ed8 !important;
+    font-size: 1.15rem !important;
+  }
+
+  body.mypage-page .profile-summary-copy {
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.16rem !important;
+  }
+
+  body.mypage-page .profile-summary-eyebrow {
+    margin: 0 !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    color: #64748b !important;
+    letter-spacing: 0.02em !important;
+  }
+
+  body.mypage-page .profile-summary-name {
+    font-size: 1.05rem !important;
+    line-height: 1.25 !important;
+    font-weight: 800 !important;
+    color: #101522 !important;
+  }
+
+  body.mypage-page .profile-summary-meta,
+  body.mypage-page .profile-summary-email,
+  body.mypage-page .profile-summary-referrer {
+    margin: 0 !important;
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
+    color: #64748b !important;
+    word-break: break-word !important;
+  }
+
+  body.mypage-page .profile-summary-referrer {
+    color: #2563eb !important;
+    font-weight: 700 !important;
+  }
+
+  body.mypage-page .profile-actions-stack {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.35rem !important;
+    margin-top: 0.8rem !important;
+    justify-content: flex-start !important;
+  }
+
+  body.mypage-page .profile-mini-btn {
+    min-height: 36px !important;
+    padding: 0.4rem 0.75rem !important;
+    border-radius: 999px !important;
+    background: #f8fafc !important;
+    border: 1px solid rgba(16, 24, 40, 0.08) !important;
+    color: #101522 !important;
+    box-shadow: none !important;
+  }
+
+  body.mypage-page .mypage-nav {
+    margin-top: 0.85rem !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.45rem !important;
+  }
+
+  body.mypage-page .nav-btn {
+    min-height: 52px !important;
+    padding: 0.72rem 0.86rem !important;
+    border-radius: 18px !important;
+    background: #fff !important;
+    border: 1px solid rgba(16, 24, 40, 0.08) !important;
+    color: #101522 !important;
+    justify-content: flex-start !important;
+    gap: 0.7rem !important;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04) !important;
+  }
+
+  body.mypage-page .nav-btn .nav-icon {
+    width: 2.35rem !important;
+    height: 2.35rem !important;
+    border-radius: 13px !important;
+    background: #eff6ff !important;
+    color: #2563eb !important;
+  }
+
+  body.mypage-page .nav-btn.active {
+    background: #eff6ff !important;
+    border-color: rgba(37, 99, 235, 0.14) !important;
+    color: #2563eb !important;
+  }
+
+  body.mypage-page .nav-label {
+    font-size: 0.86rem !important;
+    font-weight: 700 !important;
+  }
+
+  body.mypage-page .mypage-content {
+    gap: 0.8rem !important;
+  }
+
+  body.mypage-page .tab-header-row,
+  body.mypage-page .guest-gate {
+    background: #fff !important;
+    border: 1px solid rgba(16, 24, 40, 0.08) !important;
+    border-radius: 22px !important;
+    padding: 0.95rem !important;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  body.mypage-page .tab-header-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.6rem !important;
+  }
+
+  body.mypage-page .tab-header-cta,
+  body.mypage-page .guest-gate-actions .btn-primary {
+    min-height: 40px !important;
+    border-radius: 999px !important;
+  }
+
+  body.mypage-page .dashboard-summary-grid,
+  body.mypage-page .dashboard-commerce-grid,
+  body.mypage-page .payment-grid,
+  body.mypage-page .mypage-panel-grid,
+  body.mypage-page .commerce-split-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.65rem !important;
+  }
+
+  body.mypage-page .dashboard-profile-card {
+    grid-column: 1 / -1 !important;
+  }
+
+  body.mypage-page .dashboard-profile-top {
+    gap: 0.7rem !important;
+    align-items: flex-start !important;
+  }
+
+  body.mypage-page .dashboard-profile-avatar {
+    width: 58px !important;
+    height: 58px !important;
+    border-radius: 18px !important;
+  }
+
+  body.mypage-page .dashboard-profile-name {
+    font-size: 1rem !important;
+  }
+
+  body.mypage-page .dashboard-profile-meta {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
+
+  body.mypage-page .dashboard-profile-row,
+  body.mypage-page .payment-summary-row,
+  body.mypage-page .dashboard-summary-item {
+    background: #f8fafc !important;
+    border: 1px solid rgba(16, 24, 40, 0.06) !important;
+    border-radius: 16px !important;
+    padding: 0.75rem 0.85rem !important;
+  }
+
+  body.mypage-page .dashboard-summary-toggle {
+    min-height: 36px !important;
+    border-radius: 999px !important;
+    background: #f8fafc !important;
+    border: 1px solid rgba(16, 24, 40, 0.08) !important;
+    color: #101522 !important;
+  }
+
+  body.mypage-page .dashboard-accordion-body {
+    padding-top: 0.7rem !important;
+  }
+
+  body.mypage-page .empty-state,
+  body.mypage-page .empty-state.compact {
+    background: #f8fafc !important;
+    color: #64748b !important;
+    border: 1px dashed rgba(148, 163, 184, 0.35) !important;
+    border-radius: 18px !important;
+  }
+
+  body.mypage-page .profile-upload-wrapper {
+    display: grid !important;
+    grid-template-columns: 96px minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 0.85rem !important;
+    padding: 0.95rem !important;
+  }
+
+  body.mypage-page .profile-image-container {
+    position: relative !important;
+    width: 96px !important;
+    height: 96px !important;
+    border-radius: 26px !important;
+    overflow: hidden !important;
+    background: linear-gradient(180deg, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.03)) !important;
+    border: 1px solid rgba(37, 99, 235, 0.12) !important;
+  }
+
+  body.mypage-page .profile-image-container img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  body.mypage-page .profile-image-camera {
+    position: absolute !important;
+    right: 0.45rem !important;
+    bottom: 0.45rem !important;
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 999px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #2563eb !important;
+    color: #fff !important;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28) !important;
+  }
+
+  body.mypage-page .profile-image-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.35rem !important;
+  }
+
+  body.mypage-page .btn-image-upload,
+  body.mypage-page .btn-submit,
+  body.mypage-page .btn-primary,
+  body.mypage-page .btn-secondary,
+  body.mypage-page .btn-chat-link {
+    min-height: 44px !important;
+    border-radius: 14px !important;
+  }
+
+  body.mypage-page .form-grid,
+  body.mypage-page .payment-method-form .form-grid.compact {
+    grid-template-columns: 1fr !important;
+    gap: 0.7rem !important;
+  }
+
+  body.mypage-page .input-group {
+    gap: 0.36rem !important;
+  }
+
+  body.mypage-page .input-group label,
+  body.mypage-page .settings-row strong {
+    font-size: 0.82rem !important;
+    color: #475569 !important;
+  }
+
+  body.mypage-page .input-group input,
+  body.mypage-page .input-group select,
+  body.mypage-page .commerce-input,
+  body.mypage-page .settings-select {
+    min-height: 44px !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(16, 24, 40, 0.12) !important;
+    background: #fff !important;
+    color: #101522 !important;
+  }
+
+  body.mypage-page .settings-row {
+    background: #f8fafc !important;
+    border: 1px solid rgba(16, 24, 40, 0.06) !important;
+    border-radius: 18px !important;
+    padding: 0.8rem 0.85rem !important;
+    gap: 0.75rem !important;
+    align-items: center !important;
+  }
+
+  body.mypage-page .settings-row p {
+    color: #64748b !important;
+  }
+
+  body.mypage-page .settings-switch span {
+    background: #cbd5e1 !important;
+  }
+
+  body.mypage-page .settings-switch input:checked + span {
+    background: #2563eb !important;
+  }
+
+  body.mypage-page .class-banner-shell {
+    border-radius: 20px !important;
+    min-height: 170px !important;
+    overflow: hidden !important;
+  }
+
+  body.mypage-page .class-banner-actions {
+    gap: 0.45rem !important;
+    flex-wrap: wrap !important;
+  }
+
+  body.mypage-page .my-class-list,
+  body.mypage-page .mypage-list-stack,
+  body.mypage-page .payment-methods-list,
+  body.mypage-page .payment-history-list,
+  body.mypage-page .friends-panel-body {
+    gap: 0.55rem !important;
+  }
+
+  body.mypage-page .my-class-card,
+  body.mypage-page .cart-item-card,
+  body.mypage-page .friend-card {
+    border-radius: 18px !important;
+    background: #fff !important;
+    border: 1px solid rgba(16, 24, 40, 0.08) !important;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04) !important;
+  }
+
+  body.mypage-page .my-class-card .class-thumb,
+  body.mypage-page .cart-item-thumb,
+  body.mypage-page .wallet-coupon-media {
+    height: 128px !important;
+    border-radius: 14px !important;
+  }
+
+  body.mypage-page .site-footer {
+    display: none !important;
+  }
+
+  body.mypage-page #bsqHelperBtn,
+  body.mypage-page .bsq-helper-pulse {
+    display: none !important;
+  }
+
+  body.mypage-page .bottom-nav {
+    bottom: calc(0.45rem + env(safe-area-inset-bottom, 0px)) !important;
+    left: 0.45rem !important;
+    right: 0.45rem !important;
+  }
+}
+
+@media (max-width: 390px) {
+  body.mypage-page .profile-summary-top {
+    grid-template-columns: 56px minmax(0, 1fr) !important;
+  }
+
+  body.mypage-page .profile-img-placeholder {
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 18px !important;
+  }
+}
+
+@media (max-width: 280px) {
+  body.mypage-page .mypage-layout {
+    width: calc(100% - 0.5rem) !important;
+  }
+
+  body.mypage-page .profile-actions-stack {
+    gap: 0.28rem !important;
+  }
+
+  body.mypage-page .profile-mini-btn {
+    min-height: 34px !important;
+    padding: 0.34rem 0.58rem !important;
+  }
+
+  body.mypage-page .profile-upload-wrapper {
+    grid-template-columns: 84px minmax(0, 1fr) !important;
+  }
+
+  body.mypage-page .profile-image-container {
+    width: 84px !important;
+    height: 84px !important;
+  }
+
+  body.mypage-page .profile-image-camera {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  body.mypage-page .nav-btn {
+    min-height: 48px !important;
+  }
+}
+
+@media (max-width: 220px) {
+  body.mypage-page .mypage-layout {
+    width: calc(100% - 0.4rem) !important;
+  }
+
+  body.mypage-page .profile-summary-top {
+    grid-template-columns: 48px minmax(0, 1fr) !important;
+    gap: 0.55rem !important;
+  }
+
+  body.mypage-page .profile-actions-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  body.mypage-page .profile-upload-wrapper {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.mypage-page .profile-image-container {
+    width: 88px !important;
+    height: 88px !important;
+  }
+
+  body.mypage-page .profile-image-actions {
+    width: 100% !important;
+  }
+
+  body.mypage-page .nav-btn .nav-label {
+    font-size: 0.8rem !important;
+  }
+
+  body.mypage-page .dashboard-summary-toggle,
+  body.mypage-page .tab-header-cta {
+    width: 100% !important;
+  }
+}
+
+[hidden] {
+  display: none !important;
 }
