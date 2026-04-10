@@ -33,6 +33,10 @@ let homeRefreshTimer = null;
 let homeBannerCarousels = { main: null, bottom: null };
 const HOME_CLASS_FETCH_LIMIT = 48;
 const homeBookmarkMap = new Map();
+const HOME_MOBILE_TAB_KEY = 'bsq.home.mobile.tab';
+const HOME_MOBILE_TABS = ['recommend', 'categories', 'community'];
+let globalHomeSiteSettings = null;
+let homeMobileLayoutTimer = null;
 
 function getCurrentHomeCategory() {
     return new URLSearchParams(window.location.search).get('cat') || 'all';
@@ -114,6 +118,13 @@ function bindHomeEvents() {
             return;
         }
 
+        const mobileTabBtn = event.target.closest('[data-home-mobile-tab]');
+        if (mobileTabBtn) {
+            event.preventDefault();
+            setHomeMobileTab(mobileTabBtn.dataset.homeMobileTab || HOME_MOBILE_TABS[0]);
+            return;
+        }
+
         const toggle = event.target.closest('[data-category-toggle]');
         if (toggle) {
             event.preventDefault();
@@ -148,6 +159,13 @@ function bindHomeEvents() {
         renderHomeClassSection(categoryName);
         void renderHomeCategoryMenu(categoryName);
         document.querySelector('.all-classes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    window.addEventListener('resize', () => {
+        clearTimeout(homeMobileLayoutTimer);
+        homeMobileLayoutTimer = window.setTimeout(() => {
+            if (isHomeMobileLayout()) renderHomeMobileShell();
+        }, 120);
     });
 }
 
@@ -325,6 +343,274 @@ function getCategoryMeta(name, index = 0) {
     return { accent: palette[index % palette.length], icon: svgIcon('spark') };
 }
 
+function isHomeMobileLayout() {
+    return window.matchMedia('(max-width: 768px)').matches;
+}
+
+function getHomeMobileTab() {
+    try {
+        const saved = localStorage.getItem(HOME_MOBILE_TAB_KEY);
+        if (HOME_MOBILE_TABS.includes(saved)) return saved;
+    } catch {
+        // no-op
+    }
+    return HOME_MOBILE_TABS[0];
+}
+
+function setHomeMobileTab(tab, { persist = true } = {}) {
+    const nextTab = HOME_MOBILE_TABS.includes(tab) ? tab : HOME_MOBILE_TABS[0];
+
+    if (persist) {
+        try {
+            localStorage.setItem(HOME_MOBILE_TAB_KEY, nextTab);
+        } catch {
+            // no-op
+        }
+    }
+
+    document.body.dataset.homeMobileTab = nextTab;
+    const shell = document.getElementById('homeMobileShell');
+    if (shell) shell.dataset.homeMobileTab = nextTab;
+
+    document.querySelectorAll('[data-home-mobile-tab]').forEach((button) => {
+        const active = button.dataset.homeMobileTab === nextTab;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-selected', active ? 'true' : 'false');
+        button.tabIndex = active ? 0 : -1;
+    });
+
+    document.querySelectorAll('#homeMobileShell [data-home-panel]').forEach((panel) => {
+        panel.hidden = panel.dataset.homePanel !== nextTab;
+    });
+}
+
+function getHomePopularSource(limit = 8) {
+    const popularFolder = globalRecommendationFolders.find((item) => item.type === 'popular' || item.id === 'popular_main');
+    const fallbackPopular = [...globalAllClasses].sort((left, right) => right.likeCount - left.likeCount);
+    return mergePopularItems(popularFolder?.items || [], fallbackPopular, limit);
+}
+
+function getHomeFreshSource(limit = 8) {
+    return [...globalAllClasses]
+        .sort((left, right) => {
+            const leftTime = left.createdAt ? left.createdAt.getTime() : 0;
+            const rightTime = right.createdAt ? right.createdAt.getTime() : 0;
+            if (rightTime !== leftTime) return rightTime - leftTime;
+            return right.likeCount - left.likeCount;
+        })
+        .slice(0, limit);
+}
+
+function getHomeMobileFolderSource(limit = 3) {
+    const regularFolders = globalRecommendationFolders.filter((item) => item.type !== 'popular' && item.id !== 'popular_main');
+    if (regularFolders.length) return regularFolders.slice(0, limit);
+    return buildFallbackFolders(globalAllClasses).slice(0, limit);
+}
+
+function buildHomeMobileBannerCard() {
+    const settings = globalHomeSiteSettings || window.__BSQ_SITE_SETTINGS__ || null;
+    const banners = normalizeBannerItems(settings?.banners || [], '메인 배너');
+    const fallbackBanners = normalizeBannerItems(settings?.bottom_banners || [], '추천 배너');
+    const banner = banners[0] || fallbackBanners[0] || null;
+    const href = banner?.linkUrl || 'class/class_list.html?sort=popular';
+    const imageUrl = banner?.imageUrl || '';
+
+    return `
+        <article class="home-mobile-banner-card">
+            <a class="home-mobile-banner-link" href="${escapeHtml(href)}">
+                <span class="home-mobile-banner-copy">
+                    <span class="home-mobile-banner-eyebrow">추천 정보</span>
+                    <strong>${escapeHtml(imageUrl ? '지금 볼 만한 클래스' : 'B-Square 추천 정보')}</strong>
+                    <span>${escapeHtml(imageUrl ? '인기와 신규를 빠르게 둘러보세요.' : '모바일 앱처럼 빠르게 훑어볼 수 있는 추천 영역입니다.')}</span>
+                </span>
+                <span class="home-mobile-banner-visual${imageUrl ? '' : ' home-mobile-banner-visual-empty'}"${imageUrl ? ` style="background-image:url('${escapeHtml(imageUrl)}')"` : ''} aria-hidden="true">
+                    ${imageUrl ? '' : svgIcon('spark')}
+                </span>
+            </a>
+        </article>
+    `;
+}
+
+function buildHomeMobileCategoryGrid({ limit = 9, showMore = true, compact = false } = {}) {
+    const categories = Array.isArray(globalHomeCategories) ? globalHomeCategories : [];
+    if (!categories.length) {
+        return '<p class="empty-state compact">카테고리를 불러오는 중입니다.</p>';
+    }
+
+    const visible = categories.slice(0, limit);
+    const hasMore = showMore && categories.length > limit;
+
+    return `
+        <div class="home-mobile-category-grid${compact ? ' is-compact' : ''}">
+            ${visible.map((item) => {
+                const name = String(item.name || '').trim();
+                const imageUrl = String(item.image_url || '').trim();
+                const href = `class/class_list.html?category=${encodeURIComponent(name)}`;
+                const initial = name ? name.charAt(0) : 'B';
+
+                return `
+                    <a class="home-mobile-category-tile" href="${escapeHtml(href)}" aria-label="${escapeHtml(name)} 카테고리, 클래스 ${Number(item.class_count || 0).toLocaleString()}개">
+                        <span class="home-mobile-category-icon${imageUrl ? ' has-image' : ''}">
+                            ${imageUrl
+                                ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)}" loading="lazy">`
+                                : `<span>${escapeHtml(initial)}</span>`
+                            }
+                        </span>
+                        <span class="home-mobile-category-label">${escapeHtml(name)}</span>
+                    </a>
+                `;
+            }).join('')}
+            ${hasMore ? `
+                <a class="home-mobile-category-tile home-mobile-category-more" href="class/class_list.html" aria-label="전체 카테고리 보기">
+                    <span class="home-mobile-category-icon home-mobile-category-icon-more">${svgIcon('chevron-down')}</span>
+                    <span class="home-mobile-category-label">더보기</span>
+                </a>
+            ` : ''}
+        </div>
+    `;
+}
+
+function buildHomeMobileFolderRail(folders = []) {
+    if (!Array.isArray(folders) || !folders.length) {
+        return '<p class="empty-state compact">추천 폴더가 아직 없습니다.</p>';
+    }
+
+    return folders.map((folder) => {
+        const items = Array.isArray(folder.items) ? folder.items : [];
+        const linkUrl = String(folder.linkUrl || '').trim()
+            || (items[0]?.category ? `class/class_list.html?category=${encodeURIComponent(items[0].category)}` : 'class/class_list.html');
+        const imageUrl = String(folder.imageUrl || items[0]?.imageUrl || '').trim();
+        const description = String(folder.description || '').trim() || `${Number(items.length || 0).toLocaleString()}개 클래스`;
+
+        return `
+            <article class="home-mobile-folder-card">
+                <a class="home-mobile-folder-link" href="${escapeHtml(linkUrl)}">
+                    <span class="home-mobile-folder-thumb"${imageUrl ? ` style="background-image:url('${escapeHtml(imageUrl)}')"` : ''} aria-hidden="true"></span>
+                    <span class="home-mobile-folder-copy">
+                        <strong>${escapeHtml(folder.title || '추천 폴더')}</strong>
+                        <span>${escapeHtml(description)}</span>
+                    </span>
+                </a>
+            </article>
+        `;
+    }).join('');
+}
+
+function buildHomeMobileCommunityPanel() {
+    return `
+        <article class="home-mobile-community-card">
+            <div class="home-mobile-community-copy">
+                <span class="home-mobile-eyebrow">커뮤니티</span>
+                <h3>B-Square 커뮤니티</h3>
+                <p>질문, 후기, 공지, 활동 내역을 한곳에서 빠르게 이동할 수 있습니다.</p>
+            </div>
+            <a class="home-mobile-community-cta" href="community/community.html">커뮤니티 열기</a>
+        </article>
+
+        <div class="home-mobile-community-actions" aria-label="커뮤니티 바로가기">
+            <a class="home-mobile-community-chip" href="community/community.html">전체 보기</a>
+            <a class="home-mobile-community-chip" href="community/community.html">채팅방</a>
+            <a class="home-mobile-community-chip" href="class/class_list.html">클래스 찾기</a>
+            <a class="home-mobile-community-chip" href="mi_pesg/mypage.html">마이페이지</a>
+        </div>
+    `;
+}
+
+function renderHomeMobileShell() {
+    const shell = document.getElementById('homeMobileShell');
+    if (!shell || !isHomeMobileLayout()) return;
+
+    const popularSource = getHomePopularSource(8);
+    const freshSource = getHomeFreshSource(8);
+    const folders = getHomeMobileFolderSource(3);
+    const tab = getHomeMobileTab();
+
+    shell.dataset.homeMobileTab = tab;
+    shell.innerHTML = `
+        <div class="home-mobile-tabbar" role="tablist" aria-label="홈 탐색">
+            <button type="button" class="home-mobile-tab" data-home-mobile-tab="recommend" role="tab" aria-selected="false">추천</button>
+            <button type="button" class="home-mobile-tab" data-home-mobile-tab="categories" role="tab" aria-selected="false">카테고리</button>
+            <button type="button" class="home-mobile-tab" data-home-mobile-tab="community" role="tab" aria-selected="false">커뮤니티</button>
+        </div>
+
+        <div class="home-mobile-panels">
+            <section class="home-mobile-panel" data-home-panel="recommend" role="tabpanel">
+                ${buildHomeMobileBannerCard()}
+
+                <section class="home-mobile-section home-mobile-category-preview">
+                    <div class="home-mobile-section-head">
+                        <div>
+                            <span class="home-mobile-eyebrow">카테고리</span>
+                            <h2>빠른 이동</h2>
+                        </div>
+                        <a href="class/class_list.html" class="home-mobile-more">전체 보기</a>
+                    </div>
+                    ${buildHomeMobileCategoryGrid({ limit: 9, showMore: true, compact: true })}
+                </section>
+
+                <section class="home-mobile-section">
+                    <div class="home-mobile-section-head">
+                        <div>
+                            <span class="home-mobile-eyebrow">추천</span>
+                            <h2>인기 클래스</h2>
+                        </div>
+                        <a href="class/class_list.html?sort=popular" class="home-mobile-more">더 보기</a>
+                    </div>
+                    <div class="home-mobile-rail" id="homeMobilePopularRail"></div>
+                </section>
+
+                <section class="home-mobile-section">
+                    <div class="home-mobile-section-head">
+                        <div>
+                            <span class="home-mobile-eyebrow">추천</span>
+                            <h2>신규 클래스</h2>
+                        </div>
+                        <a href="class/class_list.html?sort=newest" class="home-mobile-more">더 보기</a>
+                    </div>
+                    <div class="home-mobile-rail" id="homeMobileFreshRail"></div>
+                </section>
+
+                <section class="home-mobile-section">
+                    <div class="home-mobile-section-head">
+                        <div>
+                            <span class="home-mobile-eyebrow">큐레이션</span>
+                            <h2>추천 폴더</h2>
+                        </div>
+                    </div>
+                    <div class="home-mobile-folder-rail" id="homeMobileFolderRail"></div>
+                </section>
+            </section>
+
+            <section class="home-mobile-panel" data-home-panel="categories" role="tabpanel">
+                <div class="home-mobile-panel-copy">
+                    <span class="home-mobile-eyebrow">카테고리</span>
+                    <h2>클래스 카테고리를 빠르게 둘러보세요.</h2>
+                    <p>한 번에 보고, 바로 클래스 목록으로 이동할 수 있는 진입점입니다.</p>
+                </div>
+                ${buildHomeMobileCategoryGrid({ limit: 10, showMore: false, compact: false })}
+                <div class="home-mobile-panel-footer">
+                    <a href="class/class_list.html" class="home-mobile-panel-link">전체 클래스 보기</a>
+                </div>
+            </section>
+
+            <section class="home-mobile-panel" data-home-panel="community" role="tabpanel">
+                ${buildHomeMobileCommunityPanel()}
+            </section>
+        </div>
+    `;
+
+    setHomeMobileTab(tab, { persist: false });
+
+    const popularRail = shell.querySelector('#homeMobilePopularRail');
+    if (popularRail) renderClassCards(popularSource, popularRail);
+
+    const freshRail = shell.querySelector('#homeMobileFreshRail');
+    if (freshRail) renderClassCards(freshSource, freshRail);
+
+    const folderRail = shell.querySelector('#homeMobileFolderRail');
+    if (folderRail) folderRail.innerHTML = buildHomeMobileFolderRail(folders);
+}
+
 function renderHomeCategoryMenu(currentCategory = 'all') {
     const nav = document.getElementById('headerCategoryMega');
     const shell = document.getElementById('homeCategoryShell');
@@ -436,6 +722,7 @@ async function initMainPage(currentCategory = 'all', forceRefresh = false) {
 
     renderHomeClassSection(currentCategory);
     await renderHomeCategoryMenu(currentCategory);
+    renderHomeMobileShell();
     updateHomeHeroStats();
 }
 
@@ -459,6 +746,8 @@ function renderHomeClassSection(currentCategory = 'all') {
         const regularFolders = globalRecommendationFolders.filter((item) => item.type !== 'popular' && item.id !== 'popular_main');
         renderRecommendColumns(regularFolders, recommendContainer);
     }
+
+    renderHomeMobileShell();
 
     const title = document.getElementById('popularGroupTitle');
     if (title) title.textContent = popularFolder?.title || '인기 클래스';
@@ -584,6 +873,7 @@ function renderClassCards(classes, container) {
 
 async function initBanners() {
     const settings = await getHomeSiteSettings();
+    globalHomeSiteSettings = settings || null;
     renderBannerCarousel('main', settings?.banners || [], {
         trackId: 'homeMainBannerTrack',
         prevId: 'homeMainBannerPrev',
@@ -601,6 +891,7 @@ async function initBanners() {
         emptyMessage: '하단 배너를 준비하는 중입니다.',
         intervalMs: 7000,
     });
+    renderHomeMobileShell();
 }
 
 function scheduleHomeRefresh(syncType = '') {

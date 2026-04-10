@@ -10,6 +10,7 @@
   
   // Use scriptDir for absolute-like relative paths for CSS dynamic injection
   const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260408_02';
+  const mobileAppCSSPath = scriptDir + 'mobile_app.css?v=20260411_01';
 
   const homePrefix = currentPath.split('/').length > 2 ? '../' : './';
   const prefix = homePrefix;
@@ -68,6 +69,10 @@
       home: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10.25V20h12v-9.75"/><path d="M9.25 20v-5.25h5.5V20"/></svg>',
       class: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="5" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>',
       create: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.25"/><path d="M12 8.5v7M8.5 12h7"/></svg>',
+      back: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18 9 12l6-6"/><path d="M10 12h10"/></svg>',
+      search: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>',
+      bell: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5a2.5 2.5 0 0 1-5 0"/><path d="M6.5 17.5h11a1 1 0 0 0 .95-1.32L17 13.25V10a5 5 0 0 0-10 0v3.25l-1.45 3.0A1 1 0 0 0 6.5 17.5Z"/></svg>',
+      globe: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.25"/><path d="M3.75 12h16.5"/><path d="M12 3.75c2.5 2.3 4 5.3 4 8.25s-1.5 5.95-4 8.25c-2.5-2.3-4-5.3-4-8.25s1.5-5.95 4-8.25Z"/></svg>',
       notice: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5 4.5 8v6c0 4.1 3 7.1 7.5 8.5 4.5-1.4 7.5-4.4 7.5-8.5V8Z"/><path d="M12 8v5.25"/><circle cx="12" cy="16.8" r="1"/></svg>',
       contact: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.25"/><path d="M9.4 9.2a2.8 2.8 0 0 1 5.2 1.4c0 1.9-2.4 2.3-2.4 4.1"/><path d="M12 17.15h.01"/></svg>',
       community: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 7.5h10.2a2.8 2.8 0 0 1 2.8 2.8v2.3a2.8 2.8 0 0 1-2.8 2.8h-4.9l-3.7 2.8v-2.8H5.5A2.8 2.8 0 0 1 2.7 12.6v-2.3a2.8 2.8 0 0 1 2.8-2.8Z"/><path d="M8.2 11.5h4.2"/><path d="M8.2 13.8h2.8"/></svg>',
@@ -106,6 +111,32 @@
   }
 
   const activeNav = getActiveNav();
+  const mobileShellMode = (() => {
+    const path = currentPath.toLowerCase();
+    if (path.includes('class_view')) return 'detail';
+    if (path.includes('community')) return 'community';
+    if (path.includes('mi_pesg') || path.includes('mypage')) return 'profile';
+    if (path.includes('create_class')) return 'compose';
+    if (path.includes('notice')) return 'notice';
+    if (path.includes('contact')) return 'contact';
+    if (path.includes('login') || path.includes('signup') || path.includes('find_account') || path.includes('update_password')) return 'auth';
+    if (path.includes('class_list')) return 'discover';
+    return 'home';
+  })();
+
+  const mobileShellTitleMap = {
+    home: 'B-Square',
+    discover: '클래스',
+    detail: '클래스 상세',
+    community: '커뮤니티',
+    profile: '마이페이지',
+    compose: '모임개설',
+    notice: '공지사항',
+    contact: '문의',
+    auth: '로그인',
+  };
+
+  const mobileShellTitle = mobileShellTitleMap[mobileShellMode] || 'B-Square';
 
   function normalizeRole(role) {
     const value = String(role || '').trim().toLowerCase();
@@ -297,6 +328,55 @@
         <div class="header-inner header-two-row">
           
           <!-- 상단 1열: 로고, 검색창, 우측유틸 -->
+          <div class="mobile-shell mobile-only-flex" aria-label="모바일 상단바">
+            <div class="mobile-shell-leading">
+              <button class="btn-hamburger mobile-shell-icon" id="btnMobileHamburger" type="button" aria-label="메뉴 열기" aria-controls="drawerMenu" aria-expanded="false"${mobileShellMode === 'home' || mobileShellMode === 'discover' ? '' : ' hidden'}>
+                <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+              </button>
+              <button class="btn-mobile-back mobile-shell-icon" id="btnMobileBack" type="button" aria-label="뒤로가기"${mobileShellMode === 'home' || mobileShellMode === 'discover' ? ' hidden' : ''}>
+                ${navIconSvg('back')}
+              </button>
+              <a href="${homePrefix}index.html" class="mobile-shell-brand" aria-label="B-Square 홈"${mobileShellMode === 'home' || mobileShellMode === 'discover' ? '' : ' hidden'}>
+                <img id="bsqHeaderMobileLogoImg" class="mobile-shell-logo" alt="B-Square 로고" style="display:none;">
+                <span id="bsqHeaderMobileLogoText" class="mobile-shell-brand-text">B-Square</span>
+              </a>
+              <div class="mobile-shell-title-wrap"${mobileShellMode === 'home' || mobileShellMode === 'discover' ? ' hidden' : ''}>
+                <strong class="mobile-shell-title">${escapeHtml(mobileShellTitle)}</strong>
+              </div>
+            </div>
+
+            <div class="mobile-shell-actions">
+              <a class="mobile-shell-action" href="${prefix}notice/notice.html" aria-label="공지사항">
+                ${navIconSvg('bell')}
+              </a>
+              ${mobileShellMode === 'home' || mobileShellMode === 'discover' ? `
+                <button class="mobile-shell-action" id="btnMobileDrawer" type="button" aria-label="메뉴 열기">
+                  ${navIconSvg('globe')}
+                </button>
+              ` : `
+                <a class="mobile-shell-action" href="${prefix}mi_pesg/mypage.html" aria-label="마이페이지">
+                  ${navIconSvg('mypage')}
+                </a>
+              `}
+            </div>
+          </div>
+
+          <form class="mobile-search-shell mobile-only-flex"${mobileShellMode === 'home' || mobileShellMode === 'discover' ? '' : ' hidden'} action="${prefix}class/class_list.html" method="get" role="search">
+            <label class="mobile-search-field" for="mobileShellSearchInput">
+              <span class="mobile-search-icon" aria-hidden="true">${navIconSvg('search')}</span>
+              <input
+                type="search"
+                id="mobileShellSearchInput"
+                name="q"
+                placeholder="통합 검색"
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="통합 검색"
+              >
+            </label>
+            <button type="submit" class="mobile-search-submit">검색</button>
+          </form>
+
           <div class="header-top">
             <div class="header-top-left">
               <button class="btn-hamburger mobile-only-flex" id="btnHamburger" type="button" aria-label="메뉴 열기" aria-controls="drawerMenu" aria-expanded="false">
@@ -638,6 +718,35 @@
       </nav>`;
   }
 
+  function buildBottomNavHTML() {
+    const navItems = BOTTOM_NAV_ITEMS.filter((item) => item.id !== 'create');
+    const createItem = BOTTOM_NAV_ITEMS.find((item) => item.id === 'create') || null;
+    return `
+      <nav class="bottom-nav mobile-only" id="bsqBottomNav" aria-label="모바일 하단 내비게이션">
+        <div class="bottom-nav-rail">
+          ${navItems.slice(0, 2).map((item) => `
+            <a href="${item.href}" class="nav-item${activeNav === item.id ? ' active' : ''}"${activeNav === item.id ? ' aria-current="page"' : ''}>
+              <span class="icon" aria-hidden="true">${item.icon}</span>
+              <span class="label">${item.label}</span>
+            </a>
+          `).join('')}
+          <span class="bottom-nav-gap" aria-hidden="true"></span>
+          ${navItems.slice(2).map((item) => `
+            <a href="${item.href}" class="nav-item${activeNav === item.id ? ' active' : ''}"${activeNav === item.id ? ' aria-current="page"' : ''}>
+              <span class="icon" aria-hidden="true">${item.icon}</span>
+              <span class="label">${item.label}</span>
+            </a>
+          `).join('')}
+        </div>
+        ${createItem ? `
+          <a href="${createItem.href}" class="bottom-nav-fab${activeNav === createItem.id ? ' active' : ''}"${activeNav === createItem.id ? ' aria-current="page"' : ''} aria-label="${createItem.label}">
+            <span class="fab-icon" aria-hidden="true">${createItem.icon}</span>
+            <span class="fab-label">${createItem.label}</span>
+          </a>
+        ` : ''}
+      </nav>`;
+  }
+
   function buildFooterHTML() {
     return `
       <footer class="site-footer" id="bsqFooter">
@@ -737,6 +846,7 @@
       };
 
       setLogo('bsqHeaderLogoImg', 'bsqHeaderLogoText');
+      setLogo('bsqHeaderMobileLogoImg', 'bsqHeaderMobileLogoText');
 
       const footerInfo = document.getElementById('bsqFooterInfoText');
       const footerHours = document.getElementById('footerSupportHours');
@@ -782,10 +892,19 @@
       document.head.appendChild(shellCSS);
     }
 
+    if (!document.getElementById('bsqMobileAppCSS')) {
+      const mobileAppCSS = document.createElement('link');
+      mobileAppCSS.id = 'bsqMobileAppCSS';
+      mobileAppCSS.rel = 'stylesheet';
+      mobileAppCSS.href = mobileAppCSSPath;
+      document.head.appendChild(mobileAppCSS);
+    }
+
     document.querySelector('header.site-header')?.remove();
     document.querySelector('footer.site-footer')?.remove();
     document.querySelectorAll('.drawer-overlay, .drawer-menu').forEach((el) => el.remove());
     document.querySelector('nav.bottom-nav')?.remove();
+    document.body.dataset.mobileShellMode = mobileShellMode;
 
     document.body.insertAdjacentHTML('afterbegin', buildDrawerHTML());
     const drawer = document.getElementById('drawerMenu');
@@ -793,35 +912,69 @@
     else document.body.insertAdjacentHTML('afterbegin', buildHeaderHTML());
 
     document.body.insertAdjacentHTML('beforeend', buildFooterHTML());
-    if (!currentPath.includes('community')) {
-      const footer = document.getElementById('bsqFooter');
-      if (footer) footer.insertAdjacentHTML('beforebegin', buildBottomNavHTML());
-    }
+    const footer = document.getElementById('bsqFooter');
+    if (footer) footer.insertAdjacentHTML('beforebegin', buildBottomNavHTML());
   }
 
   function setupDrawer() {
-    const hamburger = document.getElementById('btnHamburger');
+    const hamburgerButtons = Array.from(document.querySelectorAll('#btnHamburger, #btnMobileHamburger, #btnMobileDrawer'));
+    const backButton = document.getElementById('btnMobileBack');
     const overlay = document.getElementById('drawerOverlay');
     const closeBtn = document.getElementById('drawerClose');
     const menu = document.getElementById('drawerMenu');
+    let lastDrawerTrigger = null;
 
-    function openDrawer() {
+    const setDrawerInteractivity = (open) => {
+      if (menu) {
+        menu.inert = !open;
+      }
+      if (overlay) {
+        overlay.inert = !open;
+      }
+    };
+
+    setDrawerInteractivity(false);
+
+    const setExpandedState = (open) => {
+      hamburgerButtons.forEach((button) => {
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    };
+
+    function openDrawer(trigger = null) {
+      lastDrawerTrigger = trigger || document.activeElement || hamburgerButtons[0] || null;
+      setDrawerInteractivity(true);
       overlay?.classList.add('active');
       menu?.classList.add('active');
-      hamburger?.setAttribute('aria-expanded', 'true');
+      setExpandedState(true);
       menu?.setAttribute('aria-hidden', 'false');
       document.body.classList.add('shell-drawer-open');
+      closeBtn?.focus?.({ preventScroll: true });
     }
 
     function closeDrawer() {
+      setDrawerInteractivity(false);
       overlay?.classList.remove('active');
       menu?.classList.remove('active');
-      hamburger?.setAttribute('aria-expanded', 'false');
+      setExpandedState(false);
       menu?.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('shell-drawer-open');
+      const focusTarget = (lastDrawerTrigger && lastDrawerTrigger.isConnected)
+        ? lastDrawerTrigger
+        : hamburgerButtons[0];
+      focusTarget?.focus?.({ preventScroll: true });
     }
 
-    hamburger?.addEventListener('click', openDrawer);
+    hamburgerButtons.forEach((button) => {
+      button.addEventListener('click', () => openDrawer(button));
+    });
+    backButton?.addEventListener('click', () => {
+      if (window.history.length > 1) {
+        window.history.back();
+        return;
+      }
+      window.location.href = `${homePrefix}index.html`;
+    });
     overlay?.addEventListener('click', closeDrawer);
     closeBtn?.addEventListener('click', closeDrawer);
     document.addEventListener('keydown', (event) => {
@@ -830,6 +983,38 @@
     window.addEventListener('resize', () => {
       if (window.innerWidth > 768) closeDrawer();
     });
+  }
+
+  let mobileKeyboardStateBound = false;
+
+  function setupMobileKeyboardState() {
+    if (mobileKeyboardStateBound) return;
+    mobileKeyboardStateBound = true;
+
+    const editableSelector = 'input, textarea, select, [contenteditable="true"]';
+
+    const updateKeyboardState = () => {
+      const active = document.activeElement;
+      document.body.classList.toggle(
+        'shell-keyboard-open',
+        !!active && typeof active.matches === 'function' && active.matches(editableSelector)
+      );
+    };
+
+    document.addEventListener('focusin', (event) => {
+      const target = event.target;
+      if (target && typeof target.matches === 'function' && target.matches(editableSelector)) {
+        document.body.classList.add('shell-keyboard-open');
+      }
+    });
+
+    document.addEventListener('focusout', () => {
+      window.setTimeout(updateKeyboardState, 0);
+    });
+
+    window.visualViewport?.addEventListener('resize', updateKeyboardState, { passive: true });
+    window.addEventListener('resize', updateKeyboardState, { passive: true });
+    updateKeyboardState();
   }
 
   function setupCategoryMenu() {
@@ -999,6 +1184,7 @@
   function run() {
     injectUI();
     ensureHelperLoaded();
+    setupMobileKeyboardState();
     setupDrawer();
     setupCategoryMenu();
     setupGlobalSearch();

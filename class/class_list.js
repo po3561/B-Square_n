@@ -27,6 +27,7 @@
   let searchDebounce = null;
   let infiniteObserver = null;
   let bookmarkProbeDisabled = false;
+  let lastCategoryOverlayTrigger = null;
 
   const FALLBACK_CATEGORIES = [
     { name: '운동', emoji: '운' },
@@ -314,10 +315,12 @@
 
   function openOverlay() {
     state.overlayOpen = true;
+    lastCategoryOverlayTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const overlay = document.querySelector('.class-category-overlay');
     if (overlay) overlay.hidden = false;
     document.body.classList.add('class-category-overlay-open');
     renderCategoryMenu();
+    document.querySelector('.class-category-overlay-close')?.focus?.({ preventScroll: true });
   }
 
   function closeOverlay() {
@@ -326,6 +329,10 @@
     if (overlay) overlay.hidden = true;
     document.body.classList.remove('class-category-overlay-open');
     renderCategoryMenu();
+    const focusTarget = (lastCategoryOverlayTrigger && lastCategoryOverlayTrigger.isConnected)
+      ? lastCategoryOverlayTrigger
+      : document.querySelector('#categoryFilter [data-action="toggle-category-overlay"]');
+    focusTarget?.focus?.({ preventScroll: true });
   }
 
   function renderBanner(slides) {
