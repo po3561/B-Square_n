@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="view_reviews.css?v=20260402_05">
     <link rel="stylesheet" href="view_chat.css?v=20260408_06">
     <link rel="stylesheet" href="payment_toast.css?v=20260331_02">
+    <link rel="stylesheet" href="class_view_mobile_app.css?v=20260411_01" media="(max-width: 768px)">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -42,6 +43,19 @@
             </div>
             <div class="hero-content-wrapper hero-full-slider">
                 <!-- 좌측: 대표 이미지 슬라이더 -->
+                <div class="class-view-mobile-toolbar" style="display:none;" aria-label="모바일 상세 유틸">
+                    <a class="class-view-toolbar-btn toolbar-home" id="btnClassViewHome" href="../index.html" aria-label="홈">
+                        <i class="fa-solid fa-house" aria-hidden="true"></i>
+                    </a>
+                    <div class="class-view-toolbar-group" aria-label="상세 액션">
+                        <button class="class-view-toolbar-btn" id="btnClassViewShare" type="button" aria-label="공유">
+                            <i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i>
+                        </button>
+                        <button class="class-view-toolbar-btn" id="btnClassViewCart" type="button" aria-label="장바구니 담기">
+                            <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
                 <div class="hero-slider-area">
                     <div class="slider-section">
                         <div class="slider-wrapper" id="imageSlider">
@@ -423,6 +437,10 @@
 
                     <div class="sidebar-cta-area">
                         <div class="cta-primary-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <button class="btn-cta-secondary btn-bookmark-class" id="btnBookmarkClass" type="button"
+                                aria-pressed="false" aria-label="찜하기" style="display:none;">
+                                <i class="fa-regular fa-heart" aria-hidden="true"></i>
+                            </button>
                             <button class="btn-cta-start" id="btnGoToClassSide" type="button"
                                 style="padding: 0.8rem;">소개 보기</button>
                             <button class="btn-cta-secondary" id="btnAddToCartSide" type="button"

@@ -1,0 +1,764 @@
+/* Mobile app-style overrides for class_view */
+
+body.class-view-page.class-view-mobile-app {
+  color-scheme: light;
+  --cv-mobile-bg: #f4f7fb;
+  --cv-mobile-surface: #ffffff;
+  --cv-mobile-surface-2: #f8fafc;
+  --cv-mobile-border: rgba(15, 23, 42, 0.08);
+  --cv-mobile-text: #0f172a;
+  --cv-mobile-text-2: #475569;
+  --cv-mobile-accent: #4f7cff;
+  --cv-mobile-accent-2: #7b98ff;
+  --cv-mobile-shadow: 0 18px 40px rgba(15, 23, 42, 0.10);
+  --cv-mobile-shadow-strong: 0 24px 52px rgba(15, 23, 42, 0.16);
+  --cv-mobile-radius-xl: 24px;
+  --cv-mobile-radius-lg: 20px;
+  --cv-mobile-radius-md: 16px;
+  background: var(--cv-mobile-bg) !important;
+  color: var(--cv-mobile-text) !important;
+}
+
+body.class-view-page.class-view-mobile-app html,
+body.class-view-page.class-view-mobile-app body {
+  background: var(--cv-mobile-bg) !important;
+}
+
+body.class-view-page.class-view-mobile-app .mobile-shell-actions {
+  display: none !important;
+}
+
+body.class-view-page.class-view-mobile-app .view-container {
+  max-width: none !important;
+  padding: 0 0.75rem calc(8rem + env(safe-area-inset-bottom, 0px)) !important;
+  color: var(--cv-mobile-text) !important;
+}
+
+body.class-view-page.class-view-mobile-app .premium-hero {
+  margin: 0 -0.75rem 0.85rem !important;
+  padding: 0.65rem 0.75rem 0.9rem !important;
+  background: linear-gradient(180deg, #eef3ff 0%, #f4f7fb 66%, rgba(244, 247, 251, 0) 100%) !important;
+  overflow: visible !important;
+}
+
+body.class-view-page.class-view-mobile-app .hero-content-wrapper.hero-full-slider {
+  position: relative;
+  display: grid;
+  gap: 0.7rem;
+  max-width: none !important;
+  padding: 0 !important;
+}
+
+body.class-view-page.class-view-mobile-app .class-view-mobile-toolbar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  padding: calc(env(safe-area-inset-top, 0px) + 0.2rem) 0 0;
+  display: flex !important;
+  justify-content: space-between;
+  align-items: flex-start;
+  pointer-events: none;
+  z-index: 20;
+}
+
+body.class-view-page.class-view-mobile-app .class-view-toolbar-group {
+  display: flex;
+  gap: 0.45rem;
+  pointer-events: auto;
+}
+
+body.class-view-page.class-view-mobile-app .class-view-toolbar-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--cv-mobile-text);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(18px);
+  pointer-events: auto;
+}
+
+body.class-view-page.class-view-mobile-app .class-view-toolbar-btn i {
+  font-size: 0.95rem;
+}
+
+body.class-view-page.class-view-mobile-app .slider-section {
+  aspect-ratio: 16 / 10;
+  border-radius: 26px !important;
+  box-shadow: var(--cv-mobile-shadow-strong);
+  overflow: hidden;
+}
+
+body.class-view-page.class-view-mobile-app .slider-item {
+  border-radius: 26px !important;
+}
+
+body.class-view-page.class-view-mobile-app .slider-btn.prev,
+body.class-view-page.class-view-mobile-app .slider-btn.next {
+  display: none !important;
+}
+
+body.class-view-page.class-view-mobile-app .slider-counter {
+  bottom: 0.65rem !important;
+  right: 0.65rem !important;
+  padding: 0.35rem 0.7rem !important;
+  font-size: 0.72rem !important;
+  background: rgba(15, 23, 42, 0.78) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+body.class-view-page.class-view-mobile-app .hero-info-band {
+  margin: -0.95rem 0 0 !important;
+  padding: 1rem !important;
+  border-radius: var(--cv-mobile-radius-xl) !important;
+  background: rgba(255, 255, 255, 0.97) !important;
+  border: 1px solid var(--cv-mobile-border) !important;
+  box-shadow: var(--cv-mobile-shadow) !important;
+  backdrop-filter: blur(18px);
+  grid-template-columns: 1fr !important;
+  color: var(--cv-mobile-text) !important;
+}
+
+body.class-view-page.class-view-mobile-app .hero-info-copy {
+  gap: 0.28rem;
+}
+
+body.class-view-page.class-view-mobile-app .hero-info-kicker {
+  color: var(--cv-mobile-accent);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+}
+
+body.class-view-page.class-view-mobile-app .hero-info-title {
+  color: var(--cv-mobile-text);
+  font-size: clamp(1.35rem, 6vw, 1.8rem);
+  line-height: 1.14;
+}
+
+body.class-view-page.class-view-mobile-app .hero-info-summary {
+  color: var(--cv-mobile-text-2);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+body.class-view-page.class-view-mobile-app .hero-info-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+body.class-view-page.class-view-mobile-app .hero-info-stat {
+  min-width: 0;
+  padding: 0.72rem 0.8rem;
+  border-radius: 18px;
+  background: var(--cv-mobile-surface-2);
+  border-color: rgba(148, 163, 184, 0.14);
+}
+
+body.class-view-page.class-view-mobile-app .hero-info-stat:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+body.class-view-page.class-view-mobile-app .hero-info-label {
+  color: #64748b;
+  font-size: 0.66rem;
+}
+
+body.class-view-page.class-view-mobile-app .hero-info-stat strong {
+  color: var(--cv-mobile-text);
+  font-size: 0.9rem;
+}
+
+body.class-view-page.class-view-mobile-app .view-grid {
+  grid-template-columns: 1fr !important;
+  gap: 0.8rem !important;
+  padding: 0 !important;
+  align-items: start;
+}
+
+body.class-view-page.class-view-mobile-app .view-main-content {
+  display: grid;
+  gap: 0.8rem;
+}
+
+body.class-view-page.class-view-mobile-app .view-sidebar {
+  order: -1;
+}
+
+body.class-view-page.class-view-mobile-app .sticky-card-premium {
+  position: relative !important;
+  top: auto !important;
+  gap: 0.75rem !important;
+  padding: 1rem 1rem 7.4rem !important;
+  border-radius: var(--cv-mobile-radius-xl) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid var(--cv-mobile-border) !important;
+  box-shadow: var(--cv-mobile-shadow) !important;
+  color: var(--cv-mobile-text) !important;
+  backdrop-filter: blur(18px);
+}
+
+body.class-view-page.class-view-mobile-app .side-eyebrow {
+  gap: 0.35rem;
+  margin-bottom: 0.15rem;
+}
+
+body.class-view-page.class-view-mobile-app .hero-badge {
+  background: rgba(79, 124, 255, 0.12) !important;
+  color: #3555b9 !important;
+}
+
+body.class-view-page.class-view-mobile-app .hero-format-chip {
+  background: rgba(79, 124, 255, 0.08) !important;
+  color: #3555b9 !important;
+}
+
+body.class-view-page.class-view-mobile-app .side-main-title {
+  color: var(--cv-mobile-text) !important;
+  font-size: clamp(1.28rem, 5.8vw, 1.55rem);
+  line-height: 1.16;
+}
+
+body.class-view-page.class-view-mobile-app .hero-summary,
+body.class-view-page.class-view-mobile-app .hero-kicker {
+  color: var(--cv-mobile-text-2) !important;
+}
+
+body.class-view-page.class-view-mobile-app .hero-summary {
+  margin-bottom: 0.6rem !important;
+  font-size: 0.89rem !important;
+  line-height: 1.55 !important;
+}
+
+body.class-view-page.class-view-mobile-app .side-quick-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+body.class-view-page.class-view-mobile-app .side-quick-stats .stat-item {
+  padding: 0.8rem 0.75rem;
+  border-radius: 18px;
+  background: var(--cv-mobile-surface-2);
+  border-color: rgba(148, 163, 184, 0.14);
+}
+
+body.class-view-page.class-view-mobile-app .side-quick-stats .stat-item:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+body.class-view-page.class-view-mobile-app .stat-label {
+  color: #64748b;
+  font-size: 0.64rem;
+}
+
+body.class-view-page.class-view-mobile-app .stat-value {
+  color: var(--cv-mobile-text);
+  font-size: 0.88rem;
+}
+
+body.class-view-page.class-view-mobile-app .side-review-line {
+  gap: 0.35rem;
+  margin: 0.25rem 0 0;
+  color: var(--cv-mobile-text);
+}
+
+body.class-view-page.class-view-mobile-app .side-stars {
+  font-size: 1rem;
+}
+
+body.class-view-page.class-view-mobile-app .side-rating {
+  color: var(--cv-mobile-text);
+}
+
+body.class-view-page.class-view-mobile-app .side-review-count {
+  color: var(--cv-mobile-text-2);
+  font-size: 0.78rem;
+}
+
+body.class-view-page.class-view-mobile-app .side-pass-summary {
+  margin-top: 0.15rem;
+}
+
+body.class-view-page.class-view-mobile-app .pass-info-box {
+  padding: 0.85rem 0.9rem;
+  border-radius: 18px;
+  background: var(--cv-mobile-surface-2) !important;
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  box-shadow: none !important;
+}
+
+body.class-view-page.class-view-mobile-app .pass-label {
+  color: var(--cv-mobile-accent);
+  font-size: 0.72rem;
+}
+
+body.class-view-page.class-view-mobile-app .pass-count {
+  color: var(--cv-mobile-text);
+  font-size: 0.95rem;
+}
+
+body.class-view-page.class-view-mobile-app .sidebar-cta-area {
+  position: fixed !important;
+  left: max(0.7rem, env(safe-area-inset-left, 0px)) !important;
+  right: max(0.7rem, env(safe-area-inset-right, 0px)) !important;
+  bottom: calc(var(--shell-bottom-nav-offset, 74px + env(safe-area-inset-bottom, 0px)) + 0.55rem) !important;
+  z-index: 9350 !important;
+  padding: 0.75rem !important;
+  border-radius: 24px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border: 1px solid rgba(148, 163, 184, 0.24) !important;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18) !important;
+  backdrop-filter: blur(22px);
+}
+
+body.class-view-page.class-view-mobile-app .sidebar-cta-area .cta-primary-row {
+  display: grid !important;
+  grid-template-columns: 54px minmax(0, 1fr) minmax(0, 1.18fr) !important;
+  gap: 0.5rem !important;
+}
+
+body.class-view-page.class-view-mobile-app .btn-bookmark-class {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 54px;
+  min-height: 54px;
+  border-radius: 18px !important;
+  background: var(--cv-mobile-surface-2) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  color: var(--cv-mobile-text) !important;
+}
+
+body.class-view-page.class-view-mobile-app .btn-bookmark-class i {
+  font-size: 1rem;
+}
+
+body.class-view-page.class-view-mobile-app .btn-bookmark-class.is-bookmarked {
+  background: rgba(79, 124, 255, 0.12) !important;
+  border-color: rgba(79, 124, 255, 0.24) !important;
+  color: #3555b9 !important;
+}
+
+body.class-view-page.class-view-mobile-app .btn-cta-start,
+body.class-view-page.class-view-mobile-app .btn-cta-secondary {
+  min-height: 54px;
+  border-radius: 18px !important;
+  padding: 0.85rem 0.75rem !important;
+  font-size: clamp(0.76rem, 3vw, 0.9rem) !important;
+  line-height: 1.08 !important;
+}
+
+body.class-view-page.class-view-mobile-app .btn-cta-start {
+  background: linear-gradient(135deg, var(--cv-mobile-accent), var(--cv-mobile-accent-2)) !important;
+  border: 0 !important;
+  box-shadow: 0 16px 28px rgba(79, 124, 255, 0.22) !important;
+}
+
+body.class-view-page.class-view-mobile-app .btn-cta-secondary {
+  background: var(--cv-mobile-surface) !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  color: var(--cv-mobile-text) !important;
+}
+
+body.class-view-page.class-view-mobile-app .btn-cta-secondary#btnAddToCartSide {
+  display: none !important;
+}
+
+body.class-view-page.class-view-mobile-app .hero-trust-row {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin-top: 0.25rem !important;
+}
+
+body.class-view-page.class-view-mobile-app .hero-trust-row span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.35rem;
+  border-radius: 14px;
+  background: var(--cv-mobile-surface-2);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  color: var(--cv-mobile-text-2);
+  font-size: 0.7rem;
+}
+
+body.class-view-page.class-view-mobile-app .view-tabs {
+  position: sticky !important;
+  top: calc(env(safe-area-inset-top, 0px) + 56px) !important;
+  z-index: 950 !important;
+  margin: 0 !important;
+  padding: 0.45rem !important;
+  gap: 0.35rem !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.10) !important;
+  backdrop-filter: blur(18px);
+  overflow-x: auto !important;
+}
+
+body.class-view-page.class-view-mobile-app .tab-btn {
+  min-height: 42px !important;
+  padding: 0 0.9rem !important;
+  font-size: 0.82rem !important;
+  color: #64748b !important;
+  border-radius: 14px !important;
+}
+
+body.class-view-page.class-view-mobile-app .tab-btn.active,
+body.class-view-page.class-view-mobile-app .tab-btn:hover {
+  color: #3555b9 !important;
+  background: rgba(79, 124, 255, 0.10) !important;
+}
+
+body.class-view-page.class-view-mobile-app .tab-btn.active::after {
+  left: 0.7rem !important;
+  right: 0.7rem !important;
+  bottom: 4px !important;
+  height: 2px !important;
+  border-radius: 999px !important;
+}
+
+body.class-view-page.class-view-mobile-app .content-card {
+  margin: 0 !important;
+  padding: 1rem !important;
+  border-radius: var(--cv-mobile-radius-xl) !important;
+  background: rgba(255, 255, 255, 0.97) !important;
+  border: 1px solid var(--cv-mobile-border) !important;
+  box-shadow: var(--cv-mobile-shadow) !important;
+  color: var(--cv-mobile-text) !important;
+}
+
+body.class-view-page.class-view-mobile-app .section-title {
+  margin-bottom: 1rem !important;
+  color: var(--cv-mobile-text) !important;
+  font-size: 1.06rem !important;
+}
+
+body.class-view-page.class-view-mobile-app .section-eyebrow {
+  color: var(--cv-mobile-accent) !important;
+  letter-spacing: 0.08em !important;
+}
+
+body.class-view-page.class-view-mobile-app .section-toolbar {
+  gap: 0.6rem !important;
+}
+
+body.class-view-page.class-view-mobile-app .empty-state {
+  border-radius: 18px !important;
+  border: 1px dashed rgba(148, 163, 184, 0.34) !important;
+  background: rgba(248, 250, 252, 0.96) !important;
+  color: var(--cv-mobile-text-2) !important;
+  padding: 1.2rem !important;
+  text-align: center !important;
+}
+
+body.class-view-page.class-view-mobile-app .review-item-premium,
+body.class-view-page.class-view-mobile-app .review-form-card,
+body.class-view-page.class-view-mobile-app .curriculum-chapter,
+body.class-view-page.class-view-mobile-app .notice-item,
+body.class-view-page.class-view-mobile-app .lesson-item,
+body.class-view-page.class-view-mobile-app .lesson-empty-state,
+body.class-view-page.class-view-mobile-app .objective-card,
+body.class-view-page.class-view-mobile-app .target-list li,
+body.class-view-page.class-view-mobile-app .chat-tab-wrapper .msg-bubble,
+body.class-view-page.class-view-mobile-app .chat-tab-wrapper .gathering-card {
+  background: rgba(255, 255, 255, 0.97) !important;
+  border-color: rgba(148, 163, 184, 0.16) !important;
+  color: var(--cv-mobile-text) !important;
+  box-shadow: var(--cv-mobile-shadow) !important;
+}
+
+body.class-view-page.class-view-mobile-app .review-item-premium,
+body.class-view-page.class-view-mobile-app .review-form-card,
+body.class-view-page.class-view-mobile-app .curriculum-chapter,
+body.class-view-page.class-view-mobile-app .notice-item {
+  border-radius: 20px !important;
+}
+
+body.class-view-page.class-view-mobile-app .review-section-title,
+body.class-view-page.class-view-mobile-app .chapter-title-text,
+body.class-view-page.class-view-mobile-app .chapter-summary,
+body.class-view-page.class-view-mobile-app .chapter-materials,
+body.class-view-page.class-view-mobile-app .lesson-name,
+body.class-view-page.class-view-mobile-app .obj-text strong,
+body.class-view-page.class-view-mobile-app .rip-name,
+body.class-view-page.class-view-mobile-app .hero-summary,
+body.class-view-page.class-view-mobile-app .hero-info-copy,
+body.class-view-page.class-view-mobile-app .side-main-title {
+  color: var(--cv-mobile-text) !important;
+}
+
+body.class-view-page.class-view-mobile-app .review-section-caption,
+body.class-view-page.class-view-mobile-app .review-subtitle,
+body.class-view-page.class-view-mobile-app .rip-date,
+body.class-view-page.class-view-mobile-app .rip-text,
+body.class-view-page.class-view-mobile-app .chapter-num,
+body.class-view-page.class-view-mobile-app .lesson-duration,
+body.class-view-page.class-view-mobile-app .lesson-empty-state p,
+body.class-view-page.class-view-mobile-app .obj-text p,
+body.class-view-page.class-view-mobile-app .target-list li,
+body.class-view-page.class-view-mobile-app .chapter-materials,
+body.class-view-page.class-view-mobile-app .chapter-summary,
+body.class-view-page.class-view-mobile-app .hero-trust-row span {
+  color: var(--cv-mobile-text-2) !important;
+}
+
+body.class-view-page.class-view-mobile-app .target-list,
+body.class-view-page.class-view-mobile-app .objective-grid {
+  grid-template-columns: 1fr !important;
+}
+
+body.class-view-page.class-view-mobile-app .target-list li,
+body.class-view-page.class-view-mobile-app .objective-card {
+  padding: 0.95rem !important;
+  border-radius: 18px !important;
+}
+
+body.class-view-page.class-view-mobile-app .star-rating {
+  gap: 0.45rem !important;
+}
+
+body.class-view-page.class-view-mobile-app .star-rating-option {
+  min-height: 66px !important;
+  border-radius: 16px !important;
+  background: var(--cv-mobile-surface-2) !important;
+}
+
+body.class-view-page.class-view-mobile-app .review-form-unlocked textarea,
+body.class-view-page.class-view-mobile-app .notice-editor-field input,
+body.class-view-page.class-view-mobile-app .notice-editor-field textarea,
+body.class-view-page.class-view-mobile-app .sheet-body input,
+body.class-view-page.class-view-mobile-app .sheet-body select,
+body.class-view-page.class-view-mobile-app .sheet-body textarea,
+body.class-view-page.class-view-mobile-app .modal-body input,
+body.class-view-page.class-view-mobile-app .modal-body select,
+body.class-view-page.class-view-mobile-app .modal-body textarea {
+  width: 100% !important;
+  min-height: 44px !important;
+  border-radius: 14px !important;
+  background: var(--cv-mobile-surface-2) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  color: var(--cv-mobile-text) !important;
+  box-sizing: border-box;
+}
+
+body.class-view-page.class-view-mobile-app .sheet-header,
+body.class-view-page.class-view-mobile-app .free-modal-card h3,
+body.class-view-page.class-view-mobile-app .modal-header,
+body.class-view-page.class-view-mobile-app .notice-editor-header {
+  color: var(--cv-mobile-text) !important;
+}
+
+body.class-view-page.class-view-mobile-app #paymentBottomSheet,
+body.class-view-page.class-view-mobile-app #freeEnrollModal,
+body.class-view-page.class-view-mobile-app #gatheringModal,
+body.class-view-page.class-view-mobile-app #gatheringPreviewModal,
+body.class-view-page.class-view-mobile-app #pinConfirmModal,
+body.class-view-page.class-view-mobile-app #classNoticeViewerModal,
+body.class-view-page.class-view-mobile-app #classNoticeEditorModal {
+  align-items: flex-end !important;
+  justify-content: center !important;
+  padding: 0.45rem !important;
+}
+
+body.class-view-page.class-view-mobile-app #paymentBottomSheet .bottom-sheet-content,
+body.class-view-page.class-view-mobile-app #freeEnrollModal .free-modal-card,
+body.class-view-page.class-view-mobile-app #gatheringModal .modal-content,
+body.class-view-page.class-view-mobile-app #gatheringPreviewModal .modal-content,
+body.class-view-page.class-view-mobile-app #pinConfirmModal .pin-modal-content,
+body.class-view-page.class-view-mobile-app #classNoticeViewerModal .modal-content,
+body.class-view-page.class-view-mobile-app #classNoticeEditorModal .notice-editor-modal {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  border-radius: 24px 24px 0 0 !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  color: var(--cv-mobile-text) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  box-shadow: 0 -20px 50px rgba(15, 23, 42, 0.20) !important;
+}
+
+body.class-view-page.class-view-mobile-app #paymentBottomSheet .sheet-body,
+body.class-view-page.class-view-mobile-app #freeEnrollModal .free-modal-card,
+body.class-view-page.class-view-mobile-app #gatheringModal .modal-body,
+body.class-view-page.class-view-mobile-app #gatheringPreviewModal .modal-body,
+body.class-view-page.class-view-mobile-app #classNoticeViewerModal .modal-body,
+body.class-view-page.class-view-mobile-app #classNoticeEditorModal .notice-editor-body {
+  color: var(--cv-mobile-text) !important;
+}
+
+body.class-view-page.class-view-mobile-app #paymentBottomSheet .payment-options {
+  display: grid !important;
+  gap: 0.6rem !important;
+}
+
+body.class-view-page.class-view-mobile-app #paymentBottomSheet .pay-option-card {
+  display: block !important;
+  border-radius: 18px !important;
+  background: var(--cv-mobile-surface-2) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+}
+
+body.class-view-page.class-view-mobile-app #paymentBottomSheet .pay-option-inner {
+  padding: 0.9rem !important;
+}
+
+body.class-view-page.class-view-mobile-app #paymentBottomSheet .pay-opt-title,
+body.class-view-page.class-view-mobile-app #paymentBottomSheet .pay-opt-price,
+body.class-view-page.class-view-mobile-app #paymentBottomSheet .summary-row span,
+body.class-view-page.class-view-mobile-app #freeEnrollModal .free-modal-card,
+body.class-view-page.class-view-mobile-app #gatheringModal label,
+body.class-view-page.class-view-mobile-app #gatheringPreviewModal .gathering-preview-header-copy h3,
+body.class-view-page.class-view-mobile-app #classNoticeViewerModal #cvTitle,
+body.class-view-page.class-view-mobile-app #classNoticeEditorModal #ceModalTitle {
+  color: var(--cv-mobile-text) !important;
+}
+
+body.class-view-page.class-view-mobile-app #paymentBottomSheet .btn-toss-pay,
+body.class-view-page.class-view-mobile-app #freeEnrollModal .btn-free-confirm,
+body.class-view-page.class-view-mobile-app #freeEnrollModal .btn-free-cancel,
+body.class-view-page.class-view-mobile-app #gatheringModal .btn-submit,
+body.class-view-page.class-view-mobile-app #classNoticeEditorModal .notice-editor-btn-save,
+body.class-view-page.class-view-mobile-app #classNoticeEditorModal .notice-editor-btn-cancel {
+  min-height: 46px !important;
+  border-radius: 14px !important;
+}
+
+body.class-view-page.class-view-mobile-app #paymentBottomSheet .summary-box,
+body.class-view-page.class-view-mobile-app #paymentBottomSheet .sheet-footer {
+  background: transparent !important;
+}
+
+body.class-view-page.class-view-mobile-app #paymentOverlay {
+  background: rgba(248, 250, 252, 0.92) !important;
+}
+
+body.class-view-page.class-view-mobile-app #paymentOverlay .payment-overlay-text,
+body.class-view-page.class-view-mobile-app #paymentOverlay .payment-overlay-sub {
+  color: var(--cv-mobile-text) !important;
+}
+
+body.class-view-page.class-view-mobile-app .class-view-mobile-app .chat-tab-wrapper,
+body.class-view-page.class-view-mobile-app .chat-tab-wrapper {
+  border-radius: 22px !important;
+}
+
+body.class-view-page.class-view-mobile-app.class-view-chat-open .sidebar-cta-area,
+body.class-view-page.class-view-mobile-app.shell-keyboard-open .sidebar-cta-area {
+  opacity: 0 !important;
+  transform: translateY(120%) !important;
+  pointer-events: none !important;
+}
+
+body.class-view-page.class-view-mobile-app .view-grid {
+  position: relative;
+}
+
+body.class-view-page.class-view-mobile-app .notice-item {
+  margin-bottom: 0.8rem !important;
+  padding: 1rem !important;
+}
+
+body.class-view-page.class-view-mobile-app .notice-item h4 {
+  font-size: 0.96rem !important;
+  line-height: 1.45 !important;
+}
+
+@media (max-width: 390px) {
+  body.class-view-page.class-view-mobile-app .view-container {
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
+  }
+
+  body.class-view-page.class-view-mobile-app .premium-hero {
+    margin-left: -0.65rem !important;
+    margin-right: -0.65rem !important;
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
+  }
+
+  body.class-view-page.class-view-mobile-app .sidebar-cta-area {
+    left: max(0.65rem, env(safe-area-inset-left, 0px)) !important;
+    right: max(0.65rem, env(safe-area-inset-right, 0px)) !important;
+  }
+
+  body.class-view-page.class-view-mobile-app .sidebar-cta-area .cta-primary-row {
+    grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1.12fr) !important;
+    gap: 0.42rem !important;
+  }
+
+  body.class-view-page.class-view-mobile-app .btn-bookmark-class,
+  body.class-view-page.class-view-mobile-app .btn-cta-start,
+  body.class-view-page.class-view-mobile-app .btn-cta-secondary {
+    min-height: 50px !important;
+  }
+}
+
+@media (max-width: 320px) {
+  body.class-view-page.class-view-mobile-app .view-container {
+    padding-left: 0.6rem !important;
+    padding-right: 0.6rem !important;
+  }
+
+  body.class-view-page.class-view-mobile-app .premium-hero {
+    margin-left: -0.6rem !important;
+    margin-right: -0.6rem !important;
+    padding-left: 0.6rem !important;
+    padding-right: 0.6rem !important;
+  }
+
+  body.class-view-page.class-view-mobile-app .class-view-toolbar-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 13px;
+  }
+
+  body.class-view-page.class-view-mobile-app .hero-info-stats,
+  body.class-view-page.class-view-mobile-app .side-quick-stats {
+    gap: 0.42rem;
+  }
+
+  body.class-view-page.class-view-mobile-app .sidebar-cta-area .cta-primary-row {
+    grid-template-columns: 46px minmax(0, 1fr) minmax(0, 1.05fr) !important;
+    gap: 0.35rem !important;
+  }
+}
+
+@media (max-width: 220px) {
+  body.class-view-page.class-view-mobile-app .view-container {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  body.class-view-page.class-view-mobile-app .premium-hero {
+    margin-left: -0.5rem !important;
+    margin-right: -0.5rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  body.class-view-page.class-view-mobile-app .class-view-toolbar-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+  }
+
+  body.class-view-page.class-view-mobile-app .hero-info-title,
+  body.class-view-page.class-view-mobile-app .side-main-title {
+    font-size: 1.12rem !important;
+  }
+
+  body.class-view-page.class-view-mobile-app .sidebar-cta-area .cta-primary-row {
+    grid-template-columns: 44px minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 0.3rem !important;
+  }
+
+  body.class-view-page.class-view-mobile-app .btn-cta-start,
+  body.class-view-page.class-view-mobile-app .btn-cta-secondary {
+    padding-inline: 0.55rem !important;
+  }
+}
