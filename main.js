@@ -88,6 +88,7 @@ function syncHomeCategoryBackdrop(expanded) {
 }
 
 function ensureBsqHelperLoaded() {
+    if (window.matchMedia?.('(max-width: 768px)').matches) return;
     if (window.__BSQ_HELPER_LOADED__) return;
     if (document.querySelector('script[data-bsq-helper="1"]')) return;
     if (document.getElementById('bsqHelperLauncher') || window.__BSQ_HELPER_READY__) {

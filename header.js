@@ -1164,6 +1164,7 @@
   }
 
   function ensureHelperLoaded() {
+    if (window.matchMedia?.('(max-width: 768px)').matches) return;
     if (window.__BSQ_HELPER_READY__) return;
     if (document.getElementById('bsqHelperLauncher') || document.getElementById('bsqHelperPanel')) return;
     if (document.querySelector('script[data-bsq-helper="1"]')) return;

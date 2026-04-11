@@ -30,7 +30,7 @@ body.class-view-page.class-view-mobile-app .mobile-shell-actions {
 
 body.class-view-page.class-view-mobile-app .view-container {
   max-width: none !important;
-  padding: 0 0.75rem calc(8rem + env(safe-area-inset-bottom, 0px)) !important;
+  padding: 0 0.75rem calc(9.5rem + env(safe-area-inset-bottom, 0px)) !important;
   color: var(--cv-mobile-text) !important;
 }
 
@@ -311,6 +311,11 @@ body.class-view-page.class-view-mobile-app .sidebar-cta-area {
   border: 1px solid rgba(148, 163, 184, 0.24) !important;
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18) !important;
   backdrop-filter: blur(22px);
+  pointer-events: none !important;
+}
+
+body.class-view-page.class-view-mobile-app .sidebar-cta-area * {
+  pointer-events: auto !important;
 }
 
 body.class-view-page.class-view-mobile-app .sidebar-cta-area .cta-primary-row {
@@ -654,6 +659,11 @@ body.class-view-page.class-view-mobile-app.shell-keyboard-open .sidebar-cta-area
   pointer-events: none !important;
 }
 
+body.class-view-page.class-view-mobile-app.class-view-chat-open .view-tabs,
+body.class-view-page.class-view-mobile-app.shell-keyboard-open .view-tabs {
+  display: none !important;
+}
+
 body.class-view-page.class-view-mobile-app .view-grid {
   position: relative;
 }
@@ -755,6 +765,10 @@ body.class-view-page.class-view-mobile-app .notice-item h4 {
   body.class-view-page.class-view-mobile-app .sidebar-cta-area .cta-primary-row {
     grid-template-columns: 44px minmax(0, 1fr) minmax(0, 1fr) !important;
     gap: 0.3rem !important;
+  }
+
+  body.class-view-page.class-view-mobile-app .sidebar-cta-area {
+    padding: 0.55rem !important;
   }
 
   body.class-view-page.class-view-mobile-app .btn-cta-start,

@@ -21,7 +21,7 @@
   body[data-layout="community"] .community-shell {
     width: 100vw !important;
     height: calc(100dvh - 82px) !important;
-    margin: 0 !important;
+    margin: 0 0 0.5rem !important;
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
@@ -29,6 +29,7 @@
     display: grid !important;
     grid-template-columns: 1fr !important;
     grid-template-rows: auto minmax(0, 1fr) !important;
+    padding-bottom: calc(8.5rem + env(safe-area-inset-bottom, 0px)) !important;
     background: #ffffff !important;
   }
 
@@ -91,7 +92,12 @@
     background: #ffffff !important;
   }
 
+  body[data-layout="community"] .comm-info-panel:not(.visible) {
+    display: none !important;
+  }
+
   body[data-layout="community"] .comm-info-panel.visible {
+    display: block !important;
     transform: translateX(0) !important;
   }
 
