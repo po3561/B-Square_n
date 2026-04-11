@@ -248,6 +248,304 @@
     }
 }
 
+/* ===== Payment Bottom Sheet ===== */
+body.class-view-page .bottom-sheet-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99997;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: clamp(12px, 2vw, 28px);
+    background: rgba(7, 10, 16, 0.72);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+body.class-view-page .bottom-sheet-content {
+    width: min(860px, calc(100vw - 2rem));
+    max-height: min(88vh, 920px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 30px 30px 20px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(87, 118, 255, 0.12), transparent 32%),
+        linear-gradient(180deg, rgba(18, 22, 31, 0.98), rgba(11, 14, 20, 0.98));
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+    animation: paymentSheetRise 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.class-view-page .sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.3rem 1.45rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.class-view-page .sheet-header h3 {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 1.32rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+body.class-view-page .btn-sheet-close {
+    position: relative;
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+    cursor: pointer;
+    transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+body.class-view-page .btn-sheet-close::before,
+body.class-view-page .btn-sheet-close::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    transform-origin: center;
+}
+
+body.class-view-page .btn-sheet-close::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+body.class-view-page .btn-sheet-close::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+body.class-view-page .btn-sheet-close:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+body.class-view-page .sheet-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    gap: 1rem;
+    padding: 1.2rem 1.45rem 1.45rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+body.class-view-page .payment-options {
+    display: grid;
+    gap: 0.7rem;
+    padding: 0;
+}
+
+body.class-view-page .pay-option-card {
+    position: relative;
+    display: block;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+body.class-view-page .pay-option-card input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+body.class-view-page .pay-option-inner {
+    display: grid;
+    gap: 0.28rem;
+    padding: 1rem 1.1rem;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+body.class-view-page .pay-option-card input:checked + .pay-option-inner {
+    border-color: rgba(87, 118, 255, 0.95);
+    background: linear-gradient(180deg, rgba(79, 124, 255, 0.16), rgba(79, 124, 255, 0.08));
+    box-shadow: 0 18px 34px rgba(79, 124, 255, 0.14);
+    transform: translateY(-1px);
+}
+
+body.class-view-page .pay-opt-title {
+    color: #f8fafc;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+body.class-view-page .pay-opt-desc {
+    color: rgba(226, 232, 240, 0.72);
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+body.class-view-page .pay-opt-price {
+    color: #9bb4ff;
+    font-size: 0.92rem;
+    font-weight: 800;
+}
+
+body.class-view-page .coupon-section,
+body.class-view-page .payment-summary {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+body.class-view-page .coupon-section h4 {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 0.98rem;
+    font-weight: 800;
+}
+
+body.class-view-page .coupon-input-group {
+    display: flex;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+body.class-view-page .coupon-input-group input {
+    flex: 1 1 220px;
+    min-width: 0;
+    min-height: 46px;
+    padding: 0.8rem 0.95rem;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: #f8fafc;
+    outline: none;
+}
+
+body.class-view-page .coupon-input-group input::placeholder {
+    color: rgba(226, 232, 240, 0.46);
+}
+
+body.class-view-page .btn-apply-coupon {
+    min-height: 46px;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #4f7cff, #7b98ff);
+    color: #fff;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+body.class-view-page .btn-apply-coupon:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+}
+
+body.class-view-page .coupon-msg {
+    min-height: 1.1em;
+    margin: 0;
+    color: rgba(226, 232, 240, 0.72);
+    font-size: 0.82rem;
+}
+
+body.class-view-page .summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    color: rgba(226, 232, 240, 0.92);
+    font-size: 0.94rem;
+}
+
+body.class-view-page .summary-row.total-row {
+    padding: 0.95rem 1rem;
+    border-radius: 16px;
+    background: rgba(79, 124, 255, 0.12);
+    border: 1px solid rgba(79, 124, 255, 0.18);
+}
+
+body.class-view-page .summary-row.total-row span:last-child,
+body.class-view-page .final-price-highlight {
+    color: #c7d2fe;
+    font-size: 1.02rem;
+    font-weight: 900;
+}
+
+body.class-view-page .sheet-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0.1rem;
+}
+
+body.class-view-page .btn-toss-pay {
+    width: 100%;
+    min-height: 52px;
+    padding: 0.95rem 1.1rem;
+    border: none;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #4f7cff, #7b98ff);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    box-shadow: 0 16px 34px rgba(79, 124, 255, 0.3);
+    transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+}
+
+body.class-view-page .btn-toss-pay:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 20px 40px rgba(79, 124, 255, 0.34);
+}
+
+body.class-view-page .btn-toss-pay:active {
+    transform: translateY(0);
+}
+
+body.class-view-page .sheet-body::-webkit-scrollbar {
+    width: 10px;
+}
+
+body.class-view-page .sheet-body::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+
+@keyframes paymentSheetRise {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 body.class-view-page .toast-container {
     top: max(20px, env(safe-area-inset-top));
 }
