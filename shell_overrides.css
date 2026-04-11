@@ -102,7 +102,6 @@ body {
 
 body.shell-drawer-open {
   overflow: hidden;
-  touch-action: none;
 }
 
 /* Shared responsive visibility helpers used by the injected shell */

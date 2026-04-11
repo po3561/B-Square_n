@@ -9,8 +9,8 @@
   const scriptDir = scriptTag ? scriptTag.src.substring(0, scriptTag.src.lastIndexOf('/') + 1) : '';
   
   // Use scriptDir for absolute-like relative paths for CSS dynamic injection
-  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260408_02';
-  const mobileAppCSSPath = scriptDir + 'mobile_app.css?v=20260411_01';
+  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260411_02';
+  const mobileAppCSSPath = scriptDir + 'mobile_app.css?v=20260411_02';
 
   const homePrefix = currentPath.split('/').length > 2 ? '../' : './';
   const prefix = homePrefix;
@@ -1012,13 +1012,86 @@
     });
   }
 
+  function setupMobileShellNavigation() {
+    if (setupMobileShellNavigation.bound) return;
+    setupMobileShellNavigation.bound = true;
+
+    const selectors = [
+      '#bsqBottomNav a[href]',
+      '.mobile-shell a[href]',
+      '#drawerMenu a[href]',
+    ].join(',');
+
+    let lastNavHref = '';
+    let lastNavAt = 0;
+
+    function navigateShellLink(link, event) {
+      if (!link || typeof link.closest !== 'function') return false;
+
+      const rawHref = String(link.getAttribute('href') || '').trim();
+      if (!rawHref || rawHref.startsWith('javascript:') || rawHref === '#') return false;
+
+      const nextHref = String(link.href || '').trim();
+      if (!nextHref) return false;
+
+      const nextUrl = new URL(nextHref, window.location.href);
+      const currentUrl = new URL(window.location.href);
+      if (
+        nextUrl.origin === currentUrl.origin &&
+        nextUrl.pathname === currentUrl.pathname &&
+        nextUrl.search === currentUrl.search &&
+        nextUrl.hash === currentUrl.hash
+      ) {
+        return false;
+      }
+
+      const now = Date.now();
+      if (lastNavHref === nextHref && now - lastNavAt < 350) {
+        return true;
+      }
+      lastNavHref = nextHref;
+      lastNavAt = now;
+
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      document.body.classList.remove('shell-drawer-open');
+      document.body.classList.remove('shell-keyboard-open');
+      window.location.assign(nextHref);
+      return true;
+    }
+
+    const handleShellLink = (event) => {
+      if (!event || typeof event.target?.closest !== 'function') return;
+      const link = event.target.closest(selectors);
+      if (!link) return;
+
+      if (event.type === 'touchend') {
+        navigateShellLink(link, event);
+        return;
+      }
+
+      if (event.type === 'pointerup') {
+        if (event.pointerType && event.pointerType !== 'mouse') {
+          navigateShellLink(link, event);
+          return;
+        }
+      }
+
+      navigateShellLink(link, event);
+    };
+
+    document.addEventListener('pointerup', handleShellLink, true);
+    document.addEventListener('touchend', handleShellLink, { capture: true, passive: false });
+    document.addEventListener('click', handleShellLink, true);
+  }
+  setupMobileShellNavigation.bound = false;
+
   let mobileKeyboardStateBound = false;
+  const editableSelector = 'input, textarea, select, [contenteditable="true"]';
 
   function setupMobileKeyboardState() {
     if (mobileKeyboardStateBound) return;
     mobileKeyboardStateBound = true;
-
-    const editableSelector = 'input, textarea, select, [contenteditable="true"]';
 
     const updateKeyboardState = () => {
       const active = document.activeElement;
@@ -1042,6 +1115,42 @@
     window.visualViewport?.addEventListener('resize', updateKeyboardState, { passive: true });
     window.addEventListener('resize', updateKeyboardState, { passive: true });
     updateKeyboardState();
+  }
+
+  function syncTransientShellState() {
+    const overlay = document.getElementById('drawerOverlay');
+    const menu = document.getElementById('drawerMenu');
+    const drawerOpen = Boolean(
+      document.body.classList.contains('shell-drawer-open')
+      && overlay
+      && menu
+      && !overlay.hasAttribute('hidden')
+      && !menu.hasAttribute('hidden')
+      && overlay.classList.contains('active')
+      && menu.classList.contains('active')
+    );
+
+    document.body.classList.toggle('shell-drawer-open', drawerOpen);
+
+    if (!drawerOpen) {
+      if (overlay) {
+        overlay.classList.remove('active');
+        overlay.inert = true;
+        overlay.setAttribute('hidden', '');
+        overlay.setAttribute('aria-hidden', 'true');
+      }
+      if (menu) {
+        menu.classList.remove('active');
+        menu.inert = true;
+        menu.setAttribute('hidden', '');
+        menu.setAttribute('aria-hidden', 'true');
+      }
+    }
+
+    const active = document.activeElement;
+    if (!active || typeof active.matches !== 'function' || !active.matches(editableSelector)) {
+      document.body.classList.remove('shell-keyboard-open');
+    }
   }
 
   function setupCategoryMenu() {
@@ -1215,14 +1324,21 @@
     ensureHelperLoaded();
     setupMobileKeyboardState();
     setupDrawer();
+    setupMobileShellNavigation();
     setupCategoryMenu();
     setupGlobalSearch();
     initAuth();
+    syncTransientShellState();
 
     updateHeaderScrollState();
     window.addEventListener('scroll', scheduleHeaderScrollState, { passive: true });
     window.addEventListener('resize', scheduleHeaderScrollState);
     window.addEventListener('resize', syncMobileAppSurface);
+    window.addEventListener('pageshow', syncTransientShellState);
+    window.addEventListener('popstate', syncTransientShellState);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) syncTransientShellState();
+    });
 
     window.addEventListener('bsq_preferences', () => {
       void applyShellBranding();

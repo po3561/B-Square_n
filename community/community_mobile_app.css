@@ -20,12 +20,13 @@
 
   body[data-layout="community"] .community-shell {
     width: 100vw !important;
-    height: calc(100dvh - 82px) !important;
+    height: auto !important;
+    min-height: calc(100dvh - 82px) !important;
     margin: 0 0 0.5rem !important;
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     display: grid !important;
     grid-template-columns: 1fr !important;
     grid-template-rows: auto minmax(0, 1fr) !important;

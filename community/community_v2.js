@@ -90,6 +90,23 @@ async function renderSearchUserResults(container, users, shared, { emptyMessage 
 document.addEventListener('DOMContentLoaded', async () => {
     await waitForAuthBootstrap();
 
+    const shared = window.BSQCommunityShared || {};
+
+    const SyncBridge = window.CommunityModules.SyncBridge;
+
+    const ChatList = window.CommunityModules.ChatList;
+
+    const ChatUI = window.CommunityModules.ChatUI;
+
+    const DM = window.CommunityModules.DM;
+
+    document.body.dataset.layout = document.body.dataset.layout || 'community';
+
+    shared.applySettings?.();
+    ensureStylesheetLink('community-mobile-app-css', './community_mobile_app.css?v=20260411_02');
+
+
+
     const session = window.BSQ?.session;
 
     const isOperator = window.__BSQ_DEV_MODE__ === true;
@@ -105,23 +122,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     const userId = isOperator ? 'OPERATOR_GHOST' : session.user.id;
-
-    const shared = window.BSQCommunityShared || {};
-
-    const SyncBridge = window.CommunityModules.SyncBridge;
-
-    const ChatList = window.CommunityModules.ChatList;
-
-    const ChatUI = window.CommunityModules.ChatUI;
-
-    const DM = window.CommunityModules.DM;
-
-
-
-    document.body.dataset.layout = document.body.dataset.layout || 'community';
-
-    shared.applySettings?.();
-    ensureStylesheetLink('community-mobile-app-css', './community_mobile_app.css?v=20260411_01');
 
 
 

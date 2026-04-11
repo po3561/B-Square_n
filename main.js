@@ -3,26 +3,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     ensureBsqHelperLoaded();
 
     const currentCategory = getCurrentHomeCategory();
-    setHomeCategoryExpandedState(false);
-    syncHomeCategoryBackdrop(false);
     await Promise.all([
         renderHomeCategoryMenu(currentCategory),
         initMainPage(currentCategory, true),
         initBanners(),
     ]);
 
-    syncHomeCategoryBackdrop(getHomeCategoryExpandedState());
-
     window.addEventListener('bsq_sync', (event) => {
         scheduleHomeRefresh(event.detail?.type);
-    });
-
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && getHomeCategoryExpandedState()) {
-            setHomeCategoryExpandedState(false);
-            syncHomeCategoryBackdrop(false);
-            void renderHomeCategoryMenu(getCurrentHomeCategory());
-        }
     });
 });
 
@@ -34,7 +22,7 @@ let homeBannerCarousels = { main: null, bottom: null };
 const HOME_CLASS_FETCH_LIMIT = 48;
 const homeBookmarkMap = new Map();
 const HOME_MOBILE_TAB_KEY = 'bsq.home.mobile.tab';
-const HOME_MOBILE_TABS = ['recommend', 'categories', 'community'];
+const HOME_MOBILE_TABS = ['recommend', 'community'];
 let globalHomeSiteSettings = null;
 let homeMobileLayoutTimer = null;
 
@@ -47,44 +35,6 @@ function setCurrentHomeCategory(category) {
     if (!category || category === 'all') nextUrl.searchParams.delete('cat');
     else nextUrl.searchParams.set('cat', category);
     window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
-}
-
-function getHomeCategoryExpandedState() {
-    try {
-        return localStorage.getItem('bsq.home.categories.expanded') === '1';
-    } catch {
-        return false;
-    }
-}
-
-function setHomeCategoryExpandedState(expanded) {
-    try {
-        localStorage.setItem('bsq.home.categories.expanded', expanded ? '1' : '0');
-    } catch {
-        // no-op
-    }
-}
-
-function syncHomeCategoryBackdrop(expanded) {
-    document.body.classList.toggle('home-category-expanded', !!expanded);
-    const id = 'homeCategoryBackdrop';
-    const existing = document.getElementById(id);
-
-    if (expanded) {
-        if (existing) return;
-        const backdrop = document.createElement('div');
-        backdrop.id = id;
-        backdrop.className = 'home-category-backdrop';
-        backdrop.addEventListener('click', () => {
-            setHomeCategoryExpandedState(false);
-            syncHomeCategoryBackdrop(false);
-            void renderHomeCategoryMenu(getCurrentHomeCategory());
-        });
-        document.body.appendChild(backdrop);
-        return;
-    }
-
-    existing?.remove();
 }
 
 function ensureBsqHelperLoaded() {
@@ -126,26 +76,14 @@ function bindHomeEvents() {
             return;
         }
 
-        const toggle = event.target.closest('[data-category-toggle]');
-        if (toggle) {
-            event.preventDefault();
-            const expanded = !getHomeCategoryExpandedState();
-            setHomeCategoryExpandedState(expanded);
-            syncHomeCategoryBackdrop(expanded);
-            void renderHomeCategoryMenu(getCurrentHomeCategory());
-            return;
-        }
-
         const categoryLink = event.target.closest('[data-cat]');
         if (!categoryLink) return;
 
-        const categoryScope = categoryLink.closest('#homeCategoryShell, #headerCategoryMega');
+        const categoryScope = categoryLink.closest('#headerCategoryMega');
         if (!categoryScope) return;
 
         event.preventDefault();
         const categoryName = String(categoryLink.dataset.cat || 'all');
-        setHomeCategoryExpandedState(false);
-        syncHomeCategoryBackdrop(false);
         const headerCategoryMenu = document.getElementById('headerCategoryMega');
         const headerCategoryButton = document.getElementById('btnHeaderCategory');
         if (headerCategoryMenu) {
@@ -339,11 +277,6 @@ function renderBannerCarousel(kind, items, options = {}) {
     startTimer();
 }
 
-function getCategoryMeta(name, index = 0) {
-    const palette = ['#6f7cff', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6', '#8b5cf6'];
-    return { accent: palette[index % palette.length], icon: svgIcon('spark') };
-}
-
 function isHomeMobileLayout() {
     return window.matchMedia('(max-width: 768px)').matches;
 }
@@ -432,45 +365,6 @@ function buildHomeMobileBannerCard() {
     `;
 }
 
-function buildHomeMobileCategoryGrid({ limit = 9, showMore = true, compact = false } = {}) {
-    const categories = Array.isArray(globalHomeCategories) ? globalHomeCategories : [];
-    if (!categories.length) {
-        return '<p class="empty-state compact">카테고리를 불러오는 중입니다.</p>';
-    }
-
-    const visible = categories.slice(0, limit);
-    const hasMore = showMore && categories.length > limit;
-
-    return `
-        <div class="home-mobile-category-grid${compact ? ' is-compact' : ''}">
-            ${visible.map((item) => {
-                const name = String(item.name || '').trim();
-                const imageUrl = String(item.image_url || '').trim();
-                const href = `class/class_list.html?category=${encodeURIComponent(name)}`;
-                const initial = name ? name.charAt(0) : 'B';
-
-                return `
-                    <a class="home-mobile-category-tile" href="${escapeHtml(href)}" aria-label="${escapeHtml(name)} 카테고리, 클래스 ${Number(item.class_count || 0).toLocaleString()}개">
-                        <span class="home-mobile-category-icon${imageUrl ? ' has-image' : ''}">
-                            ${imageUrl
-                                ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)}" loading="lazy">`
-                                : `<span>${escapeHtml(initial)}</span>`
-                            }
-                        </span>
-                        <span class="home-mobile-category-label">${escapeHtml(name)}</span>
-                    </a>
-                `;
-            }).join('')}
-            ${hasMore ? `
-                <a class="home-mobile-category-tile home-mobile-category-more" href="class/class_list.html" aria-label="전체 카테고리 보기">
-                    <span class="home-mobile-category-icon home-mobile-category-icon-more">${svgIcon('chevron-down')}</span>
-                    <span class="home-mobile-category-label">더보기</span>
-                </a>
-            ` : ''}
-        </div>
-    `;
-}
-
 function buildHomeMobileFolderRail(folders = []) {
     if (!Array.isArray(folders) || !folders.length) {
         return '<p class="empty-state compact">추천 폴더가 아직 없습니다.</p>';
@@ -530,24 +424,12 @@ function renderHomeMobileShell() {
     shell.innerHTML = `
         <div class="home-mobile-tabbar" role="tablist" aria-label="홈 탐색">
             <button type="button" class="home-mobile-tab" data-home-mobile-tab="recommend" role="tab" aria-selected="false">추천</button>
-            <button type="button" class="home-mobile-tab" data-home-mobile-tab="categories" role="tab" aria-selected="false">카테고리</button>
             <button type="button" class="home-mobile-tab" data-home-mobile-tab="community" role="tab" aria-selected="false">커뮤니티</button>
         </div>
 
         <div class="home-mobile-panels">
             <section class="home-mobile-panel" data-home-panel="recommend" role="tabpanel">
                 ${buildHomeMobileBannerCard()}
-
-                <section class="home-mobile-section home-mobile-category-preview">
-                    <div class="home-mobile-section-head">
-                        <div>
-                            <span class="home-mobile-eyebrow">카테고리</span>
-                            <h2>빠른 이동</h2>
-                        </div>
-                        <a href="class/class_list.html" class="home-mobile-more">전체 보기</a>
-                    </div>
-                    ${buildHomeMobileCategoryGrid({ limit: 9, showMore: true, compact: true })}
-                </section>
 
                 <section class="home-mobile-section">
                     <div class="home-mobile-section-head">
@@ -582,18 +464,6 @@ function renderHomeMobileShell() {
                 </section>
             </section>
 
-            <section class="home-mobile-panel" data-home-panel="categories" role="tabpanel">
-                <div class="home-mobile-panel-copy">
-                    <span class="home-mobile-eyebrow">카테고리</span>
-                    <h2>클래스 카테고리를 빠르게 둘러보세요.</h2>
-                    <p>한 번에 보고, 바로 클래스 목록으로 이동할 수 있는 진입점입니다.</p>
-                </div>
-                ${buildHomeMobileCategoryGrid({ limit: 10, showMore: false, compact: false })}
-                <div class="home-mobile-panel-footer">
-                    <a href="class/class_list.html" class="home-mobile-panel-link">전체 클래스 보기</a>
-                </div>
-            </section>
-
             <section class="home-mobile-panel" data-home-panel="community" role="tabpanel">
                 ${buildHomeMobileCommunityPanel()}
             </section>
@@ -614,7 +484,6 @@ function renderHomeMobileShell() {
 
 function renderHomeCategoryMenu(currentCategory = 'all') {
     const nav = document.getElementById('headerCategoryMega');
-    const shell = document.getElementById('homeCategoryShell');
     const categories = globalHomeCategories.length ? globalHomeCategories : [];
 
     if (nav) {
@@ -629,65 +498,6 @@ function renderHomeCategoryMenu(currentCategory = 'all') {
             </div>
         `;
     }
-
-    if (!shell) return Promise.resolve();
-
-    const visibleItems = categories.slice(0, 12);
-    const extraItems = categories.slice(12);
-
-    shell.innerHTML = `
-        <div class="home-category-grid home-category-grid-primary">
-            <button type="button" class="home-category-item${currentCategory === 'all' ? ' is-active' : ''}" data-cat="all">
-                <span class="home-category-icon" style="background:rgba(111,124,255,0.16); color:#6f7cff;">${svgIcon('spark')}</span>
-                <span class="home-category-name">전체 클래스</span>
-                <span class="home-category-count">${globalAllClasses.length || 0}</span>
-            </button>
-            ${visibleItems.map((item, index) => {
-                const meta = getCategoryMeta(item.name, index);
-                return `
-                    <button type="button" class="home-category-item${currentCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">
-                        ${renderHomeCategoryMedia(item, meta)}
-                        <span class="home-category-name">${escapeHtml(item.name)}</span>
-                        <span class="home-category-count">${Number(item.class_count || 0).toLocaleString()}</span>
-                    </button>
-                `;
-            }).join('')}
-            ${extraItems.length ? `
-                <button type="button" class="home-category-toggle" data-category-toggle="1">
-                    <span class="home-category-icon" style="background:rgba(111,124,255,0.16); color:#6f7cff;">${svgIcon(getHomeCategoryExpandedState() ? 'chevron-up' : 'chevron-down')}</span>
-                    <span class="home-category-label">${getHomeCategoryExpandedState() ? '접기' : '카테고리 더보기'}</span>
-                </button>
-            ` : ''}
-        </div>
-        ${extraItems.length ? `
-            <div class="home-category-extra"${getHomeCategoryExpandedState() ? '' : ' hidden'}>
-                <div class="home-category-grid home-category-grid-extra">
-                    ${extraItems.map((item, index) => {
-                        const meta = getCategoryMeta(item.name, visibleItems.length + index);
-                        return `
-                            <button type="button" class="home-category-item${currentCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">
-                                ${renderHomeCategoryMedia(item, meta)}
-                                <span class="home-category-name">${escapeHtml(item.name)}</span>
-                                <span class="home-category-count">${Number(item.class_count || 0).toLocaleString()}</span>
-                            </button>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-        ` : ''}
-    `;
-
-    updateHomeHeroStats();
-    return Promise.resolve();
-}
-
-function renderHomeCategoryMedia(item, meta) {
-    const imageUrl = String(item?.image_url || '').trim();
-    return `
-        <span class="home-category-icon" style="background:${meta.accent}22; color:${meta.accent}; position:relative;">
-            ${imageUrl ? `<span class="home-category-icon-image-wrap"><img class="home-category-icon-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.name || '')}" loading="lazy"></span>` : meta.icon}
-        </span>
-    `;
 }
 
 async function initMainPage(currentCategory = 'all', forceRefresh = false) {
@@ -945,11 +755,9 @@ function formatClassPriceLabel(item = {}) {
 
 function updateHomeHeroStats() {
     const classTotal = document.getElementById('homeClassTotal');
-    const categoryTotal = document.getElementById('homeCategoryTotal');
     const freshCount = document.getElementById('homeFreshCount');
 
     if (classTotal) classTotal.textContent = String(globalAllClasses.length || 0);
-    if (categoryTotal) categoryTotal.textContent = String(globalHomeCategories.length || 0);
     if (freshCount) {
         const now = Date.now();
         const recentWindow = 14 * 24 * 60 * 60 * 1000;
