@@ -4254,13 +4254,21 @@ html[data-theme="light"] body.class-list-page .class-category-media-stack {
 
   .header-bottom .main-nav ul {
     justify-content: flex-start;
-    flex-wrap: wrap;
-    gap: clamp(0.15rem, 0.7vw, 0.55rem);
+    flex-wrap: nowrap;
+    gap: clamp(0.12rem, 0.45vw, 0.35rem);
     min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     transition: gap 260ms ease;
   }
 
+  .header-bottom .main-nav ul::-webkit-scrollbar {
+    display: none;
+  }
+
   .header-bottom .main-nav a {
+    padding: 0.66rem 0.84rem;
     transition:
       padding 260ms ease,
       min-height 260ms ease,
