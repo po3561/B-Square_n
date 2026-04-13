@@ -2852,6 +2852,179 @@ body.class-view-page .chat-tab-wrapper .gathering-preview-modal .gathering-previ
   color: var(--bsq-text) !important;
 }
 
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-info-shell {
+  gap: 16px !important;
+}
+
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-info-roster,
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-info-details,
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-member-row,
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-member-meta,
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-member-meta-pill,
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-gathering-card,
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-pass-stats {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-info-roster,
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-info-details {
+  padding: 0 !important;
+}
+
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-member-row {
+  padding: 12px 0 !important;
+  border-radius: 0 !important;
+}
+
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-member-row:not(:last-child) {
+  border-bottom: 1px solid color-mix(in srgb, var(--bsq-border) 84%, transparent) !important;
+}
+
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-member-meta-pill {
+  padding: 0 !important;
+  min-width: 0 !important;
+}
+
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-gathering-card {
+  padding: 0 !important;
+}
+
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-gathering-line,
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-pass-stat-row,
+body.class-view-page .chat-tab-wrapper .info-panel-body .class-gathering-progress-head {
+  padding: 0 !important;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal {
+  align-items: center !important;
+  justify-content: center !important;
+  padding: clamp(1rem, 2.4vw, 2rem) !important;
+  background: rgba(3, 6, 12, 0.64) !important;
+  backdrop-filter: blur(18px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(130%) !important;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal .modal-content {
+  width: min(560px, calc(100vw - 32px)) !important;
+  max-width: min(560px, calc(100vw - 32px)) !important;
+  max-height: min(90vh, 900px) !important;
+  overflow: auto !important;
+  padding: 0 !important;
+  border-radius: 28px !important;
+  border: 1px solid var(--bsq-border) !important;
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--bsq-primary) 12%, transparent), transparent 28%),
+    color-mix(in srgb, var(--bsq-surface) 96%, transparent) !important;
+  color: var(--bsq-text) !important;
+  box-shadow: var(--bsq-shadow) !important;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal .modal-header {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  padding: 20px 20px 0 !important;
+  margin-bottom: 0 !important;
+  border-bottom: 0 !important;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal .modal-header h3 {
+  margin: 0 !important;
+  font-size: clamp(1.18rem, 1.8vw, 1.48rem) !important;
+  line-height: 1.25 !important;
+  color: var(--bsq-text) !important;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal .modal-header p {
+  color: var(--bsq-text-muted) !important;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal .modal-body {
+  display: grid !important;
+  gap: 14px !important;
+  padding: 18px 20px 20px !important;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal .modal-body > div {
+  display: grid !important;
+  gap: 6px !important;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal label {
+  margin: 0 !important;
+  color: var(--bsq-text-muted) !important;
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em !important;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal input,
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal select,
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal textarea {
+  width: 100% !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--bsq-border) !important;
+  background: var(--bsq-surface-2) !important;
+  color: var(--bsq-text) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal input::placeholder,
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal textarea::placeholder {
+  color: var(--bsq-text-muted) !important;
+}
+
+body.class-view-page[data-theme="light"]:not(.class-view-mobile-app) #gatheringModal input[type="datetime-local"] {
+  color-scheme: light !important;
+}
+
+body.class-view-page[data-theme="dark"]:not(.class-view-mobile-app) #gatheringModal input[type="datetime-local"] {
+  color-scheme: dark !important;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal .btn-close-modal,
+body.class-view-page:not(.class-view-mobile-app) #gatheringPreviewModal .btn-close-modal {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: 38px !important;
+  height: 38px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--bsq-border) !important;
+  background: var(--bsq-surface-2) !important;
+  color: var(--bsq-text) !important;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal .btn-close-modal::before,
+body.class-view-page:not(.class-view-mobile-app) #gatheringPreviewModal .btn-close-modal::before {
+  content: "×";
+  font-size: 1.45rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal .btn-close-modal:hover,
+body.class-view-page:not(.class-view-mobile-app) #gatheringPreviewModal .btn-close-modal:hover {
+  background: var(--bsq-surface-3) !important;
+}
+
+body.class-view-page:not(.class-view-mobile-app) #gatheringModal .btn-submit {
+  width: 100% !important;
+  min-height: 52px !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, var(--bsq-primary), var(--bsq-primary-strong)) !important;
+  color: #fff !important;
+  box-shadow: 0 14px 30px rgba(59, 109, 245, 0.24) !important;
+}
+
 html[data-theme="light"] body.home-page .home-category-extra-wrap {
   border-color: rgba(15, 23, 42, 0.10);
   background:

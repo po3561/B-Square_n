@@ -10,6 +10,8 @@
         lastCursor: 0,
         pinnedMessages: [],
         messageCache: new Map(),
+        senderProfileCache: new Map(),
+        senderProfileRequests: new Map(),
         replyTarget: null,
         editTargetId: null,
         isSending: false,
@@ -25,6 +27,116 @@
     function escapeHtml(v) { const d = document.createElement('div'); d.textContent = String(v ?? ''); return d.innerHTML; }
     function escapeAttr(v) { return escapeHtml(v).replace(/"/g, '&quot;'); }
     function parseJson(v, fallback) { try { return typeof v === 'string' ? JSON.parse(v) : (v || fallback); } catch { return fallback; } }
+    function getCurrentUserId() {
+        return String(window.__BSQ_DEV_MODE__ ? 'OPERATOR_GHOST' : (state.userId || bridge()?.getUserId?.() || '')).trim();
+    }
+    function normalizeProfileData(profile) {
+        if (!profile || typeof profile !== 'object') return null;
+        const name = String(profile.name || profile.username || profile.display_name || profile.user_name || profile.sender_name || '사용자').trim() || '사용자';
+        const avatar = String(profile.profile_image_url || profile.avatar_url || profile.profile_image || profile.user_avatar || '').trim();
+        return {
+            ...profile,
+            name,
+            profile_image_url: avatar,
+            avatar_url: avatar,
+        };
+    }
+    function hasMessageAvatar(msg) {
+        return !!String(
+            msg?.user_avatar
+            || msg?.sender_avatar
+            || msg?.avatar_url
+            || msg?.profile_image_url
+            || msg?.target_avatar
+            || ''
+        ).trim();
+    }
+    function mergeMessageProfile(msgData, profile) {
+        const normalizedProfile = normalizeProfileData(profile);
+        if (!msgData || !normalizedProfile) return msgData;
+
+        const avatar = normalizedProfile.profile_image_url || normalizedProfile.avatar_url || '';
+        const currentName = String(msgData.user_name || msgData.sender_name || msgData.name || '').trim();
+        const shouldReplaceName = !currentName || ['User', '사용자', '닉네임'].includes(currentName);
+        return {
+            ...msgData,
+            user_avatar: msgData.user_avatar || avatar,
+            sender_avatar: msgData.sender_avatar || avatar,
+            avatar_url: msgData.avatar_url || avatar,
+            profile_image_url: msgData.profile_image_url || avatar,
+            target_avatar: msgData.target_avatar || avatar,
+            user_name: shouldReplaceName ? normalizedProfile.name : (msgData.user_name || normalizedProfile.name || ''),
+            sender_name: shouldReplaceName ? normalizedProfile.name : (msgData.sender_name || normalizedProfile.name || ''),
+        };
+    }
+    async function resolveSenderProfile(senderId) {
+        const key = String(senderId || '').trim();
+        if (!key) return null;
+
+        if (key === 'OPERATOR_GHOST') {
+            const operatorProfile = normalizeProfileData({
+                name: '운영자',
+                profile_image_url: '/assets/default-avatar.svg',
+                is_operator: true,
+            });
+            if (operatorProfile) state.senderProfileCache.set(key, operatorProfile);
+            return operatorProfile;
+        }
+
+        if (key === getCurrentUserId()) {
+            const currentProfile = normalizeProfileData(state.userProfile || window.BSQ?.session?.user || {});
+            if (currentProfile) state.senderProfileCache.set(key, currentProfile);
+            return currentProfile;
+        }
+
+        if (state.senderProfileCache.has(key)) {
+            return state.senderProfileCache.get(key);
+        }
+
+        if (state.senderProfileRequests.has(key)) {
+            return state.senderProfileRequests.get(key);
+        }
+
+        const pending = Promise.resolve(bridge()?.getUserProfile?.(key))
+            .then((profile) => {
+                const normalized = normalizeProfileData(profile);
+                if (normalized) state.senderProfileCache.set(key, normalized);
+                return normalized;
+            })
+            .catch((error) => {
+                console.warn('[SimpleClassChat] sender profile load failed:', error);
+                return null;
+            })
+            .finally(() => {
+                state.senderProfileRequests.delete(key);
+            });
+
+        state.senderProfileRequests.set(key, pending);
+        return pending;
+    }
+    async function hydrateMessageProfiles(messages = []) {
+        const list = Array.isArray(messages) ? messages : [];
+        const currentUserId = getCurrentUserId();
+        const avatarTargets = Array.from(new Set(
+            list
+                .map((msg) => {
+                    const senderId = String(msg?.sender_id || msg?.user_id || '').trim();
+                    if (!senderId || senderId === currentUserId || senderId === 'OPERATOR_GHOST') return '';
+                    return hasMessageAvatar(msg) ? '' : senderId;
+                })
+                .filter(Boolean)
+        ));
+
+        if (avatarTargets.length) {
+            await Promise.all(avatarTargets.map((senderId) => resolveSenderProfile(senderId)));
+        }
+
+        return list.map((msg) => {
+            const senderId = String(msg?.sender_id || msg?.user_id || '').trim();
+            const profile = state.senderProfileCache.get(senderId);
+            return profile ? mergeMessageProfile(msg, profile) : msg;
+        });
+    }
     function getDocumentTheme() {
         return document.documentElement.getAttribute('data-theme')
             || document.body?.getAttribute('data-theme')
@@ -66,6 +178,22 @@
         msg.message = msg.message || content;
         msg.text = msg.text || content;
         msg.file_data = msg.file_data || msg.image_url || '';
+        const avatar = String(
+            msg.user_avatar
+            || msg.sender_avatar
+            || msg.avatar_url
+            || msg.profile_image_url
+            || msg.target_avatar
+            || ''
+        ).trim();
+        const senderName = String(msg.user_name || msg.sender_name || msg.name || msg.target_name || '').trim();
+        msg.user_avatar = msg.user_avatar || avatar;
+        msg.sender_avatar = msg.sender_avatar || avatar;
+        msg.avatar_url = msg.avatar_url || avatar;
+        msg.profile_image_url = msg.profile_image_url || avatar;
+        msg.target_avatar = msg.target_avatar || avatar;
+        msg.user_name = msg.user_name || senderName;
+        msg.sender_name = msg.sender_name || senderName;
         msg.reactions = parseJson(msg.reactions, {}) || {};
         msg.reply_data = parseJson(msg.reply_data, null);
         msg.edited = !!(msg.edited || msg.is_edited);
@@ -81,6 +209,8 @@
             : '';
         return [
             msg?.type || '', msg?.content || '', msg?.message || '', msg?.text || '',
+            msg?.user_name || '', msg?.sender_name || '',
+            msg?.user_avatar || '', msg?.sender_avatar || '', msg?.avatar_url || '', msg?.profile_image_url || '', msg?.target_avatar || '',
             msg?.file_name || '', msg?.file_size || '', msg?.file_data ? 'file' : '',
             msg?.gather_title || '', msg?.gather_place || '', msg?.gather_time || '',
             msg?.reply_to || '', msg?.reply_text || '', msg?.reply_user || '',
@@ -357,13 +487,14 @@
     async function loadInitialMessages() {
         const rows = await fetchMessages({ limit: 120 });
         rows.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
-        rows.forEach((msg) => {
+        const hydratedRows = await hydrateMessageProfiles(rows);
+        hydratedRows.forEach((msg) => {
             const cursor = messageCursor(msg);
             if (cursor > state.lastCursor) state.lastCursor = cursor;
             renderMessage(msg, { optimistic: false });
         });
         scrollToBottom();
-        return rows;
+        return hydratedRows;
     }
 
     async function loadPinnedMessages() {
@@ -390,8 +521,9 @@
         const sync = bridge();
         if (!sync?.listenMessages) {
             state.pollTimer = setInterval(() => {
-                fetchMessages({ since: state.lastCursor, limit: 100 }).then((rows) => {
-                    rows.forEach((msg) => {
+                fetchMessages({ since: state.lastCursor, limit: 100 }).then(async (rows) => {
+                    const hydratedRows = await hydrateMessageProfiles(rows);
+                    hydratedRows.forEach((msg) => {
                         const cursor = messageCursor(msg);
                         if (cursor > state.lastCursor) state.lastCursor = cursor;
                         renderMessage(msg, { optimistic: false });
@@ -406,6 +538,16 @@
             const cursor = messageCursor(normalized);
             if (cursor > state.lastCursor) state.lastCursor = cursor;
             renderMessage(normalized, { optimistic: false });
+
+            const senderId = String(normalized.sender_id || normalized.user_id || '').trim();
+            if (senderId && senderId !== getCurrentUserId() && senderId !== 'OPERATOR_GHOST' && !hasMessageAvatar(normalized)) {
+                resolveSenderProfile(senderId).then((profile) => {
+                    if (!profile) return;
+                    const hydrated = mergeMessageProfile(normalized, profile);
+                    cacheMessage(hydrated);
+                    renderMessage(hydrated, { optimistic: false });
+                }).catch(() => {});
+            }
         }, {
             since: state.lastCursor,
             seedMessages,
@@ -424,14 +566,14 @@
 
         const clientId = String(msg.client_id || msg.temp_id || '');
         const existing = document.getElementById(`msg-${id}`) || (clientId ? document.querySelector(`[data-client-id="${clientId}"]`) : null);
-        const currentUserId = state.userId;
+        const currentUserId = getCurrentUserId();
         const senderId = msg.sender_id || msg.user_id || '';
         const isMine = String(senderId) === String(currentUserId);
         const signature = messageSignature(msg);
         const shouldStick = optimistic || isNearBottom(container) || !container.children.length;
 
-        const senderName = msg.user_name || msg.sender_name || 'User';
-        const avatar = msg.user_avatar || msg.sender_avatar || '/assets/default-avatar.svg';
+        const senderName = msg.user_name || msg.sender_name || msg.name || 'User';
+        const avatar = msg.user_avatar || msg.sender_avatar || msg.avatar_url || msg.profile_image_url || msg.target_avatar || '/assets/default-avatar.svg';
         const time = msg.timestamp || msg.created_at ? new Date(msg.timestamp || msg.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
 
         let contentHtml = '';
@@ -460,7 +602,7 @@
             </div>`;
 
         const html = `
-            ${!isMine ? `<div class="msg-avatar" style="background-image:url(${escapeAttr(avatar)})"></div>` : ''}
+            ${!isMine ? `<div class="msg-avatar" style="background-image:url('${escapeAttr(avatar)}')"></div>` : ''}
             <div class="msg-wrapper">
                 ${!isMine ? `<div class="msg-sender-row">${escapeHtml(senderName)}</div>` : ''}
                 ${replyHtml}
@@ -1088,6 +1230,8 @@
         state.lastCursor = 0;
         state.pinnedMessages = [];
         state.messageCache = new Map();
+        state.senderProfileCache = new Map();
+        state.senderProfileRequests = new Map();
         state.replyTarget = null;
         state.editTargetId = null;
         state.deletePrompt = { id: null, at: 0 };

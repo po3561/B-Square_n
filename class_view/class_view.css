@@ -2389,6 +2389,116 @@ body.class-view-page #deleteConfirmInput {
     }
 }
 
+/* Theme-aware class view overrides.
+   Keep the main banner imagery, remove the boxed hero wrapper, and let
+   the visible surfaces follow the active theme variables. */
+body.class-view-page .premium-hero .hero-slider-area,
+body.class-view-page .premium-hero .slider-section {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+body.class-view-page .premium-hero .hero-slider-area {
+    padding: 0 !important;
+    overflow: visible !important;
+}
+
+body.class-view-page .premium-hero .hero-info-band {
+    display: none !important;
+}
+
+body.class-view-page .view-main-content .view-tabs {
+    background: var(--bsq-surface) !important;
+    border: 1px solid var(--bsq-border) !important;
+    box-shadow: var(--bsq-shadow-soft) !important;
+    backdrop-filter: blur(18px) !important;
+}
+
+body.class-view-page .view-main-content .tab-btn {
+    color: var(--bsq-text-muted) !important;
+    background: transparent !important;
+}
+
+body.class-view-page .view-main-content .tab-btn.active,
+body.class-view-page .view-main-content .tab-btn:hover {
+    color: var(--bsq-text) !important;
+    background: var(--bsq-surface-2) !important;
+}
+
+body.class-view-page .view-main-content .content-card {
+    background: var(--bsq-surface) !important;
+    border: 1px solid var(--bsq-border) !important;
+    box-shadow: var(--bsq-shadow-soft) !important;
+    color: var(--bsq-text) !important;
+}
+
+body.class-view-page .view-main-content .section-inline-action {
+    background: var(--bsq-surface-2) !important;
+    border: 1px solid var(--bsq-border) !important;
+    color: var(--bsq-text) !important;
+}
+
+body.class-view-page .view-sidebar .sticky-card-premium {
+    background: var(--bsq-surface) !important;
+    border: 1px solid var(--bsq-border) !important;
+    box-shadow: var(--bsq-shadow) !important;
+    color: var(--bsq-text) !important;
+}
+
+body.class-view-page .view-sidebar .hero-badge {
+    background: color-mix(in srgb, var(--bsq-primary) 14%, transparent) !important;
+    color: var(--bsq-primary) !important;
+}
+
+body.class-view-page .view-sidebar .hero-format-chip {
+    background: var(--bsq-surface-2) !important;
+    color: var(--bsq-text-muted) !important;
+}
+
+body.class-view-page .view-sidebar .side-main-title,
+body.class-view-page .view-sidebar .stat-value,
+body.class-view-page .view-sidebar .pass-count {
+    color: var(--bsq-text) !important;
+}
+
+body.class-view-page .view-sidebar .stat-label,
+body.class-view-page .view-sidebar .side-review-count,
+body.class-view-page .view-sidebar .hero-summary,
+body.class-view-page .view-sidebar .hero-trust-row {
+    color: var(--bsq-text-muted) !important;
+}
+
+body.class-view-page .view-sidebar .stat-item,
+body.class-view-page .view-sidebar .pass-info-box,
+body.class-view-page .view-sidebar .hero-trust-row span {
+    background: var(--bsq-surface-2) !important;
+    border: 1px solid var(--bsq-border) !important;
+}
+
+body.class-view-page .view-sidebar .side-stars {
+    color: var(--bsq-primary) !important;
+}
+
+body.class-view-page .view-sidebar .btn-cta-start,
+body.class-view-page .view-sidebar #btnEnroll {
+    background: linear-gradient(135deg, var(--bsq-primary), var(--bsq-primary-strong)) !important;
+    color: #fff !important;
+    border: 0 !important;
+    box-shadow: 0 16px 34px rgba(79, 111, 255, 0.22) !important;
+}
+
+body.class-view-page .view-sidebar .btn-cta-secondary {
+    background: var(--bsq-surface-2) !important;
+    border: 1px solid var(--bsq-border) !important;
+    color: var(--bsq-text) !important;
+    box-shadow: none !important;
+}
+
+body.class-view-page .view-sidebar .btn-cta-secondary:hover {
+    background: var(--bsq-surface-3) !important;
+}
+
 @media (max-width: 220px) {
     body.class-view-page .view-container {
         padding-inline: 0.5rem !important;
