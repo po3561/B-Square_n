@@ -56,13 +56,15 @@
                     <button id="msgSearchClose" class="btn-search-close" aria-label="검색 닫기"><i class="fa-solid fa-xmark"></i></button>
                 </div>
 
-                <div id="pinnedMsgBar" class="pinned-msg-bar" style="display:none;">
-                    <i class="fa-solid fa-thumbtack pin-icon"></i>
-                    <div id="pinnedMsgContent" class="pinned-msg-content"><b>고정 메시지</b> 불러오는 중...</div>
-                    <i class="fa-solid fa-bars-staggered"></i>
-                </div>
+                <div class="chat-timeline-panel" id="chatTimelinePanel">
+                    <div id="pinnedMsgBar" class="pinned-msg-bar" style="display:none;">
+                        <i class="fa-solid fa-thumbtack pin-icon"></i>
+                        <div id="pinnedMsgContent" class="pinned-msg-content"><b>고정 메시지</b> 불러오는 중...</div>
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </div>
 
-                <div class="chat-messages-container" id="chatMessagesContainer"></div>
+                    <div class="chat-messages-container" id="chatMessagesContainer"></div>
+                </div>
 
                 <button id="btnScrollBottom" class="btn-scroll-bottom" title="최신 메시지로 이동">
                     <i class="fa-solid fa-chevron-down"></i>
