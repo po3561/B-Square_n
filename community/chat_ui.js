@@ -922,7 +922,7 @@ window.CommunityModules.ChatUI = (function () {
             const roomType = currentRoomType;
             const endpoint = getRoomMessagesUrl({
                 since: refreshAll ? '' : getReplaySince(lastMsgTimestamp),
-                limit: refreshAll ? 250 : 100,
+                limit: refreshAll ? 120 : 100,
             });
             const res = await window.BSQ.api(endpoint);
             if (roomToken !== roomOpenSeq || roomId !== currentRoomId || roomType !== currentRoomType) return [];

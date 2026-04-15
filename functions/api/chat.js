@@ -272,6 +272,20 @@ function buildChatMessageSelect(whereSql = '', orderSql = '', limitSql = '') {
   `;
 }
 
+function buildLatestChatMessageSelect(limitSql = '') {
+  return `
+    SELECT ${CHAT_MESSAGE_COLUMNS}
+    FROM (
+      SELECT ${CHAT_MESSAGE_COLUMNS}
+      FROM chat_messages
+      WHERE class_id = ?
+      ORDER BY created_at DESC, id DESC
+      ${limitSql}
+    ) AS latest_messages
+    ORDER BY created_at ASC, id ASC
+  `;
+}
+
 async function streamMessages(context, classId, since) {
   const { env, request } = context;
   const encoder = new TextEncoder();
@@ -342,7 +356,7 @@ export async function onRequestGet(context) {
 
   const url = new URL(request.url);
   const classId = url.searchParams.get('class_id');
-  const limit = Math.min(parseInt(url.searchParams.get('limit'), 10) || 50, 100);
+  const limit = Math.min(parseInt(url.searchParams.get('limit'), 10) || 50, 120);
   const after = url.searchParams.get('after');
   const since = url.searchParams.get('since');
   const pinnedOnly = ['1', 'true', 'yes'].includes((url.searchParams.get('pinned_only') || '').toLowerCase());
@@ -366,15 +380,21 @@ export async function onRequestGet(context) {
       ({ results } = await env.DB.prepare(query).bind(classId, limit + 1).all());
     } else {
       const clause = buildSinceClause(since, after);
-      const query = buildChatMessageSelect(clause.sql, clause.orderSql, 'LIMIT ?');
-      const binds = [classId];
+      const hasCursorClause = !!clause.sql;
+      if (hasCursorClause) {
+        const query = buildChatMessageSelect(clause.sql, clause.orderSql, 'LIMIT ?');
+        const binds = [classId];
 
-      if (clause.sql) {
-        binds.push(clause.bind);
+        if (clause.bind !== null && clause.bind !== undefined) {
+          binds.push(clause.bind);
+        }
+
+        binds.push(limit + 1);
+        ({ results } = await env.DB.prepare(query).bind(...binds).all());
+      } else {
+        const query = buildLatestChatMessageSelect('LIMIT ?');
+        ({ results } = await env.DB.prepare(query).bind(classId, limit + 1).all());
       }
-
-      binds.push(limit + 1);
-      ({ results } = await env.DB.prepare(query).bind(...binds).all());
     }
 
     const rows = (results || []).map(normalizeChatMessage);
