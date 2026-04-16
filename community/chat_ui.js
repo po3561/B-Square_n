@@ -773,7 +773,7 @@ window.CommunityModules.ChatUI = (function () {
         if (roomType === 'class') {
             if (statusEl) { statusEl.textContent = '클래스 채팅'; statusEl.className = 'chat-header-status'; }
             if (btnGathering) {
-                btnGathering.style.display = (window.__BSQ_DEV_MODE__ || roomInfo?.is_instructor) ? 'inline-flex' : 'none';
+                btnGathering.style.display = (window.__BSQ_DEV_MODE__ || roomInfo?.is_instructor) ? 'flex' : 'none';
             }
             if (btnGoToClass) {
                 btnGoToClass.style.display = 'inline-flex';
