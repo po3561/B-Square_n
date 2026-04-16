@@ -503,11 +503,28 @@ window.CommunityModules.SyncBridge = (function () {
         });
     }
 
-    async function markAsRead(roomId) {
+    async function markAsRead(roomId, roomType = '') {
         if (!roomId) return false;
-        roomReadState.set(String(roomId), Date.now());
+        const normalizedRoomId = String(roomId);
+        const normalizedRoomType = String(roomType || '').trim().toLowerCase();
+        roomReadState.set(normalizedRoomId, Date.now());
+
+        try {
+            await window.BSQ.api('/api/user-chats', {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    room_id: normalizedRoomId,
+                    type: normalizedRoomType || undefined,
+                    unread_count: 0,
+                }),
+            });
+        } catch (error) {
+            console.warn('markAsRead sync error:', error);
+        }
+
         emit('room_read', {
-            roomId: String(roomId),
+            roomId: normalizedRoomId,
+            roomType: normalizedRoomType,
             userId,
         });
         return true;

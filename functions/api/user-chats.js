@@ -236,6 +236,58 @@ export async function onRequestDelete(context) {
   }
 }
 
+export async function onRequestPatch(context) {
+  const { request, env } = context;
+  const auth = await requireSession(context);
+  if (!auth.ok) return auth.response;
+  await ensureUserChatsSchema(env.DB);
+
+  try {
+    const body = await request.json();
+    const targetUserId = trimText(body?.user_id || auth.user.id);
+    const roomId = trimText(body?.room_id);
+    const type = trimText(body?.type).toLowerCase();
+    const hasUnreadCount = Object.prototype.hasOwnProperty.call(body || {}, 'unread_count');
+
+    if (!roomId) {
+      return json(request, env, { success: false, error: 'room_id is required' }, { status: 400 });
+    }
+
+    if (!hasUnreadCount) {
+      return json(request, env, { success: false, error: 'unread_count is required' }, { status: 400 });
+    }
+
+    if (targetUserId !== auth.user.id && !isAtLeastRole(auth.user.role, 'admin')) {
+      return json(request, env, { success: false, error: 'Permission denied' }, { status: 403 });
+    }
+
+    const unreadCount = Math.max(Number.parseInt(body.unread_count, 10) || 0, 0);
+    let query = 'UPDATE user_chats SET unread_count = ? WHERE user_id = ? AND room_id = ?';
+    const binds = [unreadCount, targetUserId, roomId];
+
+    if (type) {
+      query += ' AND type = ?';
+      binds.push(type);
+    }
+
+    const result = await env.DB.prepare(query).bind(...binds).run();
+    if ((result.meta?.changes || 0) === 0) {
+      return json(request, env, { success: false, error: 'Chat not found' }, { status: 404 });
+    }
+
+    const updated = await env.DB.prepare(`
+      SELECT ${USER_CHAT_COLUMNS}
+      FROM user_chats
+      WHERE user_id = ? AND room_id = ?
+      LIMIT 1
+    `).bind(targetUserId, roomId).first();
+
+    return json(request, env, { success: true, data: updated || null });
+  } catch (error) {
+    return json(request, env, { success: false, error: 'Failed to update chat', detail: error.message }, { status: 500 });
+  }
+}
+
 export async function onRequestOptions(context) {
   return options(context.request, context.env);
 }

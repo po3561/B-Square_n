@@ -428,7 +428,7 @@ window.CommunityModules.ChatList = (() => {
                 } else if (action === 'mute') {
                     toggleMute(roomId);
                 } else if (action === 'mark-read') {
-                    bridge()?.markAsRead?.(roomId);
+                    bridge()?.markAsRead?.(roomId, type);
                     const next = roomsCache.get(roomId);
                     if (next) {
                         next.unread_count = 0;
@@ -542,7 +542,7 @@ window.CommunityModules.ChatList = (() => {
         document.querySelectorAll('.chat-room-item').forEach(item => {
             item.classList.toggle('active', item.dataset.roomId === roomId);
         });
-        bridge()?.markAsRead?.(roomId);
+        bridge()?.markAsRead?.(roomId, next?.type || '');
     }
 
     function getCurrentFilter() {

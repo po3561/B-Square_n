@@ -32,7 +32,13 @@ function ensureStylesheetLink(id, href) {
     document.head.appendChild(link);
 }
 
-async function renderSearchUserResults(container, users, shared, { emptyMessage = '검색 결과가 없습니다.', onActivate = null, shouldContinue = null } = {}) {
+async function renderSearchUserResults(container, users, shared, {
+    emptyMessage = '검색 결과가 없습니다.',
+    onActivate = null,
+    shouldContinue = null,
+    resolveActionMeta = null,
+    activateUser = null,
+} = {}) {
     if (!container) return;
 
     const resolved = await Promise.all((Array.isArray(users) ? users : []).map(async (user) => {
@@ -47,7 +53,10 @@ async function renderSearchUserResults(container, users, shared, { emptyMessage 
     }
 
     container.innerHTML = resolved.length ? resolved.map(({ user, relation }) => {
-        const meta = getSearchContactMeta(relation || {});
+        const baseMeta = getSearchContactMeta(relation || {});
+        const meta = typeof resolveActionMeta === 'function'
+            ? { ...baseMeta, ...(resolveActionMeta(user, relation || {}, baseMeta) || {}) }
+            : baseMeta;
         return `
             <div class="user-search-item" data-uid="${shared.escapeAttr(user.id)}" data-state="${shared.escapeAttr(meta.state)}">
                 <div class="user-avatar-mini" style="${user.profile_image_url ? `background-image:url(${shared.escapeAttr(user.profile_image_url)})` : ''}">${user.profile_image_url ? '' : '익명'}</div>
@@ -68,7 +77,11 @@ async function renderSearchUserResults(container, users, shared, { emptyMessage 
             if (state === 'blocked') shared.toast?.('차단된 사용자입니다.');
             return;
         }
-        await window.addFriend?.(uid);
+        if (typeof activateUser === 'function') {
+            await activateUser(uid, state, item);
+        } else {
+            await window.addFriend?.(uid);
+        }
         if (fromButton) {
             item?.blur?.();
         }
@@ -460,7 +473,7 @@ function wireShellActions(userId, deps) {
 
     setupNewChatModal({ userId, shared, SyncBridge, ChatList, ChatUI, DM, closeMenu });
 
-    setupGroupChatModal({ userId, shared, SyncBridge, ChatList, closeMenu });
+    setupGroupChatModal({ userId, shared, SyncBridge, ChatList, ChatUI, closeMenu });
 
     setupFriendsModal({ userId, shared, SyncBridge, ChatUI, ChatList, DM });
 
@@ -517,6 +530,14 @@ function setupNewChatModal({ userId, shared, SyncBridge, ChatList, ChatUI, DM, c
             await renderSearchUserResults(results, users, shared, {
                 emptyMessage: '검색 결과가 없습니다.',
                 shouldContinue: () => seq === searchSeq,
+                resolveActionMeta: (user, relation, baseMeta) => (
+                    relation?.blocked
+                        ? baseMeta
+                        : { label: '대화 시작', disabled: false, state: 'dm' }
+                ),
+                activateUser: async (targetUserId) => {
+                    await openDirectChat(targetUserId, { userId, shared, SyncBridge, ChatList, ChatUI, DM });
+                },
                 onActivate: async () => {
                     modal.style.display = 'none';
                     closeMenu?.();
@@ -539,7 +560,7 @@ function setupNewChatModal({ userId, shared, SyncBridge, ChatList, ChatUI, DM, c
 
 
 
-function setupGroupChatModal({ userId, shared, SyncBridge, ChatList, closeMenu }) {
+function setupGroupChatModal({ userId, shared, SyncBridge, ChatList, ChatUI, closeMenu }) {
 
     const modal = document.getElementById('groupChatModal');
 
@@ -715,6 +736,7 @@ function setupGroupChatModal({ userId, shared, SyncBridge, ChatList, closeMenu }
 
 
         if (res?.success) {
+            const groupId = String(res?.data?.group_id || '').trim();
 
             modal.style.display = 'none';
 
@@ -729,6 +751,22 @@ function setupGroupChatModal({ userId, shared, SyncBridge, ChatList, closeMenu }
             groupNameInput.value = '';
 
             await ChatList.loadChatRooms();
+
+            if (groupId) {
+                const roomInfo = ChatList.getRoom(groupId) || {
+                    roomId: groupId,
+                    type: 'group',
+                    group_name: name,
+                };
+                ChatUI?.openRoom?.(groupId, 'group', roomInfo);
+                ChatList.setActiveRoom(groupId);
+                updateRoomQuery({
+                    room: groupId,
+                    type: 'group',
+                    name: roomInfo.group_name || name,
+                });
+                ChatUI?.setMobileViewMode?.('chat');
+            }
 
         } else {
 

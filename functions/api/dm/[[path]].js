@@ -430,9 +430,13 @@ export async function onRequest(context) {
 
       await env.DB.prepare(`
         UPDATE user_chats
-        SET last_message = ?, last_message_at = datetime('now')
+        SET last_message = ?, last_message_at = datetime('now'),
+            unread_count = CASE
+              WHEN user_id = ? THEN 0
+              ELSE COALESCE(unread_count, 0) + 1
+            END
         WHERE room_id = ?
-      `).bind((content || body.file_name || 'attachment').substring(0, 100), roomId).run().catch(() => null);
+      `).bind((content || body.file_name || 'attachment').substring(0, 100), auth.user.id, roomId).run().catch(() => null);
 
       const responseData = normalizeMessage(inserted);
       if (body.client_id) responseData.client_id = String(body.client_id);

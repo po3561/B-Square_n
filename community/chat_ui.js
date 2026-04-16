@@ -418,7 +418,7 @@ window.CommunityModules.ChatUI = (function () {
             params.set('class_id', currentRoomId);
             params.set('limit', String(limit));
             if (since !== '' && since != null) params.set('since', String(since));
-            if (pinnedOnly) params.set('pinned_only', 'true');
+            if (pinnedOnly) params.set('pinned_only', '1');
             if (stream) params.set('stream', '1');
             return `/api/chat?${params.toString()}`;
         }
@@ -484,18 +484,22 @@ window.CommunityModules.ChatUI = (function () {
 
         btnGathering.addEventListener('click', () => { modal.style.display = 'flex'; });
 
-        const btnClose = document.getElementById('btnGatheringClose');
+        const btnClose = document.getElementById('btnCloseGatheringModal');
         if (btnClose) btnClose.addEventListener('click', () => modal.style.display = 'none');
 
-        const btnSubmit = document.getElementById('btnGatheringSubmit');
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) modal.style.display = 'none';
+        });
+
+        const btnSubmit = document.getElementById('btnSendGatheringSubmit');
         if (btnSubmit) {
             btnSubmit.addEventListener('click', async () => {
-                const title = document.getElementById('gatheringTitle')?.value.trim();
-                const at = document.getElementById('gatheringAt')?.value;
-                const location = document.getElementById('gatheringLocation')?.value.trim();
-                const desc = document.getElementById('gatheringDesc')?.value.trim();
+                const title = document.getElementById('gatherTitle')?.value.trim();
+                const at = document.getElementById('gatherTime')?.value.trim();
+                const location = document.getElementById('gatherPlace')?.value.trim();
+                const desc = '';
                 const min = parseInt(document.getElementById('gatherMin')?.value) || 2;
-                const max = parseInt(document.getElementById('gatheringCapacity')?.value) || 10;
+                const max = parseInt(document.getElementById('gatherMax')?.value) || 10;
 
                 if (!title || !at || !location) { toast("모임명, 일시, 장소를 모두 입력해 주세요."); return; }
 
@@ -519,6 +523,10 @@ window.CommunityModules.ChatUI = (function () {
                     if (res?.success) {
                         // 모임 카드를 채팅에도 전송
                         await sendGatheringCard(title, min, max, at, location);
+                        ['gatherTitle', 'gatherTime', 'gatherPlace', 'gatherMin', 'gatherMax'].forEach((id) => {
+                            const input = document.getElementById(id);
+                            if (input) input.value = '';
+                        });
                         modal.style.display = 'none';
                     } else {
                         toast(res?.error || '모임 생성에 실패했습니다.');

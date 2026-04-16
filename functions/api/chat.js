@@ -469,6 +469,17 @@ export async function onRequestPost(context) {
       return json(request, env, { success: false, error: 'Failed to create message' }, { status: 500 });
     }
 
+    const previewText = trimText(message || body.file_name || 'attachment').substring(0, 100);
+    await env.DB.prepare(`
+      UPDATE user_chats
+      SET last_message = ?, last_message_at = datetime('now'),
+          unread_count = CASE
+            WHEN user_id = ? THEN 0
+            ELSE COALESCE(unread_count, 0) + 1
+          END
+      WHERE room_id = ? AND type = 'class'
+    `).bind(previewText, auth.user.id, classId).run().catch(() => null);
+
     const responseData = normalizeChatMessage(inserted);
     if (body.client_id) responseData.client_id = String(body.client_id);
 
