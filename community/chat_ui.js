@@ -773,7 +773,7 @@ window.CommunityModules.ChatUI = (function () {
         if (roomType === 'class') {
             if (statusEl) { statusEl.textContent = '클래스 채팅'; statusEl.className = 'chat-header-status'; }
             if (btnGathering) {
-                btnGathering.style.display = (window.__BSQ_DEV_MODE__ || roomInfo?.is_instructor) ? 'flex' : 'none';
+                btnGathering.hidden = !(window.__BSQ_DEV_MODE__ || roomInfo?.is_instructor);
             }
             if (btnGoToClass) {
                 btnGoToClass.style.display = 'inline-flex';
@@ -781,11 +781,11 @@ window.CommunityModules.ChatUI = (function () {
             }
         } else if (roomType === 'dm') {
             if (statusEl) { statusEl.textContent = '1:1 채팅'; statusEl.className = 'chat-header-status'; }
-            if (btnGathering) btnGathering.style.display = 'none';
+            if (btnGathering) btnGathering.hidden = true;
             if (btnGoToClass) btnGoToClass.style.display = 'none';
         } else if (roomType === 'group') {
             if (statusEl) { statusEl.textContent = '그룹 채팅'; statusEl.className = 'chat-header-status'; }
-            if (btnGathering) btnGathering.style.display = 'none';
+            if (btnGathering) btnGathering.hidden = true;
             if (btnGoToClass) btnGoToClass.style.display = 'none';
         }
     }
