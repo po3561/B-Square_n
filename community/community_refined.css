@@ -1705,6 +1705,12 @@ body[data-comm-motion="reduce"] * {
     background: rgba(255, 255, 255, 0.92) !important;
 }
 
+[data-theme="light"] body[data-layout="community"] #chatInputArea {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 252, 0.98)) !important;
+    border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.04) !important;
+}
+
 [data-theme="light"] .chat-room-item:hover,
 [data-theme="light"] .user-search-item:hover,
 [data-theme="light"] .ctx-item:hover,
