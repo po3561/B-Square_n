@@ -157,9 +157,11 @@ window.CommunityModules.ChatUI = (function () {
         if ((normalized.type === 'gathering' || normalized.type === 'gathering_card') && content && !normalized.gather_title) {
             const payload = parseMaybeJson(content, null);
             if (payload && typeof payload === 'object') {
+                normalized.gathering_id = normalized.gathering_id || payload.gathering_id || payload.id || '';
                 normalized.gather_title = payload.title || payload.gather_title || '';
                 normalized.gather_time = payload.gathering_at || payload.gather_time || '';
                 normalized.gather_place = payload.location || payload.gather_place || '';
+                normalized.description = normalized.description || payload.description || '';
                 normalized.min_capacity = payload.min_capacity || payload.capacity_min || normalized.min_capacity || null;
                 normalized.capacity_min = payload.capacity_min || payload.min_capacity || normalized.capacity_min || null;
                 normalized.max_capacity = payload.max_capacity || payload.capacity_max || normalized.max_capacity || null;
@@ -522,7 +524,7 @@ window.CommunityModules.ChatUI = (function () {
 
                     if (res?.success) {
                         // 모임 카드를 채팅에도 전송
-                        await sendGatheringCard(title, min, max, at, location);
+                        await sendGatheringCard(title, min, max, at, location, res.data.id, desc);
                         ['gatherTitle', 'gatherTime', 'gatherPlace', 'gatherMin', 'gatherMax'].forEach((id) => {
                             const input = document.getElementById(id);
                             if (input) input.value = '';
@@ -1690,13 +1692,33 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     // ==== 모집 카드 전송 (D1 API) ====
-    async function sendGatheringCard(title, minCap, maxCap, time, place) {
+    async function sendGatheringCard(title, minCap, maxCap, time, place, gatheringId = null, description = '') {
         if (!currentRoomId) return;
         let clientId = null;
         try {
             let currentUserId = bridge()?.getUserId?.() || '';
             if (window.__BSQ_DEV_MODE__) currentUserId = 'OPERATOR_GHOST';
             const profile = await bridge()?.getUserProfile?.(currentUserId) || { name: '강사' };
+            const gatheringPayload = {
+                gathering_id: gatheringId || null,
+                class_id: isClassRoom() ? currentRoomId : null,
+                title,
+                gather_title: title,
+                gathering_at: time,
+                gather_time: time,
+                location: place,
+                gather_place: place,
+                description: String(description || '').trim(),
+                capacity_min: parseInt(minCap, 10),
+                min_capacity: parseInt(minCap, 10),
+                capacity_max: parseInt(maxCap, 10),
+                max_capacity: parseInt(maxCap, 10),
+                current_count: 0,
+                status: 'open',
+                user_name: profile.name || '강사',
+                sender_id: currentUserId,
+            };
+            const serializedPayload = JSON.stringify(gatheringPayload);
 
             clientId = `tmp_gather_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
             renderMessage(clientId, {
@@ -1714,6 +1736,10 @@ window.CommunityModules.ChatUI = (function () {
                 status: 'open',
                 sender_id: currentUserId,
                 user_name: profile.name || '강사',
+                gathering_id: gatheringId || null,
+                description: String(description || '').trim(),
+                message: serializedPayload,
+                content: serializedPayload,
                 is_instructor: true,
                 room_type: currentRoomType,
                 class_id: isClassRoom() ? currentRoomId : null,
@@ -1737,6 +1763,10 @@ window.CommunityModules.ChatUI = (function () {
                     status: 'open',
                     sender_id: currentUserId,
                     user_name: profile.name || '강사',
+                    gathering_id: gatheringId || null,
+                    description: String(description || '').trim(),
+                    message: serializedPayload,
+                    content: serializedPayload,
                     is_instructor: true,
                     room_type: currentRoomType,
                     class_id: isClassRoom() ? currentRoomId : null,

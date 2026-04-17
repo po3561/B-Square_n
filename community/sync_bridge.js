@@ -57,9 +57,11 @@ window.CommunityModules.SyncBridge = (function () {
         if ((normalized.type === 'gathering' || normalized.type === 'gathering_card') && content && !normalized.gather_title) {
             const payload = parseMaybeJson(content, null);
             if (payload && typeof payload === 'object') {
+                normalized.gathering_id = normalized.gathering_id || payload.gathering_id || payload.id || '';
                 normalized.gather_title = payload.title || payload.gather_title || '';
                 normalized.gather_time = payload.gathering_at || payload.gather_time || '';
                 normalized.gather_place = payload.location || payload.gather_place || '';
+                normalized.description = normalized.description || payload.description || '';
                 normalized.min_capacity = payload.min_capacity || payload.capacity_min || normalized.min_capacity || null;
                 normalized.capacity_min = payload.capacity_min || payload.min_capacity || normalized.capacity_min || null;
                 normalized.max_capacity = payload.max_capacity || payload.capacity_max || normalized.max_capacity || null;
