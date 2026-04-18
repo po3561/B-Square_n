@@ -460,6 +460,7 @@ body,
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
   padding: 0.75rem;
+  z-index: 10050;
 }
 
 .header-category-mega[hidden] {

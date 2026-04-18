@@ -1161,11 +1161,59 @@
 
     button.dataset.bsqCategoryBound = '1';
 
+    const clearMenuPosition = () => {
+      menu.style.position = '';
+      menu.style.top = '';
+      menu.style.left = '';
+      menu.style.right = '';
+      menu.style.bottom = '';
+      menu.style.width = '';
+      menu.style.maxHeight = '';
+      menu.style.zIndex = '';
+    };
+
+    const positionMenu = () => {
+      const buttonRect = button.getBoundingClientRect();
+      const viewportPadding = 12;
+      const menuWidth = Math.min(420, Math.max(280, window.innerWidth - (viewportPadding * 2)));
+      const availableBelow = window.innerHeight - buttonRect.bottom - viewportPadding;
+      const availableAbove = buttonRect.top - viewportPadding;
+      const flipUp = availableBelow < 280 && availableAbove > availableBelow;
+      const maxHeight = Math.max(
+        220,
+        Math.min(
+          560,
+          flipUp ? availableAbove - 12 : availableBelow
+        ),
+      );
+      const left = Math.min(
+        Math.max(viewportPadding, buttonRect.left),
+        Math.max(viewportPadding, window.innerWidth - viewportPadding - menuWidth),
+      );
+      const top = flipUp
+        ? Math.max(viewportPadding, buttonRect.top - maxHeight - 12)
+        : Math.min(window.innerHeight - viewportPadding - maxHeight, buttonRect.bottom + 12);
+
+      menu.style.position = 'fixed';
+      menu.style.top = `${Math.round(top)}px`;
+      menu.style.left = `${Math.round(left)}px`;
+      menu.style.right = 'auto';
+      menu.style.bottom = 'auto';
+      menu.style.width = `${Math.round(menuWidth)}px`;
+      menu.style.maxHeight = `${Math.round(maxHeight)}px`;
+      menu.style.zIndex = '10050';
+    };
+
     const setOpen = (open) => {
       menu.hidden = !open;
       button.setAttribute('aria-expanded', open ? 'true' : 'false');
       button.classList.toggle('is-open', open);
       menu.classList.toggle('active', open);
+      if (open) {
+        positionMenu();
+      } else {
+        clearMenuPosition();
+      }
     };
 
     setOpen(false);

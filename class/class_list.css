@@ -213,19 +213,21 @@ body.class-list-page .home-banner-dot.is-active {
 
 body.class-list-page .class-category-shell {
     position: relative;
+    display: grid;
+    gap: 0.8rem;
 }
 
 body.class-list-page .class-category-strip,
 body.class-list-page .class-category-overlay-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
-    gap: 0.65rem;
+    grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+    gap: 0.58rem;
 }
 
 body.class-list-page .class-category-tile {
-    min-height: 92px;
-    padding: 0.78rem 0.72rem;
-    border-radius: 22px;
+    min-height: 84px;
+    padding: 0.72rem 0.68rem;
+    border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(255, 255, 255, 0.05);
     color: #eff5ff;
@@ -246,9 +248,9 @@ body.class-list-page .class-category-tile.is-active {
 }
 
 body.class-list-page .class-category-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
+    width: 40px;
+    height: 40px;
+    border-radius: 13px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -263,9 +265,121 @@ body.class-list-page .class-category-icon img {
 }
 
 body.class-list-page .class-category-label {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 700;
     line-height: 1.2;
+}
+
+body.class-list-page .class-category-accordion-head {
+    display: flex;
+}
+
+body.class-list-page .class-category-accordion-toggle {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.88rem 0.95rem;
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(17, 24, 36, 0.96), rgba(11, 16, 26, 0.94));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #eff5ff;
+    text-align: left;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16);
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+body.class-list-page .class-category-accordion-toggle:hover {
+    border-color: rgba(119, 154, 255, 0.26);
+    transform: translateY(-1px);
+}
+
+body.class-list-page .class-category-accordion-toggle .banner-eyebrow {
+    margin-right: 0.15rem;
+}
+
+body.class-list-page .class-category-accordion-title {
+    min-width: 0;
+    font-size: 0.98rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.class-list-page .class-category-accordion-meta,
+body.class-list-page .class-category-accordion-state {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0.16rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(231, 239, 255, 0.82);
+    font-size: 0.76rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+body.class-list-page .class-category-accordion-state {
+    background: rgba(79, 111, 255, 0.16);
+    border-color: rgba(79, 111, 255, 0.22);
+    color: #dce7ff;
+}
+
+body.class-list-page .class-category-accordion-strip {
+    display: grid;
+}
+
+body.class-list-page .class-category-accordion-panel {
+    display: grid;
+    gap: 0.75rem;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    margin-top: 0;
+    padding: 0 0.95rem;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition:
+        max-height 280ms ease,
+        opacity 220ms ease,
+        transform 280ms ease,
+        margin-top 280ms ease,
+        padding 280ms ease;
+}
+
+body.class-list-page .class-category-accordion-panel.is-open {
+    max-height: 1200px;
+    opacity: 1;
+    visibility: visible;
+    margin-top: 0.15rem;
+    padding: 0.95rem;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+body.class-list-page .class-category-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: rgba(231, 239, 255, 0.7);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+body.class-list-page .class-category-strip--expanded {
+    margin-top: 0.25rem;
 }
 
 body.class-list-page .class-category-count {
@@ -595,6 +709,205 @@ body.class-list-page .empty-state {
     grid-column: 1 / -1;
 }
 
+body.class-list-page .recommend-columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+body.class-list-page .recommend-folder-card {
+    overflow: hidden;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(15, 21, 32, 0.98), rgba(9, 13, 21, 0.96));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+}
+
+body.class-list-page .recommend-folder-media {
+    position: relative;
+    min-height: 176px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 1rem;
+    background-size: cover;
+    background-position: center;
+    color: #fff;
+}
+
+body.class-list-page .recommend-folder-media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent, rgba(7, 11, 18, 0.72));
+}
+
+body.class-list-page .recommend-folder-media > * {
+    position: relative;
+    z-index: 1;
+}
+
+body.class-list-page .recommend-folder-badge,
+body.class-list-page .recommend-folder-count,
+body.class-list-page .recommend-folder-view-more {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #eff5ff;
+    font-size: 0.74rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+body.class-list-page .recommend-folder-count {
+    background: rgba(79, 111, 255, 0.18);
+    border-color: rgba(79, 111, 255, 0.24);
+}
+
+body.class-list-page .recommend-folder-body {
+    padding: 1rem;
+    display: grid;
+    gap: 0.8rem;
+}
+
+body.class-list-page .recommend-folder-topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+body.class-list-page .recommend-folder-kicker {
+    margin: 0 0 0.28rem;
+    color: rgba(231, 239, 255, 0.56);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+body.class-list-page .recommend-folder-title {
+    margin: 0;
+    color: #f8fbff;
+    font-size: 1.08rem;
+    line-height: 1.3;
+    letter-spacing: -0.04em;
+}
+
+body.class-list-page .recommend-folder-copy {
+    margin: 0.45rem 0 0;
+    color: rgba(231, 239, 255, 0.68);
+    line-height: 1.55;
+    font-size: 0.84rem;
+}
+
+body.class-list-page .recommend-folder-view-more {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.class-list-page .recommend-folder-list {
+    display: grid;
+    gap: 0.6rem;
+}
+
+body.class-list-page .recommend-item {
+    display: grid;
+    grid-template-columns: 24px 52px minmax(0, 1fr);
+    gap: 0.7rem;
+    align-items: flex-start;
+    padding: 0.62rem;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    color: inherit;
+}
+
+body.class-list-page .recommend-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.class-list-page .recommend-num {
+    color: rgba(255, 255, 255, 0.56);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+body.class-list-page .recommend-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background-size: cover;
+    background-position: center;
+    background-color: rgba(255, 255, 255, 0.08);
+    flex: none;
+}
+
+body.class-list-page .recommend-info h4 {
+    margin: 0;
+    color: #f8fbff;
+    font-size: 0.86rem;
+    line-height: 1.32;
+    letter-spacing: -0.03em;
+}
+
+body.class-list-page .recommend-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.28rem 0.4rem;
+    margin-top: 0.25rem;
+    color: rgba(231, 239, 255, 0.56);
+    font-size: 0.71rem;
+}
+
+body.class-list-page .recommend-meta span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 20px;
+    padding: 0.08rem 0.42rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.class-list-page .recommend-price {
+    color: #d8ffe4;
+    border-color: rgba(34, 197, 94, 0.18) !important;
+    background: rgba(34, 197, 94, 0.10) !important;
+    font-weight: 700;
+}
+
+body.class-list-page .class-list-banner-empty {
+    display: flex;
+    align-items: flex-end;
+    padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+body.class-list-page .class-list-banner-empty-copy {
+    position: relative;
+    z-index: 1;
+    max-width: 360px;
+    display: grid;
+    gap: 0.35rem;
+    color: #f8fbff;
+}
+
+body.class-list-page .class-list-banner-empty-copy strong {
+    font-size: clamp(1.2rem, 2vw, 1.8rem);
+    line-height: 1.04;
+    letter-spacing: -0.06em;
+}
+
+body.class-list-page .class-list-banner-empty-copy p {
+    margin: 0;
+    color: rgba(231, 239, 255, 0.7);
+    line-height: 1.55;
+    font-size: 0.84rem;
+}
+
 @media (max-width: 1280px) {
     body.class-list-page .card-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -615,11 +928,15 @@ body.class-list-page .empty-state {
     body.class-list-page .class-list-hero-stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    body.class-list-page .recommend-columns {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 768px) {
     body.class-list-page .class-list-main {
-        padding-bottom: calc(6.25rem + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(9.75rem + env(safe-area-inset-bottom, 0px)) !important;
     }
 
     body.class-list-page .class-explorer-hero,
@@ -642,18 +959,142 @@ body.class-list-page .empty-state {
         justify-content: space-between;
     }
 
+    body.class-list-page .banner-nav {
+        min-width: 34px !important;
+        min-height: 34px !important;
+        padding: 0.35rem 0.55rem !important;
+    }
+
+    body.class-list-page .home-banner-dot {
+        width: 8px;
+        height: 8px;
+    }
+
+    body.class-list-page .home-banner-dot.is-active {
+        width: 22px;
+    }
+
     body.class-list-page .class-grid-header {
         flex-direction: column;
         align-items: flex-start;
     }
 
+    body.class-list-page .class-category-accordion-toggle {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 0.45rem 0.55rem;
+        padding: 0.72rem 0.8rem;
+        border-radius: 18px;
+    }
+
+    body.class-list-page .class-category-accordion-title {
+        font-size: 0.92rem;
+    }
+
+    body.class-list-page .class-category-accordion-meta {
+        display: none;
+    }
+
+    body.class-list-page .class-category-accordion-meta,
+    body.class-list-page .class-category-accordion-state {
+        min-height: 26px;
+        padding: 0.12rem 0.48rem;
+        font-size: 0.68rem;
+    }
+
+    body.class-list-page .class-category-accordion-panel {
+        border-radius: 18px;
+    }
+
+    body.class-list-page .class-category-panel-head {
+        font-size: 0.7rem;
+    }
+
     body.class-list-page .class-category-strip {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.4rem;
+    }
+
+    body.class-list-page .class-category-tile {
+        min-height: 64px !important;
+        padding: 0.42rem 0.28rem !important;
+        border-radius: 14px !important;
+    }
+
+    body.class-list-page .class-category-icon {
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 10px !important;
+    }
+
+    body.class-list-page .class-category-label {
+        font-size: 0.72rem !important;
+    }
+
+    body.class-list-page .btn-bookmark {
+        width: 34px !important;
+        height: 34px !important;
     }
 
     body.class-list-page .card-grid,
     body.class-list-page .popular-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.class-list-page .recommend-columns {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.7rem;
+    }
+
+    body.class-list-page .recommend-folder-media {
+        min-height: 136px;
+        padding: 0.85rem;
+    }
+
+    body.class-list-page .recommend-folder-body {
+        padding: 0.85rem;
+        gap: 0.7rem;
+    }
+
+    body.class-list-page .recommend-folder-topline {
+        gap: 0.75rem;
+    }
+
+    body.class-list-page .recommend-folder-title {
+        font-size: 0.98rem;
+    }
+
+    body.class-list-page .recommend-folder-copy {
+        font-size: 0.8rem;
+    }
+
+    body.class-list-page .recommend-item {
+        grid-template-columns: 20px 44px minmax(0, 1fr);
+        gap: 0.55rem;
+        padding: 0.52rem;
+        border-radius: 14px;
+    }
+
+    body.class-list-page .recommend-thumb {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+    }
+
+    body.class-list-page .recommend-info h4 {
+        font-size: 0.82rem;
+    }
+
+    body.class-list-page .recommend-meta {
+        gap: 0.22rem 0.35rem;
+        font-size: 0.68rem;
+    }
+
+    body.class-list-page .class-list-banner-empty {
+        padding: 0.9rem;
+    }
+
+    body.class-list-page .class-list-banner-empty-copy strong {
+        font-size: 1.1rem;
     }
 }
 
@@ -666,8 +1107,22 @@ body.class-list-page .empty-state {
 
     body.class-list-page .class-category-strip,
     body.class-list-page .class-category-overlay-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.35rem;
     }
+
+    body.class-list-page .recommend-columns {
+        grid-template-columns: 1fr;
+    }
+
+    body.class-list-page .recommend-folder-media {
+        min-height: 160px;
+    }
+
+    body.class-list-page .recommend-folder-title {
+        font-size: 1rem;
+    }
+
 }
 
 html[data-theme="light"] body.class-list-page {
@@ -720,4 +1175,79 @@ html[data-theme="light"] body.class-list-page .banner-nav {
     background: rgba(255, 255, 255, 0.92);
     border-color: rgba(15, 23, 42, 0.10);
     color: #0f172a;
+}
+
+html[data-theme="light"] body.class-list-page .class-category-accordion-toggle,
+html[data-theme="light"] body.class-list-page .class-category-accordion-panel,
+html[data-theme="light"] body.class-list-page .recommend-folder-card,
+html[data-theme="light"] body.class-list-page .class-list-banner-empty {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(247, 250, 255, 0.97));
+    border-color: rgba(15, 23, 42, 0.08);
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.10);
+}
+
+html[data-theme="light"] body.class-list-page .class-category-accordion-toggle {
+    color: #0f172a;
+}
+
+html[data-theme="light"] body.class-list-page .class-category-accordion-meta,
+html[data-theme="light"] body.class-list-page .class-category-accordion-state {
+    background: rgba(15, 23, 42, 0.05);
+    border-color: rgba(15, 23, 42, 0.08);
+    color: rgba(51, 65, 85, 0.82);
+}
+
+html[data-theme="light"] body.class-list-page .class-category-accordion-state {
+    background: rgba(79, 111, 255, 0.12);
+    color: #2f49c6;
+}
+
+html[data-theme="light"] body.class-list-page .class-category-panel-head,
+html[data-theme="light"] body.class-list-page .class-category-label,
+html[data-theme="light"] body.class-list-page .class-list-banner-empty-copy p,
+html[data-theme="light"] body.class-list-page .recommend-folder-copy,
+html[data-theme="light"] body.class-list-page .recommend-num,
+html[data-theme="light"] body.class-list-page .recommend-folder-kicker {
+    color: rgba(51, 65, 85, 0.72);
+}
+
+html[data-theme="light"] body.class-list-page .class-category-tile,
+html[data-theme="light"] body.class-list-page .recommend-item,
+html[data-theme="light"] body.class-list-page .recommend-meta span {
+    background: rgba(15, 23, 42, 0.04);
+    border-color: rgba(15, 23, 42, 0.08);
+    color: #0f172a;
+}
+
+html[data-theme="light"] body.class-list-page .recommend-folder-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(247, 250, 255, 0.97));
+}
+
+html[data-theme="light"] body.class-list-page .recommend-folder-media::after {
+    background: linear-gradient(180deg, transparent, rgba(15, 23, 42, 0.26));
+}
+
+html[data-theme="light"] body.class-list-page .recommend-folder-badge,
+html[data-theme="light"] body.class-list-page .recommend-folder-count,
+html[data-theme="light"] body.class-list-page .recommend-folder-view-more {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(15, 23, 42, 0.08);
+    color: #0f172a;
+}
+
+html[data-theme="light"] body.class-list-page .recommend-folder-count {
+    background: rgba(79, 111, 255, 0.12);
+    color: #2f49c6;
+}
+
+html[data-theme="light"] body.class-list-page .recommend-folder-title,
+html[data-theme="light"] body.class-list-page .recommend-info h4,
+html[data-theme="light"] body.class-list-page .class-list-banner-empty-copy strong {
+    color: #0f172a;
+}
+
+html[data-theme="light"] body.class-list-page .recommend-price {
+    color: #0f7d3b;
+    border-color: rgba(34, 197, 94, 0.18) !important;
+    background: rgba(34, 197, 94, 0.12) !important;
 }

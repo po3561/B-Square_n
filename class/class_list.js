@@ -5,8 +5,8 @@
   const CATEGORY_VISIBLE_LIMIT = 8;
   const state = {
     categories: [],
-    popularClasses: [],
-    popularTitle: '인기 클래스',
+    recommendationFolders: [],
+    recommendationTitle: '추천 클래스 폴더',
     currentCategory: 'all',
     currentSort: 'newest',
     searchQuery: '',
@@ -20,14 +20,13 @@
     siteSettings: null,
     bannerIndex: 0,
     bannerTimer: null,
-    overlayOpen: false,
+    categoryPanelOpen: false,
   };
 
   const refs = {};
   let searchDebounce = null;
   let infiniteObserver = null;
   let bookmarkProbeDisabled = false;
-  let lastCategoryOverlayTrigger = null;
 
   const FALLBACK_CATEGORIES = [
     { name: '운동', emoji: '운' },
@@ -106,7 +105,10 @@
     const items = Array.isArray(folder.items) ? folder.items : (Array.isArray(folder.classes) ? folder.classes : []);
     return {
       id: text(folder.id || folder.folderId || folder.folder_id || ''),
-      title: text(folder.title || folder.name || '추천 폴더'),
+      title: text(folder.title || folder.name || '추천 클래스'),
+      description: text(folder.description || ''),
+      imageUrl: text(folder.coverImage || folder.cover_image || folder.thumbnail || folder.icon || ''),
+      linkUrl: text(folder.url || folder.href || folder.link || folder.linkUrl || ''),
       type: text(folder.type || 'folder'),
       items: items.map((item) => normalizeClassCard(item)).filter((item) => item.id),
     };
@@ -194,9 +196,10 @@
     refs.bannerPrev = $('classListBannerPrev');
     refs.bannerNext = $('classListBannerNext');
     refs.bannerDots = $('classListBannerDots');
-    refs.popularSection = $('popularSection');
-    refs.popularTitle = $('popularGroupTitle');
-    refs.popularClassGrid = $('popularClassGrid');
+    refs.recommendSection = $('recommendSection');
+    refs.recommendTitle = $('recommendGroupTitle');
+    refs.recommendCopy = $('recommendGroupCopy');
+    refs.recommendFolderGrid = $('recommendFolderGrid');
     refs.scrollSentinel = $('classListSentinel');
     refs.heroLoaded = $('classListStatLoaded');
     refs.heroCategories = $('classListStatCategories');
@@ -263,76 +266,46 @@
     `;
   }
 
-  function ensureOverlay() {
-    if (document.querySelector('.class-category-overlay')) return;
-    const overlay = document.createElement('div');
-    overlay.className = 'class-category-overlay';
-    overlay.hidden = true;
-    overlay.innerHTML = `
-      <button type="button" class="class-category-overlay-backdrop" data-action="close-category-overlay" aria-label="카테고리 닫기"></button>
-      <div class="class-category-overlay-panel" role="dialog" aria-modal="true" aria-label="전체 카테고리">
-        <div class="class-category-overlay-head">
-          <div>
-            <span class="banner-eyebrow">카테고리</span>
-            <h3>전체 카테고리 보기</h3>
-          </div>
-          <button type="button" class="class-category-overlay-close" data-action="close-category-overlay">닫기</button>
-        </div>
-        <div class="class-category-overlay-grid" data-category-overlay-grid></div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-  }
-
   function renderCategoryMenu() {
     if (!refs.categoryFilter) return;
     const items = categoryItems();
     const visible = items.slice(0, CATEGORY_VISIBLE_LIMIT);
-    const hasMore = items.length > CATEGORY_VISIBLE_LIMIT;
+    const extra = items.slice(CATEGORY_VISIBLE_LIMIT);
+    const hasMore = extra.length > 0;
+    const selectedItem = state.currentCategory === 'all'
+      ? { name: '전체', class_count: state.totalCount || items.length }
+      : (items.find((item) => item.name === state.currentCategory) || { name: state.currentCategory, class_count: 0 });
+    const selectedCount = Number(selectedItem.class_count || 0);
+    const summaryCount = state.currentCategory === 'all' ? Number(state.totalCount || items.length) : selectedCount;
+    const summaryLabel = state.currentCategory === 'all' ? '전체 카테고리' : selectedItem.name;
 
     refs.categoryFilter.innerHTML = `
-      <div class="class-category-strip">
-        ${renderCategoryButton({ name: '전체', class_count: state.totalCount }, state.currentCategory === 'all', true)}
-        ${visible.map((item) => renderCategoryButton(item, state.currentCategory === item.name)).join('')}
-        ${hasMore ? `
-          <button type="button" class="class-category-tile${state.overlayOpen ? ' is-active' : ''}" data-action="toggle-category-overlay" aria-expanded="${state.overlayOpen ? 'true' : 'false'}">
-            <span class="class-category-icon">${state.overlayOpen ? '−' : '+'}</span>
-            <span class="class-category-label">${state.overlayOpen ? '접기' : '더보기'}</span>
-          </button>
-        ` : ''}
+      <div class="class-category-accordion-head">
+        <button type="button" class="class-category-accordion-toggle${state.categoryPanelOpen ? ' is-open' : ''}" data-action="toggle-category-panel" aria-expanded="${state.categoryPanelOpen ? 'true' : 'false'}" aria-controls="classCategoryAccordionPanel">
+          <span class="banner-eyebrow">카테고리</span>
+          <span class="class-category-accordion-title">${esc(summaryLabel)}</span>
+          <span class="class-category-accordion-meta">${esc(`${summaryCount.toLocaleString()}개`)}</span>
+          <span class="class-category-accordion-state">${state.categoryPanelOpen ? '접기' : '더보기'}</span>
+        </button>
       </div>
+      <div class="class-category-accordion-strip">
+        <div class="class-category-strip">
+          ${renderCategoryButton({ name: '전체', class_count: state.totalCount }, state.currentCategory === 'all', true)}
+          ${visible.map((item) => renderCategoryButton(item, state.currentCategory === item.name)).join('')}
+        </div>
+      </div>
+      ${hasMore ? `
+        <div class="class-category-accordion-panel${state.categoryPanelOpen ? ' is-open' : ''}" id="classCategoryAccordionPanel" aria-hidden="${state.categoryPanelOpen ? 'false' : 'true'}">
+          <div class="class-category-panel-head">
+            <strong>더 많은 카테고리</strong>
+            <span>${extra.length.toLocaleString()}개</span>
+          </div>
+          <div class="class-category-strip class-category-strip--expanded">
+            ${extra.map((item) => renderCategoryButton(item, state.currentCategory === item.name)).join('')}
+          </div>
+        </div>
+      ` : ''}
     `;
-
-    ensureOverlay();
-    const grid = document.querySelector('[data-category-overlay-grid]');
-    if (grid) {
-      grid.innerHTML = [
-        renderCategoryButton({ name: '전체', class_count: state.totalCount }, state.currentCategory === 'all', true),
-        ...items.map((item) => renderCategoryButton(item, state.currentCategory === item.name)),
-      ].join('');
-    }
-  }
-
-  function openOverlay() {
-    state.overlayOpen = true;
-    lastCategoryOverlayTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const overlay = document.querySelector('.class-category-overlay');
-    if (overlay) overlay.hidden = false;
-    document.body.classList.add('class-category-overlay-open');
-    renderCategoryMenu();
-    document.querySelector('.class-category-overlay-close')?.focus?.({ preventScroll: true });
-  }
-
-  function closeOverlay() {
-    state.overlayOpen = false;
-    const overlay = document.querySelector('.class-category-overlay');
-    if (overlay) overlay.hidden = true;
-    document.body.classList.remove('class-category-overlay-open');
-    renderCategoryMenu();
-    const focusTarget = (lastCategoryOverlayTrigger && lastCategoryOverlayTrigger.isConnected)
-      ? lastCategoryOverlayTrigger
-      : document.querySelector('#categoryFilter [data-action="toggle-category-overlay"]');
-    focusTarget?.focus?.({ preventScroll: true });
   }
 
   function renderBanner(slides) {
@@ -359,7 +332,13 @@
             : `<div class="class-list-banner-link">
                 <img src="${esc(slide.imageUrl)}" alt="${esc(slide.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}">
               </div>`
-          : `<div class="class-list-banner-link is-fallback" aria-hidden="true"></div>`
+          : `<div class="class-list-banner-link is-fallback class-list-banner-empty" aria-hidden="true">
+              <div class="class-list-banner-empty-copy">
+                <span class="banner-eyebrow">추천 배너</span>
+                <strong>배너를 준비하는 중입니다</strong>
+                <p>운영자가 설정한 이미지가 없을 때 표시되는 기본 안내 화면입니다.</p>
+              </div>
+            </div>`
         }
       </article>
     `).join('');
@@ -416,53 +395,125 @@
     state.categories = FALLBACK_CATEGORIES.slice();
   }
 
-  async function loadPopular() {
-    try {
-      const res = await window.BSQ.api('/api/recommendations');
-      const folders = res?.success && Array.isArray(res.data) ? res.data.map((item) => normalizeRecommendationFolder(item)) : [];
-      const popular = folders.find((item) => item.type === 'popular' || item.id === 'popular_main');
-      if (popular?.items?.length) {
-        state.popularClasses = popular.items.slice(0, 10);
-        if (state.popularClasses.length < 10) {
-          const fallbackRes = await window.BSQ.api('/api/classes?sort=popular&limit=10');
-          const fallbackRows = fallbackRes?.success
-            ? (Array.isArray(fallbackRes.data?.classes) ? fallbackRes.data.classes : (Array.isArray(fallbackRes.data) ? fallbackRes.data : []))
-            : [];
-          const fallbackClasses = fallbackRows.map((item) => normalizeClassCard(item)).filter((item) => item.id);
-          state.popularClasses = mergePopularClasses(state.popularClasses, fallbackClasses, 10);
-        }
-        state.popularTitle = popular.title || '인기 클래스';
-        renderPopular();
-        return;
-      }
-    } catch (error) {
-      console.warn('[class_list] popular load failed:', error);
-    }
-
-    try {
-      const res = await window.BSQ.api('/api/classes?sort=popular&limit=10');
-      const rows = res?.success
-        ? (Array.isArray(res.data?.classes) ? res.data.classes : (Array.isArray(res.data) ? res.data : []))
-        : [];
-      state.popularClasses = rows.map((item) => normalizeClassCard(item)).filter((item) => item.id);
-      state.popularTitle = '인기 클래스';
-    } catch (error) {
-      console.warn('[class_list] fallback popular load failed:', error);
-      state.popularClasses = [];
-    }
-
-    if (state.popularClasses.length && state.popularClasses.length < 10) {
-      state.popularClasses = mergePopularClasses(state.popularClasses, [], 10);
-    }
-    renderPopular();
+  function recommendationFolderUrl(folderId = '') {
+    return `../recommend_view.html?id=${encodeURIComponent(folderId)}`;
   }
 
-  function renderPopular() {
-    if (!refs.popularSection || !refs.popularClassGrid) return;
-    refs.popularTitle.textContent = state.popularTitle;
-    refs.popularSection.hidden = !state.popularClasses.length;
-    refs.popularClassGrid.innerHTML = state.popularClasses.map((item, index) => renderCard(item, index)).join('');
-    void hydrateBookmarkStates(state.popularClasses);
+  function formatFallbackRecommendationTitle(name, index) {
+    const cleaned = text(name)
+      .replace(/[?]+/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!cleaned) return `추천 클래스 ${index + 1}`;
+    return `${cleaned} 추천 클래스`;
+  }
+
+  function buildFallbackRecommendationFolders(classes = []) {
+    const buckets = new Map();
+    for (const item of Array.isArray(classes) ? classes : []) {
+      if (!item?.id) continue;
+      const key = text(item.category || '추천 클래스');
+      if (!buckets.has(key)) buckets.set(key, []);
+      const bucket = buckets.get(key);
+      if (bucket.length < 3) bucket.push(item);
+    }
+
+    return Array.from(buckets.entries())
+      .slice(0, 3)
+      .map(([name, items], index) => ({
+        id: `fallback-recommend-${index}`,
+        title: formatFallbackRecommendationTitle(name, index),
+        description: '현재 노출 중인 클래스를 기준으로 자동 구성한 추천 폴더입니다.',
+        imageUrl: items[0]?.imageUrl || '',
+        linkUrl: recommendationFolderUrl(`fallback-recommend-${index}`),
+        items,
+      }))
+      .filter((folder) => folder.items.length);
+  }
+
+  function renderRecommendationFolder(folder = {}, index = 0) {
+    const items = Array.isArray(folder.items) ? folder.items.slice(0, 3) : [];
+    const folderUrl = text(folder.linkUrl || recommendationFolderUrl(folder.id));
+    const imageStyle = folder.imageUrl ? ` style="background-image:url('${esc(folder.imageUrl)}')"` : '';
+    const itemCount = `${items.length.toLocaleString()}개 클래스`;
+
+    return `
+      <article class="recommend-folder-card" data-folder-id="${esc(folder.id)}" style="animation-delay:${index * 0.05}s">
+        <a class="recommend-folder-media" href="${esc(folderUrl)}" aria-label="${esc(folder.title)} 폴더 보기"${imageStyle}>
+          <span class="recommend-folder-badge">추천 폴더</span>
+          <span class="recommend-folder-count">${esc(itemCount)}</span>
+        </a>
+        <div class="recommend-folder-body">
+          <div class="recommend-folder-topline">
+            <div>
+              <p class="recommend-folder-kicker">추천 클래스</p>
+              <h4 class="recommend-folder-title">${esc(folder.title)}</h4>
+              ${folder.description ? `<p class="recommend-folder-copy">${esc(folder.description)}</p>` : ''}
+            </div>
+            <a class="recommend-folder-view-more" href="${esc(folderUrl)}">폴더 보기</a>
+          </div>
+          <div class="recommend-folder-list">
+            ${items.map((item, itemIndex) => `
+              <a href="${esc(classUrl(item.id))}" class="recommend-item">
+                <span class="recommend-num">${itemIndex + 1}</span>
+                <div class="recommend-thumb"${item.imageUrl ? ` style="background-image:url('${esc(item.imageUrl)}')"` : ''}></div>
+                <div class="recommend-info">
+                  <h4>${esc(item.title)}</h4>
+                  <div class="recommend-meta">
+                    <span>${esc(item.category)}</span>
+                    <span>${esc(item.mode || '온라인')}</span>
+                    <span>후기 ${Number(item.reviewCount || 0).toLocaleString()}</span>
+                    <span class="recommend-price">${esc(formatPriceLabel(item))}</span>
+                  </div>
+                </div>
+              </a>
+            `).join('')}
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
+  function renderRecommendations() {
+    if (!refs.recommendSection || !refs.recommendFolderGrid || !refs.recommendTitle || !refs.recommendCopy) return;
+    const folders = Array.isArray(state.recommendationFolders) ? state.recommendationFolders : [];
+    refs.recommendTitle.textContent = state.recommendationTitle || '추천 클래스 폴더';
+    refs.recommendCopy.textContent = folders.length
+      ? '운영자 추천 폴더를 카드 흐름으로 보여줍니다.'
+      : '추천 폴더가 없어 현재 클래스를 기준으로 자동 구성했습니다.';
+    refs.recommendSection.hidden = !folders.length;
+    refs.recommendFolderGrid.innerHTML = folders.map((folder, index) => renderRecommendationFolder(folder, index)).join('');
+  }
+
+  async function loadRecommendations() {
+    let folders = [];
+
+    try {
+      const res = await window.BSQ.api('/api/recommendations');
+      folders = res?.success && Array.isArray(res.data)
+        ? res.data.map((item) => normalizeRecommendationFolder(item)).filter((item) => item.id && item.items.length)
+        : [];
+    } catch (error) {
+      console.warn('[class_list] recommendation load failed:', error);
+    }
+
+    if (!folders.length) {
+      try {
+        const res = await window.BSQ.api('/api/classes?sort=popular&limit=12');
+        const rows = res?.success
+          ? (Array.isArray(res.data?.classes) ? res.data.classes : (Array.isArray(res.data) ? res.data : []))
+          : [];
+        const fallbackClasses = rows.map((item) => normalizeClassCard(item)).filter((item) => item.id);
+        folders = buildFallbackRecommendationFolders(fallbackClasses);
+      } catch (error) {
+        console.warn('[class_list] fallback recommendation load failed:', error);
+        folders = [];
+      }
+    }
+
+    state.recommendationFolders = folders;
+    state.recommendationTitle = '추천 클래스 폴더';
+    renderRecommendations();
   }
 
   function renderCard(item, index) {
@@ -698,7 +749,6 @@
 
   function selectCategory(nextCategory) {
     state.currentCategory = text(nextCategory || 'all') || 'all';
-    closeOverlay();
     syncUrl({ replace: true });
     updateHeader();
     void loadMore({ reset: true });
@@ -745,21 +795,16 @@
       }
 
       const action = event.target.closest('[data-action]')?.dataset.action;
-      if (action === 'toggle-category-overlay') {
+      if (action === 'toggle-category-panel') {
         event.preventDefault();
-        state.overlayOpen ? closeOverlay() : openOverlay();
-        return;
-      }
-
-      if (action === 'close-category-overlay') {
-        event.preventDefault();
-        closeOverlay();
+        state.categoryPanelOpen = !state.categoryPanelOpen;
+        renderCategoryMenu();
         return;
       }
 
       const categoryBtn = event.target.closest('[data-cat]');
       if (!categoryBtn) return;
-      const categoryScope = categoryBtn.closest('#categoryFilter, .class-category-overlay');
+      const categoryScope = categoryBtn.closest('#categoryFilter');
       if (!categoryScope) return;
       event.preventDefault();
       selectCategory(categoryBtn.dataset.cat || 'all');
@@ -800,6 +845,7 @@
     await window.BSQ?.ready;
     cacheRefs();
     readUrlState();
+    state.categoryPanelOpen = !isMobileClassListLayout();
     bindEvents();
     renderCategoryMenu();
     updateHeader();
@@ -809,7 +855,7 @@
     renderCategoryMenu();
     updateHeader();
 
-    await Promise.all([loadPopular(), loadMore({ reset: true })]);
+    await Promise.all([loadRecommendations(), loadMore({ reset: true })]);
     setupInfiniteScroll();
     ensureViewportFilled();
     syncUrl({ replace: true });

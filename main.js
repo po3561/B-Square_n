@@ -142,6 +142,15 @@ function normalizeBannerItems(items = [], fallbackLabel = '배너') {
         .filter((item) => item.imageUrl);
 }
 
+function normalizeRecommendationFolderTitle(value) {
+    const title = String(value || '').trim();
+    if (!title) return '추천 클래스';
+    if (/^새\s*추천\s*폴더$/.test(title) || /^새추천\s*폴더$/.test(title) || /^추천\s*폴더$/.test(title)) {
+        return '추천 클래스';
+    }
+    return title.replace(/폴더/g, '클래스');
+}
+
 function normalizeClassCard(item = {}) {
     const createdAt = parseDateValue(item.created_at || item.createdAt || item.created_at_ms || null);
     const rating = Number(item.rating ?? item.avg_rating ?? 0);
@@ -171,7 +180,7 @@ function normalizeRecommendationFolder(folder = {}) {
     const items = Array.isArray(folder.items) ? folder.items : (Array.isArray(folder.classes) ? folder.classes : []);
     return {
         id: String(folder.id || folder.folderId || folder.folder_id || '').trim(),
-        title: String(folder.title || folder.name || '추천 폴더').trim(),
+        title: normalizeRecommendationFolderTitle(folder.title || folder.name || '추천 클래스'),
         description: String(folder.description || '').trim(),
         imageUrl: String(folder.coverImage || folder.cover_image || folder.thumbnail || folder.icon || '').trim(),
         linkUrl: String(folder.url || folder.href || folder.link || '').trim(),
@@ -223,7 +232,7 @@ function renderBannerCarousel(kind, items, options = {}) {
             <div class="${kind === 'bottom' ? 'home-bottom-banner-slide' : 'home-banner-slide'}${index === 0 ? ' is-active' : ''}" data-banner-index="${index}">
                 ${item.imageUrl
                     ? `<${tag}${attrs} class="home-banner-link"><img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}"></${tag}>`
-                    : `<div class="home-banner-empty"><div><strong>B-Square</strong><div>${escapeHtml(options.emptyMessage || '배너를 준비하는 중입니다.')}</div></div></div>`
+                    : `<div class="home-banner-empty" aria-hidden="true"></div>`
                 }
             </div>
         `;
@@ -367,7 +376,7 @@ function buildHomeMobileBannerCard() {
 
 function buildHomeMobileFolderRail(folders = []) {
     if (!Array.isArray(folders) || !folders.length) {
-        return '<p class="empty-state compact">추천 폴더가 아직 없습니다.</p>';
+        return '<p class="empty-state compact">추천 클래스가 아직 없습니다.</p>';
     }
 
     return folders.map((folder) => {
@@ -375,14 +384,14 @@ function buildHomeMobileFolderRail(folders = []) {
         const linkUrl = String(folder.linkUrl || '').trim()
             || (items[0]?.category ? `class/class_list.html?category=${encodeURIComponent(items[0].category)}` : 'class/class_list.html');
         const imageUrl = String(folder.imageUrl || items[0]?.imageUrl || '').trim();
-        const description = String(folder.description || '').trim() || `${Number(items.length || 0).toLocaleString()}개 클래스`;
+        const description = String(folder.description || '').trim() || `${Number(items.length || 0).toLocaleString()}개의 추천 클래스`;
 
         return `
             <article class="home-mobile-folder-card">
                 <a class="home-mobile-folder-link" href="${escapeHtml(linkUrl)}">
                     <span class="home-mobile-folder-thumb"${imageUrl ? ` style="background-image:url('${escapeHtml(imageUrl)}')"` : ''} aria-hidden="true"></span>
                     <span class="home-mobile-folder-copy">
-                        <strong>${escapeHtml(folder.title || '추천 폴더')}</strong>
+                        <strong>${escapeHtml(folder.title || '추천 클래스')}</strong>
                         <span>${escapeHtml(description)}</span>
                     </span>
                 </a>
@@ -457,7 +466,7 @@ function renderHomeMobileShell() {
                     <div class="home-mobile-section-head">
                         <div>
                             <span class="home-mobile-eyebrow">큐레이션</span>
-                            <h2>추천 폴더</h2>
+                            <h2>추천 클래스</h2>
                         </div>
                     </div>
                     <div class="home-mobile-folder-rail" id="homeMobileFolderRail"></div>
@@ -596,13 +605,12 @@ function mergePopularItems(primaryItems = [], fallbackItems = [], limit = 10) {
 function renderRecommendColumns(folders, container) {
     const items = Array.isArray(folders) && folders.length ? folders.slice(0, 3) : buildFallbackFolders(globalAllClasses);
     if (!items.length) {
-        container.innerHTML = '<p class="empty-state">아직 추천 폴더가 없습니다.</p>';
+        container.innerHTML = '<p class="empty-state">아직 추천 클래스가 없습니다.</p>';
         return;
     }
 
     container.innerHTML = items.map((folder) => `
         <article class="recommend-folder-card">
-            <div class="recommend-folder-media" style="${folder.imageUrl ? `background-image:url('${escapeHtml(folder.imageUrl)}')` : ''}"></div>
             <div class="recommend-folder-body">
                 <div>
                     <h4 class="recommend-folder-title">${escapeHtml(folder.title)}</h4>
@@ -639,8 +647,8 @@ function buildFallbackFolders(classes) {
     }
     return Array.from(buckets.entries()).slice(0, 3).map(([name, items], index) => ({
         id: `fallback-${index}`,
-        title: name,
-        description: '현재 클래스 데이터를 기준으로 자동 구성된 추천 묶음입니다.',
+        title: normalizeRecommendationFolderTitle(name || '추천 클래스'),
+        description: '현재 클래스 데이터를 기준으로 자동 구성된 추천 클래스 묶음입니다.',
         imageUrl: items[0]?.imageUrl || '',
         items,
     }));
@@ -690,16 +698,13 @@ async function initBanners() {
         prevId: 'homeMainBannerPrev',
         nextId: 'homeMainBannerNext',
         fallbackLabel: '메인 배너',
-        emptyMessage: '메인 배너를 준비하는 중입니다.',
         intervalMs: 7000,
     });
     renderBannerCarousel('bottom', settings?.bottom_banners || [], {
         trackId: 'homeBottomBannerTrack',
         prevId: 'homeBottomBannerPrev',
         nextId: 'homeBottomBannerNext',
-        dotsId: 'homeBottomBannerDots',
         fallbackLabel: '하단 배너',
-        emptyMessage: '하단 배너를 준비하는 중입니다.',
         intervalMs: 7000,
     });
     renderHomeMobileShell();

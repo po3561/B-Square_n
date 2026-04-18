@@ -15,6 +15,30 @@ body.home-page .home-shell {
     margin: 0 auto;
 }
 
+body.home-page .curated-sections-dark {
+    background: #0c0c0c;
+    border-radius: 40px;
+    padding: 2rem 2rem 1.75rem;
+    margin-bottom: 3rem;
+}
+
+body.home-page .curated-sections-dark .class-group {
+    margin-bottom: 2rem;
+}
+
+body.home-page .curated-sections-dark .class-group:last-child {
+    margin-bottom: 0;
+}
+
+body.home-page .curated-sections-dark .home-section-head {
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.7rem;
+}
+
+body.home-page .curated-sections-dark .group-title {
+    margin-bottom: 1rem;
+}
+
 body.home-page .home-surface,
 body.home-page .home-intro-card,
 body.home-page .home-main-banner,
@@ -208,21 +232,17 @@ body.home-page .home-banner-empty {
 
 body.home-page .home-banner-controls {
     position: absolute;
-    left: 1rem;
-    right: 1rem;
-    bottom: 0.95rem;
+    inset: 0.9rem;
     z-index: 3;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 0.55rem;
+    justify-content: space-between;
+    gap: 0.75rem;
+    pointer-events: none;
 }
 
-body.home-page .home-banner-controls.home-banner-controls-main {
-    left: auto !important;
-    right: 1rem !important;
-    width: max-content !important;
-    justify-content: flex-end !important;
+body.home-page .home-banner-controls > * {
+    pointer-events: auto;
 }
 
 body.home-page .banner-nav,
@@ -531,7 +551,7 @@ body.home-page .home-bottom-banner-inner {
     position: relative;
     min-height: 300px;
     border-radius: 32px;
-    padding: clamp(1.2rem, 2vw, 1.6rem);
+    padding: 0.55rem;
     overflow: hidden;
 }
 
@@ -547,8 +567,7 @@ body.home-page .home-bottom-banner-slide.is-active {
 }
 
 body.home-page .home-bottom-banner-overlay,
-body.home-page .banner-actions,
-body.home-page .home-bottom-banner-controls {
+body.home-page .banner-actions {
     position: relative;
     z-index: 2;
 }
@@ -567,8 +586,8 @@ body.home-page .banner-actions {
 }
 
 body.home-page .home-bottom-banner-controls {
-    margin-top: 1rem;
-    justify-content: flex-end;
+    z-index: 3;
+    margin-top: 0;
 }
 
 body.home-page .home-banner-dots {

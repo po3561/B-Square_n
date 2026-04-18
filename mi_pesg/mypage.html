@@ -9,7 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="mypage.css?v=20260410_01">
+    <link rel="stylesheet" href="../style_pc.css?v=20260406_01" media="(min-width: 769px)">
+    <link rel="stylesheet" href="mypage.css?v=20260418_01">
     <script src="../bsq_server.js?v=20260402_01" defer></script>
     <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
     <link rel="stylesheet" href="/theme_overrides.css?v=20260410_01">
@@ -119,7 +120,7 @@
                                 </div>
                                 <strong class="dashboard-stat-value" id="dashPassCount">0개</strong>
                             </div>
-                            <button type="button" class="dashboard-summary-toggle" data-accordion-toggle="pass" aria-expanded="false">탭 열기</button>
+                            <button type="button" class="dashboard-summary-toggle" data-dashboard-detail="pass" aria-haspopup="dialog" aria-controls="dashboardDetailModal">상세보기</button>
                             <div class="dashboard-accordion-body" id="dashboardPassList">
                                 <div class="empty-state compact">수강권 정보를 불러오는 중입니다.</div>
                             </div>
@@ -133,7 +134,7 @@
                                 </div>
                                 <strong class="dashboard-stat-value" id="dashClassCount">0개</strong>
                             </div>
-                            <button type="button" class="dashboard-summary-toggle" data-accordion-toggle="class" aria-expanded="false">탭 열기</button>
+                            <button type="button" class="dashboard-summary-toggle" data-dashboard-detail="class" aria-haspopup="dialog" aria-controls="dashboardDetailModal">상세보기</button>
                             <div class="dashboard-accordion-body">
                                 <div id="dashboardEnrolledClasses" class="my-class-list">
                                     <div class="empty-state">수강 정보를 불러오는 중입니다.</div>
@@ -149,7 +150,7 @@
                                 </div>
                                 <strong class="dashboard-stat-value" id="dashFriendCount">0명</strong>
                             </div>
-                            <button type="button" class="dashboard-summary-toggle" data-accordion-toggle="friend" aria-expanded="false">탭 열기</button>
+                            <button type="button" class="dashboard-summary-toggle" data-dashboard-detail="friend" aria-haspopup="dialog" aria-controls="dashboardDetailModal">친구 목록보기</button>
                             <div class="dashboard-accordion-body" id="dashboardFriendsPanel">
                                 <div class="friends-panel friends-panel-pending">
                                     <div class="friends-panel-head">
@@ -344,72 +345,113 @@
 
                 <!-- Profile: editable personal information -->
                 <section id="tabProfile" class="mypage-tab" aria-labelledby="profileTitle">
-                    <div class="tab-header-row">
+                    <div class="tab-header-row profile-tab-header">
                         <div>
                             <p class="mypage-panel-eyebrow">Profile</p>
                             <h2 class="tab-title" id="profileTitle">프로필 설정</h2>
+                            <p class="tab-subtitle">세션과 저장된 내정보를 불러와 한 화면에서 바로 수정할 수 있습니다.</p>
                         </div>
                     </div>
 
-                    <form id="profileForm" class="mypage-form">
-                        <div class="profile-upload-wrapper">
-                            <div class="profile-image-container" id="profileImagePreview">
-                                <span class="placeholder-icon">👤</span>
-                                <label for="profileImage" class="profile-image-camera" aria-label="프로필 사진 변경">
-                                    <i class="fa-solid fa-camera" aria-hidden="true"></i>
-                                </label>
+                    <form id="profileForm" class="mypage-form profile-form-shell">
+                        <section class="profile-snapshot-card" aria-label="내 프로필 요약">
+                            <div class="profile-snapshot-copy">
+                                <p class="profile-snapshot-eyebrow">AUTO FILLED</p>
+                                <h3 class="profile-snapshot-name" id="profileSummaryName">사용자</h3>
+                                <p class="profile-snapshot-email" id="profileSummaryEmail">이메일 정보가 자동으로 채워집니다.</p>
                             </div>
-                            <div class="profile-image-actions">
-                                <label for="profileImage" class="btn-image-upload">사진 변경</label>
-                                <input type="file" id="profileImage" accept="image/*" hidden>
-                                <p class="upload-tip">권장 사이즈 400x400px</p>
-                            </div>
-                        </div>
 
-                        <div class="form-grid">
-                            <div class="input-group">
-                                <label for="profileName">이름</label>
-                                <input type="text" id="profileName" placeholder="이름을 입력하세요" autocomplete="name" required>
+                            <div class="profile-upload-wrapper">
+                                <div class="profile-image-container" id="profileImagePreview">
+                                    <span class="placeholder-icon">👤</span>
+                                    <label for="profileImage" class="profile-image-camera" aria-label="프로필 사진 변경">
+                                        <i class="fa-solid fa-camera" aria-hidden="true"></i>
+                                    </label>
+                                </div>
+                                <div class="profile-image-actions">
+                                    <label for="profileImage" class="btn-image-upload">사진 변경</label>
+                                    <input type="file" id="profileImage" accept="image/*" hidden>
+                                    <p class="upload-tip">권장 사이즈 400x400px</p>
+                                </div>
                             </div>
-                            <div class="input-group">
-                                <label for="profilePhone">휴대전화</label>
-                                <input type="tel" id="profilePhone" placeholder="010-0000-0000" autocomplete="tel" required>
-                            </div>
-                            <div class="input-group">
-                                <label for="profileUsername">아이디 (변경 불가)</label>
-                                <input type="text" id="profileUsername" autocomplete="username" readonly>
-                            </div>
-                            <div class="input-group">
-                                <label for="profileSns">SNS 링크 (인스타그램)</label>
-                                <input type="url" id="profileSns" placeholder="@your_id" autocomplete="url">
-                            </div>
-                        </div>
 
-                        <div class="input-group">
-                            <label for="profileReferrerCode">추천인 코드</label>
-                            <select id="profileReferrerCode" data-referrer-display="code-only" aria-label="추천인 코드 선택">
-                                <option value="">추천인 코드를 선택해 주세요</option>
-                            </select>
-                        </div>
+                            <dl class="profile-summary-grid">
+                                <div class="profile-summary-item">
+                                    <dt>아이디</dt>
+                                    <dd id="profileSummaryUsername">-</dd>
+                                </div>
+                                <div class="profile-summary-item">
+                                    <dt>휴대전화</dt>
+                                    <dd id="profileSummaryPhone">미입력</dd>
+                                </div>
+                                <div class="profile-summary-item">
+                                    <dt>추천인</dt>
+                                    <dd id="profileSummaryReferrer">미선택</dd>
+                                </div>
+                                <div class="profile-summary-item profile-summary-item-wide">
+                                    <dt>선호 카테고리</dt>
+                                    <dd id="profileSummaryCategories">-</dd>
+                                </div>
+                            </dl>
+                        </section>
 
-                        <div class="input-group full-width">
-                            <label>나의 선호 카테고리 (중복 선택 가능)</label>
-                            <div class="category-chips" id="categoryChips">
-                                <button type="button" class="category-chip" data-category="요리">🍳 요리</button>
-                                <button type="button" class="category-chip" data-category="공예">🛠 공예</button>
-                                <button type="button" class="category-chip" data-category="스포츠">🏅 스포츠</button>
-                                <button type="button" class="category-chip" data-category="디자인">✏ 디자인</button>
-                                <button type="button" class="category-chip" data-category="음악">🎵 음악</button>
-                                <button type="button" class="category-chip" data-category="베이킹">🧁 베이킹</button>
-                                <button type="button" class="category-chip" data-category="사진">📷 사진</button>
-                                <button type="button" class="category-chip" data-category="영상">🎬 영상</button>
-                                <button type="button" class="category-chip" data-category="아트">🎨 아트</button>
-                                <button type="button" class="category-chip" data-category="개발">💻 개발</button>
-                                <button type="button" class="category-chip" data-category="언어">🗣 언어</button>
+                        <section class="profile-editor-card" aria-label="편집 폼">
+                            <div class="profile-editor-head">
+                                <p class="profile-editor-eyebrow">EDIT MODE</p>
+                                <h3 class="profile-editor-title">내 정보 수정</h3>
+                                <p class="profile-editor-text">길게 늘어나는 문구 대신 짧은 카드로 정리해 줄깨짐을 줄였습니다.</p>
                             </div>
-                        </div>
 
-                        <button type="submit" class="btn-submit">기본 정보 저장</button>
+                            <div class="form-grid profile-input-grid">
+                                <div class="input-group">
+                                    <label for="profileName">이름</label>
+                                    <input type="text" id="profileName" placeholder="이름을 입력하세요" autocomplete="name" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="profilePhone">휴대전화</label>
+                                    <input type="tel" id="profilePhone" placeholder="010-0000-0000" autocomplete="tel" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="profileUsername">아이디</label>
+                                    <span class="input-hint">변경 불가</span>
+                                    <input type="text" id="profileUsername" autocomplete="username" readonly>
+                                </div>
+                                <div class="input-group">
+                                    <label for="profileSns">SNS 링크</label>
+                                    <span class="input-hint">인스타그램</span>
+                                    <input type="url" id="profileSns" placeholder="@your_id" autocomplete="url">
+                                </div>
+                            </div>
+
+                            <div class="profile-inline-stack">
+                                <div class="input-group profile-referrer-group">
+                                    <label for="profileReferrerCode">추천인 코드</label>
+                                    <span class="input-hint">선택 시 자동 반영</span>
+                                    <select id="profileReferrerCode" data-referrer-display="code-only" aria-label="추천인 코드 선택">
+                                        <option value="">추천인 코드를 선택해 주세요</option>
+                                    </select>
+                                </div>
+
+                                <div class="input-group full-width profile-category-group">
+                                    <label>선호 카테고리</label>
+                                    <span class="input-hint">중복 선택 가능</span>
+                                    <div class="category-chips" id="categoryChips">
+                                        <button type="button" class="category-chip" data-category="요리">🍳 요리</button>
+                                        <button type="button" class="category-chip" data-category="공예">🛠 공예</button>
+                                        <button type="button" class="category-chip" data-category="스포츠">🏅 스포츠</button>
+                                        <button type="button" class="category-chip" data-category="디자인">✏ 디자인</button>
+                                        <button type="button" class="category-chip" data-category="음악">🎵 음악</button>
+                                        <button type="button" class="category-chip" data-category="베이킹">🧁 베이킹</button>
+                                        <button type="button" class="category-chip" data-category="사진">📷 사진</button>
+                                        <button type="button" class="category-chip" data-category="영상">🎬 영상</button>
+                                        <button type="button" class="category-chip" data-category="아트">🎨 아트</button>
+                                        <button type="button" class="category-chip" data-category="개발">💻 개발</button>
+                                        <button type="button" class="category-chip" data-category="언어">🗣 언어</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-submit">기본 정보 저장</button>
                     </form>
                 </section>
 
@@ -565,7 +607,25 @@
                 </section>
             </section>
         </div>
-</main>
+    </main>
+
+    <!-- Dashboard detail modal: pass / classes / friends -->
+    <div class="dashboard-detail-modal" id="dashboardDetailModal" hidden>
+        <div class="dashboard-detail-backdrop" data-close-dashboard-detail></div>
+        <section class="dashboard-detail-card" role="dialog" aria-modal="true" aria-labelledby="dashboardDetailTitle" aria-describedby="dashboardDetailDescription">
+            <header class="dashboard-detail-head">
+                <div>
+                    <p class="mypage-panel-eyebrow" id="dashboardDetailEyebrow">상세보기</p>
+                    <h3 id="dashboardDetailTitle">상세보기</h3>
+                    <p class="dashboard-detail-description" id="dashboardDetailDescription"></p>
+                </div>
+                <button type="button" class="icon-btn" data-close-dashboard-detail aria-label="닫기">×</button>
+            </header>
+            <div id="dashboardDetailBody" class="dashboard-detail-body">
+                <div class="empty-state compact">항목을 불러오는 중입니다.</div>
+            </div>
+        </section>
+    </div>
 
     <!-- Checkout modal: cart preview + final payment -->
     <div class="checkout-modal" id="checkoutModal" hidden>
@@ -625,7 +685,7 @@
         </section>
     </div>
 
-    <script src="mypage.js?v=20260401_03" defer></script>
+    <script src="mypage.js?v=20260418_01" defer></script>
     <script src="tab_profile.js?v=20260410_02" defer></script>
     <script src="tab_classes.js?v=20260330_11" defer></script>
     <script src="tab_security.js?v=20260402_01" defer></script>

@@ -39,10 +39,117 @@
     }
 
     function normalizeUserProfile(payload) {
-        if (payload && typeof payload === 'object' && payload.user && typeof payload.user === 'object') {
-            return payload.user;
+        const source = payload && typeof payload === 'object'
+            ? (payload.user && typeof payload.user === 'object'
+                ? { ...payload.user, ...payload }
+                : { ...payload })
+            : {};
+
+        const email = String(source.email || source.email_address || '').trim();
+        const name = String(source.name || source.display_name || source.nickname || source.full_name || '').trim();
+        const username = String(source.username || source.user_name || source.handle || '').trim();
+        const phone = String(source.phone || source.mobile || source.tel || '').trim();
+        const snsLink = String(source.sns_link || source.snsLink || source.instagram || source.instagram_url || '').trim();
+        const referrerCode = String(source.referrer_code || source.referrerCode || source.referrer || '').trim();
+        const referrerName = String(source.referrer_name || source.referrerName || '').trim();
+        const preferredCategory = Array.isArray(source.preferred_category)
+            ? source.preferred_category.map((value) => String(value || '').trim()).filter(Boolean).join(', ')
+            : String(source.preferred_category || source.preferredCategory || source.categories || '').trim();
+        const profileImageUrl = String(source.profile_image_url || source.profileImageUrl || source.avatar_url || source.avatarUrl || '').trim();
+
+        return {
+            ...source,
+            email,
+            name,
+            username,
+            phone,
+            sns_link: snsLink,
+            referrer_code: referrerCode,
+            referrer_name: referrerName,
+            preferred_category: preferredCategory,
+            profile_image_url: profileImageUrl,
+        };
+    }
+
+    function readStoredUserProfile() {
+        try {
+            const raw = localStorage.getItem('bsq_user');
+            const parsed = raw ? JSON.parse(raw) : null;
+            return parsed && typeof parsed === 'object' ? parsed : {};
+        } catch (error) {
+            console.warn('[tab_profile] stored user parse failed:', error);
+            return {};
         }
-        return payload && typeof payload === 'object' ? payload : {};
+    }
+
+    function mergeProfileSnapshot(...sources) {
+        const merged = {};
+
+        for (const source of sources) {
+            const normalized = normalizeUserProfile(source);
+            Object.entries(normalized).forEach(([key, value]) => {
+                if (value === '' || value == null) return;
+                merged[key] = value;
+            });
+        }
+
+        const emailLocalPart = merged.email ? String(merged.email).split('@')[0] : '';
+        if (!merged.name) merged.name = merged.username || emailLocalPart || '사용자';
+        if (!merged.username) merged.username = emailLocalPart || merged.name || 'user';
+        if (!merged.email && user?.email) merged.email = String(user.email || '').trim();
+
+        return merged;
+    }
+
+    function updateProfileSummaryUI(profile = {}) {
+        const summaryNameEl = document.getElementById('profileSummaryName');
+        const summaryEmailEl = document.getElementById('profileSummaryEmail');
+        const summaryUsernameEl = document.getElementById('profileSummaryUsername');
+        const summaryPhoneEl = document.getElementById('profileSummaryPhone');
+        const summaryReferrerEl = document.getElementById('profileSummaryReferrer');
+        const summaryCategoriesEl = document.getElementById('profileSummaryCategories');
+
+        const displayName = profile.name || profile.username || user?.name || user?.username || '사용자';
+        const emailLabel = profile.email || user?.email || '이메일 정보가 자동으로 채워집니다.';
+        const usernameLabel = profile.username || user?.username || user?.email?.split('@')[0] || '-';
+        const phoneLabel = profile.phone || '미입력';
+        const referrerLabel = String(profile.referrer_code || profile.referrerCode || '').trim();
+        const referrerNameLabel = String(profile.referrer_name || profile.referrerName || '').trim();
+        const categoryLabel = String(profile.preferred_category || '')
+            .split(',')
+            .map((value) => value.trim())
+            .filter(Boolean)
+            .join(' · ') || '미선택';
+
+        if (summaryNameEl) summaryNameEl.textContent = displayName;
+        if (summaryEmailEl) summaryEmailEl.textContent = emailLabel;
+        if (summaryUsernameEl) summaryUsernameEl.textContent = usernameLabel;
+        if (summaryPhoneEl) summaryPhoneEl.textContent = phoneLabel;
+        if (summaryReferrerEl) summaryReferrerEl.textContent = referrerLabel ? `${referrerLabel}${referrerNameLabel ? ` · ${referrerNameLabel}` : ''}` : '미선택';
+        if (summaryCategoriesEl) summaryCategoriesEl.textContent = categoryLabel;
+    }
+
+    async function applyProfileSnapshotToForm(profile) {
+        const nameEl = document.getElementById('profileName');
+        const phoneEl = document.getElementById('profilePhone');
+        const usernameEl = document.getElementById('profileUsername');
+        const snsEl = document.getElementById('profileSns');
+        const referrerEl = document.getElementById('profileReferrerCode');
+
+        if (nameEl) nameEl.value = profile.name || '';
+        if (phoneEl) phoneEl.value = profile.phone || '';
+        if (usernameEl) usernameEl.value = profile.username || '';
+        if (snsEl) snsEl.value = profile.sns_link || '';
+        if (referrerEl) ensureReferrerValue(profile.referrer_code || '', profile.referrer_name || '');
+
+        selectedCategories = String(profile.preferred_category || '')
+            .split(',')
+            .map((value) => value.trim())
+            .filter(Boolean);
+
+        await refreshCategoryChips(selectedCategories);
+        renderProfileImagePreview(profile.profile_image_url || '');
+        updateProfileSummaryUI(profile);
     }
 
     if (!profileForm) return;
@@ -379,43 +486,34 @@
             const referrerData = await loadReferrerOptions();
             renderReferrerOptions(referrerData.groups, referrerData.source);
 
-            const res = await window.BSQ.api(`/api/users/${userId}`);
-            if (res && res.success && res.data) {
-                const data = normalizeUserProfile(res.data);
-                const nameEl = document.getElementById('profileName');
-                const phoneEl = document.getElementById('profilePhone');
-                const usernameEl = document.getElementById('profileUsername');
-                const snsEl = document.getElementById('profileSns');
-                const referrerEl = document.getElementById('profileReferrerCode');
+            const seedProfile = mergeProfileSnapshot(
+                readStoredUserProfile(),
+                window.BSQ?.session?.user,
+                user,
+            );
 
-                if (nameEl) nameEl.value = data.name || '';
-                if (phoneEl) phoneEl.value = data.phone || '';
-                if (usernameEl) usernameEl.value = data.username || '';
-                if (snsEl) snsEl.value = data.sns_link || '';
-                if (referrerEl) ensureReferrerValue(data.referrer_code || '', data.referrer_name || '');
-
-                selectedCategories = String(data.preferred_category || '')
-                    .split(',')
-                    .map((value) => value.trim())
-                    .filter(Boolean);
-                await refreshCategoryChips(selectedCategories);
-
-                renderProfileImagePreview(data.profile_image_url || '');
-
-                updateSidebarUI(data);
-            } else {
-                const defaultName = user?.email?.split('@')[0] || '사용자';
-                const nameEl = document.getElementById('profileName');
-                const usernameEl = document.getElementById('profileUsername');
-                if (nameEl) nameEl.value = defaultName;
-                if (usernameEl) usernameEl.value = defaultName;
-                if (profileReferrerCode) profileReferrerCode.value = '';
-                selectedCategories = [];
-                await refreshCategoryChips([]);
-                renderProfileImagePreview('');
+            let apiProfile = {};
+            try {
+                const res = await window.BSQ.api(`/api/users/${userId}`);
+                if (res && res.success && res.data) {
+                    apiProfile = normalizeUserProfile(res.data);
+                }
+            } catch (error) {
+                console.warn('[tab_profile] profile load error:', error);
             }
+
+            const resolvedProfile = mergeProfileSnapshot(seedProfile, apiProfile);
+            await applyProfileSnapshotToForm(resolvedProfile);
+            updateSidebarUI(resolvedProfile);
         } catch (error) {
             console.warn('[tab_profile] profile load error:', error);
+            const fallbackProfile = mergeProfileSnapshot(
+                readStoredUserProfile(),
+                window.BSQ?.session?.user,
+                user,
+            );
+            await applyProfileSnapshotToForm(fallbackProfile);
+            updateSidebarUI(fallbackProfile);
         }
     }
 
@@ -471,6 +569,7 @@
                     email: savedProfile.email || user?.email || '',
                 };
                 showMypageNotice?.('success', '프로필 저장 완료', '프로필 정보가 안전하게 저장되었습니다.');
+                await applyProfileSnapshotToForm(mergeProfileSnapshot(nextProfile));
                 updateSidebarUI(nextProfile);
                 selectedCategories = activeChips.map((value) => String(value || '').trim()).filter(Boolean);
             } else {
@@ -491,6 +590,7 @@
         const profile = profileOrName && typeof profileOrName === 'object'
             ? profileOrName
             : { name: profileOrName, username };
+        updateProfileSummaryUI(profile);
         const nicknameEl = document.getElementById('displayNickname');
         const displayNameEl = document.getElementById('displayName');
         const emailEl = document.getElementById('displayEmail');

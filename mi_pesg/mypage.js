@@ -309,21 +309,420 @@ function bindNav() {
     return { setActive };
 }
 
-function bindAccordions() {
-    document.querySelectorAll('[data-accordion-toggle]').forEach((button) => {
-        const key = button.dataset.accordionToggle;
-        const card = document.querySelector(`[data-accordion="${CSS.escape(key)}"]`);
-        if (!card) return;
+function getCurrentMypageUserId() {
+    return window.__BSQ_MYPAGE_CURRENT_USER_ID__ || window.__BSQ_MYPAGE_CACHE__?.userId || '';
+}
 
-        button.addEventListener('click', () => {
-            const isOpen = card.classList.toggle('is-open');
-            button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-            button.textContent = isOpen ? '탭 닫기' : '탭 열기';
+function getDashboardDetailState() {
+    const cache = window.__BSQ_MYPAGE_CACHE__ || {};
+    const detail = cache.detail || {};
 
-            if (key === 'friend' && isOpen) {
-                window.loadMypageFriends?.();
-            }
+    const passes = Array.isArray(cache.passes) && cache.passes.length
+        ? cache.passes
+        : Array.isArray(detail.passes) && detail.passes.length
+            ? detail.passes
+            : [];
+
+    const enrollments = Array.isArray(cache.enrollments) && cache.enrollments.length
+        ? cache.enrollments
+        : Array.isArray(detail.ongoing_classes) && detail.ongoing_classes.length
+            ? detail.ongoing_classes
+            : Array.isArray(cache.classes?.ongoing) && cache.classes.ongoing.length
+                ? cache.classes.ongoing
+                : [];
+
+    const friends = Array.isArray(cache.friends) ? cache.friends : [];
+    const pendingFriends = Array.isArray(cache.pendingFriends) ? cache.pendingFriends : [];
+
+    return {
+        passes,
+        enrollments,
+        friends,
+        pendingFriends,
+    };
+}
+
+function normalizeDashboardPassItem(item) {
+    const remaining = safeNumber(item?.remaining_count ?? item?.remaining);
+    const total = safeNumber(item?.total_count ?? item?.total);
+
+    return {
+        remaining,
+        total,
+        title: String(item?.class_title || item?.title || '클래스').trim(),
+        category: String(item?.class_category || item?.category || '미분류').trim(),
+        passType: String(item?.pass_type || item?.type || '').trim(),
+        status: String(item?.status || '').trim() || (remaining > 0 ? '사용 가능' : '소진'),
+        expiresAt: item?.expires_at || item?.expiresAt || '',
+    };
+}
+
+function normalizeDashboardClassItem(item) {
+    return {
+        id: String(item?.class_id || item?.id || item?.reference_id || '').trim(),
+        title: String(item?.title || item?.class_title || '제목 없음').trim(),
+        category: String(item?.category || item?.class_category || '미분류').trim(),
+        imageUrl: String(item?.image_url || item?.thumbnail_url || item?.cover_url || '').trim(),
+        enrolledAt: item?.enrolled_at || item?.created_at || item?.joined_at || '',
+    };
+}
+
+function buildDashboardPassDetailMarkup(passes = []) {
+    if (!passes.length) {
+        return '<div class="empty-state compact">보유 중인 수강권이 없습니다.</div>';
+    }
+
+    const availableCount = passes.filter((item) => safeNumber(item?.remaining_count ?? item?.remaining) > 0).length;
+    const remainingTotal = passes.reduce((sum, item) => sum + safeNumber(item?.remaining_count ?? item?.remaining), 0);
+
+    return `
+        <div class="dashboard-detail-stats">
+            <article class="dashboard-summary-item">
+                <div class="dashboard-summary-copy">
+                    <strong>${escapeHtml(countText(passes.length, '개'))}</strong>
+                    <p>전체 수강권</p>
+                </div>
+                <span class="commerce-badge accent">총계</span>
+            </article>
+            <article class="dashboard-summary-item">
+                <div class="dashboard-summary-copy">
+                    <strong>${escapeHtml(countText(availableCount, '개'))}</strong>
+                    <p>사용 가능</p>
+                </div>
+                <span class="commerce-badge accent">활성</span>
+            </article>
+            <article class="dashboard-summary-item">
+                <div class="dashboard-summary-copy">
+                    <strong>${escapeHtml(countText(remainingTotal, '회'))}</strong>
+                    <p>잔여 횟수</p>
+                </div>
+                <span class="commerce-badge">누적</span>
+            </article>
+        </div>
+        <div class="dashboard-detail-list">
+            ${passes.map((item) => {
+                const pass = normalizeDashboardPassItem(item);
+                const ratio = pass.total > 0 ? `${pass.remaining}/${pass.total}` : `${pass.remaining}개`;
+                const meta = [];
+                if (pass.passType) meta.push(`유형 ${pass.passType}`);
+                if (pass.expiresAt) meta.push(`만료 ${formatDate(pass.expiresAt)}`);
+
+                return `
+                    <article class="dashboard-detail-item">
+                        <div class="dashboard-detail-item-top">
+                            <div class="dashboard-detail-item-copy">
+                                <strong>${escapeHtml(pass.title)}</strong>
+                                <p>${escapeHtml(pass.category)}</p>
+                            </div>
+                            <span class="commerce-badge accent">${escapeHtml(ratio)}</span>
+                        </div>
+                        <div class="dashboard-detail-item-meta">
+                            <span>${escapeHtml(pass.status)}</span>
+                            ${meta.length ? `<span>${escapeHtml(meta.join(' · '))}</span>` : ''}
+                        </div>
+                    </article>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+function buildDashboardClassDetailMarkup(enrollments = [], passes = []) {
+    if (!enrollments.length) {
+        return '<div class="empty-state compact">수강 중인 클래스가 없습니다.</div>';
+    }
+
+    const linkedCount = enrollments.filter((enroll) => {
+        const classId = String(enroll?.class_id || enroll?.id || enroll?.reference_id || '').trim();
+        if (!classId) return false;
+        return passes.some((pass) => String(pass?.class_id || '').trim() === classId);
+    }).length;
+    const passTotal = passes.reduce((sum, item) => sum + safeNumber(item?.remaining_count ?? item?.remaining), 0);
+
+    return `
+        <div class="dashboard-detail-stats">
+            <article class="dashboard-summary-item">
+                <div class="dashboard-summary-copy">
+                    <strong>${escapeHtml(countText(enrollments.length, '개'))}</strong>
+                    <p>수강 중인 클래스</p>
+                </div>
+                <span class="commerce-badge accent">현재</span>
+            </article>
+            <article class="dashboard-summary-item">
+                <div class="dashboard-summary-copy">
+                    <strong>${escapeHtml(countText(linkedCount, '개'))}</strong>
+                    <p>수강권 연결</p>
+                </div>
+                <span class="commerce-badge accent">연결</span>
+            </article>
+            <article class="dashboard-summary-item">
+                <div class="dashboard-summary-copy">
+                    <strong>${escapeHtml(countText(passTotal, '회'))}</strong>
+                    <p>잔여 횟수</p>
+                </div>
+                <span class="commerce-badge">총합</span>
+            </article>
+        </div>
+        <div class="dashboard-detail-list">
+            ${enrollments.map((item) => {
+                const enroll = normalizeDashboardClassItem(item);
+                const classId = enroll.id;
+                const classPasses = classId
+                    ? passes.filter((pass) => String(pass?.class_id || '').trim() === classId)
+                    : [];
+                const remaining = classPasses.reduce((sum, pass) => sum + safeNumber(pass?.remaining_count ?? pass?.remaining), 0);
+                const passBadge = classPasses.length
+                    ? `<span class="commerce-badge accent">수강권 ${escapeHtml(countText(remaining, '회'))}</span>`
+                    : '<span class="commerce-badge">참여 중</span>';
+                const tags = [enroll.category ? `<span class="commerce-badge accent">${escapeHtml(enroll.category)}</span>` : ''];
+                const hasMonthlyPass = classPasses.some((pass) => String(pass?.pass_type || '').toLowerCase() === 'monthly' && String(pass?.status || '').toLowerCase() === 'active');
+                if (hasMonthlyPass) tags.push('<span class="commerce-badge warm">정기 구독 중</span>');
+                const classHref = classId ? `../class_view/class_view.html?id=${encodeURIComponent(classId)}` : '';
+                const chatHref = classId ? `${classHref}#tabChat` : '';
+
+                return `
+                    <article class="my-class-card compact dashboard-detail-class-card">
+                        <div class="my-class-cover ${enroll.imageUrl ? '' : 'placeholder-orange'}">
+                            ${enroll.imageUrl ? `<img src="${escapeHtml(enroll.imageUrl)}" alt="${escapeHtml(enroll.title)}" loading="lazy">` : '<span>CLASS</span>'}
+                        </div>
+                        <div class="my-class-body">
+                            <div class="my-class-head">
+                                <div class="dashboard-detail-item-copy">
+                                    <strong>${escapeHtml(enroll.title)}</strong>
+                                    <p>${enroll.enrolledAt ? `수강일 ${escapeHtml(formatDate(enroll.enrolledAt))}` : '수강 정보 없음'}</p>
+                                </div>
+                                ${passBadge}
+                            </div>
+                            <div class="my-class-tags">
+                                ${tags.filter(Boolean).join('')}
+                            </div>
+                            <div class="my-class-actions">
+                                ${chatHref ? `<a class="btn-chat-link" href="${escapeHtml(chatHref)}">클래스 채널</a>` : ''}
+                                ${classHref ? `<a class="btn-chat-link subtle" href="${escapeHtml(classHref)}">클래스 보기</a>` : ''}
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+function buildDashboardFriendDetailMarkup(pending = [], friends = []) {
+    const communityButton = '<button type="button" class="btn-chat-link" data-dashboard-detail-action="community">커뮤니티 가기</button>';
+
+    return `
+        <div class="dashboard-detail-stats">
+            <article class="dashboard-summary-item">
+                <div class="dashboard-summary-copy">
+                    <strong>${escapeHtml(countText(pending.length, '건'))}</strong>
+                    <p>받은 친구 요청</p>
+                </div>
+                <span class="commerce-badge accent">대기</span>
+            </article>
+            <article class="dashboard-summary-item">
+                <div class="dashboard-summary-copy">
+                    <strong>${escapeHtml(countText(friends.length, '명'))}</strong>
+                    <p>내 친구</p>
+                </div>
+                <span class="commerce-badge accent">연결</span>
+            </article>
+            <article class="dashboard-summary-item">
+                <div class="dashboard-summary-copy">
+                    <strong>${escapeHtml(countText(pending.length + friends.length, '명'))}</strong>
+                    <p>전체 연결</p>
+                </div>
+                <span class="commerce-badge">합계</span>
+            </article>
+        </div>
+        <section class="dashboard-detail-section">
+            <div class="friends-panel friends-panel-pending">
+                <div class="friends-panel-head">
+                    <h3>받은 친구 요청 <span>${escapeHtml(countText(pending.length, '건'))}</span></h3>
+                </div>
+                <div class="friends-panel-body dashboard-detail-friend-list">
+                    ${pending.length
+                        ? pending.map((item) => renderFriendCard(item, 'pending')).join('')
+                        : '<div class="empty-state compact friends-empty">받은 요청이 없습니다.</div>'}
+                </div>
+            </div>
+        </section>
+        <section class="dashboard-detail-section">
+            <div class="friends-panel">
+                <div class="friends-panel-head friends-panel-head-inline">
+                    <h3>내 친구 <span>${escapeHtml(countText(friends.length, '명'))}</span></h3>
+                    ${communityButton}
+                </div>
+                <div class="friends-panel-body dashboard-detail-friend-list">
+                    ${friends.length
+                        ? friends.map((item) => renderFriendCard(item, 'accepted')).join('')
+                        : '<div class="empty-state compact friends-empty">친구가 없습니다. 클래스 채널에서 먼저 연결을 만들어보세요.</div>'}
+                </div>
+            </div>
+        </section>
+    `;
+}
+
+function bindFriendActions(root, userId) {
+    if (!root || !userId) return;
+
+    root.querySelectorAll('[data-friend-accept]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            await window.BSQ.api('/api/friends', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'accept', user_id: userId, friend_id: button.dataset.friendAccept }),
+            });
+            await loadFriends(userId);
+            refreshDashboardDetailModal();
         });
+    });
+
+    root.querySelectorAll('[data-friend-reject]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            await window.BSQ.api('/api/friends', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'reject', user_id: userId, friend_id: button.dataset.friendReject }),
+            });
+            await loadFriends(userId);
+            refreshDashboardDetailModal();
+        });
+    });
+
+    root.querySelectorAll('[data-friend-message]').forEach((button) => {
+        button.addEventListener('click', () => {
+            window.location.href = `../community/community.html?dm=${encodeURIComponent(button.dataset.friendMessage)}`;
+        });
+    });
+
+    root.querySelectorAll('[data-friend-remove]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            if (button.dataset.armed !== '1') {
+                button.dataset.armed = '1';
+                showMypageNotice('info', '친구 삭제 확인', '같은 버튼을 5초 안에 다시 누르면 친구가 삭제됩니다.');
+                window.setTimeout(() => {
+                    if (button.isConnected) button.dataset.armed = '';
+                }, 5000);
+                return;
+            }
+
+            button.dataset.armed = '';
+            await window.BSQ.api('/api/friends', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'remove', user_id: userId, friend_id: button.dataset.friendRemove }),
+            });
+            await loadFriends(userId);
+            refreshDashboardDetailModal();
+        });
+    });
+
+    root.querySelectorAll('[data-dashboard-detail-action="community"]').forEach((button) => {
+        button.addEventListener('click', () => {
+            window.location.href = '../community/community.html';
+        });
+    });
+}
+
+function renderDashboardDetailModal(kind) {
+    const modal = document.getElementById('dashboardDetailModal');
+    const titleEl = document.getElementById('dashboardDetailTitle');
+    const eyebrowEl = document.getElementById('dashboardDetailEyebrow');
+    const descEl = document.getElementById('dashboardDetailDescription');
+    const bodyEl = document.getElementById('dashboardDetailBody');
+    if (!modal || !titleEl || !bodyEl) return;
+
+    const resolvedKind = ['pass', 'class', 'friend'].includes(kind) ? kind : 'pass';
+    const state = getDashboardDetailState();
+    const metadata = {
+        pass: {
+            eyebrow: '수강권 상세보기',
+            title: '보유 수강권',
+            description: '남은 횟수와 상태를 한 번에 확인할 수 있습니다.',
+        },
+        class: {
+            eyebrow: '클래스 상세보기',
+            title: '수강 중인 클래스',
+            description: '수강 중인 클래스와 바로가기를 한 화면에서 확인할 수 있습니다.',
+        },
+        friend: {
+            eyebrow: '친구 목록보기',
+            title: '내 친구',
+            description: '받은 친구 요청과 연결된 친구 목록을 확인할 수 있습니다.',
+        },
+    }[resolvedKind];
+
+    modal.dataset.detailKind = resolvedKind;
+    titleEl.textContent = metadata.title;
+    if (eyebrowEl) eyebrowEl.textContent = metadata.eyebrow;
+    if (descEl) descEl.textContent = metadata.description;
+
+    if (resolvedKind === 'pass') {
+        bodyEl.innerHTML = buildDashboardPassDetailMarkup(state.passes);
+    } else if (resolvedKind === 'class') {
+        bodyEl.innerHTML = buildDashboardClassDetailMarkup(state.enrollments, state.passes);
+    } else {
+        bodyEl.innerHTML = buildDashboardFriendDetailMarkup(state.pendingFriends, state.friends);
+    }
+
+    bindFriendActions(bodyEl, getCurrentMypageUserId());
+}
+
+function refreshDashboardDetailModal() {
+    const modal = document.getElementById('dashboardDetailModal');
+    if (!modal || modal.hidden) return;
+    renderDashboardDetailModal(modal.dataset.detailKind || 'pass');
+}
+
+async function openDashboardDetailModal(kind) {
+    const modal = document.getElementById('dashboardDetailModal');
+    const bodyEl = document.getElementById('dashboardDetailBody');
+    if (!modal || !bodyEl) return;
+
+    const resolvedKind = ['pass', 'class', 'friend'].includes(kind) ? kind : 'pass';
+    modal.hidden = false;
+    modal.classList.add('is-open');
+    modal.dataset.detailKind = resolvedKind;
+    document.body.classList.add('modal-open');
+    bodyEl.innerHTML = '<div class="empty-state compact">상세 정보를 불러오는 중입니다.</div>';
+
+    try {
+        if (window.__BSQ_MYPAGE_BOOT_PROMISE__) {
+            await window.__BSQ_MYPAGE_BOOT_PROMISE__;
+        }
+    } catch (error) {
+        console.warn('[mypage] dashboard detail warmup failed:', error);
+    }
+
+    renderDashboardDetailModal(resolvedKind);
+    window.requestAnimationFrame(() => {
+        modal.querySelector('[data-close-dashboard-detail]')?.focus();
+    });
+}
+
+function closeDashboardDetailModal() {
+    const modal = document.getElementById('dashboardDetailModal');
+    if (!modal) return;
+    modal.hidden = true;
+    modal.classList.remove('is-open');
+    delete modal.dataset.detailKind;
+    document.body.classList.remove('modal-open');
+}
+
+function bindDashboardDetailModal() {
+    document.querySelectorAll('[data-dashboard-detail]').forEach((button) => {
+        button.addEventListener('click', () => {
+            openDashboardDetailModal(button.dataset.dashboardDetail);
+        });
+    });
+
+    document.querySelectorAll('[data-close-dashboard-detail]').forEach((button) => {
+        button.addEventListener('click', closeDashboardDetailModal);
+    });
+
+    const modal = document.getElementById('dashboardDetailModal');
+    modal?.addEventListener('click', (event) => {
+        if (event.target === modal || event.target.closest('[data-close-dashboard-detail]')) {
+            closeDashboardDetailModal();
+        }
     });
 }
 
@@ -461,50 +860,8 @@ async function loadFriends(userId) {
             ? friends.map((item) => renderFriendCard(item, 'accepted')).join('')
             : '<div class="empty-state compact friends-empty">친구가 없습니다. 클래스 채널에서 먼저 연결을 만들어보세요.</div>';
 
-        pendingArea.querySelectorAll('[data-friend-accept]').forEach((btn) => {
-            btn.onclick = async () => {
-                await window.BSQ.api('/api/friends', {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'accept', user_id: userId, friend_id: btn.dataset.friendAccept }),
-                });
-                loadFriends(userId);
-            };
-        });
-
-        pendingArea.querySelectorAll('[data-friend-reject]').forEach((btn) => {
-            btn.onclick = async () => {
-                await window.BSQ.api('/api/friends', {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'reject', user_id: userId, friend_id: btn.dataset.friendReject }),
-                });
-                loadFriends(userId);
-            };
-        });
-
-        friendArea.querySelectorAll('[data-friend-message]').forEach((btn) => {
-            btn.onclick = () => {
-                window.location.href = `../community/community.html?dm=${encodeURIComponent(btn.dataset.friendMessage)}`;
-            };
-        });
-
-        friendArea.querySelectorAll('[data-friend-remove]').forEach((btn) => {
-            btn.onclick = async () => {
-                if (btn.dataset.armed !== '1') {
-                    btn.dataset.armed = '1';
-                    showMypageNotice('info', '친구 삭제 확인', '같은 버튼을 5초 안에 다시 누르면 친구가 삭제됩니다.');
-                    window.setTimeout(() => {
-                        if (btn.isConnected) btn.dataset.armed = '';
-                    }, 5000);
-                    return;
-                }
-                btn.dataset.armed = '';
-                await window.BSQ.api('/api/friends', {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'remove', user_id: userId, friend_id: btn.dataset.friendRemove }),
-                });
-                loadFriends(userId);
-            };
-        });
+        bindFriendActions(pendingArea, userId);
+        bindFriendActions(friendArea, userId);
 
         window.__BSQ_MYPAGE_CACHE__ = {
             ...(window.__BSQ_MYPAGE_CACHE__ || {}),
@@ -512,6 +869,7 @@ async function loadFriends(userId) {
             pendingFriends: pending,
             updatedAt: Date.now(),
         };
+        refreshDashboardDetailModal();
     } catch (error) {
         console.error('[MyPage] friends load failed:', error);
         if (pendingCount) pendingCount.textContent = '0';
@@ -581,13 +939,14 @@ async function loadDashboard(userId, isOperator) {
         await loadFriends(userId);
         syncPaymentSummaryFromCache();
         renderClassBanner().catch(() => {});
+        refreshDashboardDetailModal();
     } catch (error) {
         console.error('[MyPage] dashboard load failed:', error);
         if (passCountEl) passCountEl.textContent = '0개';
         if (classCountEl) classCountEl.textContent = '0개';
         const passList = document.getElementById('dashboardPassList');
         if (passList) passList.innerHTML = '<div class="empty-state compact">데이터를 불러오지 못했습니다.</div>';
-        showMypageNotice('error', '대시보드 정보를 불러오지 못했습니다', '탭을 눌러 다시 시도해 주세요.');
+        showMypageNotice('error', '대시보드 정보를 불러오지 못했습니다', '상세보기를 눌러 다시 시도해 주세요.');
     }
 }
 
@@ -782,7 +1141,13 @@ function bindCheckoutModal() {
     });
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && !document.getElementById('checkoutModal')?.hidden) {
+        if (event.key !== 'Escape') return;
+        const dashboardModal = document.getElementById('dashboardDetailModal');
+        if (dashboardModal && !dashboardModal.hidden) {
+            closeDashboardDetailModal();
+            return;
+        }
+        if (!document.getElementById('checkoutModal')?.hidden) {
             closeCheckoutModal();
         }
     });
@@ -881,7 +1246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     bindGlobalActions();
     const { setActive } = bindNav();
-    bindAccordions();
+    bindDashboardDetailModal();
     bindCheckoutModal();
     bindSyncListeners(session?.user?.id || 'guest');
 
@@ -896,6 +1261,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ? (window.__BSQ_OPERATOR_PROFILE__ || { name: '운영자', email: 'operator@b-square.kr', username: 'operator' })
         : session.user;
     const userId = isOperator ? 'OPERATOR_GHOST' : session.user.id;
+    window.__BSQ_MYPAGE_CURRENT_USER_ID__ = userId;
 
     document.body.dataset.authState = 'member';
     const operatorEligible = isOperator || ['operator', 'admin', 'super_admin'].includes(String(user?.role || '').toLowerCase());
@@ -905,7 +1271,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.__BSQ_MYPAGE_CACHE__ = window.__BSQ_MYPAGE_CACHE__ || {};
     window.__BSQ_MYPAGE_BOOT_PROMISE__ = loadDashboard(userId, isOperator).catch((error) => {
         console.error('[MyPage] dashboard boot failed:', error);
-        showMypageNotice('error', '대시보드 정보를 불러오지 못했습니다', '탭을 눌러 다시 시도해 주세요.');
+        showMypageNotice('error', '대시보드 정보를 불러오지 못했습니다', '상세보기를 눌러 다시 시도해 주세요.');
         return null;
     });
     void window.__BSQ_MYPAGE_BOOT_PROMISE__;
