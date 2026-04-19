@@ -843,7 +843,136 @@ body.class-view-page.class-view-mobile-app .notice-item h4 {
   }
 
   body.class-view-page.class-view-mobile-app .btn-cta-start,
-  body.class-view-page.class-view-mobile-app .btn-cta-secondary {
+body.class-view-page.class-view-mobile-app .btn-cta-secondary {
     padding-inline: 0.55rem !important;
   }
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app {
+  color-scheme: dark;
+  --cv-mobile-bg: #070b12;
+  --cv-mobile-surface: rgba(18, 21, 30, 0.92);
+  --cv-mobile-surface-2: rgba(255, 255, 255, 0.03);
+  --cv-mobile-border: rgba(255, 255, 255, 0.10);
+  --cv-mobile-text: #f7f9fd;
+  --cv-mobile-text-2: #a3adbe;
+  --cv-mobile-accent: #9ebcff;
+  --cv-mobile-accent-2: #dbe8ff;
+  --cv-mobile-shadow: 0 14px 28px rgba(0, 0, 0, 0.20);
+  --cv-mobile-shadow-strong: 0 22px 50px rgba(0, 0, 0, 0.28);
+  background: var(--cv-mobile-bg) !important;
+  color: var(--cv-mobile-text) !important;
+}
+
+html[data-theme="dark"] {
+  background: var(--cv-mobile-bg) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .view-container {
+  background: transparent !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .premium-hero {
+  background: linear-gradient(180deg, rgba(35, 47, 75, 0.42) 0%, rgba(7, 11, 18, 0) 100%) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .class-view-toolbar-btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: var(--cv-mobile-border) !important;
+  color: var(--cv-mobile-text) !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .slider-counter {
+  background: rgba(7, 11, 18, 0.78) !important;
+  border-color: var(--cv-mobile-border) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .hero-info-band,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .sticky-card-premium,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .content-card,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .review-item-premium,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .review-form-card,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .curriculum-chapter,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .notice-item,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .lesson-item,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .lesson-empty-state,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .objective-card,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .target-list li {
+  background: var(--cv-mobile-surface) !important;
+  border-color: var(--cv-mobile-border) !important;
+  box-shadow: var(--cv-mobile-shadow) !important;
+  color: var(--cv-mobile-text) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .view-tabs {
+  background: rgba(7, 11, 18, 0.86) !important;
+  border-bottom-color: var(--cv-mobile-border) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .tab-btn {
+  color: var(--cv-mobile-text-2) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .tab-btn.active,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .tab-btn:hover {
+  color: var(--cv-mobile-text) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .hero-info-summary,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .hero-kicker,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .section-eyebrow,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .review-subtitle,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .lesson-duration,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .target-list li,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .obj-text p,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .chapter-summary,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .chapter-materials,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .rip-text {
+  color: var(--cv-mobile-text-2) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .hero-info-title,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .side-main-title,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .section-title,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .review-section-title,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .chapter-title-text,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .lesson-name,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app .obj-text strong {
+  color: var(--cv-mobile-text) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app #paymentBottomSheet .bottom-sheet-content,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app #freeEnrollModal .free-modal-card,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app #gatheringModal .modal-content,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app #gatheringPreviewModal .modal-content,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app #pinConfirmModal .pin-modal-content,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app #classNoticeViewerModal .modal-content,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app #classNoticeEditorModal .notice-editor-modal {
+  background: var(--cv-mobile-surface) !important;
+  border-color: var(--cv-mobile-border) !important;
+  color: var(--cv-mobile-text) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app #paymentBottomSheet #couponCodeInput {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: var(--cv-mobile-border) !important;
+  color: var(--cv-mobile-text) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app #paymentBottomSheet #couponCodeInput::placeholder {
+  color: var(--cv-mobile-text-2) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app #paymentBottomSheet .btn-sheet-close {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: var(--cv-mobile-border) !important;
+  color: var(--cv-mobile-text) !important;
+}
+
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app #paymentBottomSheet .pay-option-card,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app #paymentBottomSheet .coupon-section,
+html[data-theme="dark"] body.class-view-page.class-view-mobile-app #paymentBottomSheet .payment-summary {
+  background: var(--cv-mobile-surface-2) !important;
+  border-color: var(--cv-mobile-border) !important;
 }

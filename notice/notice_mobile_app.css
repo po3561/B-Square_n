@@ -250,3 +250,183 @@
     -webkit-line-clamp: 3 !important;
   }
 }
+
+html[data-theme="dark"] body.notice-page {
+  --comm-bg: #070b12 !important;
+  --comm-surface: #101722 !important;
+  --comm-surface-2: #131b27 !important;
+  --comm-surface-3: #0d1320 !important;
+  --comm-border: rgba(255, 255, 255, 0.08) !important;
+  --comm-text: #e7ecff !important;
+  --comm-text-2: rgba(231, 236, 255, 0.66) !important;
+  --comm-muted: rgba(255, 255, 255, 0.05) !important;
+  --comm-accent: #7c95ff !important;
+  --comm-accent-2: #92cbff !important;
+  --comm-danger: #ff7c95 !important;
+  --comm-shadow: 0 20px 60px rgba(0, 0, 0, 0.38) !important;
+  background: #070b12 !important;
+  background-image: none !important;
+  color-scheme: dark !important;
+}
+
+html[data-theme="dark"] body.notice-page .notice-main {
+  color: var(--comm-text) !important;
+}
+
+html[data-theme="dark"] body.notice-page .notice-container,
+html[data-theme="dark"] body.notice-page .class-notice-container {
+  gap: 0.75rem !important;
+}
+
+html[data-theme="dark"] body.notice-page .notice-left-panel,
+html[data-theme="dark"] body.notice-page .notice-right-panel,
+html[data-theme="dark"] body.notice-page .class-notice-container {
+  background: linear-gradient(180deg, rgba(16, 23, 34, 0.98), rgba(12, 16, 24, 0.98)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.34) !important;
+}
+
+html[data-theme="dark"] body.notice-page .panel-header {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] body.notice-page .panel-header h2 {
+  color: var(--comm-text) !important;
+}
+
+html[data-theme="dark"] body.notice-page .header-actions {
+  gap: 0.55rem !important;
+}
+
+html[data-theme="dark"] body.notice-page .search-input {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: var(--comm-text) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] body.notice-page .search-input::placeholder {
+  color: var(--comm-text-2) !important;
+}
+
+html[data-theme="dark"] body.notice-page .btn-search,
+html[data-theme="dark"] body.notice-page .btn-admin {
+  color: var(--comm-text) !important;
+}
+
+html[data-theme="dark"] body.notice-page .btn-admin.primary {
+  background: linear-gradient(135deg, #6f89ff, #7fc0ff) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] body.notice-page .btn-admin.secondary {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--comm-text) !important;
+}
+
+html[data-theme="dark"] body.notice-page .btn-admin.danger {
+  background: rgba(255, 91, 118, 0.16) !important;
+  color: #ffafbf !important;
+}
+
+html[data-theme="dark"] body.notice-page .notice-list-header {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  color: var(--comm-text-2) !important;
+}
+
+html[data-theme="dark"] body.notice-page .notice-item {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html[data-theme="dark"] body.notice-page .notice-item:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+html[data-theme="dark"] body.notice-page .notice-item.is-important {
+  background: rgba(124, 149, 255, 0.1) !important;
+}
+
+html[data-theme="dark"] body.notice-page .item-badge.normal {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(231, 236, 255, 0.76) !important;
+}
+
+html[data-theme="dark"] body.notice-page .item-title,
+html[data-theme="dark"] body.notice-page .faq-question-text {
+  color: var(--comm-text) !important;
+}
+
+html[data-theme="dark"] body.notice-page .item-author,
+html[data-theme="dark"] body.notice-page .item-date,
+html[data-theme="dark"] body.notice-page .item-views,
+html[data-theme="dark"] body.notice-page .item-meta-mobile {
+  color: var(--comm-text-2) !important;
+}
+
+html[data-theme="dark"] body.notice-page .faq-list {
+  gap: 0.55rem !important;
+}
+
+html[data-theme="dark"] body.notice-page .faq-item {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] body.notice-page .faq-question {
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: var(--comm-text) !important;
+}
+
+html[data-theme="dark"] body.notice-page .faq-question:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+html[data-theme="dark"] body.notice-page .faq-answer {
+  color: var(--comm-text-2) !important;
+}
+
+html[data-theme="dark"] body.notice-page .empty-state {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.12) !important;
+  color: var(--comm-text-2) !important;
+}
+
+html[data-theme="dark"] body.notice-page .modal-overlay {
+  background: rgba(3, 7, 12, 0.72) !important;
+}
+
+html[data-theme="dark"] body.notice-page .modal-content,
+html[data-theme="dark"] body.notice-page .modal-content.large {
+  background: linear-gradient(180deg, rgba(16, 23, 34, 0.99), rgba(10, 14, 20, 0.99)) !important;
+  box-shadow: 0 -22px 60px rgba(0, 0, 0, 0.4) !important;
+}
+
+html[data-theme="dark"] body.notice-page .modal-header,
+html[data-theme="dark"] body.notice-page .modal-header-viewer,
+html[data-theme="dark"] body.notice-page .modal-footer {
+  background: rgba(16, 23, 34, 0.98) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] body.notice-page .modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] body.notice-page .modal-body,
+html[data-theme="dark"] body.notice-page .viewer-body,
+html[data-theme="dark"] body.notice-page .viewer-content,
+html[data-theme="dark"] body.notice-page .viewer-meta-info {
+  color: var(--comm-text) !important;
+}
+
+html[data-theme="dark"] body.notice-page .viewer-actions,
+html[data-theme="dark"] body.notice-page .comment-input-area {
+  gap: 0.55rem !important;
+}
+
+html[data-theme="dark"] body.notice-page .comment-input-area textarea {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: var(--comm-text) !important;
+}

@@ -975,7 +975,7 @@ async function loadFriendsPanel(userId, SyncBridge) {
 
         btn.addEventListener('click', async () => {
 
-            await window.BSQ.api('/api/friends', {
+            const res = await window.BSQ.api('/api/friends', {
 
                 method: 'POST',
 
@@ -984,6 +984,9 @@ async function loadFriendsPanel(userId, SyncBridge) {
             });
 
             await loadFriendsPanel(userId, SyncBridge);
+            if (res?.success !== false) {
+                window.BSQCommunityShared?.emitSync?.('friends', { action: 'accept', userId, targetUserId: btn.dataset.accept });
+            }
 
         });
 
@@ -993,7 +996,7 @@ async function loadFriendsPanel(userId, SyncBridge) {
 
         btn.addEventListener('click', async () => {
 
-            await window.BSQ.api('/api/friends', {
+            const res = await window.BSQ.api('/api/friends', {
 
                 method: 'POST',
 
@@ -1002,6 +1005,9 @@ async function loadFriendsPanel(userId, SyncBridge) {
             });
 
             await loadFriendsPanel(userId, SyncBridge);
+            if (res?.success !== false) {
+                window.BSQCommunityShared?.emitSync?.('friends', { action: 'reject', userId, targetUserId: btn.dataset.reject });
+            }
 
         });
 
@@ -1038,7 +1044,7 @@ async function loadFriendsPanel(userId, SyncBridge) {
             btn.dataset.confirmed = '0';
             btn.textContent = btn.dataset.label || '삭제';
 
-            await window.BSQ.api('/api/friends', {
+            const res = await window.BSQ.api('/api/friends', {
 
                 method: 'POST',
 
@@ -1047,6 +1053,9 @@ async function loadFriendsPanel(userId, SyncBridge) {
             });
 
             await loadFriendsPanel(userId, SyncBridge);
+            if (res?.success !== false) {
+                window.BSQCommunityShared?.emitSync?.('friends', { action: 'remove', userId, targetUserId: btn.dataset.remove });
+            }
 
         });
 
@@ -1076,9 +1085,13 @@ function setupMobileCommunityChrome({ shared, ChatList, ChatUI }) {
     if (document.body?.dataset?.layout !== 'community') return;
     if (window.innerWidth > 768 && !window.matchMedia?.('(max-width: 768px)')?.matches) return;
 
-    document.documentElement.setAttribute('data-theme', 'light');
-    document.body.dataset.theme = 'light';
-    window.CommunityShellSettings = { ...(window.CommunityShellSettings || {}), theme: 'light' };
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+        || document.body?.dataset?.theme
+        || window.BSQCommunityShared?.loadSettings?.().theme
+        || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    if (document.body) document.body.dataset.theme = currentTheme;
+    window.CommunityShellSettings = { ...(window.CommunityShellSettings || {}), theme: currentTheme };
 
     const shell = document.querySelector('.community-shell');
     const sidebar = document.getElementById('commSidebar');

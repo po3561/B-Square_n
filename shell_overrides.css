@@ -4874,6 +4874,279 @@ html[data-theme="light"] body.class-list-page .class-category-media-stack {
   }
 }
 
+body.class-list-page .class-list-banner-card,
+body.class-list-page .recommended-folders {
+  display: none !important;
+}
+
+body.class-list-page .class-explorer-hero {
+  display: block !important;
+}
+
+body.class-list-page .class-category-shell {
+  display: grid !important;
+  gap: 0.75rem !important;
+  padding: 0.9rem !important;
+  border-radius: 28px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: linear-gradient(180deg, rgba(13, 19, 29, 0.98), rgba(7, 12, 20, 0.98)) !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24) !important;
+}
+
+body.class-list-page .class-category-surface {
+  display: grid;
+  gap: 0.75rem;
+}
+
+body.class-list-page .class-category-hero-band {
+  position: relative;
+  min-height: clamp(150px, 18vw, 240px) !important;
+  border-radius: 24px !important;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(103, 163, 255, 0.34), transparent 30%),
+    radial-gradient(circle at 88% 12%, rgba(79, 111, 255, 0.20), transparent 28%),
+    linear-gradient(135deg, rgba(11, 17, 28, 0.98), rgba(9, 14, 24, 0.96));
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+body.class-list-page .class-category-hero-band.has-image {
+  background-blend-mode: overlay;
+}
+
+body.class-list-page .class-category-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(7, 11, 19, 0.78), rgba(7, 11, 19, 0.22) 70%, rgba(7, 11, 19, 0.56));
+}
+
+body.class-list-page .class-category-hero-copy {
+  position: absolute;
+  left: clamp(0.9rem, 1.4vw, 1.3rem);
+  bottom: clamp(0.9rem, 1.4vw, 1.3rem);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: min(70%, 34rem);
+}
+
+body.class-list-page .class-category-hero-title {
+  color: #fff;
+  font-size: clamp(1.2rem, 2vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+}
+
+body.class-list-page .class-category-hero-count {
+  align-self: flex-start;
+  min-height: 30px;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+body.class-list-page .class-category-hero-link {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+body.class-list-page .class-category-panel-head {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+body.class-list-page .class-category-panel-title {
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+body.class-list-page .class-category-panel-meta {
+  min-height: 30px;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+body.class-list-page .class-category-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)) !important;
+  gap: 0.55rem !important;
+}
+
+body.class-list-page .class-category-tile {
+  min-height: 88px !important;
+  padding: 0.68rem 0.5rem !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #eff5ff !important;
+}
+
+body.class-list-page .class-category-tile:hover,
+body.class-list-page .class-category-tile.is-active {
+  transform: translateY(-2px);
+}
+
+body.class-list-page .class-category-tile.is-active {
+  background: linear-gradient(145deg, rgba(79, 111, 255, 0.95), rgba(103, 217, 194, 0.72));
+  border-color: rgba(255, 255, 255, 0.0);
+}
+
+body.class-list-page .class-category-icon {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.class-list-page .class-category-label {
+  min-height: 2.1em !important;
+  font-size: 0.76rem !important;
+}
+
+html[data-theme="light"] body.class-list-page .class-category-shell {
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 255, 0.98)) !important;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08) !important;
+}
+
+html[data-theme="light"] body.class-list-page .class-category-hero-band {
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(79, 111, 255, 0.18), transparent 30%),
+    radial-gradient(circle at 88% 12%, rgba(31, 184, 166, 0.10), transparent 28%),
+    linear-gradient(135deg, rgba(251, 253, 255, 0.98), rgba(241, 246, 255, 0.96)) !important;
+}
+
+html[data-theme="light"] body.class-list-page .class-category-hero-overlay {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0.12) 70%, rgba(255, 255, 255, 0.28)) !important;
+}
+
+html[data-theme="light"] body.class-list-page .class-category-hero-title,
+html[data-theme="light"] body.class-list-page .class-category-panel-title {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body.class-list-page .class-category-hero-count,
+html[data-theme="light"] body.class-list-page .class-category-panel-meta {
+  background: rgba(15, 23, 42, 0.05) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  color: #334155 !important;
+}
+
+html[data-theme="light"] body.class-list-page .class-category-tile {
+  background: rgba(15, 23, 42, 0.04) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body.class-list-page .class-category-icon {
+  background: rgba(79, 111, 255, 0.12) !important;
+}
+
+@media (max-width: 768px) {
+  body.class-list-page .class-category-shell {
+    padding: 0.75rem !important;
+    border-radius: 24px !important;
+  }
+
+  body.class-list-page .class-category-hero-band {
+    min-height: 148px !important;
+    border-radius: 20px !important;
+  }
+
+  body.class-list-page .class-category-hero-copy {
+    max-width: 78%;
+  }
+
+  body.class-list-page .class-category-grid {
+    grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)) !important;
+    gap: 0.45rem !important;
+  }
+
+  body.class-list-page .class-category-tile {
+    min-height: 82px !important;
+    padding: 0.56rem 0.34rem !important;
+    border-radius: 16px !important;
+  }
+
+  body.class-list-page .class-category-icon {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 12px !important;
+  }
+
+  body.class-list-page .class-category-label {
+    font-size: 0.68rem !important;
+  }
+}
+
+@media (max-width: 320px) {
+  body.class-list-page .class-category-shell {
+    padding: 0.68rem !important;
+  }
+
+  body.class-list-page .class-category-hero-band {
+    min-height: 136px !important;
+  }
+
+  body.class-list-page .class-category-grid {
+    grid-template-columns: repeat(auto-fit, minmax(68px, 1fr)) !important;
+    gap: 0.4rem !important;
+  }
+
+  body.class-list-page .class-category-tile {
+    min-height: 78px !important;
+    padding: 0.5rem 0.28rem !important;
+  }
+
+  body.class-list-page .class-category-label {
+    font-size: 0.64rem !important;
+  }
+}
+
+@media (max-width: 230px) {
+  body.class-list-page .class-category-shell {
+    padding: 0.62rem !important;
+  }
+
+  body.class-list-page .class-category-hero-band {
+    min-height: 124px !important;
+  }
+
+  body.class-list-page .class-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.class-list-page .class-category-tile {
+    min-height: 72px !important;
+    padding: 0.44rem 0.22rem !important;
+  }
+
+  body.class-list-page .class-category-label {
+    font-size: 0.6rem !important;
+    line-height: 1.05 !important;
+  }
+}
+
 @media (max-width: 320px) {
   body.class-list-page .class-explorer-hero {
     padding: 0.7rem !important;

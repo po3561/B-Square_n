@@ -796,3 +796,113 @@
     height: 38px !important;
   }
 }
+
+@media (max-width: 768px) {
+  html[data-theme="dark"] body[data-layout="community"] {
+    --comm-bg: #070b12 !important;
+    --comm-surface: rgba(18, 21, 30, 0.92) !important;
+    --comm-surface-2: rgba(255, 255, 255, 0.03) !important;
+    --comm-surface-3: rgba(255, 255, 255, 0.06) !important;
+    --comm-border: rgba(255, 255, 255, 0.10) !important;
+    --comm-text: #f7f9fd !important;
+    --comm-text-2: #a3adbe !important;
+    --comm-muted: rgba(255, 255, 255, 0.05) !important;
+    --comm-accent: #9ebcff !important;
+    --comm-accent-2: #dbe8ff !important;
+    --comm-danger: #ff6b6b !important;
+    --comm-shadow: 0 22px 50px rgba(0, 0, 0, 0.28) !important;
+    background: var(--comm-bg) !important;
+    color-scheme: dark !important;
+  }
+
+  html[data-theme="dark"] {
+    background: var(--comm-bg) !important;
+  }
+
+  html[data-theme="dark"] body[data-layout="community"] .community-shell,
+  html[data-theme="dark"] body[data-layout="community"] .comm-sidebar,
+  html[data-theme="dark"] body[data-layout="community"] .comm-main,
+  html[data-theme="dark"] body[data-layout="community"] .comm-info-panel {
+    background: var(--comm-surface) !important;
+    border-color: var(--comm-border) !important;
+    color: var(--comm-text) !important;
+  }
+
+  html[data-theme="dark"] body[data-layout="community"] .sidebar-header,
+  html[data-theme="dark"] body[data-layout="community"] .community-mobile-banner,
+  html[data-theme="dark"] body[data-layout="community"] .chat-room-item,
+  html[data-theme="dark"] body[data-layout="community"] .chat-messages-container,
+  html[data-theme="dark"] body[data-layout="community"] .chat-input-area,
+  html[data-theme="dark"] body[data-layout="community"] .input-pill-wrapper,
+  html[data-theme="dark"] body[data-layout="community"] .pinned-msg-bar,
+  html[data-theme="dark"] body[data-layout="community"] .msg-context-menu,
+  html[data-theme="dark"] body[data-layout="community"] .simple-chat-popup,
+  html[data-theme="dark"] body[data-layout="community"] .gathering-preview-card {
+    background: var(--comm-surface) !important;
+    border-color: var(--comm-border) !important;
+    box-shadow: var(--comm-shadow) !important;
+    color: var(--comm-text) !important;
+  }
+
+  html[data-theme="dark"] body[data-layout="community"] .community-mobile-banner-title,
+  html[data-theme="dark"] body[data-layout="community"] .room-name,
+  html[data-theme="dark"] body[data-layout="community"] .room-message,
+  html[data-theme="dark"] body[data-layout="community"] .chat-header-title,
+  html[data-theme="dark"] body[data-layout="community"] .chat-header-subtitle,
+  html[data-theme="dark"] body[data-layout="community"] .chat-room-item.active .room-name {
+    color: var(--comm-text) !important;
+  }
+
+  html[data-theme="dark"] body[data-layout="community"] .community-mobile-banner-subtitle,
+  html[data-theme="dark"] body[data-layout="community"] .room-time,
+  html[data-theme="dark"] body[data-layout="community"] .room-meta-row,
+  html[data-theme="dark"] body[data-layout="community"] .chat-search-bar input::placeholder,
+  html[data-theme="dark"] body[data-layout="community"] .msg-time,
+  html[data-theme="dark"] body[data-layout="community"] .reply-preview-snippet,
+  html[data-theme="dark"] body[data-layout="community"] .gathering-preview-subtitle {
+    color: var(--comm-text-2) !important;
+  }
+
+  html[data-theme="dark"] body[data-layout="community"] .community-mobile-banner-action,
+  html[data-theme="dark"] body[data-layout="community"] .room-type-badge,
+  html[data-theme="dark"] body[data-layout="community"] .room-folder-tag,
+  html[data-theme="dark"] body[data-layout="community"] .room-pin-icon,
+  html[data-theme="dark"] body[data-layout="community"] .room-mute-icon {
+    background: rgba(158, 188, 255, 0.10) !important;
+    color: var(--comm-text) !important;
+    border-color: var(--comm-border) !important;
+  }
+
+  html[data-theme="dark"] body[data-layout="community"] .chat-room-item.active {
+    background: linear-gradient(180deg, rgba(65, 105, 255, 0.10), rgba(18, 21, 30, 0.96)) !important;
+    border-color: rgba(158, 188, 255, 0.24) !important;
+  }
+
+  html[data-theme="dark"] body[data-layout="community"] .room-avatar,
+  html[data-theme="dark"] body[data-layout="community"] .chat-avatar,
+  html[data-theme="dark"] body[data-layout="community"] .msg-avatar {
+    background: linear-gradient(180deg, rgba(79, 124, 255, 0.18), rgba(91, 167, 255, 0.08)) !important;
+    color: var(--comm-text) !important;
+  }
+
+  html[data-theme="dark"] body[data-layout="community"] .chat-room-list,
+  html[data-theme="dark"] body[data-layout="community"] .msg-bubble-wrap {
+    color: var(--comm-text) !important;
+  }
+
+  html[data-theme="dark"] body[data-layout="community"] .chat-search-bar input,
+  html[data-theme="dark"] body[data-layout="community"] .reply-preview,
+  html[data-theme="dark"] body[data-layout="community"] .btn-input-icon-pill,
+  html[data-theme="dark"] body[data-layout="community"] .btn-send-pill {
+    background: var(--comm-surface-2) !important;
+    border-color: var(--comm-border) !important;
+    color: var(--comm-text) !important;
+  }
+
+  html[data-theme="dark"] body[data-layout="community"] .chat-room-item .unread-count,
+  html[data-theme="dark"] body[data-layout="community"] .chat-badge,
+  html[data-theme="dark"] body[data-layout="community"] .room-badge {
+    background: rgba(65, 105, 255, 0.32) !important;
+    color: #ffffff !important;
+  }
+}

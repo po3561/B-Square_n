@@ -73,6 +73,29 @@ function normalizeChatMessage(row) {
   return normalized;
 }
 
+async function refreshClassRoomPreview(env, classId, messageId, previewText) {
+  const normalizedClassId = trimText(classId);
+  const normalizedMessageId = trimText(messageId);
+  if (!normalizedClassId || !normalizedMessageId) return;
+
+  const latest = await env.DB.prepare(`
+    SELECT id
+    FROM chat_messages
+    WHERE class_id = ?
+    ORDER BY datetime(created_at) DESC, id DESC
+    LIMIT 1
+  `).bind(normalizedClassId).first().catch(() => null);
+
+  if (!latest || String(latest.id) !== normalizedMessageId) return;
+
+  const nextPreview = trimText(previewText || '').substring(0, 100) || 'attachment';
+  await env.DB.prepare(`
+    UPDATE user_chats
+    SET last_message = ?
+    WHERE room_id = ? AND type = 'class'
+  `).bind(nextPreview, normalizedClassId).run().catch(() => null);
+}
+
 export async function onRequest(context) {
   const { request, env, params } = context;
 
@@ -123,6 +146,8 @@ export async function onRequest(context) {
       const responseData = normalizeChatMessage(updated);
       if (body.client_id) responseData.client_id = String(body.client_id);
 
+      await refreshClassRoomPreview(env, updated.class_id, messageId, content);
+
       return json(request, env, { success: true, data: responseData });
     }
 
@@ -140,6 +165,8 @@ export async function onRequest(context) {
       const updated = await env.DB.prepare(`SELECT ${CHAT_MESSAGE_COLUMNS} FROM chat_messages WHERE id = ?`)
         .bind(messageId)
         .first();
+
+      await refreshClassRoomPreview(env, message.class_id, messageId, deletedText);
       return json(request, env, { success: true, data: updated ? normalizeChatMessage(updated) : null });
     }
 

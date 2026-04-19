@@ -8,11 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.BSQ?.sessionBootstrapPromise?.then) authBootstrapTasks.push(window.BSQ.sessionBootstrapPromise.catch(() => null));
     if (authBootstrapTasks.length) await Promise.all(authBootstrapTasks);
 
-    ensureStylesheetLink('notice-mobile-app-css', './notice_mobile_app.css?v=20260411_01');
-    if (window.matchMedia?.('(max-width: 768px)')?.matches) {
-        document.documentElement.setAttribute('data-theme', 'light');
-        document.body.dataset.theme = 'light';
-    }
+    ensureStylesheetLink('notice-mobile-app-css', './notice_mobile_app.css?v=20260419_01');
 
     let currentUser = null;
     const session = window.BSQ?.session;

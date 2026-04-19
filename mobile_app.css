@@ -2040,3 +2040,258 @@
 [hidden] {
   display: none !important;
 }
+
+@media (max-width: 768px) {
+  html[data-theme="dark"] {
+    background: #070b12 !important;
+  }
+
+  html[data-theme="dark"] .site-header {
+    background: rgba(7, 11, 18, 0.72) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22) !important;
+  }
+
+  html[data-theme="dark"] .header-inner.header-two-row {
+    color: #f7f9fd !important;
+  }
+
+  html[data-theme="dark"] .logo-link,
+  html[data-theme="dark"] .logo a,
+  html[data-theme="dark"] .mobile-shell-brand,
+  html[data-theme="dark"] .mobile-shell-title,
+  html[data-theme="dark"] .mobile-shell-brand-text,
+  html[data-theme="dark"] .mobile-shell-action,
+  html[data-theme="dark"] .btn-mobile-back,
+  html[data-theme="dark"] .btn-hamburger {
+    color: #f7f9fd !important;
+  }
+
+  html[data-theme="dark"] .btn-hamburger,
+  html[data-theme="dark"] .mobile-shell-icon,
+  html[data-theme="dark"] .mobile-shell-action,
+  html[data-theme="dark"] .btn-mobile-back,
+  html[data-theme="dark"] .user-profile-btn,
+  html[data-theme="dark"] .btn-login-main,
+  html[data-theme="dark"] .btn-logout,
+  html[data-theme="dark"] .btn-operator-mode,
+  html[data-theme="dark"] .mobile-search-shell,
+  html[data-theme="dark"] .search-bar.desktop-only-flex {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.20) !important;
+  }
+
+  html[data-theme="dark"] .mobile-search-shell,
+  html[data-theme="dark"] .search-bar.desktop-only-flex {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  html[data-theme="dark"] .search-bar input,
+  html[data-theme="dark"] .mobile-search-field input {
+    color: #f7f9fd !important;
+  }
+
+  html[data-theme="dark"] .search-bar input::placeholder,
+  html[data-theme="dark"] .mobile-search-field input::placeholder {
+    color: rgba(163, 173, 190, 0.92) !important;
+  }
+
+  html[data-theme="dark"] .drawer-menu {
+    background: rgba(12, 16, 24, 0.98) !important;
+    color: #f7f9fd !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.35) !important;
+  }
+
+  html[data-theme="dark"] .drawer-header {
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  html[data-theme="dark"] .drawer-close {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #a3adbe !important;
+  }
+
+  html[data-theme="dark"] .drawer-nav-item {
+    color: #a3adbe !important;
+  }
+
+  html[data-theme="dark"] .drawer-nav-item.active,
+  html[data-theme="dark"] .drawer-nav-item:hover {
+    background: rgba(158, 188, 255, 0.12) !important;
+    color: #f7f9fd !important;
+  }
+
+  html[data-theme="dark"] .bottom-nav {
+    background: rgba(11, 15, 23, 0.88) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28) !important;
+  }
+
+  html[data-theme="dark"] .bottom-nav .nav-item {
+    color: #a3adbe !important;
+  }
+
+  html[data-theme="dark"] .bottom-nav .nav-item.active,
+  html[data-theme="dark"] .bottom-nav .nav-item:hover {
+    background: rgba(79, 124, 255, 0.12) !important;
+    color: #9ebcff !important;
+  }
+
+  html[data-theme="dark"] .btn-hamburger .icon-bar {
+    background: currentColor !important;
+  }
+
+  html[data-theme="dark"] {
+    --bsq-m-bg: #070b12;
+    --bsq-m-surface: #101722;
+    --bsq-m-soft: rgba(255, 255, 255, 0.05);
+    --bsq-m-surface-strong: rgba(124, 149, 255, 0.14);
+    --bsq-m-border: rgba(255, 255, 255, 0.08);
+    --bsq-m-text: #f7f9fd;
+    --bsq-m-muted: rgba(163, 173, 190, 0.9);
+    --bsq-m-accent: #9ebcff;
+    --bsq-m-accent-soft: rgba(79, 124, 255, 0.14);
+    --bsq-m-shadow: 0 12px 30px rgba(0, 0, 0, 0.26);
+    --bsq-m-shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.18);
+    color-scheme: dark !important;
+    background: #070b12 !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page {
+    background: var(--bsq-m-bg) !important;
+    color: var(--bsq-m-text) !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page main,
+  html[data-theme="dark"] body.mypage-page .mypage-shell {
+    background: var(--bsq-m-bg) !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page .mypage-layout {
+    background: transparent !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page .mypage-sidebar,
+  html[data-theme="dark"] body.mypage-page .mypage-content,
+  html[data-theme="dark"] body.mypage-page .guest-gate,
+  html[data-theme="dark"] body.mypage-page .mypage-hero,
+  html[data-theme="dark"] body.mypage-page .mypage-panel-card,
+  html[data-theme="dark"] body.mypage-page .stat-card,
+  html[data-theme="dark"] body.mypage-page .dashboard-stat-card,
+  html[data-theme="dark"] body.mypage-page .dashboard-quick-links > *,
+  html[data-theme="dark"] body.mypage-page .empty-state.compact,
+  html[data-theme="dark"] body.mypage-page .my-class-card,
+  html[data-theme="dark"] body.mypage-page .commerce-shell,
+  html[data-theme="dark"] body.mypage-page .commerce-hero,
+  html[data-theme="dark"] body.mypage-page .tab-header-row,
+  html[data-theme="dark"] body.mypage-page .dashboard-profile-row,
+  html[data-theme="dark"] body.mypage-page .payment-summary-row,
+  html[data-theme="dark"] body.mypage-page .dashboard-summary-item,
+  html[data-theme="dark"] body.mypage-page .settings-row,
+  html[data-theme="dark"] body.mypage-page .profile-upload-wrapper,
+  html[data-theme="dark"] body.mypage-page .cart-item-card,
+  html[data-theme="dark"] body.mypage-page .friend-card,
+  html[data-theme="dark"] body.mypage-page .security-card {
+    background: linear-gradient(180deg, rgba(16, 23, 34, 0.98), rgba(11, 15, 23, 0.98)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28) !important;
+    color: var(--bsq-m-text) !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page .guest-gate,
+  html[data-theme="dark"] body.mypage-page .tab-header-row {
+    padding: 0.95rem !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page .profile-summary {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page .profile-mini-btn,
+  html[data-theme="dark"] body.mypage-page .nav-btn,
+  html[data-theme="dark"] body.mypage-page .dashboard-summary-toggle,
+  html[data-theme="dark"] body.mypage-page .tab-header-cta,
+  html[data-theme="dark"] body.mypage-page .hero-action-btn,
+  html[data-theme="dark"] body.mypage-page .banner-link,
+  html[data-theme="dark"] body.mypage-page .btn-chat-link,
+  html[data-theme="dark"] body.mypage-page .btn-primary,
+  html[data-theme="dark"] body.mypage-page .btn-submit {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: var(--bsq-m-text) !important;
+    box-shadow: none !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page .nav-btn.active,
+  html[data-theme="dark"] body.mypage-page .profile-mini-btn.active {
+    background: rgba(79, 124, 255, 0.16) !important;
+    border-color: rgba(79, 124, 255, 0.24) !important;
+    color: #9ebcff !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page .btn-primary,
+  html[data-theme="dark"] body.mypage-page .btn-submit,
+  html[data-theme="dark"] body.mypage-page .guest-gate-actions .btn-primary {
+    background: linear-gradient(135deg, #6f89ff, #7fc0ff) !important;
+    color: #ffffff !important;
+    border: 0 !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page .btn-secondary,
+  html[data-theme="dark"] body.mypage-page .btn-plan {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: var(--bsq-m-text) !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page .profile-summary-eyebrow,
+  html[data-theme="dark"] body.mypage-page .profile-summary-meta,
+  html[data-theme="dark"] body.mypage-page .profile-summary-email,
+  html[data-theme="dark"] body.mypage-page .profile-summary-referrer,
+  html[data-theme="dark"] body.mypage-page .nav-label,
+  html[data-theme="dark"] body.mypage-page .page-eyebrow,
+  html[data-theme="dark"] body.mypage-page .mypage-panel-eyebrow,
+  html[data-theme="dark"] body.mypage-page .dashboard-profile-eyebrow,
+  html[data-theme="dark"] body.mypage-page .dashboard-profile-username,
+  html[data-theme="dark"] body.mypage-page .dashboard-stat-title,
+  html[data-theme="dark"] body.mypage-page .commerce-label,
+  html[data-theme="dark"] body.mypage-page .commerce-copy,
+  html[data-theme="dark"] body.mypage-page .payment-membership-eyebrow,
+  html[data-theme="dark"] body.mypage-page .payment-method-item p,
+  html[data-theme="dark"] body.mypage-page .payment-history-meta,
+  html[data-theme="dark"] body.mypage-page .settings-row p,
+  html[data-theme="dark"] body.mypage-page .dashboard-summary-copy p,
+  html[data-theme="dark"] body.mypage-page .empty-state,
+  html[data-theme="dark"] body.mypage-page .empty-state.compact {
+    color: var(--bsq-m-muted) !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page .profile-summary-name,
+  html[data-theme="dark"] body.mypage-page .mypage-hero-title,
+  html[data-theme="dark"] body.mypage-page .dashboard-profile-name,
+  html[data-theme="dark"] body.mypage-page .dashboard-stat-value,
+  html[data-theme="dark"] body.mypage-page .tab-title,
+  html[data-theme="dark"] body.mypage-page .commerce-title,
+  html[data-theme="dark"] body.mypage-page .payment-membership-level {
+    color: var(--bsq-m-text) !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page .dashboard-profile-row,
+  html[data-theme="dark"] body.mypage-page .payment-summary-row,
+  html[data-theme="dark"] body.mypage-page .dashboard-summary-item {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  html[data-theme="dark"] body.mypage-page .profile-img-placeholder,
+  html[data-theme="dark"] body.mypage-page .dashboard-profile-avatar,
+  html[data-theme="dark"] body.mypage-page .dashboard-stat-icon {
+    background: rgba(158, 188, 255, 0.12) !important;
+    color: #9ebcff !important;
+  }
+}

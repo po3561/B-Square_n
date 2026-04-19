@@ -267,6 +267,7 @@
   }
 
   function renderCategoryMenu() {
+    return renderCategoryMenuV2();
     if (!refs.categoryFilter) return;
     const items = categoryItems();
     const visible = items.slice(0, CATEGORY_VISIBLE_LIMIT);
@@ -305,6 +306,49 @@
           </div>
         </div>
       ` : ''}
+    `;
+  }
+
+  function getCategoryHeroBanner() {
+    const banners = Array.isArray(state.siteSettings?.bottom_banners) ? state.siteSettings.bottom_banners : [];
+    const first = banners.find((item) => text(item?.imgUrl || item?.image || item?.src || '').trim());
+    if (!first) return null;
+    return normalizeBannerItem(first, '?대옒??배너', 0);
+  }
+
+  function renderCategoryMenuV2() {
+    if (!refs.categoryFilter) return;
+
+    const items = categoryItems();
+    const selectedItem = state.currentCategory === 'all'
+      ? { name: '?꾩껜', class_count: state.totalCount || items.length }
+      : (items.find((item) => item.name === state.currentCategory) || { name: state.currentCategory, class_count: 0 });
+    const selectedCount = Number(selectedItem.class_count || 0);
+    const summaryCount = state.currentCategory === 'all' ? Number(state.totalCount || items.length) : selectedCount;
+    const summaryLabel = state.currentCategory === 'all' ? '?꾩껜 移댄뀒怨좊━' : selectedItem.name;
+    const heroBanner = getCategoryHeroBanner();
+    const heroStyle = heroBanner?.imageUrl ? ` style="background-image:url('${esc(heroBanner.imageUrl)}')"` : '';
+
+    refs.categoryFilter.innerHTML = `
+      <section class="class-category-surface">
+        <div class="class-category-hero-band${heroBanner?.imageUrl ? ' has-image' : ''}"${heroStyle}>
+          <div class="class-category-hero-overlay"></div>
+          <div class="class-category-hero-copy">
+            <span class="banner-eyebrow">移댄뀒怨좊━</span>
+            <strong class="class-category-hero-title">${esc(summaryLabel)}</strong>
+            <span class="class-category-hero-count">${esc(`${summaryCount.toLocaleString()}개`)}</span>
+          </div>
+          ${heroBanner?.linkUrl ? `<a class="class-category-hero-link" href="${esc(heroBanner.linkUrl)}" aria-label="${esc(heroBanner.alt || '추천 배너')}"></a>` : ''}
+        </div>
+        <div class="class-category-panel-head">
+          <strong class="class-category-panel-title">전체 카테고리</strong>
+          <span class="class-category-panel-meta">${esc(`${items.length.toLocaleString()}개`)}</span>
+        </div>
+        <div class="class-category-grid">
+          ${renderCategoryButton({ name: '?꾩껜', class_count: state.totalCount || items.length }, state.currentCategory === 'all', true)}
+          ${items.map((item) => renderCategoryButton(item, state.currentCategory === item.name)).join('')}
+        </div>
+      </section>
     `;
   }
 
@@ -374,7 +418,9 @@
       console.warn('[class_list] banner load failed:', error);
       state.siteSettings = null;
     }
-    renderBanner(state.siteSettings?.bottom_banners || []);
+    if (refs.bannerTrack && refs.bannerTrack.offsetParent !== null) {
+      renderBanner(state.siteSettings?.bottom_banners || []);
+    }
   }
 
   async function loadCategories() {
@@ -652,6 +698,7 @@
       state.totalCount = Number(meta.total || meta.count || state.classResults.length);
       updateCount(state.totalCount || state.classResults.length);
       updateHeader();
+      renderCategoryMenu();
       setNotice('');
       if (state.hasMore) ensureViewportFilled();
     } catch (error) {
@@ -855,7 +902,7 @@
     renderCategoryMenu();
     updateHeader();
 
-    await Promise.all([loadRecommendations(), loadMore({ reset: true })]);
+    await Promise.all([loadMore({ reset: true })]);
     setupInfiniteScroll();
     ensureViewportFilled();
     syncUrl({ replace: true });

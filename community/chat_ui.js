@@ -33,6 +33,11 @@ window.CommunityModules.ChatUI = (function () {
         window.BSQCommunityShared?.toast?.(message);
     }
 
+    function emitSync(type, detail = {}) {
+        if (!type) return;
+        window.BSQCommunityShared?.emitSync?.(type, detail);
+    }
+
     function requireSecondTap(store, key, message) {
         const now = Date.now();
         if (store.id !== key || now - store.at > 5000) {
@@ -1400,6 +1405,7 @@ window.CommunityModules.ChatUI = (function () {
             } else {
                 removeMessage(key);
             }
+            emitSync('chat', { action: 'delete', roomId: currentRoomId, roomType: currentRoomType, messageId: String(key) });
         } catch (e) { console.error('Delete failed:', e); }
     }
 
@@ -1424,6 +1430,7 @@ window.CommunityModules.ChatUI = (function () {
             });
 
             renderMessage(updated.id || messageId, updated, true);
+            emitSync('chat', { action: 'pin', roomId: currentRoomId, roomType: currentRoomType, messageId: String(messageId) });
         } catch (e) {
             console.warn('setMessagePinned failed:', e);
             window.BSQCommunityShared?.toast?.('고정 처리에 실패했습니다.');
@@ -1470,6 +1477,7 @@ window.CommunityModules.ChatUI = (function () {
                 }
 
                 renderMessage(res.data.id || editingMsgKey, normalizeIncomingMessage({ ...previous, ...res.data }), true);
+                emitSync('chat', { action: 'edit', roomId: currentRoomId, roomType: currentRoomType, messageId: String(editingMsgKey) });
                 editingMsgKey = null;
                 shouldClearInput = true;
             } else {
@@ -1542,6 +1550,7 @@ window.CommunityModules.ChatUI = (function () {
 
                 const serverMsg = normalizeIncomingMessage({ ...res.data, client_id: res.data.client_id || clientId });
                 renderMessage(serverMsg.id || clientId, serverMsg, true);
+                emitSync('chat', { action: 'send', roomId: currentRoomId, roomType: currentRoomType, messageId: String(serverMsg.id || clientId) });
                 shouldClearInput = true;
             }
         } catch (e) {
@@ -1656,6 +1665,7 @@ window.CommunityModules.ChatUI = (function () {
                         }
 
                         renderMessage(res.data.id || tempId, normalizeIncomingMessage({ ...res.data, client_id: res.data.client_id || tempId }), true);
+                        emitSync('chat', { action: 'attachment', roomId: currentRoomId, roomType: currentRoomType, messageId: String(res.data.id || tempId) });
                     } catch (error) {
                         removeMessage(tempId);
                         console.warn('File upload failed:', error);
@@ -1778,6 +1788,7 @@ window.CommunityModules.ChatUI = (function () {
             }
 
             renderMessage(res.data.id || clientId, normalizeIncomingMessage({ ...res.data, client_id: res.data.client_id || clientId }), true);
+            emitSync('chat', { action: 'gathering', roomId: currentRoomId, roomType: currentRoomType, messageId: String(res.data.id || clientId) });
         } catch (e) {
             console.error('Send Gathering error:', e);
             removeMessage(clientId);
@@ -1798,6 +1809,7 @@ window.CommunityModules.ChatUI = (function () {
             if (res?.success) {
                 toast("모임 참여가 완료되었습니다!");
                 await loadPinnedMessages();
+                emitSync('chat', { action: 'gathering_join', roomId: currentRoomId, roomType: currentRoomType, gatheringId: String(gatherId) });
             } else {
                 toast(res?.error || "참여 처리에 실패했습니다.");
             }
@@ -1820,6 +1832,7 @@ window.CommunityModules.ChatUI = (function () {
             if (res?.success) {
                 toast("모집이 마감되었습니다.");
                 await loadPinnedMessages();
+                emitSync('chat', { action: 'gathering_close', roomId: currentRoomId, roomType: currentRoomType, gatheringId: String(gatherId) });
             } else {
                 toast(res?.error || "마감 처리에 실패했습니다.");
             }
@@ -1846,6 +1859,7 @@ window.CommunityModules.ChatUI = (function () {
                 updated_at: res?.data?.updated_at || new Date().toISOString(),
             });
             renderMessage(updated.id || msgId, updated, true);
+            emitSync('chat', { action: 'reaction', roomId: currentRoomId, roomType: currentRoomType, messageId: String(msgId) });
         }).catch(e => console.warn('Reaction error:', e));
     }
 

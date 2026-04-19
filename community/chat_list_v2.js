@@ -14,6 +14,7 @@ window.CommunityModules.ChatList = (() => {
     let refreshTimer = null;
     let searchTimer = null;
     let activeSearchQuery = '';
+    let syncListenerBound = false;
 
     function getSettings() {
         try {
@@ -174,8 +175,22 @@ window.CommunityModules.ChatList = (() => {
         setupSearch();
         setupContextMenu();
         setupFolderModal();
+        bindSyncListener();
         renderFolderTabs();
         renderFolderManagerList();
+    }
+
+    function bindSyncListener() {
+        if (syncListenerBound) return;
+        syncListenerBound = true;
+
+        window.addEventListener('bsq_sync', (event) => {
+            const type = String(event?.detail?.type || '');
+            if (!type) return;
+            if (['chat', 'chat_room', 'chat_rooms', 'room_updated', 'messages', 'friends'].includes(type)) {
+                loadChatRooms().catch(() => {});
+            }
+        });
     }
 
     function setupFilterTabs() {
