@@ -1049,72 +1049,8 @@
     box-shadow: none !important;
   }
 
-  body.class-list-page .class-list-banner-overlay h1 {
-    font-size: clamp(1.15rem, 4vw, 1.5rem) !important;
-    color: #1a1d23 !important;
-  }
-
-  body.class-list-page .class-list-banner-overlay p {
-    color: #6b7280 !important;
-    font-size: 0.84rem !important;
-  }
-
-  /* Category shell styling */
-  body.class-list-page .class-category-shell {
-    border-radius: 16px !important;
-    padding: 0.75rem !important;
-    background: #ffffff !important;
-    border: 1px solid rgba(0, 0, 0, 0.07) !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
-    margin-top: 1rem !important;
-  }
-  
-  body.class-list-page .class-category-panel-head h2 {
-    color: #1a1d23 !important;
-    font-size: clamp(1.1rem, 3.5vw, 1.4rem) !important;
-  }
-  
-  body.class-list-page .class-category-panel-head p {
-     color: #6b7280 !important;
-     font-size: 0.84rem !important;
-  }
-
-  html body.class-list-page .class-category-grid {
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 0.45rem !important;
-  }
-
-  html[data-theme="light"] body.class-list-page .class-category-tile,
-  html[data-theme="dark"] body.class-list-page .class-category-tile,
-  body.class-list-page .class-category-tile {
-    min-height: 72px !important;
-    padding: 0.5rem 0.3rem !important;
-    border-radius: 8px !important;
-    background: #f4f6f9 !important;
-    border: 1px solid rgba(0, 0, 0, 0.07) !important;
-    color: #6b7280 !important;
-  }
-
-  html[data-theme="light"] body.class-list-page .class-category-tile:hover,
-  html[data-theme="dark"] body.class-list-page .class-category-tile:hover,
-  html[data-theme="light"] body.class-list-page .class-category-tile.is-active,
-  html[data-theme="dark"] body.class-list-page .class-category-tile.is-active,
-  body.class-list-page .class-category-tile.active {
-    background: #e8efff !important;
-    border-color: rgba(59, 109, 245, 0.2) !important;
-    transform: none !important;
-    box-shadow: none !important;
-    color: #3b6df5 !important;
-  }
-
-  html[data-theme="light"] body.class-list-page .class-category-tile .class-category-label,
-  html[data-theme="dark"] body.class-list-page .class-category-tile .class-category-label {
-    color: #6b7280 !important;
-  }
-  
-  html[data-theme="light"] body.class-list-page .class-category-tile.is-active .class-category-label,
-  html[data-theme="dark"] body.class-list-page .class-category-tile.is-active .class-category-label {
-    color: #3b6df5 !important;
+  body.class-list-page .recommended-folders {
+    margin-bottom: 1rem !important;
   }
 
   /* List & Popular Sections overrides */
@@ -1232,7 +1168,6 @@
   }
 
   html[data-theme="dark"] body.class-list-page .class-explorer-hero,
-  html[data-theme="dark"] body.class-list-page .class-category-shell,
   html[data-theme="dark"] body.class-list-page .class-page-overrides {
     background: var(--bsq-surface) !important;
     border-color: var(--bsq-border) !important;
@@ -1246,12 +1181,10 @@
     box-shadow: none !important;
   }
 
-  html[data-theme="dark"] body.class-list-page .class-list-banner-overlay h1,
   html[data-theme="dark"] body.class-list-page .group-title {
     color: var(--bsq-text) !important;
   }
 
-  html[data-theme="dark"] body.class-list-page .class-list-banner-overlay p,
   html[data-theme="dark"] body.class-list-page .group-subtitle,
   html[data-theme="dark"] body.class-list-page .total-count,
   html[data-theme="dark"] body.class-list-page .class-card .card-summary,
@@ -1266,25 +1199,6 @@
     background: var(--bsq-surface-2) !important;
     border-color: var(--bsq-border) !important;
     color: var(--bsq-text) !important;
-  }
-
-  html[data-theme="dark"] body.class-list-page .class-category-tile {
-    background: var(--bsq-surface-2) !important;
-    border-color: var(--bsq-border) !important;
-    color: var(--bsq-text-muted) !important;
-  }
-
-  html[data-theme="dark"] body.class-list-page .class-category-tile:hover,
-  html[data-theme="dark"] body.class-list-page .class-category-tile.is-active,
-  html[data-theme="dark"] body.class-list-page .class-category-tile.active {
-    background: rgba(111, 141, 255, 0.18) !important;
-    border-color: rgba(158, 188, 255, 0.38) !important;
-    color: var(--bsq-primary) !important;
-  }
-
-  html[data-theme="dark"] body.class-list-page .class-category-tile .class-category-label,
-  html[data-theme="dark"] body.class-list-page .class-category-tile.is-active .class-category-label {
-    color: inherit !important;
   }
 
   html[data-theme="dark"] body.class-list-page .class-lists-section,
