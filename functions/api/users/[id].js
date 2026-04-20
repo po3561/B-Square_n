@@ -8,6 +8,88 @@ function buildBirthDate(user) {
   return parts.length ? parts.join('-') : '';
 }
 
+function buildVirtualMemberDetail(user) {
+  const safeUser = user && typeof user === 'object' ? { ...user } : {};
+
+  return {
+    user: {
+      ...safeUser,
+      nickname: safeUser.username || '',
+      birthdate: buildBirthDate(safeUser),
+      signup_date: safeUser.created_at || '',
+      is_blacklisted: normalizeBoolean(safeUser.is_blacklisted),
+      blacklisted_at: normalizeDate(safeUser.blacklisted_at),
+    },
+    summary: {
+      subscribed_class_count: 0,
+      ongoing_class_count: 0,
+      paid_order_count: 0,
+      total_paid_amount: 0,
+      pass_total_count: 0,
+      pass_remaining_count: 0,
+      refund_count: 0,
+      refund_total_amount: 0,
+      instructor_class_count: 0,
+    },
+    subscribed_classes: [],
+    ongoing_classes: [],
+    payments: [],
+    passes: [],
+    refund_logs: [],
+    blacklist_logs: [],
+    instructor_classes: [],
+    class_participants: [],
+  };
+}
+
+function applyGhostUserPatch(user, body = {}) {
+  const next = { ...(user && typeof user === 'object' ? user : {}) };
+  const stringFields = [
+    'name',
+    'phone',
+    'profile_image_url',
+    'sns_link',
+    'referrer_code',
+    'birth_year',
+    'birth_month',
+    'birth_day',
+    'gender',
+    'nationality',
+  ];
+
+  for (const field of stringFields) {
+    if (body[field] === undefined) continue;
+    const value = typeof body[field] === 'string' ? body[field].trim() : body[field];
+    next[field] = value === '' ? null : value;
+  }
+
+  if (body.preferred_category !== undefined) {
+    next.preferred_category = String(body.preferred_category || '').trim();
+  }
+
+  if (body.preferred_language !== undefined) {
+    next.preferred_language = normalizeLanguagePreference(body.preferred_language);
+  }
+
+  if (body.preferred_theme !== undefined) {
+    next.preferred_theme = normalizeThemePreference(body.preferred_theme);
+  }
+
+  if (body.mfa_active !== undefined) {
+    next.mfa_active = normalizeBoolean(body.mfa_active) ? 1 : 0;
+  }
+
+  if (body.marketing_sms_consent !== undefined) {
+    next.marketing_sms_consent = normalizeBoolean(body.marketing_sms_consent) ? 1 : 0;
+  }
+
+  if (body.marketing_email_consent !== undefined) {
+    next.marketing_email_consent = normalizeBoolean(body.marketing_email_consent) ? 1 : 0;
+  }
+
+  return next;
+}
+
 function normalizeBoolean(value) {
   if (typeof value === 'boolean') return value;
   if (typeof value === 'number') return value === 1;
@@ -430,6 +512,10 @@ export async function onRequestGet(context) {
       return json(request, env, { success: false, error: '조회 권한이 없습니다.' }, { status: 403 });
     }
 
+    if (auth.user.id === 'OPERATOR_GHOST' && userId === auth.user.id) {
+      return json(request, env, { success: true, data: buildVirtualMemberDetail(auth.user) });
+    }
+
     const detail = await loadMemberDetail(env.DB, userId);
     if (!detail) {
       return json(request, env, { success: false, error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
@@ -453,6 +539,12 @@ export async function onRequestPut(context) {
 
   try {
     const body = await request.json();
+
+    if (auth.user.id === 'OPERATOR_GHOST' && userId === auth.user.id) {
+      const patchedUser = applyGhostUserPatch(auth.user, body);
+      return json(request, env, { success: true, data: buildVirtualMemberDetail(patchedUser) });
+    }
+
     const currentUser = applyMasterAdminOverride(await safeQueryOne(env.DB, `
       SELECT id, role, is_blacklisted
       FROM users

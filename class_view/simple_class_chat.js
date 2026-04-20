@@ -24,6 +24,10 @@
 
     function bridge() { return window.CommunityModules?.SyncBridge || null; }
     function q(id) { return document.getElementById(id); }
+    function emitSync(type, detail = {}) {
+        if (!type) return;
+        window.BSQCommunityShared?.emitSync?.(type, detail);
+    }
     function escapeHtml(v) { const d = document.createElement('div'); d.textContent = String(v ?? ''); return d.innerHTML; }
     function escapeAttr(v) { return escapeHtml(v).replace(/"/g, '&quot;'); }
     function parseJson(v, fallback) { try { return typeof v === 'string' ? JSON.parse(v) : (v || fallback); } catch { return fallback; } }
@@ -269,6 +273,50 @@
         state.isSending = !!pending;
     }
 
+    function updateComposerState() {
+        const preview = q('replyPreview');
+        const replyText = q('replyText');
+        const btnCancel = q('btnReplyCancel');
+        const input = q('msgInput');
+        const btnSend = q('btnSend');
+        if (!preview || !replyText) return;
+
+        if (state.editTargetId) {
+            const editingMsg = getCachedMessage(state.editTargetId);
+            const text = String(editingMsg?.content || editingMsg?.message || '').trim();
+            preview.style.display = 'flex';
+            replyText.innerHTML = `<span class="reply-preview-name">수정 중</span> <span class="reply-preview-snippet">${escapeHtml(text.slice(0, 80) || '수정할 메시지를 불러오는 중입니다.')}</span>`;
+            if (btnCancel) {
+                btnCancel.title = '수정 취소';
+                btnCancel.setAttribute('aria-label', '수정 취소');
+            }
+            if (input) input.placeholder = '메시지를 수정하세요...';
+            if (btnSend) btnSend.title = '수정 완료';
+            return;
+        }
+
+        if (state.replyTarget) {
+            preview.style.display = 'flex';
+            replyText.innerHTML = `<span class="reply-preview-name">${escapeHtml(state.replyTarget.senderName)}</span> <span class="reply-preview-snippet">${escapeHtml(state.replyTarget.text.slice(0, 80))}</span>`;
+            if (btnCancel) {
+                btnCancel.title = '답장 취소';
+                btnCancel.setAttribute('aria-label', '답장 취소');
+            }
+            if (input) input.placeholder = '메시지를 입력하세요...';
+            if (btnSend) btnSend.title = '메시지 전송';
+            return;
+        }
+
+        preview.style.display = 'none';
+        replyText.innerHTML = '';
+        if (btnCancel) {
+            btnCancel.title = '답장 취소';
+            btnCancel.setAttribute('aria-label', '답장 취소');
+        }
+        if (input) input.placeholder = '메시지를 입력하세요...';
+        if (btnSend) btnSend.title = '메시지 전송';
+    }
+
     function cacheMessage(row) {
         const msg = normalizeMessage(row);
         const id = messageId(msg);
@@ -397,13 +445,24 @@
 
     function clearReplyPreview() {
         state.replyTarget = null;
-        const preview = q('replyPreview');
-        const replyText = q('replyText');
-        if (preview) preview.style.display = 'none';
-        if (replyText) replyText.innerHTML = '';
+        updateComposerState();
+    }
+
+    function clearEditMode() {
+        state.editTargetId = null;
+        updateComposerState();
+    }
+
+    function clearComposerMode() {
+        if (state.editTargetId) {
+            clearEditMode();
+            return;
+        }
+        clearReplyPreview();
     }
 
     function setReply(messageId, text, senderName, messageData) {
+        state.editTargetId = null;
         state.replyTarget = {
             id: String(messageId || messageData?.id || messageData?.key || ''),
             text: String(text || messageData?.content || messageData?.message || ''),
@@ -411,18 +470,19 @@
             senderId: messageData?.sender_id || messageData?.user_id || '',
             message: messageData || null,
         };
-        const preview = q('replyPreview');
-        const replyText = q('replyText');
-        if (preview && replyText) {
-            preview.style.display = 'flex';
-            replyText.innerHTML = `<span class="reply-preview-name">${escapeHtml(state.replyTarget.senderName)}</span> <span class="reply-preview-snippet">${escapeHtml(state.replyTarget.text.slice(0, 80))}</span>`;
-        }
+        updateComposerState();
     }
 
     function startEdit(msg) {
+        state.replyTarget = null;
         state.editTargetId = String(msg.id);
+        updateComposerState();
         const input = q('msgInput');
-        if (input) { input.value = msg.content || ''; input.focus(); }
+        if (input) {
+            input.value = msg.content || '';
+            input.focus();
+            input.dispatchEvent(new Event('input'));
+        }
     }
     async function deleteMessage(id) {
         const now = Date.now();
@@ -437,6 +497,7 @@
             await window.BSQ.api(`/api/chat/${encodeURIComponent(id)}`, { method: 'DELETE' });
             removeCachedMessage(id);
             if (state.replyTarget?.id === String(id)) clearReplyPreview();
+            emitSync('chat', { action: 'delete', roomId: state.classId, roomType: 'class', messageId: String(id) });
         } catch (error) {
             console.warn('deleteMessage failed:', error);
         }
@@ -452,6 +513,7 @@
             const updated = normalizeMessage({ ...(getCachedMessage(msg.id) || msg), ...(res?.data || {}), is_pinned: next });
             renderMessage(updated, { optimistic: true });
             syncPinnedState(updated, next);
+            emitSync('chat', { action: 'pin', roomId: state.classId, roomType: 'class', messageId: String(msg.id) });
         } catch (error) {
             console.warn('togglePin failed:', error);
         }
@@ -467,6 +529,7 @@
             const updated = normalizeMessage({ ...cached, reactions: res?.data?.reactions || cached.reactions || {}, updated_at: res?.data?.updated_at || new Date().toISOString() });
             renderMessage(updated, { optimistic: true });
             syncPinnedState(updated, !!updated.is_pinned);
+            emitSync('chat', { action: 'reaction', roomId: state.classId, roomType: 'class', messageId: String(messageId) });
         } catch (error) {
             console.warn('addReaction failed:', error);
         }
@@ -698,6 +761,8 @@
         const clientId = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
         const profile = state.userProfile || { name: 'User', profile_image_url: '' };
         const nowIso = new Date().toISOString();
+        const editingTargetId = state.editTargetId ? String(state.editTargetId) : '';
+        let previousEditingMessage = null;
         const reply = state.replyTarget ? {
             id: state.replyTarget.id,
             user_name: state.replyTarget.senderName || 'User',
@@ -705,58 +770,99 @@
             sender_id: state.replyTarget.senderId || '',
         } : null;
 
-        const optimistic = {
-            id: clientId,
-            client_id: clientId,
-            user_id: state.userId,
-            user_name: profile.name || 'User',
-            user_avatar: profile.profile_image_url || '',
-            message: text,
-            content: text,
-            type: 'text',
-            class_id: state.classId,
-            sender_id: state.userId,
-            reply_to: reply?.id || null,
-            reply_data: reply,
-            reply_text: reply?.message || '',
-            reply_user: reply?.user_name || '',
-            created_at: nowIso,
-            updated_at: nowIso,
-            is_pinned: false,
-            reactions: {},
-            __pending: true,
-        };
+        if (editingTargetId) {
+            previousEditingMessage = getCachedMessage(editingTargetId) || { id: editingTargetId, sender_id: state.userId };
+            const optimistic = {
+                ...previousEditingMessage,
+                content: text,
+                message: text,
+                text: text,
+                edited: true,
+                updated_at: nowIso,
+                __pending: true,
+            };
+            renderMessage(optimistic, { optimistic: true });
+        } else {
+            const optimistic = {
+                id: clientId,
+                client_id: clientId,
+                user_id: state.userId,
+                user_name: profile.name || 'User',
+                user_avatar: profile.profile_image_url || '',
+                message: text,
+                content: text,
+                type: 'text',
+                class_id: state.classId,
+                sender_id: state.userId,
+                reply_to: reply?.id || null,
+                reply_data: reply,
+                reply_text: reply?.message || '',
+                reply_user: reply?.user_name || '',
+                created_at: nowIso,
+                updated_at: nowIso,
+                is_pinned: false,
+                reactions: {},
+                __pending: true,
+            };
 
-        renderMessage(optimistic, { optimistic: true });
+            renderMessage(optimistic, { optimistic: true });
+        }
 
         try {
-            const res = await window.BSQ.api('/api/chat', {
-                method: 'POST',
-                body: JSON.stringify({
-                    class_id: state.classId,
-                    user_id: state.userId,
-                    user_name: profile.name || 'User',
-                    user_avatar: profile.profile_image_url || '',
-                    message: text,
-                    type: 'text',
-                    reply_to: reply?.id || null,
-                    reply_data: reply,
-                    client_id: clientId,
-                }),
-            });
-            if (!res?.success || !res.data) {
-                throw new Error(res?.error || '메시지 전송에 실패했습니다.');
-            }
+            if (editingTargetId) {
+                const res = await window.BSQ.api(`/api/chat/${encodeURIComponent(editingTargetId)}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        content: text,
+                        message: text,
+                        edited: true,
+                    }),
+                });
+                if (!res?.success || !res.data) {
+                    throw new Error(res?.error || '메시지 수정에 실패했습니다.');
+                }
 
-            renderMessage(normalizeMessage({ ...res.data, client_id: res.data.client_id || clientId }), { optimistic: true });
-            input.value = '';
-            clearReplyPreview();
+                renderMessage(normalizeMessage({ ...previousEditingMessage, ...res.data, client_id: res.data.client_id || editingTargetId }), { optimistic: true });
+                emitSync('chat', { action: 'edit', roomId: state.classId, roomType: 'class', messageId: editingTargetId });
+                clearEditMode();
+            } else {
+                const res = await window.BSQ.api('/api/chat', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        class_id: state.classId,
+                        user_id: state.userId,
+                        user_name: profile.name || 'User',
+                        user_avatar: profile.profile_image_url || '',
+                        message: text,
+                        type: 'text',
+                        reply_to: reply?.id || null,
+                        reply_data: reply,
+                        client_id: clientId,
+                    }),
+                });
+                if (!res?.success || !res.data) {
+                    throw new Error(res?.error || '메시지 전송에 실패했습니다.');
+                }
+
+                renderMessage(normalizeMessage({ ...res.data, client_id: res.data.client_id || clientId }), { optimistic: true });
+                emitSync('chat', { action: 'send', roomId: state.classId, roomType: 'class' });
+                clearReplyPreview();
+            }
         } catch (error) {
             console.warn('sendMessage failed:', error);
-            removeCachedMessage(clientId);
+            if (editingTargetId && previousEditingMessage) {
+                renderMessage(normalizeMessage(previousEditingMessage), { optimistic: true });
+            } else {
+                removeCachedMessage(clientId);
+            }
         } finally {
+            if (input) {
+                if (!editingTargetId) input.value = '';
+                input.style.height = 'auto';
+            }
             setPendingState(false);
-            if (input) input.style.height = 'auto';
+            if (!editingTargetId) updateComposerState();
+            else if (state.editTargetId) updateComposerState();
         }
     }
 
@@ -810,6 +916,7 @@
                     }
 
                     renderMessage(normalizeMessage({ ...res.data, client_id: res.data.client_id || tempId }), { optimistic: true });
+                    emitSync('chat', { action: 'attachment', roomId: state.classId, roomType: 'class' });
                 } catch (error) {
                     console.warn('file upload failed:', error);
                     removeCachedMessage(tempId);
@@ -880,6 +987,7 @@
                 throw new Error(chatRes?.error || '모집 카드 전송에 실패했습니다.');
             }
             renderMessage(normalizeMessage({ ...chatRes.data, client_id: chatRes.data.client_id || clientId }), { optimistic: true });
+            emitSync('chat', { action: 'gathering', roomId: state.classId, roomType: 'class' });
         } catch (error) {
             console.warn('sendGatheringCard failed:', error);
             removeCachedMessage(clientId);
@@ -894,6 +1002,7 @@
             });
             if (res?.success) {
                 await loadPinnedMessages();
+                emitSync('chat', { action: 'gathering_join', roomId: state.classId, roomType: 'class', gatheringId: String(gatherId) });
             }
         } catch (error) {
             console.warn('joinGathering failed:', error);
@@ -908,6 +1017,7 @@
             });
             if (res?.success) {
                 await loadPinnedMessages();
+                emitSync('chat', { action: 'gathering_close', roomId: state.classId, roomType: 'class', gatheringId: String(gatherId) });
             }
         } catch (error) {
             console.warn('closeGathering failed:', error);
@@ -1078,7 +1188,7 @@
             input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
         });
 
-        q('btnReplyCancel')?.addEventListener('click', () => clearReplyPreview());
+        q('btnReplyCancel')?.addEventListener('click', () => clearComposerMode());
         q('btnChatInfo')?.addEventListener('click', () => toggleInfoPanel());
         q('btnClosePanel')?.addEventListener('click', () => { const panel = q('commInfoPanel'); if (panel) { panel.classList.remove('visible'); panel.style.display = 'none'; } });
         q('btnScrollBottom')?.addEventListener('click', () => { scrollToBottom(true); const badge = q('scrollBadge'); if (badge) badge.style.display = 'none'; });
@@ -1236,6 +1346,7 @@
         state.editTargetId = null;
         state.deletePrompt = { id: null, at: 0 };
         setPendingState(false);
+        updateComposerState();
 
         state.classId = classId;
         state.userId = userId;
@@ -1268,7 +1379,9 @@
                 }
 
                 const res = await shared.requestFriend?.(targetId);
-                if (res?.success) shared.toast?.(res.message || '친구 요청을 보냈습니다.');
+                if (res?.success) {
+                    shared.toast?.(res.message || '친구 요청을 보냈습니다.');
+                }
                 else shared.toast?.(res?.error || '친구 요청에 실패했습니다.');
                 return res;
             };

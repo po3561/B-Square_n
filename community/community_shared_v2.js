@@ -5,6 +5,13 @@
     const BLOCK_STORAGE_KEY = 'bsq_comm_blocked_targets_v1';
     const relationCache = new Map();
 
+    function emitSync(type, detail = {}) {
+        if (!type || typeof window === 'undefined') return;
+        window.dispatchEvent(new CustomEvent('bsq_sync', {
+            detail: { type: String(type), ...detail },
+        }));
+    }
+
     function loadSettings() {
         const fallback = {
             theme: localStorage.getItem('bsq_theme') || 'dark',
@@ -556,6 +563,9 @@
                 body: JSON.stringify({ action: 'request', user_id: userId, friend_id: targetUserId })
             });
             clearFriendRelationCache(targetUserId);
+            if (res?.success) {
+                emitSync('friends', { action: 'request', userId, targetUserId });
+            }
             return res || { success: false, error: 'unknown_error' };
         } catch (error) {
             return { success: false, error: error.message };
@@ -584,6 +594,9 @@
 
             writeBlockedUserIds([...readBlockedUserIds(userId), targetId], userId);
             clearFriendRelationCache(targetId);
+            if (res?.success !== false) {
+                emitSync('friends', { action: 'block', userId, targetUserId: targetId });
+            }
             return res || { success: true, blocked: true };
         } catch (error) {
             return { success: false, error: error.message };
@@ -607,6 +620,9 @@
 
             writeBlockedUserIds(readBlockedUserIds(userId).filter((item) => String(item) !== targetId), userId);
             clearFriendRelationCache(targetId);
+            if (res?.success !== false) {
+                emitSync('friends', { action: 'unblock', userId, targetUserId: targetId });
+            }
             return res || { success: true, unblocked: true };
         } catch (error) {
             return { success: false, error: error.message };
@@ -632,6 +648,7 @@
         escapeAttr,
         makePopupUrl,
         openPopupRoom,
+        emitSync,
         currentUserId,
         normalizeGatheringData,
         renderGatheringPreviewHtml,

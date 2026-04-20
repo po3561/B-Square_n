@@ -1252,6 +1252,86 @@ html[data-theme="light"] body.home-page .home-category-item.is-active {
   border-color: rgba(79, 111, 255, 0.18) !important;
 }
 
+@media (max-width: 768px) {
+  html[data-theme="dark"] body.home-page {
+    background: #070b12 !important;
+  }
+
+  html[data-theme="dark"] body.home-page .home-main {
+    background: transparent !important;
+  }
+
+  html[data-theme="dark"] body.home-page .home-mobile-shell,
+  html[data-theme="dark"] body.home-page .home-mobile-section,
+  html[data-theme="dark"] body.home-page .home-mobile-community-card,
+  html[data-theme="dark"] body.home-page .home-mobile-folder-link,
+  html[data-theme="dark"] body.home-page .home-mobile-banner-link,
+  html[data-theme="dark"] body.home-page .home-mobile-banner-text,
+  html[data-theme="dark"] body.home-page .home-mobile-banner-visual,
+  html[data-theme="dark"] body.home-page .home-mobile-rail .class-card {
+    background: var(--bsq-surface) !important;
+    border-color: var(--bsq-border) !important;
+    box-shadow: var(--bsq-shadow-soft) !important;
+    color: var(--bsq-text) !important;
+  }
+
+  html[data-theme="dark"] body.home-page .home-mobile-banner-link {
+    background:
+      linear-gradient(180deg, rgba(18, 21, 30, 0.96), rgba(18, 21, 30, 0.88)) !important;
+  }
+
+  html[data-theme="dark"] body.home-page .home-mobile-eyebrow,
+  html[data-theme="dark"] body.home-page .hero-eyebrow,
+  html[data-theme="dark"] body.home-page .banner-eyebrow {
+    background: rgba(158, 188, 255, 0.14) !important;
+    color: var(--bsq-primary) !important;
+  }
+
+  html[data-theme="dark"] body.home-page .home-mobile-banner-copy strong,
+  html[data-theme="dark"] body.home-page .home-mobile-section-head h2,
+  html[data-theme="dark"] body.home-page .home-mobile-community-copy h3,
+  html[data-theme="dark"] body.home-page .home-mobile-folder-copy strong,
+  html[data-theme="dark"] body.home-page .group-title,
+  html[data-theme="dark"] body.home-page .title {
+    color: var(--bsq-text) !important;
+  }
+
+  html[data-theme="dark"] body.home-page .home-mobile-banner-copy span,
+  html[data-theme="dark"] body.home-page .home-mobile-community-copy p,
+  html[data-theme="dark"] body.home-page .home-mobile-folder-copy span,
+  html[data-theme="dark"] body.home-page .group-subtitle,
+  html[data-theme="dark"] body.home-page .card-summary,
+  html[data-theme="dark"] body.home-page .card-topline,
+  html[data-theme="dark"] body.home-page .meta,
+  html[data-theme="dark"] body.home-page .home-stat-label {
+    color: var(--bsq-text-muted) !important;
+  }
+
+  html[data-theme="dark"] body.home-page .home-mobile-rail .class-card .card-info {
+    background: transparent !important;
+  }
+
+  html[data-theme="dark"] body.home-page .home-mobile-rail .class-card .card-thumbnail {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+  }
+
+  html[data-theme="dark"] body.home-page .home-mobile-more,
+  html[data-theme="dark"] body.home-page .home-mobile-category-chip,
+  html[data-theme="dark"] body.home-page .home-mobile-folder-chip,
+  html[data-theme="dark"] body.home-page .home-category-toggle,
+  html[data-theme="dark"] body.home-page .banner-nav,
+  html[data-theme="dark"] body.home-page .home-category-count {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    color: var(--bsq-text) !important;
+  }
+
+  html[data-theme="dark"] body.home-page .home-mobile-community-cta {
+    background: linear-gradient(135deg, #4f6fff, #3b6df5) !important;
+    color: #ffffff !important;
+  }
+}
+
 /* Shared home/class-list polish: keep the theme readable and remove extra hero clutter. */
 body.home-page .home-hero-shell {
   grid-template-columns: minmax(0, 1fr) !important;

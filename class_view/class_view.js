@@ -363,9 +363,15 @@ function syncMobileClassViewChrome() {
     body.classList.toggle('class-view-mobile-app', mobile);
     body.classList.toggle('class-view-chat-open', mobile && body.dataset.classViewActiveTab === 'tabChat');
 
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+        || body.getAttribute('data-theme')
+        || snapshot.htmlTheme
+        || window.BSQCommunityShared?.loadSettings?.().theme
+        || 'dark';
+
     if (mobile) {
-        document.documentElement.setAttribute('data-theme', 'light');
-        body.setAttribute('data-theme', 'light');
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        body.setAttribute('data-theme', currentTheme);
     } else {
         if (snapshot.htmlTheme) document.documentElement.setAttribute('data-theme', snapshot.htmlTheme);
         else document.documentElement.removeAttribute('data-theme');

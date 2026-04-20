@@ -568,10 +568,13 @@ function bindFriendActions(root, userId) {
 
     root.querySelectorAll('[data-friend-accept]').forEach((button) => {
         button.addEventListener('click', async () => {
-            await window.BSQ.api('/api/friends', {
+            const res = await window.BSQ.api('/api/friends', {
                 method: 'POST',
                 body: JSON.stringify({ action: 'accept', user_id: userId, friend_id: button.dataset.friendAccept }),
             });
+            if (res?.success !== false) {
+                window.BSQCommunityShared?.emitSync?.('friends', { action: 'accept', userId, targetUserId: button.dataset.friendAccept });
+            }
             await loadFriends(userId);
             refreshDashboardDetailModal();
         });
@@ -579,10 +582,13 @@ function bindFriendActions(root, userId) {
 
     root.querySelectorAll('[data-friend-reject]').forEach((button) => {
         button.addEventListener('click', async () => {
-            await window.BSQ.api('/api/friends', {
+            const res = await window.BSQ.api('/api/friends', {
                 method: 'POST',
                 body: JSON.stringify({ action: 'reject', user_id: userId, friend_id: button.dataset.friendReject }),
             });
+            if (res?.success !== false) {
+                window.BSQCommunityShared?.emitSync?.('friends', { action: 'reject', userId, targetUserId: button.dataset.friendReject });
+            }
             await loadFriends(userId);
             refreshDashboardDetailModal();
         });
@@ -606,10 +612,13 @@ function bindFriendActions(root, userId) {
             }
 
             button.dataset.armed = '';
-            await window.BSQ.api('/api/friends', {
+            const res = await window.BSQ.api('/api/friends', {
                 method: 'POST',
                 body: JSON.stringify({ action: 'remove', user_id: userId, friend_id: button.dataset.friendRemove }),
             });
+            if (res?.success !== false) {
+                window.BSQCommunityShared?.emitSync?.('friends', { action: 'remove', userId, targetUserId: button.dataset.friendRemove });
+            }
             await loadFriends(userId);
             refreshDashboardDetailModal();
         });
@@ -1161,6 +1170,10 @@ function bindSyncListeners(userId) {
         const type = event.detail?.type;
         if (type === 'cart' || type === 'coupon_wallet' || type === 'coupon' || type === 'payment_methods' || type === 'checkout') {
             syncPaymentSummaryFromCache();
+        }
+        if (type === 'friends') {
+            loadFriends(userId).catch(() => {});
+            refreshDashboardDetailModal();
         }
         if (type === 'class-categories') {
             window.dispatchEvent(new CustomEvent('bsq_refresh_categories', { detail: { userId } }));

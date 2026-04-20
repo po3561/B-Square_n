@@ -4,6 +4,7 @@
     const profileImageInput = document.getElementById('profileImage');
     const profileImagePreview = document.getElementById('profileImagePreview');
     const profileReferrerCode = document.getElementById('profileReferrerCode');
+    const profileReferrerStatus = profileReferrerCode?.parentElement?.querySelector('.input-hint');
     const referrerDisplayMode = String(profileReferrerCode?.dataset.referrerDisplay || 'code-only').trim().toLowerCase();
 
     function syncStoredUserProfile(patch) {
@@ -36,6 +37,12 @@
         } catch (error) {
             console.warn('[tab_profile] bsq_user sync failed:', error);
         }
+    }
+
+    function setReferrerStatus(message, tone = 'info') {
+        if (!profileReferrerStatus) return;
+        profileReferrerStatus.textContent = String(message || '').trim() || '선택 시 자동 반영';
+        profileReferrerStatus.dataset.statusTone = tone;
     }
 
     function normalizeUserProfile(payload) {

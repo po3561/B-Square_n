@@ -114,6 +114,30 @@ function normalizeMessage(row) {
   };
 }
 
+async function refreshRoomPreviewIfLatest(env, roomId, roomType, messageId, previewText) {
+  const normalizedRoomId = trimText(roomId);
+  const normalizedRoomType = trimText(roomType || 'dm').toLowerCase() || 'dm';
+  const normalizedMessageId = trimText(messageId);
+  if (!normalizedRoomId || !normalizedMessageId) return;
+
+  const latest = await env.DB.prepare(`
+    SELECT id
+    FROM dm_messages
+    WHERE room_id = ? AND room_type = ?
+    ORDER BY datetime(created_at) DESC, id DESC
+    LIMIT 1
+  `).bind(normalizedRoomId, normalizedRoomType).first().catch(() => null);
+
+  if (!latest || String(latest.id) !== normalizedMessageId) return;
+
+  const nextPreview = trimText(previewText || '').substring(0, 100) || 'attachment';
+  await env.DB.prepare(`
+    UPDATE user_chats
+    SET last_message = ?
+    WHERE room_id = ? AND type = ?
+  `).bind(nextPreview, normalizedRoomId, normalizedRoomType).run().catch(() => null);
+}
+
 function buildSinceClause(since) {
   if (!since) {
     return { sql: '', bind: null, orderSql: 'ORDER BY created_at ASC, id ASC' };
@@ -479,6 +503,10 @@ export async function onRequest(context) {
         return json(request, env, { success: false, error: 'message not found' }, { status: 404 });
       }
 
+      if (hasContent) {
+        await refreshRoomPreviewIfLatest(env, roomId, access.roomType, subResource, content);
+      }
+
       return json(request, env, { success: true, data: normalizeMessage(updated) });
     }
 
@@ -515,6 +543,8 @@ export async function onRequest(context) {
         FROM dm_messages
         WHERE id = ? AND room_id = ? AND room_type = ?
       `).bind(subResource, roomId, access.roomType).first();
+
+      await refreshRoomPreviewIfLatest(env, roomId, access.roomType, subResource, deletedText);
 
       return json(request, env, { success: true, data: updated ? normalizeMessage(updated) : null });
     }

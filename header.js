@@ -10,7 +10,7 @@
   
   // Use scriptDir for absolute-like relative paths for CSS dynamic injection
   const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260411_03';
-  const mobileAppCSSPath = scriptDir + 'mobile_app.css?v=20260411_02';
+  const mobileAppCSSPath = scriptDir + 'mobile_app.css?v=20260419_01';
 
   const homePrefix = currentPath.split('/').length > 2 ? '../' : './';
   const prefix = homePrefix;
@@ -923,20 +923,21 @@
     if (!html || !body) return;
 
     if (isMobileShell) {
-      html.style.setProperty('background', '#ffffff', 'important');
-      html.style.setProperty('background-image', 'none', 'important');
-      html.style.setProperty('background-color', '#ffffff', 'important');
-      body.style.setProperty('background', '#ffffff', 'important');
-      body.style.setProperty('background-image', 'none', 'important');
-      body.style.setProperty('background-color', '#ffffff', 'important');
-    } else {
       html.style.removeProperty('background');
       html.style.removeProperty('background-image');
       html.style.removeProperty('background-color');
       body.style.removeProperty('background');
       body.style.removeProperty('background-image');
       body.style.removeProperty('background-color');
+      return;
     }
+
+    html.style.removeProperty('background');
+    html.style.removeProperty('background-image');
+    html.style.removeProperty('background-color');
+    body.style.removeProperty('background');
+    body.style.removeProperty('background-image');
+    body.style.removeProperty('background-color');
   }
 
   function setupDrawer() {
@@ -1161,47 +1162,60 @@
 
     button.dataset.bsqCategoryBound = '1';
 
-    const clearMenuPosition = () => {
-      menu.style.position = '';
-      menu.style.top = '';
-      menu.style.left = '';
-      menu.style.right = '';
-      menu.style.bottom = '';
-      menu.style.width = '';
-      menu.style.maxHeight = '';
-      menu.style.zIndex = '';
+    const currentCategory = new URLSearchParams(window.location.search).get('category') || 'all';
+    let categoryLoadPromise = null;
+
+    const buildMenu = (categories = []) => {
+      const items = Array.isArray(categories) ? categories.filter((item) => String(item?.name || '').trim()) : [];
+      menu.innerHTML = `
+        <div class="mega-menu-content">
+          <div class="mega-menu-text-grid">
+            <a href="${prefix}class/class_list.html" class="mega-text-link${currentCategory === 'all' ? ' is-active' : ''}" data-cat="all">전체 클래스</a>
+            ${items.map((item) => `
+              <a href="${prefix}class/class_list.html?category=${encodeURIComponent(String(item.name || '').trim())}" class="mega-text-link${currentCategory === item.name ? ' is-active' : ''}" data-cat="${escapeHtml(item.name)}">${escapeHtml(item.name)}</a>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      menu.dataset.loaded = '1';
     };
 
-    const positionMenu = () => {
-      const buttonRect = button.getBoundingClientRect();
-      const viewportPadding = 12;
-      const menuWidth = Math.min(420, Math.max(280, window.innerWidth - (viewportPadding * 2)));
-      const availableBelow = window.innerHeight - buttonRect.bottom - viewportPadding;
-      const availableAbove = buttonRect.top - viewportPadding;
-      const flipUp = availableBelow < 280 && availableAbove > availableBelow;
-      const maxHeight = Math.max(
-        220,
-        Math.min(
-          560,
-          flipUp ? availableAbove - 12 : availableBelow
-        ),
-      );
-      const left = Math.min(
-        Math.max(viewportPadding, buttonRect.left),
-        Math.max(viewportPadding, window.innerWidth - viewportPadding - menuWidth),
-      );
-      const top = flipUp
-        ? Math.max(viewportPadding, buttonRect.top - maxHeight - 12)
-        : Math.min(window.innerHeight - viewportPadding - maxHeight, buttonRect.bottom + 12);
+    const loadCategories = async () => {
+      if (window.__BSQ_HEADER_CATEGORIES__) {
+        return window.__BSQ_HEADER_CATEGORIES__;
+      }
 
-      menu.style.position = 'fixed';
-      menu.style.top = `${Math.round(top)}px`;
-      menu.style.left = `${Math.round(left)}px`;
-      menu.style.right = 'auto';
-      menu.style.bottom = 'auto';
-      menu.style.width = `${Math.round(menuWidth)}px`;
-      menu.style.maxHeight = `${Math.round(maxHeight)}px`;
-      menu.style.zIndex = '10050';
+      if (!window.BSQ?.api) return [];
+
+      try {
+        const res = await window.BSQ.api('/api/class-categories');
+        const categories = res?.success && Array.isArray(res.data)
+          ? res.data.map((item) => ({
+            name: String(item.name || '').trim(),
+          })).filter((item) => item.name)
+          : [];
+        window.__BSQ_HEADER_CATEGORIES__ = categories;
+        return categories;
+      } catch {
+        return [];
+      }
+    };
+
+    const ensureMenuContent = async () => {
+      if (menu.dataset.loaded === '1') return;
+      if (!categoryLoadPromise) {
+        categoryLoadPromise = loadCategories().then((categories) => {
+          buildMenu(categories);
+          return categories;
+        });
+      }
+      await categoryLoadPromise;
+    };
+
+    const goToCategory = (category) => {
+      const target = new URL(`${prefix}class/class_list.html`, window.location.href);
+      if (category && category !== 'all') target.searchParams.set('category', category);
+      location.href = target.toString();
     };
 
     const setOpen = (open) => {
@@ -1210,13 +1224,22 @@
       button.classList.toggle('is-open', open);
       menu.classList.toggle('active', open);
       if (open) {
-        positionMenu();
+        menu.removeAttribute('aria-hidden');
+        void ensureMenuContent();
       } else {
-        clearMenuPosition();
+        menu.setAttribute('aria-hidden', 'true');
       }
     };
 
+    menu.addEventListener('click', (event) => {
+      const link = event.target.closest('[data-cat]');
+      if (!link) return;
+      event.preventDefault();
+      goToCategory(link.dataset.cat || 'all');
+    });
+
     setOpen(false);
+    void ensureMenuContent();
 
     button.addEventListener('click', (event) => {
       event.preventDefault();

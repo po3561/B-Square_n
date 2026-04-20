@@ -267,6 +267,7 @@
   }
 
   function renderCategoryMenu() {
+    return renderCategoryMenuV2();
     if (!refs.categoryFilter) return;
     const items = categoryItems();
     const visible = items.slice(0, CATEGORY_VISIBLE_LIMIT);
@@ -308,6 +309,49 @@
     `;
   }
 
+  function getCategoryHeroBanner() {
+    const banners = Array.isArray(state.siteSettings?.bottom_banners) ? state.siteSettings.bottom_banners : [];
+    const first = banners.find((item) => text(item?.imgUrl || item?.image || item?.src || '').trim());
+    if (!first) return null;
+    return normalizeBannerItem(first, '?대옒??배너', 0);
+  }
+
+  function renderCategoryMenuV2() {
+    if (!refs.categoryFilter) return;
+
+    const items = categoryItems();
+    const selectedItem = state.currentCategory === 'all'
+      ? { name: '?꾩껜', class_count: state.totalCount || items.length }
+      : (items.find((item) => item.name === state.currentCategory) || { name: state.currentCategory, class_count: 0 });
+    const selectedCount = Number(selectedItem.class_count || 0);
+    const summaryCount = state.currentCategory === 'all' ? Number(state.totalCount || items.length) : selectedCount;
+    const summaryLabel = state.currentCategory === 'all' ? '?꾩껜 移댄뀒怨좊━' : selectedItem.name;
+    const heroBanner = getCategoryHeroBanner();
+    const heroStyle = heroBanner?.imageUrl ? ` style="background-image:url('${esc(heroBanner.imageUrl)}')"` : '';
+
+    refs.categoryFilter.innerHTML = `
+      <section class="class-category-surface">
+        <div class="class-category-hero-band${heroBanner?.imageUrl ? ' has-image' : ''}"${heroStyle}>
+          <div class="class-category-hero-overlay"></div>
+          <div class="class-category-hero-copy">
+            <span class="banner-eyebrow">移댄뀒怨좊━</span>
+            <strong class="class-category-hero-title">${esc(summaryLabel)}</strong>
+            <span class="class-category-hero-count">${esc(`${summaryCount.toLocaleString()}개`)}</span>
+          </div>
+          ${heroBanner?.linkUrl ? `<a class="class-category-hero-link" href="${esc(heroBanner.linkUrl)}" aria-label="${esc(heroBanner.alt || '추천 배너')}"></a>` : ''}
+        </div>
+        <div class="class-category-panel-head">
+          <strong class="class-category-panel-title">전체 카테고리</strong>
+          <span class="class-category-panel-meta">${esc(`${items.length.toLocaleString()}개`)}</span>
+        </div>
+        <div class="class-category-grid">
+          ${renderCategoryButton({ name: '?꾩껜', class_count: state.totalCount || items.length }, state.currentCategory === 'all', true)}
+          ${items.map((item) => renderCategoryButton(item, state.currentCategory === item.name)).join('')}
+        </div>
+      </section>
+    `;
+  }
+
   function renderBanner(slides) {
     if (!refs.bannerTrack) return;
     const list = (Array.isArray(slides) ? slides : [])
@@ -332,13 +376,7 @@
             : `<div class="class-list-banner-link">
                 <img src="${esc(slide.imageUrl)}" alt="${esc(slide.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}">
               </div>`
-          : `<div class="class-list-banner-link is-fallback class-list-banner-empty" aria-hidden="true">
-              <div class="class-list-banner-empty-copy">
-                <span class="banner-eyebrow">추천 배너</span>
-                <strong>배너를 준비하는 중입니다</strong>
-                <p>운영자가 설정한 이미지가 없을 때 표시되는 기본 안내 화면입니다.</p>
-              </div>
-            </div>`
+          : `<div class="class-list-banner-link is-fallback class-list-banner-empty" aria-hidden="true"></div>`
         }
       </article>
     `).join('');
@@ -374,7 +412,9 @@
       console.warn('[class_list] banner load failed:', error);
       state.siteSettings = null;
     }
-    renderBanner(state.siteSettings?.bottom_banners || []);
+    if (refs.bannerTrack && refs.bannerTrack.offsetParent !== null) {
+      renderBanner(state.siteSettings?.bottom_banners || []);
+    }
   }
 
   async function loadCategories() {
@@ -395,124 +435,72 @@
     state.categories = FALLBACK_CATEGORIES.slice();
   }
 
-  function recommendationFolderUrl(folderId = '') {
-    return `../recommend_view.html?id=${encodeURIComponent(folderId)}`;
-  }
+  function collectRecommendedClasses(entries = []) {
+    const seen = new Set();
+    const items = [];
 
-  function formatFallbackRecommendationTitle(name, index) {
-    const cleaned = text(name)
-      .replace(/[?]+/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-    if (!cleaned) return `추천 클래스 ${index + 1}`;
-    return `${cleaned} 추천 클래스`;
-  }
+    const append = (candidate) => {
+      const normalized = normalizeClassCard(candidate);
+      if (!normalized.id || seen.has(normalized.id)) return;
+      seen.add(normalized.id);
+      items.push(normalized);
+    };
 
-  function buildFallbackRecommendationFolders(classes = []) {
-    const buckets = new Map();
-    for (const item of Array.isArray(classes) ? classes : []) {
-      if (!item?.id) continue;
-      const key = text(item.category || '추천 클래스');
-      if (!buckets.has(key)) buckets.set(key, []);
-      const bucket = buckets.get(key);
-      if (bucket.length < 3) bucket.push(item);
+    for (const entry of Array.isArray(entries) ? entries : []) {
+      if (!entry) continue;
+
+      if (Array.isArray(entry.items)) {
+        entry.items.forEach(append);
+      } else if (Array.isArray(entry.classes)) {
+        entry.classes.forEach(append);
+      } else {
+        append(entry);
+      }
+
+      if (items.length >= 6) break;
     }
 
-    return Array.from(buckets.entries())
-      .slice(0, 3)
-      .map(([name, items], index) => ({
-        id: `fallback-recommend-${index}`,
-        title: formatFallbackRecommendationTitle(name, index),
-        description: '현재 노출 중인 클래스를 기준으로 자동 구성한 추천 폴더입니다.',
-        imageUrl: items[0]?.imageUrl || '',
-        linkUrl: recommendationFolderUrl(`fallback-recommend-${index}`),
-        items,
-      }))
-      .filter((folder) => folder.items.length);
-  }
-
-  function renderRecommendationFolder(folder = {}, index = 0) {
-    const items = Array.isArray(folder.items) ? folder.items.slice(0, 3) : [];
-    const folderUrl = text(folder.linkUrl || recommendationFolderUrl(folder.id));
-    const imageStyle = folder.imageUrl ? ` style="background-image:url('${esc(folder.imageUrl)}')"` : '';
-    const itemCount = `${items.length.toLocaleString()}개 클래스`;
-
-    return `
-      <article class="recommend-folder-card" data-folder-id="${esc(folder.id)}" style="animation-delay:${index * 0.05}s">
-        <a class="recommend-folder-media" href="${esc(folderUrl)}" aria-label="${esc(folder.title)} 폴더 보기"${imageStyle}>
-          <span class="recommend-folder-badge">추천 폴더</span>
-          <span class="recommend-folder-count">${esc(itemCount)}</span>
-        </a>
-        <div class="recommend-folder-body">
-          <div class="recommend-folder-topline">
-            <div>
-              <p class="recommend-folder-kicker">추천 클래스</p>
-              <h4 class="recommend-folder-title">${esc(folder.title)}</h4>
-              ${folder.description ? `<p class="recommend-folder-copy">${esc(folder.description)}</p>` : ''}
-            </div>
-            <a class="recommend-folder-view-more" href="${esc(folderUrl)}">폴더 보기</a>
-          </div>
-          <div class="recommend-folder-list">
-            ${items.map((item, itemIndex) => `
-              <a href="${esc(classUrl(item.id))}" class="recommend-item">
-                <span class="recommend-num">${itemIndex + 1}</span>
-                <div class="recommend-thumb"${item.imageUrl ? ` style="background-image:url('${esc(item.imageUrl)}')"` : ''}></div>
-                <div class="recommend-info">
-                  <h4>${esc(item.title)}</h4>
-                  <div class="recommend-meta">
-                    <span>${esc(item.category)}</span>
-                    <span>${esc(item.mode || '온라인')}</span>
-                    <span>후기 ${Number(item.reviewCount || 0).toLocaleString()}</span>
-                    <span class="recommend-price">${esc(formatPriceLabel(item))}</span>
-                  </div>
-                </div>
-              </a>
-            `).join('')}
-          </div>
-        </div>
-      </article>
-    `;
+    return items.slice(0, 6);
   }
 
   function renderRecommendations() {
-    if (!refs.recommendSection || !refs.recommendFolderGrid || !refs.recommendTitle || !refs.recommendCopy) return;
-    const folders = Array.isArray(state.recommendationFolders) ? state.recommendationFolders : [];
-    refs.recommendTitle.textContent = state.recommendationTitle || '추천 클래스 폴더';
-    refs.recommendCopy.textContent = folders.length
-      ? '운영자 추천 폴더를 카드 흐름으로 보여줍니다.'
-      : '추천 폴더가 없어 현재 클래스를 기준으로 자동 구성했습니다.';
-    refs.recommendSection.hidden = !folders.length;
-    refs.recommendFolderGrid.innerHTML = folders.map((folder, index) => renderRecommendationFolder(folder, index)).join('');
+    if (!refs.recommendSection || !refs.recommendFolderGrid || !refs.recommendTitle) return;
+    const items = Array.isArray(state.recommendationFolders) ? state.recommendationFolders : [];
+    refs.recommendTitle.textContent = state.recommendationTitle || '추천 클래스';
+    refs.recommendSection.hidden = !items.length;
+    refs.recommendFolderGrid.innerHTML = items.map((item, index) => renderCard(item, index)).join('');
   }
 
   async function loadRecommendations() {
-    let folders = [];
+    let items = [];
 
     try {
       const res = await window.BSQ.api('/api/recommendations');
-      folders = res?.success && Array.isArray(res.data)
-        ? res.data.map((item) => normalizeRecommendationFolder(item)).filter((item) => item.id && item.items.length)
+      const source = res?.success
+        ? (Array.isArray(res.data)
+          ? res.data
+          : (Array.isArray(res.data?.folders) ? res.data.folders : (Array.isArray(res.data?.items) ? res.data.items : [])))
         : [];
+      items = collectRecommendedClasses(source);
     } catch (error) {
       console.warn('[class_list] recommendation load failed:', error);
     }
 
-    if (!folders.length) {
+    if (!items.length) {
       try {
         const res = await window.BSQ.api('/api/classes?sort=popular&limit=12');
         const rows = res?.success
           ? (Array.isArray(res.data?.classes) ? res.data.classes : (Array.isArray(res.data) ? res.data : []))
           : [];
-        const fallbackClasses = rows.map((item) => normalizeClassCard(item)).filter((item) => item.id);
-        folders = buildFallbackRecommendationFolders(fallbackClasses);
+        items = rows.map((item) => normalizeClassCard(item)).filter((item) => item.id).slice(0, 6);
       } catch (error) {
         console.warn('[class_list] fallback recommendation load failed:', error);
-        folders = [];
+        items = [];
       }
     }
 
-    state.recommendationFolders = folders;
-    state.recommendationTitle = '추천 클래스 폴더';
+    state.recommendationFolders = items;
+    state.recommendationTitle = '추천 클래스';
     renderRecommendations();
   }
 
@@ -566,15 +554,15 @@
     const mobileLayout = isMobileClassListLayout();
     const currentTitle = state.currentCategory === 'all' ? '전체 클래스' : `${state.currentCategory} 클래스`;
     const desktopCopy = state.searchQuery
-      ? `"${state.searchQuery}" 검색 결과입니다. (${SORT_LABELS[state.currentSort] || '최신순'})`
-      : '카테고리, 검색, 정렬을 한 흐름 안에서 정리합니다.';
+      ? `"${state.searchQuery}" 검색 결과입니다. (${SORT_LABELS[state.currentSort] || '최신순' })`
+      : '정렬과 검색으로 클래스를 확인합니다.';
 
     if (refs.sectionTitle) {
       refs.sectionTitle.textContent = currentTitle;
     }
 
     if (refs.sectionCopy) {
-      refs.sectionCopy.textContent = mobileLayout ? getClassListSummaryText() : desktopCopy;
+      refs.sectionCopy.textContent = mobileLayout ? `전체 클래스 - ${SORT_LABELS[state.currentSort] || '최신순'}` : desktopCopy;
     }
 
     if (refs.heroSort) refs.heroSort.textContent = SORT_LABELS[state.currentSort] || '최신순';
@@ -652,6 +640,7 @@
       state.totalCount = Number(meta.total || meta.count || state.classResults.length);
       updateCount(state.totalCount || state.classResults.length);
       updateHeader();
+      renderCategoryMenu();
       setNotice('');
       if (state.hasMore) ensureViewportFilled();
     } catch (error) {
@@ -851,11 +840,11 @@
     updateHeader();
     updateCount(0);
 
-    await Promise.all([loadBanner(), loadCategories()]);
+    await Promise.all([loadBanner(), loadRecommendations()]);
     renderCategoryMenu();
     updateHeader();
 
-    await Promise.all([loadRecommendations(), loadMore({ reset: true })]);
+    await Promise.all([loadMore({ reset: true })]);
     setupInfiniteScroll();
     ensureViewportFilled();
     syncUrl({ replace: true });

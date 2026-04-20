@@ -14,6 +14,7 @@ window.CommunityModules.ChatList = (() => {
     let refreshTimer = null;
     let searchTimer = null;
     let activeSearchQuery = '';
+    let syncListenerBound = false;
     const CHAT_TIME_ZONE = 'Asia/Seoul';
 
     function getSettings() {
@@ -230,8 +231,22 @@ window.CommunityModules.ChatList = (() => {
         setupSearch();
         setupContextMenu();
         setupFolderModal();
+        bindSyncListener();
         renderFolderTabs();
         renderFolderManagerList();
+    }
+
+    function bindSyncListener() {
+        if (syncListenerBound) return;
+        syncListenerBound = true;
+
+        window.addEventListener('bsq_sync', (event) => {
+            const type = String(event?.detail?.type || '');
+            if (!type) return;
+            if (['chat', 'chat_room', 'chat_rooms', 'room_updated', 'messages', 'friends'].includes(type)) {
+                loadChatRooms().catch(() => { });
+            }
+        });
     }
 
     function setupFilterTabs() {
@@ -283,7 +298,7 @@ window.CommunityModules.ChatList = (() => {
         } finally {
             clearTimeout(refreshTimer);
             refreshTimer = setTimeout(() => {
-                loadChatRooms().catch(() => {});
+                loadChatRooms().catch(() => { });
             }, REFRESH_MS);
         }
 
@@ -353,7 +368,7 @@ window.CommunityModules.ChatList = (() => {
                     ? `<button class="btn-primary btn-room-empty" id="btnExploreClasses">클래스 탐색하기</button>`
                     : currentFilter === 'group'
                         ? `<button class="btn-primary btn-room-empty" id="btnStartGroup">그룹 만들기</button>`
-                    : `<button class="btn-primary btn-room-empty" id="btnStartChat">새 대화 시작</button>`;
+                        : `<button class="btn-primary btn-room-empty" id="btnStartChat">새 대화 시작</button>`;
             list.innerHTML = `
                 <div class="comm-empty-state">
                     <div class="comm-empty-icon"><i class="fa-regular fa-comments"></i></div>
