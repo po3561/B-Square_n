@@ -1130,9 +1130,7 @@ window.CommunityModules.ChatUI = (function () {
         const isGatheringPin = isGatheringPreviewMessage(top);
         bar.classList.toggle('is-gathering-pin', isGatheringPin);
         bar.dataset.pinKind = isGatheringPin ? 'gathering' : 'message';
-        content.textContent = isGatheringPin
-            ? `고정된 모임 카드 ${currentPins.length}개 · ${text || '모임 정보 확인'}`
-            : `고정 메시지 ${currentPins.length}개 · ${text || '메시지 확인'}`;
+        content.textContent = `고정 메시지 ${currentPins.length}개 · ${text || '메시지 확인'}`;
         bar.style.display = 'flex';
         bar.onclick = (e) => {
             e.stopPropagation();
