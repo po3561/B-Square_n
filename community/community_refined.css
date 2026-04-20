@@ -3383,10 +3383,40 @@ body[data-layout="popup"] .pinned-msg-bar {
     border-color: color-mix(in srgb, var(--comm-border) 88%, var(--comm-accent) 12%);
 }
 
+body[data-layout="community"] .pinned-msg-bar.is-gathering-pin,
+body[data-layout="popup"] .pinned-msg-bar.is-gathering-pin {
+    background: linear-gradient(135deg, rgba(255, 245, 224, 0.95), rgba(255, 237, 213, 0.92));
+    border-color: rgba(245, 158, 11, 0.38);
+    box-shadow: 0 10px 24px rgba(245, 158, 11, 0.12);
+}
+
+body[data-layout="community"] .pinned-msg-bar.is-gathering-pin .pin-icon,
+body[data-layout="popup"] .pinned-msg-bar.is-gathering-pin .pin-icon {
+    color: #d97706;
+}
+
+body[data-layout="community"] .pinned-msg-bar.is-gathering-pin .pinned-msg-content,
+body[data-layout="popup"] .pinned-msg-bar.is-gathering-pin .pinned-msg-content {
+    color: #92400e;
+    font-weight: 700;
+}
+
 body[data-layout="community"] .pinned-msg-content,
 body[data-layout="popup"] .pinned-msg-content {
     font-size: 0.88rem;
     line-height: 1.45;
+}
+
+body[data-layout="community"] .info-pinned-item.is-gathering-pin,
+body[data-layout="popup"] .info-pinned-item.is-gathering-pin {
+    border-color: rgba(245, 158, 11, 0.24);
+    background: linear-gradient(135deg, rgba(255, 251, 235, 0.92), rgba(255, 247, 237, 0.92));
+}
+
+body[data-layout="community"] .info-pinned-item.is-gathering-pin .info-pinned-item-snippet,
+body[data-layout="popup"] .info-pinned-item.is-gathering-pin .info-pinned-item-snippet {
+    color: #9a3412;
+    font-weight: 600;
 }
 
 body[data-layout="community"] .msg-reactions,
@@ -4126,6 +4156,17 @@ body[data-layout="popup"] .btn-hamburger {
 [data-theme="light"] body[data-layout="community"] .pinned-msg-content,
 [data-theme="light"] body[data-layout="popup"] .pinned-msg-content {
     color: var(--comm-text) !important;
+}
+
+[data-theme="light"] body[data-layout="community"] .pinned-msg-bar.is-gathering-pin,
+[data-theme="light"] body[data-layout="popup"] .pinned-msg-bar.is-gathering-pin {
+    background: linear-gradient(135deg, rgba(255, 247, 237, 0.98), rgba(255, 237, 213, 0.96)) !important;
+    border-color: rgba(245, 158, 11, 0.34) !important;
+}
+
+[data-theme="light"] body[data-layout="community"] .pinned-msg-bar.is-gathering-pin .pinned-msg-content,
+[data-theme="light"] body[data-layout="popup"] .pinned-msg-bar.is-gathering-pin .pinned-msg-content {
+    color: #92400e !important;
 }
 
 [data-theme="light"] body[data-layout="community"] .gathering-card,

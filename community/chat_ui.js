@@ -349,13 +349,21 @@ window.CommunityModules.ChatUI = (function () {
             || !!(msgData?.gather_title || msgData?.gather_time || msgData?.gather_place);
     }
 
+    function buildGatheringPinnedText(msgData) {
+        const title = normalizePreviewText(msgData?.gather_title || msgData?.title || '모임 카드', 42);
+        const time = normalizePreviewText(msgData?.gather_time || msgData?.gathering_at || '', 30);
+        const place = normalizePreviewText(msgData?.gather_place || msgData?.location || '', 24);
+        const parts = [];
+        if (title) parts.push(`모임주제: ${title}`);
+        if (time) parts.push(`시간: ${time}`);
+        if (place) parts.push(`장소: ${place}`);
+        return parts.join(' · ');
+    }
+
     function buildPinnedPreviewText(msgData, maxLength = 110) {
         const normalized = normalizeIncomingMessage(msgData || {});
         if (isGatheringPreviewMessage(normalized)) {
-            const title = normalizePreviewText(normalized.gather_title || normalized.title || '모임 카드', 54);
-            const date = normalizePreviewText(normalized.gather_time || normalized.gathering_at || '', 32);
-            const place = normalizePreviewText(normalized.gather_place || normalized.location || '', 28);
-            const preview = [title, date, place].filter(Boolean).join(' · ');
+            const preview = buildGatheringPinnedText(normalized);
             return normalizePreviewText(preview || '모임 카드', maxLength);
         }
 
@@ -433,9 +441,10 @@ window.CommunityModules.ChatUI = (function () {
             const snippet = buildPinnedPreviewText(pin);
             const timestamp = pin.updated_at || pin.timestamp || pin.created_at || '';
             const timeText = formatChatDateTime(timestamp);
+            const isGatheringPin = isGatheringPreviewMessage(pin);
 
             return `
-                <button type="button" class="info-pinned-item" data-msg-id="${escapeAttr(messageId)}">
+                <button type="button" class="info-pinned-item${isGatheringPin ? ' is-gathering-pin' : ''}" data-msg-id="${escapeAttr(messageId)}">
                     <span class="info-pinned-item-title">${escapeHtml(senderName)}</span>
                     <span class="info-pinned-item-snippet">${escapeHtml(snippet || '고정된 메시지')}</span>
                     ${timeText ? `<span class="info-pinned-item-meta">${escapeHtml(timeText)}</span>` : ''}
@@ -1111,12 +1120,19 @@ window.CommunityModules.ChatUI = (function () {
         if (!currentPins.length) {
             bar.style.display = 'none';
             bar.onclick = null;
+            bar.classList.remove('is-gathering-pin');
+            delete bar.dataset.pinKind;
             return;
         }
 
         const top = currentPins[0];
         const text = buildPinnedPreviewText(top, 70);
-        content.textContent = `고정 메시지 ${currentPins.length}개 · ${text || '메시지 확인'}`;
+        const isGatheringPin = isGatheringPreviewMessage(top);
+        bar.classList.toggle('is-gathering-pin', isGatheringPin);
+        bar.dataset.pinKind = isGatheringPin ? 'gathering' : 'message';
+        content.textContent = isGatheringPin
+            ? `고정된 모임 카드 ${currentPins.length}개 · ${text || '모임 정보 확인'}`
+            : `고정 메시지 ${currentPins.length}개 · ${text || '메시지 확인'}`;
         bar.style.display = 'flex';
         bar.onclick = (e) => {
             e.stopPropagation();
