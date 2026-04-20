@@ -742,7 +742,7 @@ window.CommunityModules.ChatUI = (function () {
                     setInfoPanelVisibility(false);
                     return;
                 }
-                if (e.target.closest('#btnChatInfo') || activePanel.contains(e.target)) {
+                if (e.target.closest('#btnChatInfo') || activePanel.contains(e.target) || e.target.closest('#pinnedMsgBar')) {
                     return;
                 }
                 setInfoPanelVisibility(false);
@@ -1099,9 +1099,22 @@ window.CommunityModules.ChatUI = (function () {
         const text = normalizePreviewText(top.content || top.message || top.text || '', 70);
         content.textContent = `고정 메시지 ${currentPins.length}개 · ${text || '메시지 확인'}`;
         bar.style.display = 'flex';
-        bar.onclick = () => {
-            currentInfoPanelMode = 'pins';
-            renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo, { open: true, mode: 'pins' }).catch(() => {});
+        bar.onclick = (e) => {
+            e.stopPropagation();
+            if (e.target.closest('.fa-bars-staggered')) {
+                currentInfoPanelMode = 'pins';
+                renderInfoPanel(currentRoomId, currentRoomType, currentRoomInfo, { open: true, mode: 'pins' }).catch(() => {});
+            } else {
+                if (currentPins.length > 0) {
+                    const topMsgId = currentPins[0].id || currentPins[0].key;
+                    const target = topMsgId ? document.getElementById(`msg-${topMsgId}`) : null;
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        target.classList.add('msg-focus');
+                        window.setTimeout(() => target.classList.remove('msg-focus'), 1400);
+                    }
+                }
+            }
         };
     }
 
