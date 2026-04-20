@@ -351,21 +351,11 @@ function syncMobileClassViewChrome() {
     const mobile = isMobileClassViewLayout();
     const body = document.body;
     if (!body) return;
-
-    if (!window.__BSQ_CLASS_VIEW_THEME_SNAPSHOT__) {
-        window.__BSQ_CLASS_VIEW_THEME_SNAPSHOT__ = {
-            htmlTheme: document.documentElement.getAttribute('data-theme'),
-            bodyTheme: body.getAttribute('data-theme'),
-        };
-    }
-
-    const snapshot = window.__BSQ_CLASS_VIEW_THEME_SNAPSHOT__;
     body.classList.toggle('class-view-mobile-app', mobile);
     body.classList.toggle('class-view-chat-open', mobile && body.dataset.classViewActiveTab === 'tabChat');
 
     const currentTheme = document.documentElement.getAttribute('data-theme')
         || body.getAttribute('data-theme')
-        || snapshot.htmlTheme
         || window.BSQCommunityShared?.loadSettings?.().theme
         || 'dark';
 
@@ -373,11 +363,12 @@ function syncMobileClassViewChrome() {
         document.documentElement.setAttribute('data-theme', currentTheme);
         body.setAttribute('data-theme', currentTheme);
     } else {
-        if (snapshot.htmlTheme) document.documentElement.setAttribute('data-theme', snapshot.htmlTheme);
-        else document.documentElement.removeAttribute('data-theme');
-
-        if (snapshot.bodyTheme) body.setAttribute('data-theme', snapshot.bodyTheme);
-        else body.removeAttribute('data-theme');
+        if (!document.documentElement.getAttribute('data-theme')) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+        }
+        if (!body.getAttribute('data-theme')) {
+            body.setAttribute('data-theme', currentTheme);
+        }
     }
 
     const goToClassBtn = document.getElementById('btnGoToClassSide');

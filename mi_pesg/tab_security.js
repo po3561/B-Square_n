@@ -146,24 +146,46 @@ window.initSecurityTab = function (userId) {
         if (payload.preferred_language) updates.preferred_language = normalizeLanguageChoice(payload.preferred_language);
         if (payload.preferred_theme) updates.preferred_theme = normalizeThemeChoice(payload.preferred_theme);
 
+        let savedPreferences = null;
         if (Object.keys(updates).length) {
             const res = await window.BSQ.api(`/api/users/${userId}`, {
                 method: 'PUT',
                 body: JSON.stringify(updates),
             });
-            if (res?.success && res.data) {
-                syncStoredUserPreference({
-                    preferred_language: normalizeLanguageChoice(res.data.preferred_language || updates.preferred_language),
-                    preferred_theme: normalizeThemeChoice(res.data.preferred_theme || updates.preferred_theme),
-                });
+            if (!res?.success) {
+                throw new Error(res?.error || '변경사항 저장에 실패했습니다.');
             }
+            savedPreferences = res.data || {};
         }
 
-        if (updates.preferred_language) localStorage.setItem('bsq_language', updates.preferred_language);
-        if (updates.preferred_theme) localStorage.setItem('bsq_theme', updates.preferred_theme);
+        const nextLanguage = normalizeLanguageChoice(
+            savedPreferences?.preferred_language ||
+            updates.preferred_language ||
+            languageSelect?.value ||
+            localStorage.getItem('bsq_language') ||
+            'ko'
+        );
+        const nextTheme = normalizeThemeChoice(
+            savedPreferences?.preferred_theme ||
+            updates.preferred_theme ||
+            themeSelect?.value ||
+            localStorage.getItem('bsq_theme') ||
+            'dark'
+        );
+
+        if (updates.preferred_language || savedPreferences?.preferred_language) localStorage.setItem('bsq_language', nextLanguage);
+        if (updates.preferred_theme || savedPreferences?.preferred_theme) localStorage.setItem('bsq_theme', nextTheme);
+
+        if (updates.preferred_language || updates.preferred_theme || savedPreferences) {
+            syncStoredUserPreference({
+                ...(updates.preferred_language || savedPreferences?.preferred_language ? { preferred_language: nextLanguage } : {}),
+                ...(updates.preferred_theme || savedPreferences?.preferred_theme ? { preferred_theme: nextTheme } : {}),
+            });
+        }
+
         window.BSQ.applyPreferences?.({
-            language: normalizeLanguageChoice(updates.preferred_language || languageSelect?.value),
-            theme: normalizeThemeChoice(updates.preferred_theme || themeSelect?.value),
+            language: nextLanguage,
+            theme: nextTheme,
         });
     }
 
@@ -205,10 +227,12 @@ window.initSecurityTab = function (userId) {
     });
 
     themeSelect?.addEventListener('change', async () => {
+        const previousTheme = normalizeThemeChoice(localStorage.getItem('bsq_theme') || 'dark');
         try {
             await persistPreferences({ preferred_theme: themeSelect.value });
             showMypageNotice?.('success', '테마 저장 완료', '테마가 저장되었습니다.');
         } catch (error) {
+            themeSelect.value = previousTheme;
             showMypageNotice?.('error', '테마 설정 실패', error.message || '테마 저장에 실패했습니다.');
         }
     });

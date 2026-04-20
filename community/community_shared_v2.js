@@ -37,16 +37,41 @@
 
     function applySettings(overrides = {}) {
         const settings = { ...loadSettings(), ...overrides };
-        saveSettings(settings);
+        const nextTheme = String(settings.theme || 'dark').trim().toLowerCase() === 'light' ? 'light' : 'dark';
+        const nextSettings = { ...settings, theme: nextTheme };
+        saveSettings(nextSettings);
 
-        document.documentElement.setAttribute('data-theme', settings.theme || 'dark');
+        document.documentElement.setAttribute('data-theme', nextTheme);
         if (document.body) {
-            document.body.dataset.commDensity = settings.density || 'comfortable';
-            document.body.dataset.commMotion = settings.reduceMotion ? 'reduce' : 'normal';
+            document.body.dataset.theme = nextTheme;
+            document.body.dataset.commDensity = nextSettings.density || 'comfortable';
+            document.body.dataset.commMotion = nextSettings.reduceMotion ? 'reduce' : 'normal';
         }
 
-        window.CommunityShellSettings = settings;
-        return settings;
+        window.CommunityShellSettings = nextSettings;
+
+        const syncLanguage = document.documentElement.getAttribute('lang')
+            || localStorage.getItem('bsq_language')
+            || 'ko';
+
+        if (typeof window.BSQ?.applyPreferences === 'function') {
+            window.BSQ.applyPreferences({
+                theme: nextTheme,
+                language: syncLanguage,
+                persistStorage: false,
+            });
+        } else if (typeof window.dispatchEvent === 'function') {
+            window.dispatchEvent(new CustomEvent('bsq_preferences', {
+                detail: {
+                    theme: nextTheme,
+                    resolvedTheme: nextTheme,
+                    language: syncLanguage,
+                    updatedAt: Date.now(),
+                },
+            }));
+        }
+
+        return nextSettings;
     }
 
     function setTheme(theme) {
