@@ -432,43 +432,47 @@
     state.categories = FALLBACK_CATEGORIES.slice();
   }
 
-  function collectRecommendedClasses(entries = []) {
-    const seen = new Set();
-    const items = [];
-
-    const append = (candidate) => {
-      const normalized = normalizeClassCard(candidate);
-      if (!normalized.id || seen.has(normalized.id)) return;
-      seen.add(normalized.id);
-      items.push(normalized);
-    };
-
-    for (const entry of Array.isArray(entries) ? entries : []) {
-      if (!entry) continue;
-
-      if (Array.isArray(entry.items)) {
-        entry.items.forEach(append);
-      } else if (Array.isArray(entry.classes)) {
-        entry.classes.forEach(append);
-      } else {
-        append(entry);
-      }
-
-      if (items.length >= 6) break;
-    }
-
-    return items.slice(0, 6);
-  }
-
   function renderRecommendations() {
     if (!refs.recommendSection || !refs.recommendFolderGrid) return;
     const items = Array.isArray(state.recommendationFolders) ? state.recommendationFolders : [];
     refs.recommendSection.hidden = !items.length;
-    refs.recommendFolderGrid.innerHTML = items.map((item, index) => renderCard(item, index)).join('');
+    refs.recommendFolderGrid.innerHTML = items.map((item) => renderRecommendationFolder(item)).join('');
+  }
+
+  function renderRecommendationFolder(folder = {}) {
+    const items = Array.isArray(folder.items) ? folder.items : [];
+    const visibleItems = items.slice(0, 3);
+    return `
+      <article class="recommend-folder-card">
+        <div class="recommend-folder-body">
+          <div>
+            <h4 class="recommend-folder-title">${esc(folder.title || '추천 클래스')}</h4>
+            ${folder.description ? `<p class="recommend-folder-copy">${esc(folder.description)}</p>` : ''}
+          </div>
+          <div class="recommend-folder-list">
+            ${visibleItems.map((item, index) => `
+              <a href="${esc(classUrl(item.id))}" class="recommend-item">
+                <span class="recommend-num">${index + 1}</span>
+                <div class="recommend-thumb"${item.imageUrl ? ` style="background-image:url('${esc(item.imageUrl)}')"` : ''}></div>
+                <div class="recommend-info">
+                  <h4>${esc(item.title)}</h4>
+                  <div class="recommend-meta">
+                    <span>${esc(item.category)}</span>
+                    <span>${esc(item.mode || '온라인')}</span>
+                    <span>${Number(item.reviewCount || 0).toLocaleString()}개 후기</span>
+                    <span class="recommend-price">${esc(formatPriceLabel(item))}</span>
+                  </div>
+                </div>
+              </a>
+            `).join('')}
+          </div>
+        </div>
+      </article>
+    `;
   }
 
   async function loadRecommendations() {
-    let items = [];
+    let folders = [];
 
     try {
       const res = await window.BSQ.api('/api/recommendations');
@@ -477,26 +481,45 @@
           ? res.data
           : (Array.isArray(res.data?.folders) ? res.data.folders : (Array.isArray(res.data?.items) ? res.data.items : [])))
         : [];
-      items = collectRecommendedClasses(source);
+      folders = source.map((item) => normalizeRecommendationFolder(item)).filter((item) => item.id || item.items.length);
     } catch (error) {
       console.warn('[class_list] recommendation load failed:', error);
     }
 
-    if (!items.length) {
+    if (!folders.length) {
       try {
         const res = await window.BSQ.api('/api/classes?sort=popular&limit=12');
         const rows = res?.success
           ? (Array.isArray(res.data?.classes) ? res.data.classes : (Array.isArray(res.data) ? res.data : []))
           : [];
-        items = rows.map((item) => normalizeClassCard(item)).filter((item) => item.id).slice(0, 6);
+        const classes = rows.map((item) => normalizeClassCard(item)).filter((item) => item.id);
+        folders = buildRecommendationFallbackFolders(classes);
       } catch (error) {
         console.warn('[class_list] fallback recommendation load failed:', error);
-        items = [];
+        folders = [];
       }
     }
 
-    state.recommendationFolders = items;
+    state.recommendationFolders = folders.slice(0, 3);
     renderRecommendations();
+  }
+
+  function buildRecommendationFallbackFolders(classes = []) {
+    const buckets = new Map();
+    for (const item of Array.isArray(classes) ? classes : []) {
+      const key = text(item.category || 'General') || 'General';
+      if (!buckets.has(key)) buckets.set(key, []);
+      if (buckets.get(key).length < 3) buckets.get(key).push(item);
+    }
+
+    return Array.from(buckets.entries()).slice(0, 3).map(([name, items], index) => ({
+      id: `fallback-${index}`,
+      title: text(name || '추천 클래스'),
+      description: '현재 클래스 데이터를 기준으로 자동 구성된 추천 클래스 묶음입니다.',
+      imageUrl: items[0]?.imageUrl || '',
+      items,
+      type: '추천',
+    }));
   }
 
   function renderCard(item, index) {
