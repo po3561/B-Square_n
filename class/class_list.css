@@ -437,6 +437,13 @@ body.class-list-page .class-category-overlay-close {
     background: rgba(255, 255, 255, 0.05);
 }
 
+body.class-list-page .recommendation-surface {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
 body.class-list-page .class-page-overrides {
     padding: 1rem;
 }

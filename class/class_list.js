@@ -6,7 +6,6 @@
   const state = {
     categories: [],
     recommendationFolders: [],
-    recommendationTitle: '추천 클래스 폴더',
     currentCategory: 'all',
     currentSort: 'newest',
     searchQuery: '',
@@ -197,8 +196,6 @@
     refs.bannerNext = $('classListBannerNext');
     refs.bannerDots = $('classListBannerDots');
     refs.recommendSection = $('recommendSection');
-    refs.recommendTitle = $('recommendGroupTitle');
-    refs.recommendCopy = $('recommendGroupCopy');
     refs.recommendFolderGrid = $('recommendFolderGrid');
     refs.scrollSentinel = $('classListSentinel');
     refs.heroLoaded = $('classListStatLoaded');
@@ -464,9 +461,8 @@
   }
 
   function renderRecommendations() {
-    if (!refs.recommendSection || !refs.recommendFolderGrid || !refs.recommendTitle) return;
+    if (!refs.recommendSection || !refs.recommendFolderGrid) return;
     const items = Array.isArray(state.recommendationFolders) ? state.recommendationFolders : [];
-    refs.recommendTitle.textContent = state.recommendationTitle || '추천 클래스';
     refs.recommendSection.hidden = !items.length;
     refs.recommendFolderGrid.innerHTML = items.map((item, index) => renderCard(item, index)).join('');
   }
@@ -500,7 +496,6 @@
     }
 
     state.recommendationFolders = items;
-    state.recommendationTitle = '추천 클래스';
     renderRecommendations();
   }
 
