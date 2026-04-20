@@ -343,6 +343,25 @@ window.CommunityModules.ChatUI = (function () {
         return clean.length > maxLength ? `${clean.slice(0, maxLength)}…` : clean;
     }
 
+    function isGatheringPreviewMessage(msgData) {
+        const type = String(msgData?.type || '').toLowerCase();
+        return type === 'gathering' || type === 'gathering_card'
+            || !!(msgData?.gather_title || msgData?.gather_time || msgData?.gather_place);
+    }
+
+    function buildPinnedPreviewText(msgData, maxLength = 110) {
+        const normalized = normalizeIncomingMessage(msgData || {});
+        if (isGatheringPreviewMessage(normalized)) {
+            const title = normalizePreviewText(normalized.gather_title || normalized.title || '모임 카드', 54);
+            const date = normalizePreviewText(normalized.gather_time || normalized.gathering_at || '', 32);
+            const place = normalizePreviewText(normalized.gather_place || normalized.location || '', 28);
+            const preview = [title, date, place].filter(Boolean).join(' · ');
+            return normalizePreviewText(preview || '모임 카드', maxLength);
+        }
+
+        return normalizePreviewText(normalized.content || normalized.message || normalized.text || '', maxLength);
+    }
+
     function serializeReactionValue(value) {
         if (!value) return '';
         if (Array.isArray(value)) return value.map(String).sort().join(',');
@@ -411,7 +430,7 @@ window.CommunityModules.ChatUI = (function () {
         const items = currentPins.map(pin => {
             const messageId = pin.id || pin.key || '';
             const senderName = pin.user_name || pin.sender_name || '메시지';
-            const snippet = normalizePreviewText(pin.content || pin.message || pin.text || '');
+            const snippet = buildPinnedPreviewText(pin);
             const timestamp = pin.updated_at || pin.timestamp || pin.created_at || '';
             const timeText = formatChatDateTime(timestamp);
 
@@ -1096,7 +1115,7 @@ window.CommunityModules.ChatUI = (function () {
         }
 
         const top = currentPins[0];
-        const text = normalizePreviewText(top.content || top.message || top.text || '', 70);
+        const text = buildPinnedPreviewText(top, 70);
         content.textContent = `고정 메시지 ${currentPins.length}개 · ${text || '메시지 확인'}`;
         bar.style.display = 'flex';
         bar.onclick = (e) => {
