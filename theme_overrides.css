@@ -2986,6 +2986,15 @@ body.class-view-page:not(.class-view-mobile-app) #gatheringModal {
   -webkit-backdrop-filter: blur(18px) saturate(130%) !important;
 }
 
+body.class-view-page:not(.class-view-mobile-app) #gatheringPreviewModal {
+  align-items: center !important;
+  justify-content: center !important;
+  padding: clamp(1rem, 2.4vw, 2rem) !important;
+  background: rgba(3, 6, 12, 0.64) !important;
+  backdrop-filter: blur(18px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(130%) !important;
+}
+
 body.class-view-page:not(.class-view-mobile-app) #gatheringModal .modal-content {
   width: min(560px, calc(100vw - 32px)) !important;
   max-width: min(560px, calc(100vw - 32px)) !important;
@@ -3103,6 +3112,18 @@ body.class-view-page:not(.class-view-mobile-app) #gatheringModal .btn-submit {
   background: linear-gradient(135deg, var(--bsq-primary), var(--bsq-primary-strong)) !important;
   color: #fff !important;
   box-shadow: 0 14px 30px rgba(59, 109, 245, 0.24) !important;
+}
+
+body.class-view-page.class-view-mobile-app #gatheringPreviewModal {
+  background: rgba(3, 6, 12, 0.6) !important;
+  backdrop-filter: blur(16px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(150%) !important;
+}
+
+body.class-view-page.class-view-mobile-app #gatheringModal {
+  background: rgba(3, 6, 12, 0.6) !important;
+  backdrop-filter: blur(16px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(150%) !important;
 }
 
 html[data-theme="light"] body.home-page .home-category-extra-wrap {
