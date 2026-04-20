@@ -12,6 +12,22 @@ function parseIntOrDefault(value, fallback, max) {
   return Math.min(parsed, max);
 }
 
+function serializeUtcTimestamp(value) {
+  const text = trimText(value);
+  if (!text) return text;
+
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text.replace(' ', 'T')}Z`;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text}Z`;
+  }
+
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? text : date.toISOString();
+}
+
 function isTruthyFlag(value) {
   if (value === true || value === 1) return true;
   const text = String(value ?? '').trim().toLowerCase();
@@ -74,7 +90,10 @@ export async function onRequestGet(context) {
     const { results } = await env.DB.prepare(query).bind(...binds).all();
     const rows = results || [];
     const hasMore = rows.length > limit;
-    const data = hasMore ? rows.slice(0, limit) : rows;
+    const data = (hasMore ? rows.slice(0, limit) : rows).map((row) => ({
+      ...row,
+      last_message_at: serializeUtcTimestamp(row?.last_message_at),
+    }));
     return json(request, env, {
       success: true,
       data,

@@ -35,6 +35,22 @@ function trimText(value) {
   return String(value ?? '').trim();
 }
 
+function serializeUtcTimestamp(value) {
+  const text = trimText(value);
+  if (!text) return text;
+
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text.replace(' ', 'T')}Z`;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text}Z`;
+  }
+
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? text : date.toISOString();
+}
+
 async function readJsonObject(request) {
   try {
     const parsed = await request.json();
@@ -62,6 +78,8 @@ function normalizeChatMessage(row) {
     reply_data: replyData || null,
     reactions: reactions && typeof reactions === 'object' ? reactions : {},
     edited: row.edited || row.is_edited === 1 || row.is_edited === true,
+    created_at: serializeUtcTimestamp(row.created_at),
+    updated_at: serializeUtcTimestamp(row.updated_at),
   };
 
   if (normalized.reply_data && typeof normalized.reply_data === 'object') {

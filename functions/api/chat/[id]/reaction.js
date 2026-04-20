@@ -24,6 +24,26 @@ async function readJsonObject(request) {
   }
 }
 
+function trimText(value) {
+  return String(value ?? '').trim();
+}
+
+function serializeUtcTimestamp(value) {
+  const text = trimText(value);
+  if (!text) return text;
+
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text.replace(' ', 'T')}Z`;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text}Z`;
+  }
+
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? text : date.toISOString();
+}
+
 async function hasClassReactionAccess(context, auth, classId) {
   const { env, request } = context;
   const normalizedClassId = trimText(classId);
@@ -143,7 +163,7 @@ export async function onRequest(context) {
       data: {
         id: messageId,
         reactions,
-        updated_at: updated?.updated_at || new Date().toISOString(),
+        updated_at: serializeUtcTimestamp(updated?.updated_at) || new Date().toISOString(),
       },
     });
   } catch (error) {

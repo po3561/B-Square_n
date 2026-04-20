@@ -1,9 +1,9 @@
-------formdata-undici-088390269562
+------formdata-undici-087401157360
 Content-Disposition: form-data; name="metadata"
 
-{"main_module":"functionsWorker-0.8300591669676922.js"}
-------formdata-undici-088390269562
-Content-Disposition: form-data; name="functionsWorker-0.8300591669676922.js"; filename="functionsWorker-0.8300591669676922.js"
+{"main_module":"functionsWorker-0.4042972352259788.js"}
+------formdata-undici-087401157360
+Content-Disposition: form-data; name="functionsWorker-0.4042972352259788.js"; filename="functionsWorker-0.4042972352259788.js"
 Content-Type: application/javascript+module
 
 var __defProp = Object.defineProperty;
@@ -3721,6 +3721,23 @@ async function readJsonObject(request) {
   }
 }
 __name(readJsonObject, "readJsonObject");
+function trimText(value) {
+  return String(value ?? "").trim();
+}
+__name(trimText, "trimText");
+function serializeUtcTimestamp(value) {
+  const text = trimText(value);
+  if (!text) return text;
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text.replace(" ", "T")}Z`;
+  }
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text}Z`;
+  }
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? text : date.toISOString();
+}
+__name(serializeUtcTimestamp, "serializeUtcTimestamp");
 async function hasClassReactionAccess(context, auth, classId) {
   const { env, request } = context;
   const normalizedClassId = trimText(classId);
@@ -3820,7 +3837,7 @@ async function onRequest2(context) {
       data: {
         id: messageId,
         reactions,
-        updated_at: updated?.updated_at || (/* @__PURE__ */ new Date()).toISOString()
+        updated_at: serializeUtcTimestamp(updated?.updated_at) || (/* @__PURE__ */ new Date()).toISOString()
       }
     });
   } catch (error) {
@@ -6832,113 +6849,84 @@ async function onRequestOptions15(context) {
 __name(onRequestOptions15, "onRequestOptions");
 
 // api/auth/referrer-codes.js
-var GROUP_DEFINITIONS = [
-  { prefix: "aj", label: "\uC911\uBD80" },
-  { prefix: "ab", label: "\uBD81\uBD80" },
-  { prefix: "ac", label: "\uB3D9\uBD80" },
-  { prefix: "as", label: "\uB300\uD559" },
-  { prefix: "cs", label: "\uD589\uC815" }
-];
-var FALLBACK_GROUPS = [
+var REFERRER_GROUPS = [
   {
-    label: "\uC911\uBD80",
+    label: "\uCD94\uCC9C\uCF54\uB4DC \uADF8\uB8F9 A",
     options: [
-      { value: "aj001", label: "\uC911\uBD801" },
-      { value: "aj002", label: "\uC911\uBD802" },
-      { value: "aj003", label: "\uC911\uBD803" },
-      { value: "aj004", label: "\uC911\uBD804" },
-      { value: "aj005", label: "\uC911\uBD805" }
+      { value: "aj001", label: "\uCD94\uCC9C\uCF54\uB4DC 01" },
+      { value: "aj002", label: "\uCD94\uCC9C\uCF54\uB4DC 02" },
+      { value: "aj003", label: "\uCD94\uCC9C\uCF54\uB4DC 03" },
+      { value: "aj004", label: "\uCD94\uCC9C\uCF54\uB4DC 04" },
+      { value: "aj005", label: "\uCD94\uCC9C\uCF54\uB4DC 05" }
     ]
   },
   {
-    label: "\uBD81\uBD80",
+    label: "\uCD94\uCC9C\uCF54\uB4DC \uADF8\uB8F9 B",
     options: [
-      { value: "ab001", label: "\uBD81\uBD801" },
-      { value: "ab002", label: "\uBD81\uBD802" },
-      { value: "ab003", label: "\uBD81\uBD803" },
-      { value: "ab004", label: "\uBD81\uBD804" },
-      { value: "ab005", label: "\uBD81\uBD805" }
+      { value: "ab001", label: "\uCD94\uCC9C\uCF54\uB4DC 06" },
+      { value: "ab002", label: "\uCD94\uCC9C\uCF54\uB4DC 07" },
+      { value: "ab003", label: "\uCD94\uCC9C\uCF54\uB4DC 08" },
+      { value: "ab004", label: "\uCD94\uCC9C\uCF54\uB4DC 09" },
+      { value: "ab005", label: "\uCD94\uCC9C\uCF54\uB4DC 10" }
     ]
   },
   {
-    label: "\uB3D9\uBD80",
+    label: "\uCD94\uCC9C\uCF54\uB4DC \uADF8\uB8F9 C",
     options: [
-      { value: "ac001", label: "\uB3D9\uBD801" },
-      { value: "ac002", label: "\uB3D9\uBD802" },
-      { value: "ac003", label: "\uB3D9\uBD803" },
-      { value: "ac004", label: "\uB3D9\uBD804" },
-      { value: "ac005", label: "\uB3D9\uBD805" }
+      { value: "ac001", label: "\uCD94\uCC9C\uCF54\uB4DC 11" },
+      { value: "ac002", label: "\uCD94\uCC9C\uCF54\uB4DC 12" },
+      { value: "ac003", label: "\uCD94\uCC9C\uCF54\uB4DC 13" },
+      { value: "ac004", label: "\uCD94\uCC9C\uCF54\uB4DC 14" },
+      { value: "ac005", label: "\uCD94\uCC9C\uCF54\uB4DC 15" }
     ]
   },
   {
-    label: "\uB300\uD559",
+    label: "\uCD94\uCC9C\uCF54\uB4DC \uADF8\uB8F9 D",
     options: [
-      { value: "as001", label: "\uB300\uD5591" },
-      { value: "as002", label: "\uB300\uD5592" },
-      { value: "as003", label: "\uB300\uD5593" },
-      { value: "as004", label: "\uB300\uD5594" }
+      { value: "as001", label: "\uCD94\uCC9C\uCF54\uB4DC 16" },
+      { value: "as002", label: "\uCD94\uCC9C\uCF54\uB4DC 17" },
+      { value: "as003", label: "\uCD94\uCC9C\uCF54\uB4DC 18" },
+      { value: "as004", label: "\uCD94\uCC9C\uCF54\uB4DC 19" }
     ]
   },
   {
-    label: "\uD589\uC815",
+    label: "\uCD94\uCC9C\uCF54\uB4DC \uADF8\uB8F9 E",
     options: [
-      { value: "cs020", label: "\uD589\uC815" }
+      { value: "cs020", label: "\uCD94\uCC9C\uCF54\uB4DC 20" }
     ]
   }
 ];
-function normalizeText10(value) {
-  return String(value ?? "").trim();
+function normalizeCode(value) {
+  return String(value ?? "").trim().toLowerCase();
 }
-__name(normalizeText10, "normalizeText");
-function getGroupLabel(code) {
-  const value = normalizeText10(code).toLowerCase();
-  const group = GROUP_DEFINITIONS.find((item) => value.startsWith(item.prefix));
-  return group?.label || "\uAE30\uD0C0";
-}
-__name(getGroupLabel, "getGroupLabel");
-function getCodeLabel(code) {
-  const value = normalizeText10(code);
-  if (!value) return "";
-  const match2 = value.match(/^([a-z]{2})(\d+)$/i);
-  if (!match2) return value;
-  const group = GROUP_DEFINITIONS.find((item) => item.prefix === match2[1].toLowerCase());
-  if (!group) return value;
-  const number = String(Number(match2[2]) || match2[2]).replace(/^0+/, "") || "0";
-  return `${group.label}${number}`;
-}
-__name(getCodeLabel, "getCodeLabel");
-function buildGroupsFromRows(rows) {
-  const buckets = /* @__PURE__ */ new Map();
-  const groupOrder = new Map(GROUP_DEFINITIONS.map((group, index) => [group.label, index]));
-  for (const row of rows) {
-    const code = normalizeText10(row?.code);
-    if (!code) continue;
-    const label = getGroupLabel(code);
-    if (!buckets.has(label)) {
-      buckets.set(label, []);
-    }
-    buckets.get(label).push({
-      value: code,
-      label: getCodeLabel(code),
-      usage_count: Number(row?.usage_count || 0)
-    });
-  }
-  return Array.from(buckets.entries()).sort((left, right) => {
-    const leftIndex = groupOrder.has(left[0]) ? groupOrder.get(left[0]) : Number.MAX_SAFE_INTEGER;
-    const rightIndex = groupOrder.has(right[0]) ? groupOrder.get(right[0]) : Number.MAX_SAFE_INTEGER;
-    if (leftIndex !== rightIndex) return leftIndex - rightIndex;
-    return left[0].localeCompare(right[0], "ko");
-  }).map(([label, options2]) => ({
-    label,
-    options: options2.sort((left, right) => {
-      if (right.usage_count !== left.usage_count) {
-        return right.usage_count - left.usage_count;
-      }
-      return left.label.localeCompare(right.label, "ko");
-    }).map(({ usage_count, ...option }) => option)
+__name(normalizeCode, "normalizeCode");
+function cloneGroups(groups) {
+  return groups.map((group) => ({
+    label: group.label,
+    options: group.options.map((option) => ({
+      value: option.value,
+      label: option.label
+    }))
   }));
 }
-__name(buildGroupsFromRows, "buildGroupsFromRows");
+__name(cloneGroups, "cloneGroups");
+function buildGroupsWithUsage(rows) {
+  const usageMap = /* @__PURE__ */ new Map();
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const code = normalizeCode(row?.code);
+    if (!code) continue;
+    usageMap.set(code, Number(row?.usage_count || 0));
+  }
+  return REFERRER_GROUPS.map((group) => ({
+    label: group.label,
+    options: group.options.map((option) => ({
+      value: option.value,
+      label: option.label,
+      usage_count: usageMap.get(normalizeCode(option.value)) || 0
+    }))
+  }));
+}
+__name(buildGroupsWithUsage, "buildGroupsWithUsage");
 async function onRequestGet7(context) {
   const { request, env } = context;
   try {
@@ -6952,7 +6940,7 @@ async function onRequestGet7(context) {
       ORDER BY usage_count DESC, referrer_code ASC
       LIMIT 200
     `).all();
-    const groups = results.length ? buildGroupsFromRows(results) : FALLBACK_GROUPS;
+    const groups = buildGroupsWithUsage(results);
     return json(request, env, {
       success: true,
       data: {
@@ -6966,7 +6954,7 @@ async function onRequestGet7(context) {
       success: true,
       data: {
         source: "fallback",
-        groups: FALLBACK_GROUPS
+        groups: cloneGroups(REFERRER_GROUPS)
       }
     });
   }
@@ -6978,12 +6966,12 @@ async function onRequestOptions16(context) {
 __name(onRequestOptions16, "onRequestOptions");
 
 // api/auth/register.js
-function normalizeText11(value) {
+function normalizeText10(value) {
   return String(value ?? "").trim();
 }
-__name(normalizeText11, "normalizeText");
+__name(normalizeText10, "normalizeText");
 function normalizeEmail3(value) {
-  return normalizeText11(value).toLowerCase();
+  return normalizeText10(value).toLowerCase();
 }
 __name(normalizeEmail3, "normalizeEmail");
 function normalizeBoolean4(value) {
@@ -6994,14 +6982,14 @@ function normalizeBoolean4(value) {
 }
 __name(normalizeBoolean4, "normalizeBoolean");
 function buildDisplayName(name, fallback) {
-  const normalized = normalizeText11(name);
+  const normalized = normalizeText10(name);
   if (normalized) return normalized;
-  return normalizeText11(fallback);
+  return normalizeText10(fallback);
 }
 __name(buildDisplayName, "buildDisplayName");
 async function upsertSocialAccount2(db, userId, verification) {
-  const provider = normalizeText11(verification.provider).toLowerCase();
-  const providerUserId = normalizeText11(verification.provider_user_id);
+  const provider = normalizeText10(verification.provider).toLowerCase();
+  const providerUserId = normalizeText10(verification.provider_user_id);
   if (!provider || !providerUserId) return null;
   const existing = await db.prepare(`
     SELECT *
@@ -7076,9 +7064,9 @@ async function onRequestPost5(context) {
     }
     let email = normalizeEmail3(body?.email);
     const password = body?.password || "";
-    let name = normalizeText11(body?.name);
+    let name = normalizeText10(body?.name);
     const phone2 = body?.phone || null;
-    let username = normalizeText11(body?.username) || null;
+    let username = normalizeText10(body?.username) || null;
     const birth_year = body?.birth_year || null;
     const birth_month = body?.birth_month || null;
     const birth_day = body?.birth_day || null;
@@ -7425,14 +7413,14 @@ async function onRequestOptions20(context) {
 __name(onRequestOptions20, "onRequestOptions");
 
 // api/cart/checkout.js
-function normalizeText12(value) {
+function normalizeText11(value) {
   return String(value ?? "").trim();
 }
-__name(normalizeText12, "normalizeText");
-function normalizeCode(value) {
-  return normalizeText12(value).toUpperCase();
+__name(normalizeText11, "normalizeText");
+function normalizeCode2(value) {
+  return normalizeText11(value).toUpperCase();
 }
-__name(normalizeCode, "normalizeCode");
+__name(normalizeCode2, "normalizeCode");
 function normalizeInt2(value, fallback = 0) {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -7446,7 +7434,7 @@ function normalizeBool(value) {
 }
 __name(normalizeBool, "normalizeBool");
 function uniqueStrings4(values = []) {
-  return Array.from(new Set(values.map((item) => normalizeText12(item)).filter(Boolean)));
+  return Array.from(new Set(values.map((item) => normalizeText11(item)).filter(Boolean)));
 }
 __name(uniqueStrings4, "uniqueStrings");
 function parseList(value) {
@@ -7493,18 +7481,18 @@ function toEpochText(value) {
 }
 __name(toEpochText, "toEpochText");
 function normalizeCartItem(row) {
-  const classId = normalizeText12(row.class_id || row.reference_id || row.referenceId || "");
-  const referenceId = normalizeText12(row.reference_id || row.referenceId || classId || row.id || "");
-  const title = normalizeText12(row.title || row.class_title || row.name || row.class_name || "");
-  const subtitle = normalizeText12(row.subtitle || row.class_summary || row.instructor_name || row.class_category || row.category || "");
-  const imageUrl = normalizeText12(row.image_url || row.class_image_url || row.thumbnail_url || row.thumbnail || "");
+  const classId = normalizeText11(row.class_id || row.reference_id || row.referenceId || "");
+  const referenceId = normalizeText11(row.reference_id || row.referenceId || classId || row.id || "");
+  const title = normalizeText11(row.title || row.class_title || row.name || row.class_name || "");
+  const subtitle = normalizeText11(row.subtitle || row.class_summary || row.instructor_name || row.class_category || row.category || "");
+  const imageUrl = normalizeText11(row.image_url || row.class_image_url || row.thumbnail_url || row.thumbnail || "");
   const price = normalizeInt2(row.price ?? row.class_price ?? row.sale_price ?? row.list_price ?? row.amount ?? row.final_amount ?? 0);
   const quantity = Math.max(1, normalizeInt2(row.quantity || 1, 1));
-  const href = normalizeText12(row.href || row.url || (classId ? `../class_view/class_view.html?id=${encodeURIComponent(classId)}` : ""));
+  const href = normalizeText11(row.href || row.url || (classId ? `../class_view/class_view.html?id=${encodeURIComponent(classId)}` : ""));
   return {
     ...row,
-    id: normalizeText12(row.id),
-    item_type: normalizeText12(row.item_type || row.type || "class") || "class",
+    id: normalizeText11(row.id),
+    item_type: normalizeText11(row.item_type || row.type || "class") || "class",
     reference_id: referenceId,
     class_id: classId,
     title,
@@ -7513,10 +7501,10 @@ function normalizeCartItem(row) {
     price,
     quantity,
     href,
-    status: normalizeText12(row.status || "active") || "active",
-    instructor_id: normalizeText12(row.instructor_id || ""),
-    instructor_name: normalizeText12(row.instructor_name || ""),
-    category: normalizeText12(row.class_category || row.category || ""),
+    status: normalizeText11(row.status || "active") || "active",
+    instructor_id: normalizeText11(row.instructor_id || ""),
+    instructor_name: normalizeText11(row.instructor_name || ""),
+    category: normalizeText11(row.class_category || row.category || ""),
     snapshot: safeJsonParse(row.snapshot_json, null)
   };
 }
@@ -7536,7 +7524,7 @@ async function loadCartItems(db, userId, selectedIds = []) {
 }
 __name(loadCartItems, "loadCartItems");
 function couponTargetsClass(coupon, classId) {
-  const targetClassId = normalizeText12(coupon?.target_class_id);
+  const targetClassId = normalizeText11(coupon?.target_class_id);
   if (targetClassId && String(targetClassId) === String(classId)) return true;
   const targetIds = parseList(coupon?.target_ids);
   if (targetIds.includes(String(classId))) return true;
@@ -7588,7 +7576,7 @@ function buildAllocationMap(items, eligibleIds, discountTotal) {
 }
 __name(buildAllocationMap, "buildAllocationMap");
 async function resolveCouponPlan(db, { userId, couponCode, items, subtotal }) {
-  const normalizedCode = normalizeCode(couponCode);
+  const normalizedCode = normalizeCode2(couponCode);
   if (!normalizedCode) {
     return {
       code: "",
@@ -7688,15 +7676,15 @@ async function resolveCouponPlan(db, { userId, couponCode, items, subtotal }) {
   }
   const coupon = {
     code: normalizedCode,
-    name: normalizeText12(globalCoupon.name || globalCoupon.coupon_name || normalizedCode) || normalizedCode,
-    type: normalizeText12(globalCoupon.type || "percent") || "percent",
+    name: normalizeText11(globalCoupon.name || globalCoupon.coupon_name || normalizedCode) || normalizedCode,
+    type: normalizeText11(globalCoupon.type || "percent") || "percent",
     amount: normalizeInt2(globalCoupon.amount || globalCoupon.coupon_amount || 0),
-    scope: normalizeText12(globalCoupon.scope || "all_classes") || "all_classes",
-    targetClassId: normalizeText12(globalCoupon.target_class_id || ""),
+    scope: normalizeText11(globalCoupon.scope || "all_classes") || "all_classes",
+    targetClassId: normalizeText11(globalCoupon.target_class_id || ""),
     targetIds: parseList(globalCoupon.target_ids),
     minOrderAmount: normalizeInt2(globalCoupon.min_order_amount || 0),
     perUserLimit: Math.max(1, normalizeInt2(globalCoupon.per_user_limit || 1)),
-    imageUrl: normalizeText12(globalCoupon.image_url || globalCoupon.coupon_image_url || ""),
+    imageUrl: normalizeText11(globalCoupon.image_url || globalCoupon.coupon_image_url || ""),
     walletId: walletCoupon?.wallet_id || null,
     couponRow: globalCoupon,
     source: walletCoupon ? "wallet" : "global"
@@ -7735,9 +7723,9 @@ async function markCouponUsage(db, { couponPlan, userId, userName, orderId, clas
   if (!couponPlan?.code || discountAmount <= 0) return;
   const couponType = couponPlan.type || "amount";
   const couponAmount = normalizeInt2(couponPlan.amount || discountAmount);
-  const couponName = normalizeText12(couponPlan.name || couponPlan.code);
-  const couponImageUrl = normalizeText12(couponPlan.imageUrl || couponPlan.couponRow?.image_url || couponPlan.couponRow?.coupon_image_url || "");
-  const scope = normalizeText12(couponPlan.scope || (couponPlan.source === "class" ? "class" : "all"));
+  const couponName = normalizeText11(couponPlan.name || couponPlan.code);
+  const couponImageUrl = normalizeText11(couponPlan.imageUrl || couponPlan.couponRow?.image_url || couponPlan.couponRow?.coupon_image_url || "");
+  const scope = normalizeText11(couponPlan.scope || (couponPlan.source === "class" ? "class" : "all"));
   const metadata = JSON.stringify({
     source: couponPlan.source,
     scope,
@@ -7850,9 +7838,9 @@ async function onRequest8(context) {
     const body = await request.json();
     const userId = auth.user.id;
     const selectedIds = parseList(body.selected_ids || body.selected_ids_json || body.item_ids);
-    const paymentMethod = normalizeText12(body.pay_method || body.payment_method || "card").toLowerCase() || "card";
+    const paymentMethod = normalizeText11(body.pay_method || body.payment_method || "card").toLowerCase() || "card";
     const dryRun = normalizeBool(body.dry_run);
-    const couponCode = normalizeCode(body.coupon_code || body.coupon_id || body.coupon || "");
+    const couponCode = normalizeCode2(body.coupon_code || body.coupon_id || body.coupon || "");
     const user = await env.DB.prepare(`
       SELECT id, name, username, email
       FROM users
@@ -8820,10 +8808,10 @@ function generateCouponCode() {
   return `BSQ${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 __name(generateCouponCode, "generateCouponCode");
-function normalizeCode2(value) {
+function normalizeCode3(value) {
   return String(value || "").trim().toUpperCase();
 }
-__name(normalizeCode2, "normalizeCode");
+__name(normalizeCode3, "normalizeCode");
 function normalizeCouponType(value) {
   const v = String(value || "").trim().toLowerCase();
   if (["fixed", "amount", "won", "price"].includes(v)) return "fixed";
@@ -8914,7 +8902,7 @@ async function onRequest9(context) {
       const body = await request.json();
       const action = String(body.action || "").toLowerCase();
       if (action === "validate") {
-        const code2 = normalizeCode2(body.code);
+        const code2 = normalizeCode3(body.code);
         const coupon = await db.prepare("SELECT * FROM global_coupons WHERE code = ?").bind(code2).first();
         if (!coupon) return json(request, env, { success: false, error: "Coupon not found." }, { status: 404 });
         if (!coupon.is_active) return json(request, env, { success: false, error: "Coupon is inactive." }, { status: 400 });
@@ -8948,7 +8936,7 @@ async function onRequest9(context) {
         });
       }
       if (action === "use") {
-        const code2 = normalizeCode2(body.code);
+        const code2 = normalizeCode3(body.code);
         if (!code2) {
           return json(request, env, { success: false, error: "code is required." }, { status: 400 });
         }
@@ -8982,7 +8970,7 @@ async function onRequest9(context) {
         `).bind(code2).run();
         return json(request, env, { success: true });
       }
-      let code = normalizeCode2(body.code);
+      let code = normalizeCode3(body.code);
       if (!code) code = await generateUniqueCouponCode(db);
       const name = String(body.name || "").trim();
       if (!name) {
@@ -9080,7 +9068,7 @@ async function onRequest9(context) {
   if (method === "PUT") {
     try {
       const body = await request.json();
-      const code = normalizeCode2(body.code);
+      const code = normalizeCode3(body.code);
       if (!code) {
         return json(request, env, { success: false, error: "code required" }, { status: 400 });
       }
@@ -9121,7 +9109,7 @@ async function onRequest9(context) {
   if (method === "DELETE") {
     try {
       const url = new URL(request.url);
-      const code = normalizeCode2(url.searchParams.get("code"));
+      const code = normalizeCode3(url.searchParams.get("code"));
       if (!code) {
         return json(request, env, { success: false, error: "code required" }, { status: 400 });
       }
@@ -9517,10 +9505,10 @@ async function onRequest12(context) {
 __name(onRequest12, "onRequest");
 
 // api/admin/orders.js
-function normalizeText13(value) {
+function normalizeText12(value) {
   return String(value ?? "").trim();
 }
-__name(normalizeText13, "normalizeText");
+__name(normalizeText12, "normalizeText");
 function normalizeInt3(value, fallback = 0) {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -9603,7 +9591,7 @@ async function onRequest13(context) {
   try {
     if (method === "GET") {
       const url = new URL(request.url);
-      const orderId = normalizeText13(url.searchParams.get("order_id"));
+      const orderId = normalizeText12(url.searchParams.get("order_id"));
       if (orderId) {
         const detail = await loadOrderDetail(db, orderId);
         if (!detail) {
@@ -9611,15 +9599,15 @@ async function onRequest13(context) {
         }
         return json(request, env, { success: true, data: detail });
       }
-      const search = normalizeText13(url.searchParams.get("search") || url.searchParams.get("q"));
-      const status = normalizeText13(url.searchParams.get("status"));
-      const from = normalizeText13(url.searchParams.get("from") || url.searchParams.get("start"));
-      const to = normalizeText13(url.searchParams.get("to") || url.searchParams.get("end"));
-      const classId = normalizeText13(url.searchParams.get("class_id"));
-      const userId = normalizeText13(url.searchParams.get("user_id"));
-      const settlementStatus = normalizeText13(url.searchParams.get("settlement_status"));
-      const year = normalizeText13(url.searchParams.get("year"));
-      const month = normalizeText13(url.searchParams.get("month"));
+      const search = normalizeText12(url.searchParams.get("search") || url.searchParams.get("q"));
+      const status = normalizeText12(url.searchParams.get("status"));
+      const from = normalizeText12(url.searchParams.get("from") || url.searchParams.get("start"));
+      const to = normalizeText12(url.searchParams.get("to") || url.searchParams.get("end"));
+      const classId = normalizeText12(url.searchParams.get("class_id"));
+      const userId = normalizeText12(url.searchParams.get("user_id"));
+      const settlementStatus = normalizeText12(url.searchParams.get("settlement_status"));
+      const year = normalizeText12(url.searchParams.get("year"));
+      const month = normalizeText12(url.searchParams.get("month"));
       const limit = Math.min(normalizeInt3(url.searchParams.get("limit"), 50), 500);
       const offset = normalizeInt3(url.searchParams.get("offset"));
       let sql = `
@@ -9689,11 +9677,11 @@ async function onRequest13(context) {
     }
     if (method === "POST") {
       const body = await request.json();
-      const orderId = normalizeText13(body.order_id) || generateOrderId2();
+      const orderId = normalizeText12(body.order_id) || generateOrderId2();
       const amount = Math.max(0, normalizeInt3(body.amount));
       const discountAmount = Math.max(0, normalizeInt3(body.discount_amount));
       const finalAmount = Math.max(0, normalizeInt3(body.final_amount, Math.max(amount - discountAmount, 0)));
-      const status = normalizeText13(body.status || "paid") || "paid";
+      const status = normalizeText12(body.status || "paid") || "paid";
       const normalizedStatus = status.toLowerCase();
       const isPaid = ["paid", "completed", "done", "success"].includes(normalizedStatus);
       await db.prepare(`
@@ -9707,31 +9695,31 @@ async function onRequest13(context) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?)
       `).bind(
         orderId,
-        normalizeText13(body.user_id) || null,
-        normalizeText13(body.user_name),
-        normalizeText13(body.user_email),
-        normalizeText13(body.class_id) || null,
-        normalizeText13(body.class_title),
-        normalizeText13(body.order_type || "class_pass") || "class_pass",
+        normalizeText12(body.user_id) || null,
+        normalizeText12(body.user_name),
+        normalizeText12(body.user_email),
+        normalizeText12(body.class_id) || null,
+        normalizeText12(body.class_title),
+        normalizeText12(body.order_type || "class_pass") || "class_pass",
         amount,
         discountAmount,
         finalAmount,
-        normalizeText13(body.coupon_code) || null,
-        normalizeText13(body.coupon_scope) || null,
-        normalizeText13(body.coupon_name) || null,
-        normalizeText13(body.pay_method),
-        normalizeText13(body.card_name),
+        normalizeText12(body.coupon_code) || null,
+        normalizeText12(body.coupon_scope) || null,
+        normalizeText12(body.coupon_name) || null,
+        normalizeText12(body.pay_method),
+        normalizeText12(body.card_name),
         status,
-        normalizeText13(body.merchant_uid) || orderId,
-        normalizeText13(body.receipt_url) || null,
-        normalizeText13(body.payment_provider) || null,
-        normalizeText13(body.payment_reference) || null,
+        normalizeText12(body.merchant_uid) || orderId,
+        normalizeText12(body.receipt_url) || null,
+        normalizeText12(body.payment_provider) || null,
+        normalizeText12(body.payment_reference) || null,
         body.payment_payload ? JSON.stringify(body.payment_payload) : null,
-        normalizeText13(body.source_enrollment_id) || null,
-        normalizeText13(body.source_type || "manual") || "manual",
-        normalizeText13(body.memo),
-        normalizeText13(body.settlement_status || "pending") || "pending",
-        normalizeText13(body.settlement_month) || null,
+        normalizeText12(body.source_enrollment_id) || null,
+        normalizeText12(body.source_type || "manual") || "manual",
+        normalizeText12(body.memo),
+        normalizeText12(body.settlement_status || "pending") || "pending",
+        normalizeText12(body.settlement_month) || null,
         isPaid ? (/* @__PURE__ */ new Date()).toISOString() : null
       ).run();
       if (isPaid && finalAmount > 0) {
@@ -9744,10 +9732,10 @@ async function onRequest13(context) {
           finalAmount,
           `Order ${orderId} payment`,
           orderId,
-          normalizeText13(body.user_id) || null,
+          normalizeText12(body.user_id) || null,
           JSON.stringify({
-            class_id: normalizeText13(body.class_id),
-            class_title: normalizeText13(body.class_title)
+            class_id: normalizeText12(body.class_id),
+            class_title: normalizeText12(body.class_title)
           })
         ).run();
       }
@@ -9758,7 +9746,7 @@ async function onRequest13(context) {
     }
     if (method === "PUT") {
       const body = await request.json();
-      const orderId = normalizeText13(body.order_id);
+      const orderId = normalizeText12(body.order_id);
       if (!orderId) {
         return json(request, env, { success: false, error: "order_id required" }, { status: 400 });
       }
@@ -9766,11 +9754,11 @@ async function onRequest13(context) {
       if (!order) {
         return json(request, env, { success: false, error: "Order not found." }, { status: 404 });
       }
-      const requestedStatus = normalizeText13(body.status || (body.action === "refund" ? "refunded" : ""));
-      const memo = body.memo !== void 0 ? normalizeText13(body.memo) : void 0;
+      const requestedStatus = normalizeText12(body.status || (body.action === "refund" ? "refunded" : ""));
+      const memo = body.memo !== void 0 ? normalizeText12(body.memo) : void 0;
       const refundAmount = normalizeInt3(body.refund_amount, normalizeInt3(order.final_amount || order.amount || 0));
-      const refundReason = normalizeText13(body.refund_reason);
-      const refundReasonNote = normalizeText13(body.refund_reason_note || body.reason_note);
+      const refundReason = normalizeText12(body.refund_reason);
+      const refundReasonNote = normalizeText12(body.refund_reason_note || body.reason_note);
       const updates = [];
       const params = [];
       if (requestedStatus) {
@@ -9799,7 +9787,7 @@ async function onRequest13(context) {
       }
       if (body.settlement_status !== void 0) {
         updates.push("settlement_status = ?");
-        params.push(normalizeText13(body.settlement_status) || "pending");
+        params.push(normalizeText12(body.settlement_status) || "pending");
       }
       if (!updates.length) {
         return json(request, env, { success: false, error: "No updates." }, { status: 400 });
@@ -9845,10 +9833,10 @@ async function onRequest13(context) {
 __name(onRequest13, "onRequest");
 
 // api/admin/reviews.js
-function normalizeText14(value) {
+function normalizeText13(value) {
   return String(value ?? "").trim();
 }
-__name(normalizeText14, "normalizeText");
+__name(normalizeText13, "normalizeText");
 function normalizeInt4(value, fallback = 0) {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -9868,7 +9856,7 @@ async function onRequest14(context) {
     if (method === "GET") {
       const url = new URL(request.url);
       const maxRating = normalizeInt4(url.searchParams.get("max_rating") || url.searchParams.get("rating_max"), 3);
-      const search = normalizeText14(url.searchParams.get("search"));
+      const search = normalizeText13(url.searchParams.get("search"));
       let sql = `
         SELECT
           r.push_key,
@@ -9936,7 +9924,7 @@ async function onRequest14(context) {
     }
     if (method === "DELETE") {
       const url = new URL(request.url);
-      const reviewId = normalizeText14(url.searchParams.get("review_id") || url.searchParams.get("id"));
+      const reviewId = normalizeText13(url.searchParams.get("review_id") || url.searchParams.get("id"));
       if (!reviewId) {
         return json(request, env, { success: false, error: "review_id is required." }, { status: 400 });
       }
@@ -31288,10 +31276,10 @@ function buildSettlementWorkbook({ info = {}, batch = {}, items = [], orders = [
 __name(buildSettlementWorkbook, "buildSettlementWorkbook");
 
 // api/admin/settlements.js
-function normalizeText15(value) {
+function normalizeText14(value) {
   return String(value ?? "").trim();
 }
-__name(normalizeText15, "normalizeText");
+__name(normalizeText14, "normalizeText");
 function normalizeInt5(value, fallback = 0) {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -31663,8 +31651,8 @@ async function computeBatchPreview(db, year, month) {
   const instructorSet = /* @__PURE__ */ new Set();
   const orderUpdates = [];
   for (const row of results || []) {
-    const classId = normalizeText15(row.class_id);
-    const instructorId = normalizeText15(row.instructor_id);
+    const classId = normalizeText14(row.class_id);
+    const instructorId = normalizeText14(row.instructor_id);
     const key = classId || row.order_id;
     if (!classMap.has(key)) {
       classMap.set(key, {
@@ -32452,7 +32440,7 @@ __name(finalizeSettlementDashboard, "finalizeSettlementDashboard");
 async function loadDashboardData(db, period, year, month, options2 = {}) {
   const settings = await loadFeeSettings(db);
   const normalizedPeriod = String(period || "month").toLowerCase() === "year" ? "year" : "month";
-  const query = normalizeText15(options2.query || "");
+  const query = normalizeText14(options2.query || "");
   if (normalizedPeriod === "year") {
     const { results } = await db.prepare(`
       SELECT
@@ -32870,17 +32858,17 @@ async function saveSettlementInfo(db, body) {
       'global', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now')
     )
   `).bind(
-    normalizeText15(body.company_name),
-    normalizeText15(body.ceo_name),
-    normalizeText15(body.biz_num),
-    normalizeText15(body.address),
-    normalizeText15(body.biz_type),
-    normalizeText15(body.manager_email),
-    normalizeText15(body.bank_name),
-    normalizeText15(body.bank_account),
-    normalizeText15(body.bank_holder),
-    normalizeText15(body.support_phone),
-    normalizeText15(body.tax_email)
+    normalizeText14(body.company_name),
+    normalizeText14(body.ceo_name),
+    normalizeText14(body.biz_num),
+    normalizeText14(body.address),
+    normalizeText14(body.biz_type),
+    normalizeText14(body.manager_email),
+    normalizeText14(body.bank_name),
+    normalizeText14(body.bank_account),
+    normalizeText14(body.bank_holder),
+    normalizeText14(body.support_phone),
+    normalizeText14(body.tax_email)
   ).run();
 }
 __name(saveSettlementInfo, "saveSettlementInfo");
@@ -32894,7 +32882,7 @@ async function saveFeeSettings(db, body) {
     normalizeFloat(body.tax_rate, 3.3),
     normalizeFloat(body.platform_fee_rate, 1.7),
     normalizeInt5(body.payout_day, 15),
-    normalizeText15(body.updated_by) || null
+    normalizeText14(body.updated_by) || null
   ).run();
 }
 __name(saveFeeSettings, "saveFeeSettings");
@@ -32998,13 +32986,13 @@ async function onRequest15(context) {
   await ensureOperationsSchema(db);
   try {
     if (method === "GET") {
-      const type = normalizeText15(url.searchParams.get("type"));
-      const batchId = normalizeText15(url.searchParams.get("batch_id") || url.searchParams.get("id"));
+      const type = normalizeText14(url.searchParams.get("type"));
+      const batchId = normalizeText14(url.searchParams.get("batch_id") || url.searchParams.get("id"));
       const year = normalizeInt5(url.searchParams.get("year"));
       const month = normalizeInt5(url.searchParams.get("month"));
-      const preview = normalizeText15(url.searchParams.get("preview"));
-      const period = normalizeText15(url.searchParams.get("period") || "month");
-      const query = normalizeText15(url.searchParams.get("q"));
+      const preview = normalizeText14(url.searchParams.get("preview"));
+      const period = normalizeText14(url.searchParams.get("period") || "month");
+      const query = normalizeText14(url.searchParams.get("q"));
       const now = /* @__PURE__ */ new Date();
       const resolvedYear = year || now.getFullYear();
       const resolvedMonth = month || now.getMonth() + 1;
@@ -33043,8 +33031,8 @@ async function onRequest15(context) {
           return json(request, env, { success: false, error: "batch_id is required." }, { status: 400 });
         }
         return await buildSettlementExportResponse(db, exportBatchId, {
-          instructorId: normalizeText15(url.searchParams.get("instructor_id")),
-          batchItemId: normalizeText15(url.searchParams.get("batch_item_id"))
+          instructorId: normalizeText14(url.searchParams.get("instructor_id")),
+          batchItemId: normalizeText14(url.searchParams.get("batch_item_id"))
         });
       }
       if (batchId) {
@@ -33106,11 +33094,11 @@ async function onRequest15(context) {
     }
     if (method === "PUT") {
       const body = await request.json();
-      const batchId = normalizeText15(body.id || body.batch_id);
+      const batchId = normalizeText14(body.id || body.batch_id);
       if (!batchId) {
         return json(request, env, { success: false, error: "batch id is required." }, { status: 400 });
       }
-      const action = normalizeText15(body.action || "approve");
+      const action = normalizeText14(body.action || "approve");
       if (!["approve", "complete"].includes(action)) {
         return json(request, env, { success: false, error: "Unsupported action." }, { status: 400 });
       }
@@ -33118,8 +33106,8 @@ async function onRequest15(context) {
         db,
         batchId,
         action,
-        normalizeText15(body.actor || body.approved_by || body.completed_by),
-        normalizeText15(body.approval_result)
+        normalizeText14(body.actor || body.approved_by || body.completed_by),
+        normalizeText14(body.approval_result)
       );
       return json(request, env, { success: true, data: await loadBatchDetail(db, batchId) });
     }
@@ -33253,10 +33241,10 @@ function classKey(row) {
   return row?.class_id || row?.id || row?.title || "";
 }
 __name(classKey, "classKey");
-function normalizeText16(value) {
+function normalizeText15(value) {
   return String(value ?? "").trim();
 }
-__name(normalizeText16, "normalizeText");
+__name(normalizeText15, "normalizeText");
 function dedupeBySignature2(items, getSignature) {
   const seen = /* @__PURE__ */ new Set();
   const result = [];
@@ -33271,26 +33259,26 @@ function dedupeBySignature2(items, getSignature) {
 __name(dedupeBySignature2, "dedupeBySignature");
 function blacklistSignature2(row) {
   return [
-    normalizeText16(row?.user_id),
-    normalizeText16(row?.previous_state),
-    normalizeText16(row?.new_state),
-    normalizeText16(row?.changed_by),
-    normalizeText16(row?.reason)
+    normalizeText15(row?.user_id),
+    normalizeText15(row?.previous_state),
+    normalizeText15(row?.new_state),
+    normalizeText15(row?.changed_by),
+    normalizeText15(row?.reason)
   ].join("|");
 }
 __name(blacklistSignature2, "blacklistSignature");
 function refundSignature2(row) {
   return [
-    normalizeText16(row?.user_id),
-    normalizeText16(row?.order_id),
-    normalizeText16(row?.class_id),
-    normalizeText16(row?.refund_type),
-    normalizeText16(row?.original_amount),
-    normalizeText16(row?.refund_amount),
-    normalizeText16(row?.reason_tags),
-    normalizeText16(row?.reason_note),
-    normalizeText16(row?.status),
-    normalizeText16(row?.processed_by)
+    normalizeText15(row?.user_id),
+    normalizeText15(row?.order_id),
+    normalizeText15(row?.class_id),
+    normalizeText15(row?.refund_type),
+    normalizeText15(row?.original_amount),
+    normalizeText15(row?.refund_amount),
+    normalizeText15(row?.reason_tags),
+    normalizeText15(row?.reason_note),
+    normalizeText15(row?.status),
+    normalizeText15(row?.processed_by)
   ].join("|");
 }
 __name(refundSignature2, "refundSignature");
@@ -33723,7 +33711,7 @@ async function onRequestPut2(context) {
         return json(request, env, { success: false, error: "\uC218\uC815 \uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }, { status: 403 });
       }
       updates.push("membership_level = ?");
-      values.push(normalizeText16(body.membership_level));
+      values.push(normalizeText15(body.membership_level));
     }
     let blacklistNoop = false;
     let skipUpdatedAt = false;
@@ -33865,6 +33853,19 @@ function trimText3(value) {
   return String(value ?? "").trim();
 }
 __name(trimText3, "trimText");
+function serializeUtcTimestamp2(value) {
+  const text = trimText3(value);
+  if (!text) return text;
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text.replace(" ", "T")}Z`;
+  }
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text}Z`;
+  }
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? text : date.toISOString();
+}
+__name(serializeUtcTimestamp2, "serializeUtcTimestamp");
 async function readJsonObject2(request) {
   try {
     const parsed = await request.json();
@@ -33890,7 +33891,9 @@ function normalizeChatMessage(row) {
     file_data: row.image_url ?? row.file_data ?? null,
     reply_data: replyData || null,
     reactions: reactions && typeof reactions === "object" ? reactions : {},
-    edited: row.edited || row.is_edited === 1 || row.is_edited === true
+    edited: row.edited || row.is_edited === 1 || row.is_edited === true,
+    created_at: serializeUtcTimestamp2(row.created_at),
+    updated_at: serializeUtcTimestamp2(row.updated_at)
   };
   if (normalized.reply_data && typeof normalized.reply_data === "object") {
     normalized.reply_to = normalized.reply_to || normalized.reply_data.id || null;
@@ -34463,9 +34466,13 @@ async function onRequest20(context) {
       }
       await env.DB.prepare(`
         UPDATE user_chats
-        SET last_message = ?, last_message_at = datetime('now')
+        SET last_message = ?, last_message_at = datetime('now'),
+            unread_count = CASE
+              WHEN user_id = ? THEN 0
+              ELSE COALESCE(unread_count, 0) + 1
+            END
         WHERE room_id = ?
-      `).bind((content || body.file_name || "attachment").substring(0, 100), roomId).run().catch(() => null);
+      `).bind((content || body.file_name || "attachment").substring(0, 100), auth.user.id, roomId).run().catch(() => null);
       const responseData = normalizeMessage(inserted);
       if (body.client_id) responseData.client_id = String(body.client_id);
       return json(request, env, { success: true, data: responseData }, { status: 201 });
@@ -34580,6 +34587,19 @@ function toSQLiteTimestamp2(value) {
   return date.toISOString().slice(0, 19).replace("T", " ");
 }
 __name(toSQLiteTimestamp2, "toSQLiteTimestamp");
+function serializeUtcTimestamp3(value) {
+  const text = trimText5(value);
+  if (!text) return text;
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text.replace(" ", "T")}Z`;
+  }
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text}Z`;
+  }
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? text : date.toISOString();
+}
+__name(serializeUtcTimestamp3, "serializeUtcTimestamp");
 function isTruthyFlag2(value) {
   if (value === true || value === 1) return true;
   const text = String(value ?? "").trim().toLowerCase();
@@ -34599,7 +34619,9 @@ function normalizeChatMessage2(row) {
     file_data: row.image_url ?? row.file_data ?? null,
     reply_data: replyData || null,
     reactions: reactions && typeof reactions === "object" ? reactions : {},
-    edited: row.edited || row.is_edited === 1 || row.is_edited === true
+    edited: row.edited || row.is_edited === 1 || row.is_edited === true,
+    created_at: serializeUtcTimestamp3(row.created_at),
+    updated_at: serializeUtcTimestamp3(row.updated_at)
   };
   if (normalized.reply_data && typeof normalized.reply_data === "object") {
     normalized.reply_to = normalized.reply_to || normalized.reply_data.id || null;
@@ -34784,6 +34806,20 @@ function buildChatMessageSelect(whereSql = "", orderSql = "", limitSql = "") {
   `;
 }
 __name(buildChatMessageSelect, "buildChatMessageSelect");
+function buildLatestChatMessageSelect(limitSql = "") {
+  return `
+    SELECT ${CHAT_MESSAGE_COLUMNS2}
+    FROM (
+      SELECT ${CHAT_MESSAGE_COLUMNS2}
+      FROM chat_messages
+      WHERE class_id = ?
+      ORDER BY created_at DESC, id DESC
+      ${limitSql}
+    ) AS latest_messages
+    ORDER BY created_at ASC, id ASC
+  `;
+}
+__name(buildLatestChatMessageSelect, "buildLatestChatMessageSelect");
 async function streamMessages2(context, classId, since) {
   const { env, request } = context;
   const encoder = new TextEncoder();
@@ -34857,7 +34893,7 @@ async function onRequestGet22(context) {
   await ensureChatMessagesSchema(env.DB);
   const url = new URL(request.url);
   const classId = url.searchParams.get("class_id");
-  const limit = Math.min(parseInt(url.searchParams.get("limit"), 10) || 50, 100);
+  const limit = Math.min(parseInt(url.searchParams.get("limit"), 10) || 50, 120);
   const after = url.searchParams.get("after");
   const since = url.searchParams.get("since");
   const pinnedOnly = ["1", "true", "yes"].includes((url.searchParams.get("pinned_only") || "").toLowerCase());
@@ -34877,13 +34913,19 @@ async function onRequestGet22(context) {
       ({ results } = await env.DB.prepare(query).bind(classId, limit + 1).all());
     } else {
       const clause = buildSinceClause2(since, after);
-      const query = buildChatMessageSelect(clause.sql, clause.orderSql, "LIMIT ?");
-      const binds = [classId];
-      if (clause.sql) {
-        binds.push(clause.bind);
+      const hasCursorClause = !!clause.sql;
+      if (hasCursorClause) {
+        const query = buildChatMessageSelect(clause.sql, clause.orderSql, "LIMIT ?");
+        const binds = [classId];
+        if (clause.bind !== null && clause.bind !== void 0) {
+          binds.push(clause.bind);
+        }
+        binds.push(limit + 1);
+        ({ results } = await env.DB.prepare(query).bind(...binds).all());
+      } else {
+        const query = buildLatestChatMessageSelect("LIMIT ?");
+        ({ results } = await env.DB.prepare(query).bind(classId, limit + 1).all());
       }
-      binds.push(limit + 1);
-      ({ results } = await env.DB.prepare(query).bind(...binds).all());
     }
     const rows = (results || []).map(normalizeChatMessage2);
     const hasMore = rows.length > limit;
@@ -34945,6 +34987,16 @@ async function onRequestPost13(context) {
     if (!inserted) {
       return json(request, env, { success: false, error: "Failed to create message" }, { status: 500 });
     }
+    const previewText = trimText5(message || body.file_name || "attachment").substring(0, 100);
+    await env.DB.prepare(`
+      UPDATE user_chats
+      SET last_message = ?, last_message_at = datetime('now'),
+          unread_count = CASE
+            WHEN user_id = ? THEN 0
+            ELSE COALESCE(unread_count, 0) + 1
+          END
+      WHERE room_id = ? AND type = 'class'
+    `).bind(previewText, auth.user.id, classId).run().catch(() => null);
     const responseData = normalizeChatMessage2(inserted);
     if (body.client_id) responseData.client_id = String(body.client_id);
     return json(request, env, { success: true, data: responseData }, { status: 201 });
@@ -35624,10 +35676,10 @@ async function onRequestOptions44(context) {
 __name(onRequestOptions44, "onRequestOptions");
 
 // api/coupons.js
-function normalizeText17(value) {
+function normalizeText16(value) {
   return String(value ?? "").trim();
 }
-__name(normalizeText17, "normalizeText");
+__name(normalizeText16, "normalizeText");
 function normalizeInt6(value, fallback = 0) {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -35647,24 +35699,24 @@ function isCouponActive3(coupon) {
 __name(isCouponActive3, "isCouponActive");
 function parseTargetIds3(value) {
   if (!value) return [];
-  if (Array.isArray(value)) return value.map((item) => normalizeText17(item)).filter(Boolean);
+  if (Array.isArray(value)) return value.map((item) => normalizeText16(item)).filter(Boolean);
   try {
     const parsed = JSON.parse(value);
     if (Array.isArray(parsed)) {
-      return parsed.map((item) => normalizeText17(item)).filter(Boolean);
+      return parsed.map((item) => normalizeText16(item)).filter(Boolean);
     }
   } catch {
   }
-  return String(value).split(",").map((item) => normalizeText17(item)).filter(Boolean);
+  return String(value).split(",").map((item) => normalizeText16(item)).filter(Boolean);
 }
 __name(parseTargetIds3, "parseTargetIds");
 function resolveTargetClassId2(coupon) {
   const targetIds = parseTargetIds3(coupon.target_ids);
-  return normalizeText17(coupon.target_class_id || targetIds[0] || "");
+  return normalizeText16(coupon.target_class_id || targetIds[0] || "");
 }
 __name(resolveTargetClassId2, "resolveTargetClassId");
 function couponAppliesToClass2(coupon, classId) {
-  const scope = normalizeText17(coupon.scope || "all_classes") || "all_classes";
+  const scope = normalizeText16(coupon.scope || "all_classes") || "all_classes";
   if (!classId || scope === "all_classes") return true;
   if (scope === "single_class") {
     const targetClassId = resolveTargetClassId2(coupon);
@@ -35682,7 +35734,7 @@ function mapCouponPayload(coupon, scope, extra = {}) {
     coupon_scope: scope,
     value: Number(coupon.value ?? coupon.amount ?? 0),
     amount: Number(coupon.amount ?? coupon.value ?? 0),
-    type: normalizeText17(coupon.type || "amount") || "amount",
+    type: normalizeText16(coupon.type || "amount") || "amount",
     image_url: coupon.image_url || "",
     coupon_code: coupon.coupon_code || coupon.code || "",
     code: coupon.code || coupon.coupon_code || "",
@@ -35753,8 +35805,8 @@ __name(validateGlobalCoupon, "validateGlobalCoupon");
 async function onRequestGet25(context) {
   const { request, env } = context;
   const url = new URL(request.url);
-  const classId = normalizeText17(url.searchParams.get("class_id"));
-  const code = normalizeText17(url.searchParams.get("code")).toUpperCase();
+  const classId = normalizeText16(url.searchParams.get("class_id"));
+  const code = normalizeText16(url.searchParams.get("code")).toUpperCase();
   const orderAmount = normalizeInt6(url.searchParams.get("order_amount"));
   const current = await getCurrentUser(context).catch(() => null);
   await ensureOperationsSchema(env.DB);
@@ -35820,13 +35872,13 @@ async function onRequestPost16(context) {
     if (body?.action === "claim") {
       const auth2 = await requireSession(context);
       if (!auth2.ok) return auth2.response;
-      const code2 = normalizeText17(body.code).toUpperCase();
+      const code2 = normalizeText16(body.code).toUpperCase();
       if (!code2) {
         return json(request, env, { success: false, error: "code is required." }, { status: 400 });
       }
       const validation = await validateGlobalCoupon(env.DB, {
         code: code2,
-        classId: normalizeText17(body.class_id),
+        classId: normalizeText16(body.class_id),
         userId: auth2.user.id,
         orderAmount: normalizeInt6(body.order_amount)
       });
@@ -35844,11 +35896,11 @@ async function onRequestPost16(context) {
         walletId,
         code2,
         auth2.user.id,
-        normalizeText17(body.claimed_via || "manual") || "manual",
+        normalizeText16(body.claimed_via || "manual") || "manual",
         validation.coupon.expires_at || null,
         JSON.stringify({
           source: "api/coupons",
-          class_id: normalizeText17(body.class_id)
+          class_id: normalizeText16(body.class_id)
         })
       ).run();
       const wallet = await env.DB.prepare("SELECT * FROM user_coupon_wallet WHERE id = ?").bind(walletId).first();
@@ -35862,8 +35914,8 @@ async function onRequestPost16(context) {
     }
     const auth = await requireSession(context);
     if (!auth.ok) return auth.response;
-    const classId = normalizeText17(body.class_id);
-    const code = normalizeText17(body.code).toUpperCase();
+    const classId = normalizeText16(body.class_id);
+    const code = normalizeText16(body.code).toUpperCase();
     if (!classId || !code) {
       return json(request, env, { success: false, error: "class_id and code are required." }, { status: 400 });
     }
@@ -35883,7 +35935,7 @@ async function onRequestPost16(context) {
     `).bind(
       classId,
       code,
-      normalizeText17(body.type || "amount") || "amount",
+      normalizeText16(body.type || "amount") || "amount",
       normalizeInt6(body.value),
       normalizeInt6(body.max_limit)
     ).run();
@@ -35896,8 +35948,8 @@ __name(onRequestPost16, "onRequestPost");
 async function onRequestDelete5(context) {
   const { request, env } = context;
   const url = new URL(request.url);
-  const classId = normalizeText17(url.searchParams.get("class_id"));
-  const code = normalizeText17(url.searchParams.get("code")).toUpperCase();
+  const classId = normalizeText16(url.searchParams.get("class_id"));
+  const code = normalizeText16(url.searchParams.get("code")).toUpperCase();
   if (!classId || !code) {
     return json(request, env, { success: false, error: "class_id and code are required." }, { status: 400 });
   }
@@ -36058,10 +36110,10 @@ async function onRequestOptions46(context) {
 __name(onRequestOptions46, "onRequestOptions");
 
 // api/enrollments.js
-function normalizeText18(value) {
+function normalizeText17(value) {
   return String(value ?? "").trim();
 }
-__name(normalizeText18, "normalizeText");
+__name(normalizeText17, "normalizeText");
 function hasSubInstructorAccess3(rawValue, userId) {
   const targetId = String(userId || "").trim();
   if (!targetId) return false;
@@ -36081,10 +36133,10 @@ function hasSubInstructorAccess3(rawValue, userId) {
   return rawText.split(/[,\s]+/).map((item) => item.trim()).filter(Boolean).some((item) => item === targetId);
 }
 __name(hasSubInstructorAccess3, "hasSubInstructorAccess");
-function normalizeCode3(value) {
-  return normalizeText18(value).toUpperCase();
+function normalizeCode4(value) {
+  return normalizeText17(value).toUpperCase();
 }
-__name(normalizeCode3, "normalizeCode");
+__name(normalizeCode4, "normalizeCode");
 function toNumber4(value, fallback = 0) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -36092,17 +36144,17 @@ function toNumber4(value, fallback = 0) {
 __name(toNumber4, "toNumber");
 function parseTargetIds4(value) {
   if (!value) return [];
-  if (Array.isArray(value)) return value.map((item) => normalizeText18(item)).filter(Boolean);
+  if (Array.isArray(value)) return value.map((item) => normalizeText17(item)).filter(Boolean);
   try {
     const parsed = JSON.parse(value);
-    if (Array.isArray(parsed)) return parsed.map((item) => normalizeText18(item)).filter(Boolean);
+    if (Array.isArray(parsed)) return parsed.map((item) => normalizeText17(item)).filter(Boolean);
   } catch {
   }
-  return String(value).split(",").map((item) => normalizeText18(item)).filter(Boolean);
+  return String(value).split(",").map((item) => normalizeText17(item)).filter(Boolean);
 }
 __name(parseTargetIds4, "parseTargetIds");
 function couponTargetsClass3(coupon, classId) {
-  const targetClassId = normalizeText18(coupon.target_class_id);
+  const targetClassId = normalizeText17(coupon.target_class_id);
   if (targetClassId && String(targetClassId) === String(classId)) return true;
   return parseTargetIds4(coupon.target_ids).includes(classId);
 }
@@ -36124,13 +36176,13 @@ function generateOrderId3() {
 __name(generateOrderId3, "generateOrderId");
 function computeBaseAmount(cls, payOption, fallbackAmount) {
   const basePrice = toNumber4(cls?.price || fallbackAmount || 0);
-  const option = normalizeText18(payOption || "onetime").toLowerCase();
+  const option = normalizeText17(payOption || "onetime").toLowerCase();
   if (option === "30days") return Math.round(basePrice * 1.5);
   return basePrice;
 }
 __name(computeBaseAmount, "computeBaseAmount");
 async function resolveCoupon(db, { classId, code, userId, baseAmount }) {
-  const normalizedCode = normalizeCode3(code);
+  const normalizedCode = normalizeCode4(code);
   if (!normalizedCode) return null;
   const classCoupon = await db.prepare(`
     SELECT *
@@ -36171,7 +36223,7 @@ async function resolveCoupon(db, { classId, code, userId, baseAmount }) {
   if (globalCoupon.expires_at && new Date(globalCoupon.expires_at) < /* @__PURE__ */ new Date()) {
     throw new Error("Coupon has expired.");
   }
-  if (normalizeText18(globalCoupon.scope || "all_classes") === "single_class" && classId && !couponTargetsClass3(globalCoupon, classId)) {
+  if (normalizeText17(globalCoupon.scope || "all_classes") === "single_class" && classId && !couponTargetsClass3(globalCoupon, classId)) {
     throw new Error("This coupon is limited to another class.");
   }
   const wallet = userId ? await db.prepare(`
@@ -36276,8 +36328,8 @@ __name(applyCouponUsage, "applyCouponUsage");
 async function onRequestGet27(context) {
   const { request, env } = context;
   const url = new URL(request.url);
-  const userId = normalizeText18(url.searchParams.get("user_id"));
-  const classId = normalizeText18(url.searchParams.get("class_id"));
+  const userId = normalizeText17(url.searchParams.get("user_id"));
+  const classId = normalizeText17(url.searchParams.get("class_id"));
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
   await ensureOperationsSchema(env.DB);
@@ -36387,7 +36439,7 @@ async function onRequestPost18(context) {
   try {
     const body = await request.json();
     const userId = auth.user.id;
-    const classId = normalizeText18(body.class_id);
+    const classId = normalizeText17(body.class_id);
     if (!userId || !classId) {
       return json(request, env, { success: false, error: "user_id and class_id are required." }, { status: 400 });
     }
@@ -36409,10 +36461,10 @@ async function onRequestPost18(context) {
     if (existing) {
       return json(request, env, { success: false, error: "\uC774\uBBF8 \uC218\uAC15 \uC911\uC778 \uD074\uB798\uC2A4\uC785\uB2C8\uB2E4." }, { status: 409 });
     }
-    const payOption = normalizeText18(body.pay_option || body.payment_option || "onetime").toLowerCase();
+    const payOption = normalizeText17(body.pay_option || body.payment_option || "onetime").toLowerCase();
     const baseAmount = computeBaseAmount(cls, payOption, body.base_amount || body.amount);
     const classDiscountAmount = Math.min(baseAmount, toNumber4(body.class_discount_amount, Math.floor(baseAmount * (toNumber4(cls.discount_rate || 0) / 100))));
-    const couponCode = normalizeCode3(body.coupon_code || body.coupon_id);
+    const couponCode = normalizeCode4(body.coupon_code || body.coupon_id);
     let couponInfo = null;
     let couponDiscountAmount = 0;
     if (couponCode) {
@@ -36432,8 +36484,8 @@ async function onRequestPost18(context) {
       toNumber4(body.final_amount, baseAmount - classDiscountAmount - couponDiscountAmount)
     );
     const enrollmentId = generateId2("enr");
-    const orderId = normalizeText18(body.order_id) || normalizeText18(body.merchant_uid) || generateOrderId3();
-    const paymentMethod = normalizeText18(body.pay_method || body.payment_method || "card") || "card";
+    const orderId = normalizeText17(body.order_id) || normalizeText17(body.merchant_uid) || generateOrderId3();
+    const paymentMethod = normalizeText17(body.pay_method || body.payment_method || "card") || "card";
     const status = finalAmount <= 0 ? "paid" : "paid";
     const paidAt = body.paid_at ? new Date(Number(body.paid_at) * 1e3 || body.paid_at).toISOString?.() : (/* @__PURE__ */ new Date()).toISOString();
     await env.DB.prepare(`
@@ -36490,7 +36542,7 @@ async function onRequestPost18(context) {
       paymentMethod,
       body.card_name || paymentLabel || "",
       "paid",
-      normalizeText18(body.merchant_uid || orderId),
+      normalizeText17(body.merchant_uid || orderId),
       body.receipt_url || "",
       body.memo || "",
       paidAt,
@@ -37166,10 +37218,10 @@ var CORS_HEADERS = {
   "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
   "Content-Type": "application/json"
 };
-function normalizeText19(value) {
+function normalizeText18(value) {
   return String(value ?? "").trim();
 }
-__name(normalizeText19, "normalizeText");
+__name(normalizeText18, "normalizeText");
 function json3(body, init = {}) {
   return new Response(JSON.stringify(body), {
     ...init,
@@ -37194,13 +37246,13 @@ async function onRequestPost23(context) {
   try {
     await ensureOperationsSchema(env.DB);
     const body = await request.json();
-    const name = normalizeText19(body.name || body.user_name);
-    const email = normalizeText19(body.email || body.user_email);
-    const category = normalizeText19(body.category) || "\uC77C\uBC18 \uBB38\uC758";
-    const title = normalizeText19(body.title || body.subject);
-    const content = normalizeText19(body.content);
-    const userId = normalizeText19(body.user_id || "");
-    const submittedBy = normalizeText19(body.submitted_by || body.user_id || "");
+    const name = normalizeText18(body.name || body.user_name);
+    const email = normalizeText18(body.email || body.user_email);
+    const category = normalizeText18(body.category) || "\uC77C\uBC18 \uBB38\uC758";
+    const title = normalizeText18(body.title || body.subject);
+    const content = normalizeText18(body.content);
+    const userId = normalizeText18(body.user_id || "");
+    const submittedBy = normalizeText18(body.submitted_by || body.user_id || "");
     if (!name || !email || !title || !content) {
       return json3({ success: false, error: "name, email, title and content are required." }, { status: 400 });
     }
@@ -38310,6 +38362,19 @@ function parseIntOrDefault(value, fallback, max) {
   return Math.min(parsed, max);
 }
 __name(parseIntOrDefault, "parseIntOrDefault");
+function serializeUtcTimestamp4(value) {
+  const text = trimText8(value);
+  if (!text) return text;
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text.replace(" ", "T")}Z`;
+  }
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+    return `${text}Z`;
+  }
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? text : date.toISOString();
+}
+__name(serializeUtcTimestamp4, "serializeUtcTimestamp");
 function isTruthyFlag3(value) {
   if (value === true || value === 1) return true;
   const text = String(value ?? "").trim().toLowerCase();
@@ -38365,7 +38430,10 @@ async function onRequestGet35(context) {
     const { results } = await env.DB.prepare(query).bind(...binds).all();
     const rows = results || [];
     const hasMore = rows.length > limit;
-    const data = hasMore ? rows.slice(0, limit) : rows;
+    const data = (hasMore ? rows.slice(0, limit) : rows).map((row) => ({
+      ...row,
+      last_message_at: serializeUtcTimestamp4(row?.last_message_at)
+    }));
     return json(request, env, {
       success: true,
       data,
@@ -38504,6 +38572,49 @@ async function onRequestDelete8(context) {
   }
 }
 __name(onRequestDelete8, "onRequestDelete");
+async function onRequestPatch4(context) {
+  const { request, env } = context;
+  const auth = await requireSession(context);
+  if (!auth.ok) return auth.response;
+  await ensureUserChatsSchema(env.DB);
+  try {
+    const body = await request.json();
+    const targetUserId = trimText8(body?.user_id || auth.user.id);
+    const roomId = trimText8(body?.room_id);
+    const type = trimText8(body?.type).toLowerCase();
+    const hasUnreadCount = Object.prototype.hasOwnProperty.call(body || {}, "unread_count");
+    if (!roomId) {
+      return json(request, env, { success: false, error: "room_id is required" }, { status: 400 });
+    }
+    if (!hasUnreadCount) {
+      return json(request, env, { success: false, error: "unread_count is required" }, { status: 400 });
+    }
+    if (targetUserId !== auth.user.id && !isAtLeastRole(auth.user.role, "admin")) {
+      return json(request, env, { success: false, error: "Permission denied" }, { status: 403 });
+    }
+    const unreadCount = Math.max(Number.parseInt(body.unread_count, 10) || 0, 0);
+    let query = "UPDATE user_chats SET unread_count = ? WHERE user_id = ? AND room_id = ?";
+    const binds = [unreadCount, targetUserId, roomId];
+    if (type) {
+      query += " AND type = ?";
+      binds.push(type);
+    }
+    const result = await env.DB.prepare(query).bind(...binds).run();
+    if ((result.meta?.changes || 0) === 0) {
+      return json(request, env, { success: false, error: "Chat not found" }, { status: 404 });
+    }
+    const updated = await env.DB.prepare(`
+      SELECT ${USER_CHAT_COLUMNS}
+      FROM user_chats
+      WHERE user_id = ? AND room_id = ?
+      LIMIT 1
+    `).bind(targetUserId, roomId).first();
+    return json(request, env, { success: true, data: updated || null });
+  } catch (error) {
+    return json(request, env, { success: false, error: "Failed to update chat", detail: error.message }, { status: 500 });
+  }
+}
+__name(onRequestPatch4, "onRequestPatch");
 async function onRequestOptions58(context) {
   return options(context.request, context.env);
 }
@@ -38535,10 +38646,10 @@ async function onRequestOptions59(context) {
 __name(onRequestOptions59, "onRequestOptions");
 
 // api/user-payment-methods.js
-function normalizeText20(value) {
+function normalizeText19(value) {
   return String(value ?? "").trim();
 }
-__name(normalizeText20, "normalizeText");
+__name(normalizeText19, "normalizeText");
 function normalizeInt7(value, fallback = 0) {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -38561,7 +38672,7 @@ async function onRequestGet37(context) {
   await ensureCommerceSchema(env.DB);
   try {
     const url = new URL(request.url);
-    const userId = normalizeText20(url.searchParams.get("user_id") || auth.user.id);
+    const userId = normalizeText19(url.searchParams.get("user_id") || auth.user.id);
     if (auth.user.id !== userId && !isAtLeastRole(auth.user.role, "admin")) {
       return json(request, env, { success: false, error: "\uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }, { status: 403 });
     }
@@ -38578,14 +38689,14 @@ async function onRequestPost27(context) {
   await ensureCommerceSchema(env.DB);
   try {
     const body = await request.json();
-    const userId = normalizeText20(body.user_id || auth.user.id);
+    const userId = normalizeText19(body.user_id || auth.user.id);
     if (auth.user.id !== userId && !isAtLeastRole(auth.user.role, "admin")) {
       return json(request, env, { success: false, error: "\uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }, { status: 403 });
     }
     const id = `pm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const label = normalizeText20(body.label || "\uACB0\uC81C \uC218\uB2E8") || "\uACB0\uC81C \uC218\uB2E8";
-    const provider = normalizeText20(body.provider || "card") || "card";
-    const last4 = normalizeText20(body.last4 || "").replace(/[^0-9]/g, "").slice(-4);
+    const label = normalizeText19(body.label || "\uACB0\uC81C \uC218\uB2E8") || "\uACB0\uC81C \uC218\uB2E8";
+    const provider = normalizeText19(body.provider || "card") || "card";
+    const last4 = normalizeText19(body.last4 || "").replace(/[^0-9]/g, "").slice(-4);
     const isDefault = normalizeInt7(body.is_default || body.isDefault || 0) ? 1 : 0;
     const metadata = body.metadata ? typeof body.metadata === "string" ? body.metadata : JSON.stringify(body.metadata) : null;
     if (isDefault) {
@@ -38602,14 +38713,14 @@ async function onRequestPost27(context) {
   }
 }
 __name(onRequestPost27, "onRequestPost");
-async function onRequestPatch4(context) {
+async function onRequestPatch5(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
   if (!auth.ok) return auth.response;
   await ensureCommerceSchema(env.DB);
   try {
     const body = await request.json();
-    const methodId = normalizeText20(body.id);
+    const methodId = normalizeText19(body.id);
     if (!methodId) {
       return json(request, env, { success: false, error: "id is required." }, { status: 400 });
     }
@@ -38627,9 +38738,9 @@ async function onRequestPatch4(context) {
       ]);
     }
     if (body.label !== void 0 || body.provider !== void 0 || body.last4 !== void 0) {
-      const label = body.label !== void 0 ? normalizeText20(body.label) : current.label;
-      const provider = body.provider !== void 0 ? normalizeText20(body.provider) : current.provider;
-      const last4 = body.last4 !== void 0 ? normalizeText20(body.last4).replace(/[^0-9]/g, "").slice(-4) : current.last4;
+      const label = body.label !== void 0 ? normalizeText19(body.label) : current.label;
+      const provider = body.provider !== void 0 ? normalizeText19(body.provider) : current.provider;
+      const last4 = body.last4 !== void 0 ? normalizeText19(body.last4).replace(/[^0-9]/g, "").slice(-4) : current.last4;
       await env.DB.prepare(`
         UPDATE user_payment_methods
         SET label = ?, provider = ?, last4 = ?, updated_at = datetime('now')
@@ -38641,7 +38752,7 @@ async function onRequestPatch4(context) {
     return json(request, env, { success: false, error: error.message }, { status: 500 });
   }
 }
-__name(onRequestPatch4, "onRequestPatch");
+__name(onRequestPatch5, "onRequestPatch");
 async function onRequestDelete9(context) {
   const { request, env } = context;
   const auth = await requireSession(context);
@@ -38649,7 +38760,7 @@ async function onRequestDelete9(context) {
   await ensureCommerceSchema(env.DB);
   try {
     const url = new URL(request.url);
-    const methodId = normalizeText20(url.searchParams.get("id"));
+    const methodId = normalizeText19(url.searchParams.get("id"));
     if (!methodId) {
       return json(request, env, { success: false, error: "id is required." }, { status: 400 });
     }
@@ -38819,25 +38930,25 @@ async function onRequest26(context) {
 __name(onRequest26, "onRequest");
 
 // api/cart.js
-function normalizeText21(value) {
+function normalizeText20(value) {
   return String(value ?? "").trim();
 }
-__name(normalizeText21, "normalizeText");
+__name(normalizeText20, "normalizeText");
 function normalizeInt8(value, fallback = 0) {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 __name(normalizeInt8, "normalizeInt");
 function normalizeCartItem2(row) {
-  const classId = normalizeText21(row.class_id || row.reference_id || row.content_id || "");
-  const title = normalizeText21(row.title || row.class_title || row.name || "");
-  const subtitle = normalizeText21(row.subtitle || row.class_summary || row.instructor_name || row.class_category || row.category || "");
-  const imageUrl = normalizeText21(row.image_url || row.class_image_url || row.thumbnail_url || row.thumbnail || "");
+  const classId = normalizeText20(row.class_id || row.reference_id || row.content_id || "");
+  const title = normalizeText20(row.title || row.class_title || row.name || "");
+  const subtitle = normalizeText20(row.subtitle || row.class_summary || row.instructor_name || row.class_category || row.category || "");
+  const imageUrl = normalizeText20(row.image_url || row.class_image_url || row.thumbnail_url || row.thumbnail || "");
   const price = normalizeInt8(row.price ?? row.class_price ?? row.list_price ?? row.sale_price ?? row.amount ?? row.final_amount ?? 0);
-  const href = normalizeText21(row.href || row.url || (classId ? `../class_view/class_view.html?id=${encodeURIComponent(classId)}` : ""));
-  const type = normalizeText21(row.type || row.item_type || "class") || "class";
-  const itemType = normalizeText21(row.item_type || type || "class") || "class";
-  const referenceId = normalizeText21(row.reference_id || classId || row.id || "");
+  const href = normalizeText20(row.href || row.url || (classId ? `../class_view/class_view.html?id=${encodeURIComponent(classId)}` : ""));
+  const type = normalizeText20(row.type || row.item_type || "class") || "class";
+  const itemType = normalizeText20(row.item_type || type || "class") || "class";
+  const referenceId = normalizeText20(row.reference_id || classId || row.id || "");
   return {
     ...row,
     id: row.id || "",
@@ -38888,7 +38999,7 @@ async function onRequest27(context) {
   try {
     if (method === "GET") {
       const url = new URL(request.url);
-      const userId = normalizeText21(url.searchParams.get("user_id") || auth.user.id);
+      const userId = normalizeText20(url.searchParams.get("user_id") || auth.user.id);
       if (auth.user.id !== userId && !isAtLeastRole(auth.user.role, "admin")) {
         return json(request, env, { success: false, error: "\uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }, { status: 403 });
       }
@@ -38896,24 +39007,24 @@ async function onRequest27(context) {
     }
     if (method === "POST") {
       const body = await request.json();
-      const userId = normalizeText21(body.user_id || auth.user.id);
+      const userId = normalizeText20(body.user_id || auth.user.id);
       if (auth.user.id !== userId && !isAtLeastRole(auth.user.role, "admin")) {
         return json(request, env, { success: false, error: "\uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }, { status: 403 });
       }
-      const itemType = normalizeText21(body.type || body.item_type || "class") || "class";
-      const referenceId = normalizeText21(body.reference_id || body.class_id || body.content_id);
+      const itemType = normalizeText20(body.type || body.item_type || "class") || "class";
+      const referenceId = normalizeText20(body.reference_id || body.class_id || body.content_id);
       if (!referenceId) {
         return json(request, env, { success: false, error: "reference_id is required." }, { status: 400 });
       }
-      const classId = normalizeText21(body.class_id || body.reference_id || body.content_id || referenceId);
-      const title = normalizeText21(body.title || body.name || "");
-      const subtitle = normalizeText21(body.subtitle || body.instructor_name || body.category || "");
-      const imageUrl = normalizeText21(body.image_url || body.thumbnail_url || body.imageUrl || "");
+      const classId = normalizeText20(body.class_id || body.reference_id || body.content_id || referenceId);
+      const title = normalizeText20(body.title || body.name || "");
+      const subtitle = normalizeText20(body.subtitle || body.instructor_name || body.category || "");
+      const imageUrl = normalizeText20(body.image_url || body.thumbnail_url || body.imageUrl || "");
       const price = normalizeInt8(body.price ?? body.class_price ?? body.list_price ?? body.sale_price ?? body.amount ?? 0);
-      const href = normalizeText21(body.href || body.url || (classId ? `../class_view/class_view.html?id=${encodeURIComponent(classId)}` : ""));
-      const instructorName = normalizeText21(body.instructor_name || body.subtitle || body.category || "");
-      const category = normalizeText21(body.category || "");
-      const cartId = normalizeText21(body.id) || `cart_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const href = normalizeText20(body.href || body.url || (classId ? `../class_view/class_view.html?id=${encodeURIComponent(classId)}` : ""));
+      const instructorName = normalizeText20(body.instructor_name || body.subtitle || body.category || "");
+      const category = normalizeText20(body.category || "");
+      const cartId = normalizeText20(body.id) || `cart_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       const snapshotPayload = {
         id: cartId,
         type: itemType,
@@ -38959,7 +39070,7 @@ async function onRequest27(context) {
         referenceId,
         classId || null,
         title,
-        normalizeText21(body.instructor_id) || null,
+        normalizeText20(body.instructor_id) || null,
         instructorName,
         imageUrl,
         price,
@@ -38976,22 +39087,22 @@ async function onRequest27(context) {
     }
     if (method === "DELETE") {
       const url = new URL(request.url);
-      const userId = normalizeText21(url.searchParams.get("user_id") || auth.user.id);
+      const userId = normalizeText20(url.searchParams.get("user_id") || auth.user.id);
       if (auth.user.id !== userId && !isAtLeastRole(auth.user.role, "admin")) {
         return json(request, env, { success: false, error: "\uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }, { status: 403 });
       }
-      const clearAll = normalizeText21(url.searchParams.get("clear_all"));
+      const clearAll = normalizeText20(url.searchParams.get("clear_all"));
       if (clearAll === "1") {
         await env.DB.prepare("DELETE FROM user_cart_items WHERE user_id = ?").bind(userId).run();
         return json(request, env, { success: true, data: [] });
       }
-      const itemId = normalizeText21(url.searchParams.get("id"));
+      const itemId = normalizeText20(url.searchParams.get("id"));
       if (itemId) {
         await env.DB.prepare("DELETE FROM user_cart_items WHERE user_id = ? AND id = ?").bind(userId, itemId).run();
         return json(request, env, { success: true, data: await loadCartItems2(env.DB, userId) });
       }
-      const itemType = normalizeText21(url.searchParams.get("item_type") || "class") || "class";
-      const referenceId = normalizeText21(url.searchParams.get("reference_id") || url.searchParams.get("class_id") || url.searchParams.get("content_id"));
+      const itemType = normalizeText20(url.searchParams.get("item_type") || "class") || "class";
+      const referenceId = normalizeText20(url.searchParams.get("reference_id") || url.searchParams.get("class_id") || url.searchParams.get("content_id"));
       if (!referenceId) {
         return json(request, env, { success: false, error: "reference_id is required." }, { status: 400 });
       }
@@ -39464,7 +39575,7 @@ async function onRequest31(context) {
 }
 __name(onRequest31, "onRequest");
 
-// ../.wrangler/tmp/pages-FNMryl/functionsRoutes-0.6059073051551861.mjs
+// ../.wrangler/tmp/pages-0lYP1v/functionsRoutes-0.6030149442071007.mjs
 var routes = [
   {
     routePath: "/api/auth/social/context",
@@ -40631,6 +40742,13 @@ var routes = [
   {
     routePath: "/api/user-chats",
     mountPath: "/api",
+    method: "PATCH",
+    middlewares: [],
+    modules: [onRequestPatch4]
+  },
+  {
+    routePath: "/api/user-chats",
+    mountPath: "/api",
     method: "POST",
     middlewares: [],
     modules: [onRequestPost26]
@@ -40696,7 +40814,7 @@ var routes = [
     mountPath: "/api",
     method: "PATCH",
     middlewares: [],
-    modules: [onRequestPatch4]
+    modules: [onRequestPatch5]
   },
   {
     routePath: "/api/user-payment-methods",
@@ -40805,7 +40923,7 @@ var routes = [
   }
 ];
 
-// ../../../../../../AppData/Local/npm-cache/_npx/32026684e21afda6/node_modules/path-to-regexp/dist.es2015/index.js
+// C:/Users/Deokgyo/AppData/Local/npm-cache/_npx/32026684e21afda6/node_modules/path-to-regexp/dist.es2015/index.js
 function lexer(str) {
   var tokens = [];
   var i = 0;
@@ -41131,7 +41249,7 @@ function pathToRegexp(path, keys2, options2) {
 }
 __name(pathToRegexp, "pathToRegexp");
 
-// ../../../../../../AppData/Local/npm-cache/_npx/32026684e21afda6/node_modules/wrangler/templates/pages-template-worker.ts
+// C:/Users/Deokgyo/AppData/Local/npm-cache/_npx/32026684e21afda6/node_modules/wrangler/templates/pages-template-worker.ts
 var escapeRegex = /[.+?^${}()|[\]\\]/g;
 function* executeRequest(request) {
   const requestPath = new URL(request.url).pathname;
@@ -41262,4 +41380,4 @@ xlsx/xlsx.mjs:
   (*! sheetjs (C) 2013-present SheetJS -- http://sheetjs.com *)
 */
 
-------formdata-undici-088390269562--
+------formdata-undici-087401157360--

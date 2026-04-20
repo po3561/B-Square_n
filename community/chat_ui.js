@@ -21,6 +21,7 @@ window.CommunityModules.ChatUI = (function () {
     let messageFeed = null;
     let roomOpenSeq = 0;
     const MESSAGE_CURSOR_OVERLAP_MS = 1000;
+    const CHAT_TIME_ZONE = 'Asia/Seoul';
     let deletePrompt = { id: null, at: 0 };
     let gatherClosePrompt = { id: null, at: 0 };
 
@@ -54,6 +55,79 @@ window.CommunityModules.ChatUI = (function () {
         } catch {
             return fallback;
         }
+    }
+
+    function parseChatDate(value) {
+        if (value == null || value === '') return null;
+        if (value instanceof Date) {
+            return Number.isNaN(value.getTime()) ? null : new Date(value.getTime());
+        }
+
+        if (typeof value === 'number') {
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? null : date;
+        }
+
+        const text = String(value).trim();
+        if (!text) return null;
+
+        let normalized = text;
+        if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+            normalized = `${text.replace(' ', 'T')}Z`;
+        } else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+            normalized = `${text}Z`;
+        }
+
+        const date = new Date(normalized);
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function formatChatTime(value) {
+        const date = parseChatDate(value);
+        if (!date) return '';
+        return date.toLocaleTimeString('ko-KR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: CHAT_TIME_ZONE,
+        });
+    }
+
+    function formatChatDateTime(value) {
+        const date = parseChatDate(value);
+        if (!date) return '';
+        return date.toLocaleString('ko-KR', {
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: CHAT_TIME_ZONE,
+        });
+    }
+
+    function getAttachmentUrl(msgData) {
+        return String(msgData?.file_data || msgData?.image_url || '').trim();
+    }
+
+    function sanitizeDownloadFileName(name) {
+        const normalized = String(name || '').trim();
+        if (!normalized) return 'attachment';
+        return normalized.replace(/[\\/:*?"<>|]+/g, '_');
+    }
+
+    function downloadAttachment(url, fileName) {
+        const source = String(url || '').trim();
+        if (!source) {
+            toast('첨부 파일을 찾을 수 없습니다.');
+            return;
+        }
+
+        const anchor = document.createElement('a');
+        anchor.href = source;
+        anchor.download = sanitizeDownloadFileName(fileName);
+        anchor.rel = 'noopener';
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
     }
 
     function normalizeProfileData(profile) {
@@ -180,7 +254,7 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     function messageCursor(msg) {
-        const ts = new Date(msg?.updated_at || msg?.created_at || msg?.timestamp || Date.now()).getTime();
+        const ts = parseChatDate(msg?.updated_at || msg?.created_at || msg?.timestamp || Date.now())?.getTime() || 0;
         if (Number.isFinite(ts) && ts > 0) return ts;
         const numericId = Number(msg?.id || msg?.key);
         return Number.isFinite(numericId) ? numericId : 0;
@@ -334,12 +408,7 @@ window.CommunityModules.ChatUI = (function () {
             const senderName = pin.user_name || pin.sender_name || '메시지';
             const snippet = normalizePreviewText(pin.content || pin.message || pin.text || '');
             const timestamp = pin.updated_at || pin.timestamp || pin.created_at || '';
-            const timeText = timestamp ? new Date(timestamp).toLocaleString('ko-KR', {
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : '';
+            const timeText = formatChatDateTime(timestamp);
 
             return `
                 <button type="button" class="info-pinned-item" data-msg-id="${escapeAttr(messageId)}">
@@ -941,7 +1010,7 @@ window.CommunityModules.ChatUI = (function () {
                 const currentUserId = window.__BSQ_DEV_MODE__ ? 'OPERATOR_GHOST' : (bridge()?.getUserId?.() || '');
                 let messages = (Array.isArray(res.data) ? res.data : (res.data.messages || []))
                     .map(normalizeIncomingMessage)
-                    .sort((a, b) => new Date(a.timestamp || a.created_at || 0) - new Date(b.timestamp || b.created_at || 0));
+                    .sort((a, b) => messageCursor(a) - messageCursor(b));
 
                 const avatarBySender = new Map();
                 messages.forEach((msg) => {
@@ -971,7 +1040,7 @@ window.CommunityModules.ChatUI = (function () {
 
                 messages.forEach(msg => {
                     const msgId = msg.id || msg.key;
-                    const ts = new Date(msg.updated_at || msg.created_at || msg.timestamp || Date.now()).getTime();
+                    const ts = messageCursor(msg);
                     if (ts > lastMsgTimestamp) lastMsgTimestamp = ts;
                     cacheMessage(msg);
                     renderMessage(msgId, msg, true);
@@ -998,7 +1067,7 @@ window.CommunityModules.ChatUI = (function () {
                 currentPins = (Array.isArray(res.data) ? res.data : (res.data.messages || []))
                     .map(normalizeIncomingMessage)
                     .filter(msg => msg.is_pinned)
-                    .sort((a, b) => new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0));
+                    .sort((a, b) => messageCursor(b) - messageCursor(a));
                 renderPinnedBar();
 
                 if (document.getElementById('commInfoPanel')?.classList.contains('visible')) {
@@ -1059,9 +1128,7 @@ window.CommunityModules.ChatUI = (function () {
             senderAvatar = '/assets/default-avatar.svg';
         }
 
-        const timeStr = (msgData.timestamp || msgData.created_at)
-            ? new Date(msgData.timestamp || msgData.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
-            : '';
+        const timeStr = formatChatTime(msgData.timestamp || msgData.created_at);
 
         const instructorBadge = (currentRoomType === 'class' && msgData.is_instructor)
             ? '<span class="chat-instructor-badge">강사</span>'
@@ -1090,6 +1157,20 @@ window.CommunityModules.ChatUI = (function () {
             targetRow.innerHTML = rowInnerHtml;
             targetRow.querySelectorAll('.msg-image').forEach(img => {
                 img.addEventListener('click', () => openLightbox(img.src));
+            });
+            targetRow.querySelectorAll('.msg-file-attachment[data-has-download="1"]').forEach((attachment) => {
+                const triggerDownload = (event) => {
+                    event?.preventDefault?.();
+                    event?.stopPropagation?.();
+                    downloadAttachment(getAttachmentUrl(msgData), msgData.file_name || msgData.content || 'attachment');
+                };
+
+                attachment.addEventListener('click', triggerDownload);
+                attachment.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        triggerDownload(event);
+                    }
+                });
             });
             const gatheringCard = targetRow.querySelector('[data-gathering-card="1"]');
             if (gatheringCard) {
@@ -1191,7 +1272,9 @@ window.CommunityModules.ChatUI = (function () {
             const imageSrc = msgData.file_data || msgData.image_url;
             contentHtml += `<div class="msg-bubble image-only"><img class="msg-image" src="${imageSrc}" alt="이미지"></div>`;
         } else if (msgData.type === 'file' && msgData.file_name) {
-            contentHtml += `<div class="msg-bubble"><div class="msg-file-attachment">
+            const attachmentUrl = getAttachmentUrl(msgData);
+            const isDownloadable = !!attachmentUrl;
+            contentHtml += `<div class="msg-bubble"><div class="msg-file-attachment"${isDownloadable ? ` data-has-download="1" role="button" tabindex="0" aria-label="${escapeAttr(`파일 다운로드: ${msgData.file_name}`)}"` : ' aria-disabled="true"'}>
                 <span class="file-icon">📄</span><div class="file-info"><span class="file-name">${msgData.file_name}</span><span class="file-size">${formatFileSize(msgData.file_size)}</span></div>
             </div></div>`;
         } else if (msgData.type === 'gathering_card') {

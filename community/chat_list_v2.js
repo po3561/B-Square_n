@@ -14,6 +14,7 @@ window.CommunityModules.ChatList = (() => {
     let refreshTimer = null;
     let searchTimer = null;
     let activeSearchQuery = '';
+    const CHAT_TIME_ZONE = 'Asia/Seoul';
 
     function getSettings() {
         try {
@@ -32,6 +33,61 @@ window.CommunityModules.ChatList = (() => {
     function getFolders() { return getSettings().folders || []; }
     function getRoomFolders() { return getSettings().roomFolders || {}; }
     const AUTO_CLASS_FOLDER = '클래스';
+
+    function parseChatDate(value) {
+        if (value == null || value === '') return null;
+        if (value instanceof Date) {
+            return Number.isNaN(value.getTime()) ? null : new Date(value.getTime());
+        }
+
+        if (typeof value === 'number') {
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? null : date;
+        }
+
+        const text = String(value).trim();
+        if (!text) return null;
+
+        let normalized = text;
+        if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+            normalized = `${text.replace(' ', 'T')}Z`;
+        } else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(text)) {
+            normalized = `${text}Z`;
+        }
+
+        const date = new Date(normalized);
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function getKoreanCalendarParts(value) {
+        const date = parseChatDate(value);
+        if (!date) return null;
+
+        const parts = new Intl.DateTimeFormat('en-CA', {
+            timeZone: CHAT_TIME_ZONE,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        }).formatToParts(date);
+
+        const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+        const year = Number(values.year);
+        const month = Number(values.month);
+        const day = Number(values.day);
+
+        if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+        return { year, month, day };
+    }
+
+    function getKoreanDayDiff(fromValue, toValue = Date.now()) {
+        const from = getKoreanCalendarParts(fromValue);
+        const to = getKoreanCalendarParts(toValue);
+        if (!from || !to) return null;
+
+        const fromUtc = Date.UTC(from.year, from.month - 1, from.day);
+        const toUtc = Date.UTC(to.year, to.month - 1, to.day);
+        return Math.floor((toUtc - fromUtc) / 86400000);
+    }
 
     function syncTabButtons() {
         document.querySelectorAll('.stab').forEach(btn => {
@@ -163,7 +219,7 @@ window.CommunityModules.ChatList = (() => {
             is_instructor: !!row.is_instructor,
             unread_count: Number(row.unread_count || 0),
             last_message: lastMessage,
-            last_timestamp: row.last_message_at ? new Date(row.last_message_at).getTime() : 0,
+            last_timestamp: parseChatDate(row.last_message_at)?.getTime() || 0,
             searchText,
         };
     }
@@ -516,15 +572,15 @@ window.CommunityModules.ChatList = (() => {
     }
 
     function formatTime(timestamp) {
-        const date = new Date(timestamp);
-        const now = new Date();
-        if (date.toDateString() === now.toDateString()) {
-            return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+        const date = parseChatDate(timestamp);
+        if (!date) return '';
+        const diffDays = getKoreanDayDiff(date, Date.now());
+        if (diffDays === 0) {
+            return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', timeZone: CHAT_TIME_ZONE });
         }
-        const diffDays = Math.floor((now - date) / 86400000);
         if (diffDays === 1) return '어제';
-        if (diffDays < 7) return date.toLocaleDateString('ko-KR', { weekday: 'short' });
-        return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+        if (diffDays < 7) return date.toLocaleDateString('ko-KR', { weekday: 'short', timeZone: CHAT_TIME_ZONE });
+        return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', timeZone: CHAT_TIME_ZONE });
     }
 
     function setActiveRoom(roomId) {
