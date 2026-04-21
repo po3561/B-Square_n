@@ -11,7 +11,7 @@
 
 .intro-divider {
     height: 1px;
-    margin: 2.4rem 0;
+    margin: 2rem 0;
     background: linear-gradient(90deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.02));
 }
 
@@ -40,8 +40,8 @@
 }
 
 .target-list li {
-    min-height: 108px;
-    padding: 1.15rem 1.2rem;
+    min-height: 96px;
+    padding: 1rem 1.05rem;
     border-radius: 20px;
     display: flex;
     align-items: flex-start;
@@ -72,8 +72,8 @@
 }
 
 .objective-card {
-    min-height: 180px;
-    padding: 1.35rem;
+    min-height: 156px;
+    padding: 1.2rem;
     border-radius: 24px;
     display: flex;
     gap: 0.95rem;

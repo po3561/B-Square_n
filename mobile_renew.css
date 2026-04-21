@@ -231,103 +231,53 @@
 
 /* ── 5. Bottom Navigation ── */
 @media (max-width: 768px) {
-  .bottom-nav {
-    background: rgba(255, 255, 255, 0.96) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border-top: 1px solid var(--m-border) !important;
-    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08) !important;
-    left: max(0.55rem, var(--shell-safe-left, 0px)) !important;
-    right: max(0.55rem, var(--shell-safe-right, 0px)) !important;
-    bottom: max(0.45rem, var(--shell-safe-bottom, 0px)) !important;
-    width: auto !important;
-    border: 1px solid var(--m-border) !important;
-    border-radius: 24px !important;
-    padding: 0.35rem !important;
-    padding-bottom: calc(0.35rem + var(--shell-safe-bottom, 0px)) !important;
-  }
-
-  .bottom-nav .nav-item {
-    color: var(--m-text-muted) !important;
-    min-height: 54px !important;
-    border-radius: 18px !important;
-    border: none !important;
-    gap: 0.15rem !important;
-  }
-
-  .bottom-nav .nav-item .icon {
-    font-size: 1.1rem !important;
-    line-height: 1 !important;
-  }
-
-  .bottom-nav .nav-item .label {
-    font-size: 0.65rem !important;
-    font-weight: 600 !important;
-  }
-
-  .bottom-nav .nav-item:hover,
-  .bottom-nav .nav-item.active {
-    color: var(--m-accent) !important;
-    background: var(--m-accent-bg) !important;
-    border: none !important;
-  }
-
-  /* Space for bottom nav */
-  body:not(.auth-body):not([data-layout="community"]):not([data-layout="popup"]) {
-    padding-bottom: var(--shell-bottom-nav-offset, calc(74px + var(--m-safe-bottom, 0px))) !important;
-  }
-
-  /* Prevent bottom nav + sticky CTA overlap */
-  body:not(.auth-body):not([data-layout="community"]):not([data-layout="popup"]) .sticky-cta,
-  body:not(.auth-body):not([data-layout="community"]):not([data-layout="popup"]) .view-sticky-cta,
-  body:not(.auth-body):not([data-layout="community"]):not([data-layout="popup"]) .payment-sticky-bar {
-    bottom: var(--shell-bottom-nav-offset, calc(74px + var(--m-safe-bottom, 0px))) !important;
-  }
 }
 
 /* ── 6. Footer ── */
 @media (max-width: 768px) {
   .site-footer {
     background: var(--m-bg-secondary) !important;
-    border-top: 1px solid var(--m-border) !important;
-    padding: 2rem var(--m-gutter) calc(2rem + var(--shell-bottom-nav-offset, 74px)) !important;
+    border-top: 0 !important;
+    padding: 1.35rem var(--m-gutter) calc(1.35rem + var(--shell-bottom-nav-offset, 74px)) !important;
     color: var(--m-text-secondary) !important;
-    margin-top: 1.5rem !important;
+    margin-top: 1rem !important;
+    box-shadow: 0 -10px 24px rgba(15, 23, 42, 0.04) !important;
   }
 
   .footer-grid {
     grid-template-columns: 1fr !important;
-    gap: 1.5rem !important;
+    gap: 1rem !important;
   }
 
   .footer-links-grid {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 1rem !important;
+    gap: 0.75rem !important;
   }
 
   .footer-support-title {
-    font-size: 1.1rem !important;
+    font-size: 1rem !important;
     color: var(--m-text) !important;
   }
 
   .footer-link-column h4 {
     color: var(--m-text) !important;
-    font-size: 0.88rem !important;
+    font-size: 0.82rem !important;
   }
 
   .footer-link-column a {
     color: var(--m-text-secondary) !important;
-    font-size: 0.84rem !important;
+    font-size: 0.78rem !important;
   }
 
   .footer-support-hours {
     color: var(--m-text-muted) !important;
-    font-size: 0.84rem !important;
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
   }
 
   .footer-legal-links a {
     color: var(--m-text-muted) !important;
-    font-size: 0.78rem !important;
+    font-size: 0.74rem !important;
   }
 
   .footer-legal-links a strong {
@@ -335,8 +285,11 @@
   }
 
   .footer-info-text {
-    color: var(--m-text-muted) !important;
-    font-size: 0.76rem !important;
+    display: none !important;
+  }
+
+  body[data-shell-bottom-nav="hidden"] .site-footer {
+    padding-bottom: 1.35rem !important;
   }
 
   .footer-social-link {
@@ -358,7 +311,8 @@
   }
 
   .footer-bottom {
-    border-top: 1px solid var(--m-border) !important;
+    border-top: 0 !important;
+    padding-top: 0.85rem !important;
   }
 }
 
@@ -931,13 +885,6 @@
   h2 { font-size: 0.92rem !important; }
   h3 { font-size: 0.85rem !important; }
 
-  .bottom-nav .nav-item .label {
-    display: none !important;
-  }
-
-  .bottom-nav .nav-item {
-    min-height: 40px !important;
-  }
 }
 
 /* ── 11. Auth Pages Mobile ── */

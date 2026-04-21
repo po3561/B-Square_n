@@ -36,22 +36,72 @@
     const _currentPort = parseInt(window.location.port) || (window.location.protocol === 'https:' ? 443 : 80);
     const _isLocalHost = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
     const _isWrangler = _currentPort === WRANGLER_PORT;
+    const LOCAL_FUNCTIONS_ORIGIN = 'http://127.0.0.1:8788';
 
     const _hasHttpOrigin = /^https?:$/i.test(window.location.protocol);
     const _runtimeOrigin = _hasHttpOrigin ? window.location.origin : '';
 
-    const API_BASE = (() => {
-        const explicitBase = window.__BSQ_API_BASE__;
-        if (explicitBase) {
-            return String(explicitBase).replace(/\/+$/, '');
+    function normalizeApiBase(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+
+        try {
+            return new URL(raw, window.location.href).origin;
+        } catch {
+            return '';
         }
-        if (_isWrangler) return '';
-        if (_isLocalHost) return `http://${window.location.hostname}:8788`;
-        if (_hasHttpOrigin) return window.location.origin;
-        return '';
-    })();
-    const PUBLIC_API_BASE = API_BASE || (_hasHttpOrigin ? window.location.origin : '');
-    const API_BASE_LABEL = PUBLIC_API_BASE || 'same-origin';
+    }
+
+    function isDebugRuntime() {
+        return !!window.__BSQ_DEV_MODE__ || _isWrangler || _isLocalHost || window.location.hostname.endsWith('.localhost');
+    }
+
+    function devLog(level, ...args) {
+        if (!isDebugRuntime()) return;
+        const fn = typeof console?.[level] === 'function' ? console[level].bind(console) : console.log.bind(console);
+        fn(...args);
+    }
+
+    window.__BSQ_DEV_LOG__ = devLog;
+
+    const EXPLICIT_API_BASE = normalizeApiBase(window.__BSQ_API_BASE__);
+    function resolveApiBaseCandidates() {
+        if (EXPLICIT_API_BASE) return [EXPLICIT_API_BASE];
+
+        const candidates = [];
+        const pushCandidate = (value) => {
+            const raw = String(value || '').trim();
+            if (!candidates.includes(raw)) candidates.push(raw);
+        };
+
+        if (_isWrangler) {
+            pushCandidate('');
+        } else if (_isLocalHost) {
+            pushCandidate(window.location.origin);
+            pushCandidate(LOCAL_FUNCTIONS_ORIGIN);
+        } else if (_hasHttpOrigin) {
+            pushCandidate(window.location.origin);
+        } else {
+            pushCandidate(LOCAL_FUNCTIONS_ORIGIN);
+        }
+
+        return candidates;
+    }
+
+    const API_BASE_CANDIDATES = resolveApiBaseCandidates();
+    const PRIMARY_API_BASE = API_BASE_CANDIDATES[0] || '';
+    const PUBLIC_API_BASE = PRIMARY_API_BASE || (_hasHttpOrigin ? window.location.origin : '');
+    const API_BASE_LABEL = EXPLICIT_API_BASE ? 'explicit' : (_isWrangler ? 'wrangler-dev' : (_isLocalHost ? 'local-fallback' : 'same-origin'));
+
+    function buildRequestUrl(endpoint, baseUrl = PRIMARY_API_BASE) {
+        if (!baseUrl) return endpoint;
+
+        try {
+            return new URL(endpoint, baseUrl).toString();
+        } catch {
+            return endpoint;
+        }
+    }
 
     function normalizeRequestBody(value) {
         if (value == null) return value;
@@ -97,20 +147,12 @@
         const shouldBustCache = finalOptions.cacheBust !== false;
         delete finalOptions.cacheBust;
 
-        const candidateBases = [];
-        const pushBase = (value) => {
-            const normalized = String(value || '').trim().replace(/\/+$/, '');
-            if (!normalized) return;
-            if (!candidateBases.includes(normalized)) candidateBases.push(normalized);
-        };
+        const isKnownMissingMessage = (message) => /message not found/i.test(String(message || ''));
+        const candidateBases = (method === 'GET' ? API_BASE_CANDIDATES : [PRIMARY_API_BASE]).filter((value, index, self) => self.indexOf(value) === index);
+        if (!candidateBases.length) candidateBases.push('');
+        const triedBases = [];
 
-        pushBase(API_BASE);
-        if (_hasHttpOrigin) pushBase(window.location.origin);
-        pushBase('http://127.0.0.1:8788');
-        pushBase('http://localhost:8788');
-
-        const performFetch = async (baseUrl) => {
-            let requestUrl = baseUrl ? (baseUrl + endpoint) : endpoint;
+        const performFetch = async (requestUrl) => {
             const token = localStorage.getItem('bsq_token');
             const bodyValue = finalOptions.body;
             const isFormData = typeof FormData !== 'undefined' && bodyValue instanceof FormData;
@@ -131,7 +173,7 @@
                 requestUrl += `${connector}t=${Date.now()}`;
             }
 
-            console.log(`[BSQ API] ${method} ${requestUrl}`);
+            devLog('log', `[BSQ API] ${method} ${requestUrl}`);
             const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
             let timedOut = false;
             const timeoutId = controller ? window.setTimeout(() => {
@@ -149,7 +191,9 @@
                 });
             } catch (error) {
                 if (timedOut || error?.name === 'AbortError') {
-                    throw new Error(`Request timed out after ${Math.round(REQUEST_TIMEOUT_MS / 1000)}s`);
+                    const timeoutError = new Error(`Request timed out after ${Math.round(REQUEST_TIMEOUT_MS / 1000)}s`);
+                    timeoutError.__bsqTimedOut = true;
+                    throw timeoutError;
                 }
                 throw error;
             } finally {
@@ -157,14 +201,56 @@
             }
         };
 
-        let lastError = null;
-        const isKnownMissingMessage = (message) => /message not found/i.test(String(message || ''));
+        const buildFailureResponse = (error, requestUrl, baseUrl, extra = {}) => {
+            const errorMessage = String(error?.message || error || 'Unknown error');
+            const status = Number.isFinite(Number(error?.status)) ? Number(error.status) : null;
+            const baseLabel = baseUrl || 'same-origin';
+            const isQuietMissing = !!error?.__bsqSilent || isKnownMissingMessage(errorMessage);
+            const shouldAlert = method !== 'GET' || window.__BSQ_SHOW_API_ALERTS__ === true;
+            const msg = errorMessage.includes('Failed to fetch')
+                ? `API connection failed at ${baseLabel}`
+                : `[BSQ API] ${errorMessage}`;
 
-        for (const baseUrl of candidateBases) {
+            if (shouldAlert && !isQuietMissing) {
+                showOnScreenAlert(msg);
+            }
+
+            if (isQuietMissing || !shouldAlert) {
+                devLog('warn', msg, { endpoint, base: baseLabel, url: requestUrl, status, ...extra });
+            } else {
+                devLog('error', `[BSQ API] ${endpoint} fetch error:`, error, { endpoint, base: baseLabel, url: requestUrl, status, ...extra });
+            }
+
+            return {
+                success: false,
+                error: errorMessage,
+                status,
+                timed_out: !!error?.__bsqTimedOut,
+                network_error: errorMessage.includes('Failed to fetch'),
+                tried_bases: triedBases.slice(),
+                url: requestUrl,
+            };
+        };
+
+        const shouldRetryHttpError = (response, contentType, errorMessage) => {
+            if (method !== 'GET') return false;
+            if (response.status >= 500) return true;
+            if (response.status === 405 || response.status === 502 || response.status === 503 || response.status === 504) return true;
+            if (response.status === 404 && !contentType.includes('application/json')) return true;
+            if (response.status === 404 && /<!doctype html>|<html/i.test(errorMessage)) return true;
+            return false;
+        };
+
+        for (let index = 0; index < candidateBases.length; index += 1) {
+            const baseUrl = candidateBases[index];
+            const requestUrl = buildRequestUrl(endpoint, baseUrl);
+            triedBases.push(baseUrl || 'same-origin');
+
             try {
-                const response = await performFetch(baseUrl);
+                const response = await performFetch(requestUrl);
 
                 if (!response.ok) {
+                    const contentType = String(response.headers.get('content-type') || '').toLowerCase();
                     const errorText = await response.text();
                     let errMsg = `HTTP ${response.status}: ${response.statusText}`;
 
@@ -175,19 +261,51 @@
                             const errJson = JSON.parse(errorText);
                             errMsg = [errJson.error, errJson.detail].filter(Boolean).join(' / ') || errMsg;
                         } catch (e) {
-                            errMsg = errorText.substring(0, 100);
+                            errMsg = errorText.substring(0, 180);
                         }
                     }
+
                     const error = new Error(errMsg);
+                    error.status = response.status;
+                    error.statusText = response.statusText;
+                    error.responseBody = errorText ? errorText.substring(0, 256) : '';
                     if (response.status === 404 && isKnownMissingMessage(errMsg)) {
                         error.__bsqSilent = true;
                     }
-                    throw error;
+
+                    const hasFallback = index < candidateBases.length - 1 && method === 'GET';
+                    if (hasFallback && shouldRetryHttpError(response, contentType, errMsg)) {
+                        devLog('warn', '[BSQ API] HTTP fallback retry:', {
+                            endpoint,
+                            base: baseUrl || 'same-origin',
+                            nextBase: candidateBases[index + 1] || 'same-origin',
+                            status: response.status,
+                        });
+                        continue;
+                    }
+
+                    return buildFailureResponse(error, requestUrl, baseUrl);
                 }
 
-                const result = await response.json();
+                let result;
+                try {
+                    result = await response.json();
+                } catch (error) {
+                    const hasFallback = index < candidateBases.length - 1 && method === 'GET';
+                    if (hasFallback) {
+                        devLog('warn', '[BSQ API] JSON parse fallback retry:', {
+                            endpoint,
+                            base: baseUrl || 'same-origin',
+                            nextBase: candidateBases[index + 1] || 'same-origin',
+                            error: error?.message || error,
+                        });
+                        continue;
+                    }
+                    return buildFailureResponse(error, requestUrl, baseUrl);
+                }
+
                 if (!result.success) {
-                    console.warn(`[BSQ API] ${endpoint} warning:`, result.error, result.detail || '');
+                    devLog('warn', `[BSQ API] ${endpoint} warning:`, result.error, result.detail || '');
                     if (method !== 'GET') {
                         const warningText = [result.error, result.detail].filter(Boolean).join(' / ') || 'Request failed.';
                         if ((method !== 'GET' || window.__BSQ_SHOW_API_ALERTS__ === true) && !isKnownMissingMessage(warningText)) {
@@ -200,42 +318,28 @@
 
                 return result;
             } catch (error) {
-                lastError = error;
-                const isLastCandidate = baseUrl === candidateBases[candidateBases.length - 1];
-                const shouldRetry =
-                    /Failed to fetch/i.test(error.message || '') ||
-                    /^HTTP 404\b/i.test(error.message || '') ||
-                    /timed out/i.test(error.message || '') ||
-                    /^HTTP 5\d\d\b/i.test(error.message || '') ||
-                    /^HTTP 429\b/i.test(error.message || '') ||
-                    /^HTTP 52\d\b/i.test(error.message || '');
-                if (!isLastCandidate && shouldRetry) {
-                    console.warn('[BSQ API] API base failed, trying next candidate:', baseUrl, error.message);
+                const errorMessage = String(error?.message || error || 'Unknown error');
+                const hasFallback = index < candidateBases.length - 1 && method === 'GET';
+                if (hasFallback && (errorMessage.includes('Failed to fetch') || error?.__bsqTimedOut)) {
+                    devLog('warn', '[BSQ API] network fallback retry:', {
+                        endpoint,
+                        base: baseUrl || 'same-origin',
+                        nextBase: candidateBases[index + 1] || 'same-origin',
+                        error: errorMessage,
+                    });
                     continue;
                 }
 
-                console.error(`[BSQ API] ${endpoint} fetch error:`, error);
-                const triedBases = candidateBases.join(' → ');
-                const msg = error.message.includes('Failed to fetch')
-                    ? `API connection failed. Tried: ${triedBases}`
-                    : `[BSQ API] ${error.message}`;
-
-                if ((method !== 'GET' || window.__BSQ_SHOW_API_ALERTS__ === true) && !error.__bsqSilent && !isKnownMissingMessage(error.message)) {
-                    showOnScreenAlert(msg);
-                } else {
-                    console.warn(msg);
-                }
-                return { success: false, error: error.message, tried_bases: candidateBases };
+                return buildFailureResponse(error, requestUrl, baseUrl, {
+                    network_error: errorMessage.includes('Failed to fetch'),
+                });
             }
         }
 
-        const fallbackError = lastError || new Error('Unknown error');
-        if ((method !== 'GET' || window.__BSQ_SHOW_API_ALERTS__ === true) && !isKnownMissingMessage(fallbackError.message)) {
-            showOnScreenAlert(`[BSQ API] ${fallbackError.message}`);
-        } else {
-            console.warn(`[BSQ API] ${fallbackError.message}`);
-        }
-        return { success: false, error: fallbackError.message };
+        const finalError = new Error(`Request failed for ${endpoint}`);
+        return buildFailureResponse(finalError, buildRequestUrl(endpoint), candidateBases[0] || '', {
+            exhausted_bases: triedBases.slice(),
+        });
     }
 
     function ensureSiteSettingsPromise() {
@@ -249,7 +353,7 @@
                 return settings || null;
             })
             .catch((error) => {
-                console.warn('[BSQ Server] Site settings prefetch failed:', error);
+                devLog('warn', '[BSQ Server] Site settings prefetch failed:', error);
                 return window.__BSQ_SITE_SETTINGS__ || null;
             });
 
@@ -305,6 +409,13 @@
     function applyPreferences({ theme, language, persistStorage = true } = {}) {
         if (typeof document === 'undefined') return null;
 
+        const themeSync = window.__BSQ_THEME_SYNC__ || null;
+        const normalizeThemeValue = themeSync?.normalizeTheme
+            ? (value) => themeSync.normalizeTheme(value)
+            : (value) => resolveThemeName(value) || '';
+        const normalizeLanguageValue = themeSync?.normalizeLanguage
+            ? (value) => themeSync.normalizeLanguage(value)
+            : (value) => normalizeLanguage(value);
         const root = document.documentElement;
         const storedThemeRaw = localStorage.getItem(THEME_STORAGE_KEY);
         const hasStoredTheme = storedThemeRaw !== null && String(storedThemeRaw).trim() !== '';
@@ -314,9 +425,17 @@
         const requestedTheme = theme === undefined || theme === null ? '' : String(theme).trim().toLowerCase();
         const requestedLanguage = language === undefined || language === null ? '' : String(language).trim();
 
-        const languageValue = normalizeLanguage(requestedLanguage) || normalizeLanguage(storedLanguage) || 'ko';
-        const rootTheme = resolveThemeName(root.dataset.theme || document.body?.dataset.theme || '') || '';
-        const themeValue = resolveThemeName(requestedTheme) || resolveThemeName(storedTheme) || rootTheme || 'dark';
+        const languageValue = normalizeLanguageValue(requestedLanguage) || normalizeLanguageValue(storedLanguage) || 'ko';
+        const rootTheme = normalizeThemeValue(root.dataset.theme || document.body?.dataset.theme || '') || '';
+        const themeValue = normalizeThemeValue(requestedTheme) || normalizeThemeValue(storedTheme) || rootTheme || 'light';
+
+        if (themeSync?.applyAndBroadcastPreferenceState) {
+            const snapshot = themeSync.applyAndBroadcastPreferenceState(themeValue, languageValue, {
+                persistStorage,
+            });
+            window.__BSQ_PREFERENCES__ = snapshot;
+            return snapshot;
+        }
 
         root.dataset.theme = themeValue;
         root.dataset.language = languageValue;
@@ -380,13 +499,52 @@
     function showOnScreenAlert(msg, type = 'error') {
         if (typeof document === 'undefined') return;
         const alertBox = document.createElement('div');
-        const color = type === 'success' ? '#00c853' : '#ff4d4d';
+        const palette = {
+            success: {
+                bg: 'rgba(10, 78, 60, 0.94)',
+                border: 'rgba(74, 222, 128, 0.26)',
+                text: '#effcf4',
+            },
+            warning: {
+                bg: 'rgba(92, 56, 10, 0.94)',
+                border: 'rgba(251, 191, 36, 0.28)',
+                text: '#fff8e7',
+            },
+            error: {
+                bg: 'rgba(71, 18, 28, 0.96)',
+                border: 'rgba(248, 113, 113, 0.30)',
+                text: '#fff1f2',
+            },
+            info: {
+                bg: 'rgba(17, 24, 39, 0.94)',
+                border: 'rgba(148, 163, 184, 0.22)',
+                text: '#e2e8f0',
+            },
+        };
+        const style = palette[type] || palette.error;
         alertBox.style.cssText = `
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: ${color}; color: white; padding: 12px 24px; border-radius: 12px;
-            font-size: 14px; font-weight: bold; z-index: 1000000; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            text-align: center; white-space: pre-wrap; transition: all 0.3s ease;
+            position: fixed;
+            top: calc(1rem + env(safe-area-inset-top, 0px));
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: min(92vw, 460px);
+            padding: 0.88rem 1rem;
+            border-radius: 16px;
+            background: ${style.bg};
+            color: ${style.text};
+            border: 1px solid ${style.border};
+            font-size: 0.92rem;
+            line-height: 1.45;
+            z-index: 1000000;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.22);
+            text-align: left;
+            white-space: pre-wrap;
+            transition: transform 0.24s ease, opacity 0.24s ease;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
         `;
+        alertBox.setAttribute('role', 'status');
+        alertBox.setAttribute('aria-live', 'polite');
         alertBox.innerText = msg;
         const mountTarget = document.body || document.documentElement;
         mountTarget.appendChild(alertBox);
@@ -481,7 +639,7 @@
 
         if (result.success && session?.user) {
             _session = session;
-            console.log('[BSQ Server] 로그인 유지 확인 완료:', _session.user.email);
+            devLog('log', '[BSQ Server] 로그인 유지 확인 완료:', _session.user.email);
             localStorage.setItem('bsq_user', JSON.stringify(_session.user));
 
             const sessionUser = _session.user;
@@ -588,7 +746,7 @@
         const bootstrap = ensureSessionBootstrapPromise();
         _authReadyPromise = bootstrap
             .catch((error) => {
-                console.warn('[BSQ Server] Session bootstrap failed:', error);
+            devLog('warn', '[BSQ Server] Session bootstrap failed:', error);
             })
             .finally(() => {
                 resolveAuthReady();
@@ -640,7 +798,7 @@
     // ==================================================
     async function init() {
         if (!_isWrangler) {
-            console.log(`[BSQ Server] Booting API shell with base ${API_BASE_LABEL}`);
+            devLog('log', `[BSQ Server] Booting API shell with base ${API_BASE_LABEL}`);
         }
 
         applyPreferences();
@@ -648,7 +806,7 @@
         resolveShellReady();
         void ensureAuthReadyPromise();
 
-        console.log('[BSQ Server] Shell ready; session bootstrap continues in background', {
+        devLog('log', '[BSQ Server] Shell ready; session bootstrap continues in background', {
             loggedIn: !!_session,
             userId: _session?.user?.id || 'none'
         });
@@ -663,7 +821,7 @@
         try {
             const settings = window.__BSQ_SITE_SETTINGS__ || await ensureSiteSettingsPromise();
             if (!settings) return;
-            const theme = String(document.documentElement?.dataset?.theme || document.body?.dataset?.theme || 'dark').toLowerCase();
+            const theme = String(document.documentElement?.dataset?.theme || document.body?.dataset?.theme || 'light').toLowerCase();
 
             // Title
             if (settings.site_name) {
@@ -734,7 +892,7 @@
                 injectMeta('og:description', seo.description, true);
                 if (seo.image) injectMeta('og:image', seo.image, true);
             }
-        } catch (e) { console.warn('[BSQ] Site settings load skip'); }
+        } catch (e) { devLog('warn', '[BSQ] Site settings load skip'); }
     }
 
     // ---- 로그인 관련 ----

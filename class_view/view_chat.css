@@ -124,8 +124,8 @@
 .chat-tab-wrapper {
     position: relative !important;
     width: 100% !important;
-    height: min(75vh, 800px) !important;
-    max-height: 800px !important;
+    height: min(72vh, 760px) !important;
+    max-height: 760px !important;
     min-height: 0 !important;
     background: var(--chat-bg) !important;
     color: var(--text-primary) !important;
@@ -202,8 +202,8 @@
 
 /* Header */
 .chat-tab-wrapper .chat-top-header {
-    height: 64px !important;
-    padding: 0 24px !important;
+    height: 60px !important;
+    padding: 0 20px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
@@ -291,7 +291,7 @@
 .chat-tab-wrapper .pinned-msg-bar {
     width: calc(100% - 32px) !important;
     margin: 8px 16px !important;
-    padding: 10px 16px !important;
+    padding: 8px 14px !important;
     background: var(--sidebar-bg) !important;
     backdrop-filter: var(--glass-blur) !important;
     border-radius: 12px !important;
@@ -306,11 +306,11 @@
 /* Messages container - Internal Scroll Force */
 .chat-tab-wrapper .chat-messages-container {
     flex: 1 !important;
-    padding: 24px !important;
+    padding: 20px !important;
     overflow-y: auto !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 18px !important;
+    gap: 14px !important;
     background: var(--chat-bg) !important;
     height: 100% !important;
     /* Force to take parent height */
@@ -330,9 +330,9 @@
 }
 
 .chat-tab-wrapper .msg-bubble {
-    padding: 12px 18px !important;
+    padding: 11px 16px !important;
     border-radius: 20px !important;
-    font-size: 1rem !important;
+    font-size: 0.98rem !important;
     line-height: 1.5 !important;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
     word-break: keep-all !important;
@@ -407,7 +407,7 @@
 
 /* Input Area (Pill Design) */
 .chat-tab-wrapper .chat-input-area {
-    padding: 16px 24px 32px !important;
+    padding: 14px 20px 24px !important;
     background: var(--sidebar-bg) !important;
     backdrop-filter: var(--glass-blur) !important;
     border-top: 1px solid var(--border-color) !important;
@@ -424,7 +424,7 @@
     background: var(--card-bg) !important;
     border: 1px solid var(--border-color) !important;
     border-radius: 26px !important;
-    padding: 6px 16px !important;
+    padding: 5px 14px !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
 }
 
@@ -432,8 +432,8 @@
     background: none !important;
     border: none !important;
     color: var(--text-secondary) !important;
-    width: 40px !important;
-    height: 40px !important;
+    width: 38px !important;
+    height: 38px !important;
     cursor: pointer !important;
     display: flex !important;
     align-items: center !important;
@@ -446,18 +446,18 @@
     background: none !important;
     border: none !important;
     color: var(--text-primary) !important;
-    padding: 10px 8px !important;
+    padding: 8px 8px !important;
     max-height: 150px !important;
     resize: none !important;
     outline: none !important;
-    font-size: 1.05rem !important;
+    font-size: 0.98rem !important;
     line-height: 1.4 !important;
-    min-height: 44px !important;
+    min-height: 40px !important;
 }
 
 .chat-tab-wrapper .btn-send-pill {
-    width: 46px !important;
-    height: 46px !important;
+    width: 44px !important;
+    height: 44px !important;
     border-radius: 50% !important;
     background: var(--accent-color) !important;
     color: white !important;

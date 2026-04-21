@@ -19,7 +19,7 @@ function normalizeLanguagePreference(value, fallback = 'ko') {
   return fallback;
 }
 
-function normalizeThemePreference(value, fallback = 'dark') {
+function normalizeThemePreference(value, fallback = 'light') {
   const theme = String(value || '').trim().toLowerCase();
   if (theme === 'light' || theme === 'dark') return theme;
   if (theme === 'system') return fallback;

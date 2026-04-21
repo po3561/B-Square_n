@@ -1,4 +1,4 @@
-/* class_view.js - Modular Orchestrator & Payment Controller (D1 API 기반) */
+﻿/* class_view.js - Modular Orchestrator & Payment Controller (D1 API 기반) */
 
 const urlParams = new URLSearchParams(window.location.search);
 const classId = urlParams.get('id') || urlParams.get('classId');
@@ -24,6 +24,15 @@ function safeParseArray(value, fallback = []) {
     } catch {
         return fallback;
     }
+}
+
+function escapeHtml(value = '') {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 function normalizeRole(value) {
@@ -85,12 +94,12 @@ function formatMoney(value, fallback = '0원') {
 
 function getHeroSummary(data) {
     const summary = String(data?.summary || data?.subtitle || '').trim();
-    if (summary) return summary.replace(/\s+/g, ' ').slice(0, 120);
+    if (summary) return summary.replace(/\s+/g, ' ').slice(0, 96);
     const description = String(data?.description || '')
         .replace(/<[^>]*>/g, ' ')
         .replace(/&nbsp;/g, ' ')
         .trim();
-    if (description) return description.replace(/\s+/g, ' ').slice(0, 120);
+    if (description) return description.replace(/\s+/g, ' ').slice(0, 96);
     const category = String(data?.category || '클래스').trim();
     const instructor = String(data?.creator_name || data?.instructor_name || '').trim();
     return instructor ? `${category} · ${instructor} 클래스의 핵심 흐름을 한눈에 확인할 수 있습니다.` : `${category} 클래스의 핵심 흐름을 한눈에 확인할 수 있습니다.`;
@@ -118,6 +127,13 @@ function getOfferSummary(data) {
     return Number(data?.price || 0) > 0 ? '단일 수강권' : '무료 수강';
 }
 
+function getHeroFormatChipText(data) {
+    if (data?.tickets?.price_monthly) return '월정액';
+    if (data?.tickets?.price_multi && data?.tickets?.pass_count) return `${data.tickets.pass_count}회`;
+    if (data?.tickets?.price_one_time) return '1회';
+    return Number(data?.price || 0) > 0 ? '유료' : '무료';
+}
+
 function getClassImageUrl(data) {
     if (!data) return '';
     if (data.image_url) return data.image_url;
@@ -125,6 +141,82 @@ function getClassImageUrl(data) {
     if (data.thumbnail_url) return data.thumbnail_url;
     if (data.thumbnail) return data.thumbnail;
     return '';
+}
+
+function devLog(level, ...args) {
+    if (typeof window.__BSQ_DEV_LOG__ === 'function') {
+        window.__BSQ_DEV_LOG__(level, ...args);
+        return;
+    }
+
+    const fn = typeof console?.[level] === 'function' ? console[level].bind(console) : console.log.bind(console);
+    fn(...args);
+}
+
+const classViewStatusState = {
+    loadingTemplate: '',
+};
+
+function getClassViewStatusLayer() {
+    return document.getElementById('classViewStatus');
+}
+
+function buildClassViewErrorStateHtml({ title, message, detail, actionLabel = '다시 불러오기' } = {}) {
+    return `
+        <section class="class-view-status-card" data-state="error" data-tone="soft">
+            <div class="class-view-status-copy">
+                <span class="class-view-status-eyebrow">오류</span>
+                <strong class="class-view-status-title">${escapeHtml(title || '클래스 정보를 불러오지 못했습니다.')}</strong>
+                <p class="class-view-status-text">${escapeHtml(message || '네트워크 상태를 확인한 뒤 다시 시도해 주세요.')}</p>
+                ${detail ? `<p class="class-view-status-detail">${escapeHtml(detail)}</p>` : ''}
+            </div>
+            <div class="class-view-status-actions">
+                <button type="button" class="class-view-status-btn primary" data-action="class-view-retry">${escapeHtml(actionLabel)}</button>
+                <a class="class-view-status-btn secondary" href="../index.html">홈으로</a>
+            </div>
+        </section>
+    `;
+}
+
+function setClassViewPageState(state, options = {}) {
+    const statusLayer = getClassViewStatusLayer();
+    const body = document.body;
+    if (!statusLayer || !body) return;
+
+    if (!classViewStatusState.loadingTemplate) {
+        classViewStatusState.loadingTemplate = statusLayer.innerHTML;
+    }
+
+    const nextState = String(state || 'ready');
+    body.dataset.classViewState = nextState;
+    body.classList.toggle('class-view-loading', nextState === 'loading');
+    body.classList.toggle('class-view-ready', nextState === 'ready');
+    body.classList.toggle('class-view-error', nextState === 'error');
+
+    if (nextState === 'ready') {
+        statusLayer.hidden = true;
+        statusLayer.innerHTML = classViewStatusState.loadingTemplate || statusLayer.innerHTML;
+        statusLayer.removeAttribute('aria-busy');
+        return;
+    }
+
+    statusLayer.hidden = false;
+    statusLayer.setAttribute('aria-busy', 'true');
+
+    if (nextState === 'loading') {
+        statusLayer.innerHTML = classViewStatusState.loadingTemplate || statusLayer.innerHTML;
+        statusLayer.dataset.state = 'loading';
+        return;
+    }
+
+    if (nextState === 'error') {
+        statusLayer.innerHTML = buildClassViewErrorStateHtml(options);
+        statusLayer.dataset.state = 'error';
+    }
+}
+
+function requestClassViewReload() {
+    window.location.reload();
 }
 
 const TAB_PARAM_MAP = {
@@ -270,7 +362,7 @@ async function loadClassViewBookmarkState() {
             return;
         }
     } catch (error) {
-        console.warn('[class_view] bookmark state load failed:', error);
+        devLog('warn', '[class_view] bookmark state load failed:', error);
     }
 
     setClassViewBookmarkButtonState(false, 0);
@@ -301,7 +393,7 @@ async function toggleClassViewBookmark() {
             res.data?.bookmarked ? '마이페이지에서 다시 확인할 수 있습니다.' : '저장 목록에서 제외되었습니다.',
         );
     } catch (error) {
-        console.error('[class_view] bookmark toggle failed:', error);
+        devLog('warn', '[class_view] bookmark toggle failed:', error);
         setClassViewBookmarkButtonState(previous.bookmarked, previous.count);
         showToast('error', '찜 상태 변경 실패', error.message || '잠시 후 다시 시도해 주세요.');
     } finally {
@@ -321,7 +413,7 @@ async function shareClassViewPage() {
             return;
         }
     } catch (error) {
-        console.warn('[class_view] native share failed:', error);
+        devLog('warn', '[class_view] native share failed:', error);
     }
 
     try {
@@ -331,7 +423,7 @@ async function shareClassViewPage() {
             return;
         }
     } catch (error) {
-        console.warn('[class_view] clipboard share failed:', error);
+        devLog('warn', '[class_view] clipboard share failed:', error);
     }
 
     window.prompt('링크를 복사하세요.', url);
@@ -378,13 +470,13 @@ function syncMobileClassViewChrome() {
     }
 
     const cartBtn = document.getElementById('btnAddToCartSide');
-    if (cartBtn && mobile) {
-        cartBtn.textContent = '장바구니';
+    if (cartBtn) {
+        cartBtn.hidden = true;
     }
 
     const enrollBtn = document.getElementById('btnEnroll');
     if (enrollBtn && mobile && !enrollBtn.disabled) {
-        enrollBtn.textContent = Number(classData?.price || 0) > 0 ? '예약 신청' : '무료 시작하기';
+        enrollBtn.textContent = Number(classData?.price || 0) > 0 ? '수강 신청' : '무료 시작하기';
     }
 
     const bookmarkBtn = document.getElementById('btnBookmarkClass');
@@ -396,114 +488,161 @@ function syncMobileClassViewChrome() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
+    void bootstrapClassViewPage();
+});
+
+async function bootstrapClassViewPage() {
+    setClassViewPageState('loading');
+
     if (!classId) {
         showToast('error', '잘못된 접근입니다', '홈으로 이동합니다.');
         location.href = '../index.html';
         return;
     }
 
-    const authBootstrapTasks = [];
-    if (window.BSQ?.ready?.then) authBootstrapTasks.push(window.BSQ.ready.catch(() => null));
-    if (window.BSQ?.sessionBootstrapPromise?.then) authBootstrapTasks.push(window.BSQ.sessionBootstrapPromise.catch(() => null));
-    if (authBootstrapTasks.length) await Promise.all(authBootstrapTasks);
-
-    let session = window.BSQ?.session;
-    if (session || window.__BSQ_DEV_MODE__) {
-        userId = window.__BSQ_DEV_MODE__ ? 'OPERATOR_GHOST' : session.user.id;
-        userProfile = window.__BSQ_DEV_MODE__ ? { name: '운영자', role: 'admin' } : session.user;
-    }
-
     try {
+        const authBootstrapTasks = [];
+        if (window.BSQ?.ready?.then) authBootstrapTasks.push(window.BSQ.ready.catch(() => null));
+        if (window.BSQ?.sessionBootstrapPromise?.then) authBootstrapTasks.push(window.BSQ.sessionBootstrapPromise.catch(() => null));
+        if (authBootstrapTasks.length) await Promise.all(authBootstrapTasks);
+
+        const session = window.BSQ?.session;
+        if (session || window.__BSQ_DEV_MODE__) {
+            userId = window.__BSQ_DEV_MODE__ ? 'OPERATOR_GHOST' : session.user.id;
+            userProfile = window.__BSQ_DEV_MODE__ ? { name: '운영자', role: 'admin' } : session.user;
+        }
+
         const result = await window.BSQ.api(`/api/classes/${classId}`);
-        if (result.success && result.data) {
-            classData = result.data;
-            renderCorePageInfo(classData);
-            
-            // 수강 여부 확인
-            if (userId && !window.__BSQ_DEV_MODE__) {
-                const access = await window.BSQ.api(`/api/enrollments?user_id=${userId}&class_id=${classId}`);
-                if (access.success) isEnrolled = access.data?.enrolled || false;
-                const passes = await window.BSQ.api(`/api/user-passes?user_id=${userId}`);
-                if (passes.success && Array.isArray(passes.data)) {
-                    const cp = passes.data.find(it => it.class_id === classId);
-                    userPassCount = cp?.remaining_count ?? 0;
-                    isMonthlySubscribed = cp?.pass_type === 'monthly';
-                }
-            }
+        if (!result?.success || !result.data) {
+            throw new Error(result?.error || '클래스 정보를 불러오지 못했습니다.');
+        }
 
-            if (window.__BSQ_DEV_MODE__) { isEnrolled = true; }
-            computeAccessState();
-            await loadClassViewBookmarkState();
-            syncMobileClassViewChrome();
+        classData = result.data;
+        renderCorePageInfo(classData);
 
-            if (window.BSquareModules) {
-                if (window.BSquareModules.initIntro) window.BSquareModules.initIntro(classData);
-                if (window.BSquareModules.initCurriculum) window.BSquareModules.initCurriculum(classData);
-                if (window.BSquareModules.initReviews) {
-                    window.BSquareModules.initReviews(
-                        classData,
-                        classId,
-                        userId,
-                        null,
-                        hasAccess,
-                        isInstructor,
-                    );
-                }
-                if (window.BSquareModules.initNotice) {
-                    window.BSquareModules.initNotice(
-                        classData,
-                        classId,
-                        userId,
-                        null,
-                        hasAccess,
-                        isInstructor,
-                        getNoticeAuthorContext(),
-                        { noticeId: urlParams.get('notice') || '' },
-                    );
-                }
-                if (isInstructor && window.BSquareModules.initEdit) {
-                    await window.BSquareModules.initEdit(null, classId, classData, null, userId);
-                }
+        const accessTasks = [];
+        if (userId && !window.__BSQ_DEV_MODE__) {
+            accessTasks.push(
+                window.BSQ.api(`/api/enrollments?user_id=${userId}&class_id=${classId}`),
+                window.BSQ.api(`/api/user-passes?user_id=${userId}`),
+            );
+        }
+
+        if (accessTasks.length) {
+            const [access, passes] = await Promise.all(accessTasks);
+            if (access?.success) isEnrolled = access.data?.enrolled || false;
+            if (passes?.success && Array.isArray(passes.data)) {
+                const cp = passes.data.find((item) => item.class_id === classId);
+                userPassCount = cp?.remaining_count ?? 0;
+                isMonthlySubscribed = cp?.pass_type === 'monthly';
             }
         }
-    } catch (err) { console.error(err); }
 
-    // Init Sidebar CTA
-    document.getElementById('btnEnroll')?.addEventListener('click', openPaymentBottomSheet);
-    document.getElementById('btnAddToCartSide')?.addEventListener('click', saveCurrentClassToCart);
-    document.getElementById('btnSheetClose')?.addEventListener('click', closePaymentBottomSheet);
-    document.getElementById('btnClassViewShare')?.addEventListener('click', shareClassViewPage);
-    document.getElementById('btnClassViewCart')?.addEventListener('click', saveCurrentClassToCart);
-    document.getElementById('btnBookmarkClass')?.addEventListener('click', toggleClassViewBookmark);
-    document.getElementById('btnGoToClassSide')?.addEventListener('click', () => {
-        if (isMobileClassViewLayout()) {
-            openClassViewConsultation();
-            return;
+        if (window.__BSQ_DEV_MODE__) {
+            isEnrolled = true;
         }
-        document.querySelector('[data-target="tabIntro"]')?.click();
-        window.scrollTo({ top: document.querySelector('.view-tabs').offsetTop - 80, behavior: 'smooth' });
-    });
 
-    // Tab Logic
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    tabBtns.forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const trg = btn.getAttribute('data-target');
-            activateTab(trg);
+        computeAccessState();
+        await loadClassViewBookmarkState();
+        syncMobileClassViewChrome();
+
+        const modules = window.BSquareModules || {};
+        if (modules.initIntro) {
+            try { modules.initIntro(classData); } catch (error) { devLog('warn', '[class_view] intro init failed:', error); }
+        }
+        if (modules.initCurriculum) {
+            try { modules.initCurriculum(classData); } catch (error) { devLog('warn', '[class_view] curriculum init failed:', error); }
+        }
+        if (modules.initReviews) {
+            try {
+                modules.initReviews(
+                    classData,
+                    classId,
+                    userId,
+                    null,
+                    hasAccess,
+                    isInstructor,
+                );
+            } catch (error) {
+                devLog('warn', '[class_view] reviews init failed:', error);
+            }
+        }
+        if (modules.initNotice) {
+            try {
+                modules.initNotice(
+                    classData,
+                    classId,
+                    userId,
+                    null,
+                    hasAccess,
+                    isInstructor,
+                    getNoticeAuthorContext(),
+                    { noticeId: urlParams.get('notice') || '' },
+                );
+            } catch (error) {
+                devLog('warn', '[class_view] notice init failed:', error);
+            }
+        }
+        if (isInstructor && modules.initEdit) {
+            try {
+                await modules.initEdit(null, classId, classData, null, userId);
+            } catch (error) {
+                devLog('warn', '[class_view] edit init failed:', error);
+            }
+        }
+
+        setClassViewPageState('ready');
+
+        // Init Sidebar CTA
+        document.getElementById('btnEnroll')?.addEventListener('click', openPaymentBottomSheet);
+        document.getElementById('btnAddToCartSide')?.addEventListener('click', saveCurrentClassToCart);
+        document.getElementById('btnSheetClose')?.addEventListener('click', closePaymentBottomSheet);
+        document.getElementById('btnClassViewShare')?.addEventListener('click', shareClassViewPage);
+        document.getElementById('btnClassViewCart')?.addEventListener('click', saveCurrentClassToCart);
+        document.getElementById('btnBookmarkClass')?.addEventListener('click', toggleClassViewBookmark);
+        document.getElementById('btnGoToClassSide')?.addEventListener('click', () => {
+            if (isMobileClassViewLayout()) {
+                openClassViewConsultation();
+                return;
+            }
+            document.querySelector('[data-target="tabIntro"]')?.click();
+            window.scrollTo({ top: document.querySelector('.view-tabs').offsetTop - 80, behavior: 'smooth' });
         });
-    });
 
-    const initTab = getInitialTabTargetId();
-    activateTab(initTab || 'tabIntro', { updateHistory: false });
+        // Tab Logic
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        tabBtns.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const trg = btn.getAttribute('data-target');
+                activateTab(trg);
+            });
+        });
 
-    if (!window.__BSQ_CLASS_VIEW_MOBILE_RESIZE_BOUND__) {
-        window.addEventListener('resize', () => syncMobileClassViewChrome(), { passive: true });
-        window.addEventListener('orientationchange', () => syncMobileClassViewChrome(), { passive: true });
-        window.__BSQ_CLASS_VIEW_MOBILE_RESIZE_BOUND__ = true;
+        const initTab = getInitialTabTargetId();
+        activateTab(initTab || 'tabIntro', { updateHistory: false });
+
+        if (!window.__BSQ_CLASS_VIEW_MOBILE_RESIZE_BOUND__) {
+            window.addEventListener('resize', () => syncMobileClassViewChrome(), { passive: true });
+            window.addEventListener('orientationchange', () => syncMobileClassViewChrome(), { passive: true });
+            window.__BSQ_CLASS_VIEW_MOBILE_RESIZE_BOUND__ = true;
+        }
+        syncMobileClassViewChrome();
+    } catch (error) {
+        const message = String(error?.message || error || '클래스 정보를 불러오지 못했습니다.');
+        devLog('warn', '[class_view] bootstrap failed:', error);
+        setClassViewPageState('error', {
+            title: '클래스 정보를 불러오지 못했습니다.',
+            message: message.includes('Failed to fetch')
+                ? '네트워크 상태를 확인한 뒤 다시 시도해 주세요.'
+                : message,
+            detail: error?.detail || '',
+            actionLabel: '다시 불러오기',
+        });
+        const retryButton = document.querySelector('[data-action="class-view-retry"]');
+        retryButton?.addEventListener('click', requestClassViewReload);
     }
-    syncMobileClassViewChrome();
-});
+}
 
 function renderCorePageInfo(data) {
     const title = String(data?.title || data?.name || '?대옒???쒕ぉ').trim();
@@ -520,6 +659,11 @@ function renderCorePageInfo(data) {
     document.getElementById('heroReviewCountSide').textContent = String(data.review_count || 0);
     document.getElementById('heroPriceSummarySide').textContent = getPriceSummary(data, price);
     document.getElementById('heroOfferSummarySide').textContent = getOfferSummary(data);
+    const heroFormatChip = document.getElementById('heroFormatChip');
+    if (heroFormatChip) {
+        heroFormatChip.textContent = getHeroFormatChipText(data);
+        heroFormatChip.title = getOfferSummary(data);
+    }
     document.getElementById('heroCategoryTop').textContent = data.category || '카테고리';
     document.getElementById('heroTitleTop').textContent = data.title || '클래스 제목';
     document.getElementById('heroSummaryTop').textContent = getHeroSummary(data);
@@ -652,37 +796,6 @@ function initHeroSlider(imageUrls = []) {
     if (counterEl) counterEl.hidden = total <= 1;
     goTo(0);
 }
-
-		function updateEnrollmentUI() {
-	    const btn = document.getElementById('btnEnroll');
-	    if (btn) {
-	        if (!userId && !window.__BSQ_DEV_MODE__) {
-	            btn.textContent = '로그인 후 시작하기';
-	            btn.disabled = false;
-	        } else if (isInstructor && !window.__BSQ_DEV_MODE__) {
-	            btn.textContent = '강사/운영자 계정';
-	            btn.disabled = true;
-	        } else if (isEnrolled && !window.__BSQ_DEV_MODE__) {
-	            btn.textContent = '✓ 수강 중인 클래스';
-	            btn.disabled = true;
-	        } else {
-	            btn.textContent = '지금 바로 시작하기';
-	            btn.disabled = false;
-	        }
-	    }
-	    const pc = document.getElementById('myPassCountVal');
-	    if (pc) pc.textContent = `${userPassCount}개`;
-	}
-
-function openPaymentBottomSheet() {
-    if (!userId) { location.href = '../login/login.html'; return; }
-    if (isInstructor && !window.__BSQ_DEV_MODE__) {
-        showToast('info', '강사 계정', '본인(관리) 클래스는 결제 없이 이용할 수 있습니다.');
-        return;
-    }
-    document.getElementById('paymentBottomSheet').style.display = 'flex';
-}
-function closePaymentBottomSheet() { document.getElementById('paymentBottomSheet').style.display = 'none'; }
 
 async function saveCurrentClassToCart() {
     showToast('success', '장바구니에 담았습니다', '마이페이지에서 확인할 수 있습니다.');

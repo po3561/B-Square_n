@@ -195,7 +195,7 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
         } catch (error) {
             console.error('Notice load error:', error);
             if (listContainer) {
-                listContainer.innerHTML = '<div class="empty-state" style="padding: 3rem; text-align: center; color: var(--comm-text2);">공지사항을 불러오지 못했습니다.</div>';
+                listContainer.innerHTML = '<div class="empty-state" style="padding: 2rem 1rem; text-align: center; color: var(--comm-text2);">공지사항을 불러오지 못했습니다.</div>';
             }
         }
     }
@@ -204,7 +204,7 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
         if (!listContainer) return;
 
         if (!notices.length) {
-            listContainer.innerHTML = '<div class="empty-state" style="padding: 3rem; text-align: center; color: var(--comm-text2);">아직 등록된 공지사항이 없습니다.</div>';
+            listContainer.innerHTML = '<div class="empty-state" style="padding: 2rem 1rem; text-align: center; color: var(--comm-text2);">아직 등록된 공지사항이 없습니다.</div>';
             return;
         }
 
@@ -221,7 +221,7 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
                 <article
                     class="notice-item card-block"
                     data-id="${escapeHtml(noticeId)}"
-                    style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.4rem 1.5rem; margin-bottom: 1rem; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 8px 20px rgba(0,0,0,0.08);"
+                    style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.1rem 1.2rem; margin-bottom: 0.8rem; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 6px 16px rgba(0,0,0,0.07);"
                 >
                     <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem;">
                         <div style="min-width:0;">

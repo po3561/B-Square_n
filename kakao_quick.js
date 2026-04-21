@@ -48,7 +48,7 @@
         return clampTheme(
             document.documentElement.getAttribute('data-theme')
             || localStorage.getItem('bsq_theme')
-            || 'dark'
+            || 'light'
         );
     }
 
@@ -860,6 +860,7 @@ html[data-theme="light"] .bsq-helper-modal-card {
     }
 
     function maybeShowFirstTour() {
+        if (document.body?.classList?.contains('class-list-page') || document.body?.classList?.contains('class-view-page')) return;
         if (window.matchMedia?.('(max-width: 768px)')?.matches) return;
         let seen = false;
         try { seen = localStorage.getItem(STORAGE.tourSeen) === '1'; } catch { }

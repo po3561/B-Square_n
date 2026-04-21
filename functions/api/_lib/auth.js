@@ -251,7 +251,7 @@ export async function getCurrentUser(context) {
       operator_seq: 1,
       membership_level: 'Admin',
       preferred_language: normalizeLanguagePreference('ko'),
-      preferred_theme: normalizeThemePreference('dark'),
+      preferred_theme: normalizeThemePreference('light'),
       mfa_active: 0,
       marketing_sms_consent: 0,
       marketing_email_consent: 0,

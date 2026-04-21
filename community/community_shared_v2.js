@@ -5,6 +5,46 @@
     const BLOCK_STORAGE_KEY = 'bsq_comm_blocked_targets_v1';
     const relationCache = new Map();
 
+    function normalizeThemeChoice(value) {
+        if (window.__BSQ_THEME_SYNC__?.normalizeTheme) {
+            return window.__BSQ_THEME_SYNC__.normalizeTheme(value);
+        }
+        const raw = String(value || '').trim().toLowerCase();
+        if (raw === 'light' || raw === 'dark') return raw;
+        if (raw === 'system') {
+            try {
+                return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+            } catch {
+                return 'light';
+            }
+        }
+        return 'light';
+    }
+
+    function applyThemePreference(theme, language, { persistStorage = false } = {}) {
+        const themeSync = window.__BSQ_THEME_SYNC__;
+        if (themeSync?.applyAndBroadcastPreferenceState) {
+            return themeSync.applyAndBroadcastPreferenceState(theme, language, { persistStorage });
+        }
+
+        if (typeof window.BSQ?.applyPreferences === 'function') {
+            return window.BSQ.applyPreferences({ theme, language, persistStorage });
+        }
+
+        const snapshot = {
+            theme: normalizeThemeChoice(theme),
+            resolvedTheme: normalizeThemeChoice(theme),
+            language: String(language || 'ko').trim() || 'ko',
+            updatedAt: Date.now(),
+        };
+
+        window.dispatchEvent(new CustomEvent('bsq_preferences', {
+            detail: snapshot,
+        }));
+
+        return snapshot;
+    }
+
     function emitSync(type, detail = {}) {
         if (!type || typeof window === 'undefined') return;
         window.dispatchEvent(new CustomEvent('bsq_sync', {
@@ -14,7 +54,7 @@
 
     function loadSettings() {
         const fallback = {
-            theme: localStorage.getItem('bsq_theme') || 'dark',
+            theme: localStorage.getItem('bsq_theme') || 'light',
             density: localStorage.getItem('bsq_comm_density') || 'comfortable',
             enterToSend: localStorage.getItem('bsq_comm_enter_to_send') !== '0',
             reduceMotion: localStorage.getItem('bsq_comm_reduce_motion') === '1',
@@ -29,7 +69,7 @@
 
     function saveSettings(next) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-        localStorage.setItem('bsq_theme', next.theme || 'dark');
+        localStorage.setItem('bsq_theme', next.theme || 'light');
         localStorage.setItem('bsq_comm_density', next.density || 'comfortable');
         localStorage.setItem('bsq_comm_enter_to_send', next.enterToSend ? '1' : '0');
         localStorage.setItem('bsq_comm_reduce_motion', next.reduceMotion ? '1' : '0');
@@ -37,13 +77,10 @@
 
     function applySettings(overrides = {}) {
         const settings = { ...loadSettings(), ...overrides };
-        const nextTheme = String(settings.theme || 'dark').trim().toLowerCase() === 'light' ? 'light' : 'dark';
+        const nextTheme = normalizeThemeChoice(settings.theme);
         const nextSettings = { ...settings, theme: nextTheme };
         saveSettings(nextSettings);
-
-        document.documentElement.setAttribute('data-theme', nextTheme);
         if (document.body) {
-            document.body.dataset.theme = nextTheme;
             document.body.dataset.commDensity = nextSettings.density || 'comfortable';
             document.body.dataset.commMotion = nextSettings.reduceMotion ? 'reduce' : 'normal';
         }
@@ -54,22 +91,7 @@
             || localStorage.getItem('bsq_language')
             || 'ko';
 
-        if (typeof window.BSQ?.applyPreferences === 'function') {
-            window.BSQ.applyPreferences({
-                theme: nextTheme,
-                language: syncLanguage,
-                persistStorage: false,
-            });
-        } else if (typeof window.dispatchEvent === 'function') {
-            window.dispatchEvent(new CustomEvent('bsq_preferences', {
-                detail: {
-                    theme: nextTheme,
-                    resolvedTheme: nextTheme,
-                    language: syncLanguage,
-                    updatedAt: Date.now(),
-                },
-            }));
-        }
+        applyThemePreference(nextTheme, syncLanguage, { persistStorage: false });
 
         return nextSettings;
     }

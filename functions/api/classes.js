@@ -29,6 +29,22 @@ function isTruthyFlag(value) {
   return text === '1' || text === 'true' || text === 'yes';
 }
 
+function toBase64Url(bytes) {
+  const input = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  let binary = '';
+  input.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function fromBase64Url(value) {
+  const normalized = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
+  const padding = normalized.length % 4 ? '='.repeat(4 - (normalized.length % 4)) : '';
+  const binary = atob(normalized + padding);
+  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+}
+
 function parseSortSpec(rawSort, rawOrder) {
   const sortInput = String(rawSort ?? '').trim().toLowerCase();
   const orderInput = String(rawOrder ?? '').trim().toLowerCase();
@@ -80,18 +96,8 @@ function parseCursorToken(value) {
   const token = trimText(value);
   if (!token) return { cursor: null, error: null };
 
-  let decoded = '';
   try {
-    decoded = Buffer.from(token, 'base64url').toString('utf8');
-  } catch {
-    try {
-      decoded = Buffer.from(token, 'base64').toString('utf8');
-    } catch {
-      return { cursor: null, error: 'Invalid cursor encoding' };
-    }
-  }
-
-  try {
+    const decoded = new TextDecoder().decode(fromBase64Url(token));
     const payload = JSON.parse(decoded);
     const createdAt = trimText(payload?.created_at);
     const id = trimText(payload?.id);
@@ -100,7 +106,7 @@ function parseCursorToken(value) {
     }
     return { cursor: { createdAt, id }, error: null };
   } catch {
-    return { cursor: null, error: 'Invalid cursor payload' };
+    return { cursor: null, error: 'Invalid cursor encoding' };
   }
 }
 
@@ -108,7 +114,7 @@ function makeCursorToken(row) {
   const createdAt = trimText(row?.created_at);
   const id = trimText(row?.id);
   if (!createdAt || !id) return null;
-  return Buffer.from(JSON.stringify({ created_at: createdAt, id }), 'utf8').toString('base64url');
+  return toBase64Url(new TextEncoder().encode(JSON.stringify({ created_at: createdAt, id })));
 }
 
 function normalizeClassRow(row) {

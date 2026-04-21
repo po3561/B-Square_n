@@ -18,6 +18,9 @@ window.initSecurityTab = function (userId) {
     }
 
     function normalizeLanguageChoice(value) {
+        if (window.__BSQ_THEME_SYNC__?.normalizeLanguage) {
+            return window.__BSQ_THEME_SYNC__.normalizeLanguage(value);
+        }
         const raw = String(value || '').trim();
         const lower = raw.toLowerCase();
         if (!raw) return 'ko';
@@ -28,10 +31,19 @@ window.initSecurityTab = function (userId) {
     }
 
     function normalizeThemeChoice(value) {
+        if (window.__BSQ_THEME_SYNC__?.normalizeTheme) {
+            return window.__BSQ_THEME_SYNC__.normalizeTheme(value);
+        }
         const raw = String(value || '').trim().toLowerCase();
         if (raw === 'light' || raw === 'dark') return raw;
-        if (raw === 'system') return 'dark';
-        return 'dark';
+        if (raw === 'system') {
+            try {
+                return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+            } catch {
+                return 'light';
+            }
+        }
+        return 'light';
     }
 
     function normalizeConsentChoice(value) {
@@ -43,6 +55,28 @@ window.initSecurityTab = function (userId) {
             if (['1', 'true', 'yes', 'on'].includes(raw)) return true;
             if (['0', 'false', 'no', 'off'].includes(raw)) return false;
         }
+        return null;
+    }
+
+    function applyThemePreference(theme, language, { persistStorage = false } = {}) {
+        const themeSync = window.__BSQ_THEME_SYNC__;
+        if (themeSync?.applyAndBroadcastPreferenceState) {
+            return themeSync.applyAndBroadcastPreferenceState(theme, language, { persistStorage });
+        }
+
+        if (typeof window.BSQ?.applyPreferences === 'function') {
+            return window.BSQ.applyPreferences({ theme, language, persistStorage });
+        }
+
+        window.dispatchEvent(new CustomEvent('bsq_preferences', {
+            detail: {
+                theme: normalizeThemeChoice(theme),
+                resolvedTheme: normalizeThemeChoice(theme),
+                language: normalizeLanguageChoice(language),
+                updatedAt: Date.now(),
+            },
+        }));
+
         return null;
     }
 
@@ -61,7 +95,7 @@ window.initSecurityTab = function (userId) {
             }
             if (themeSelect) {
                 themeSelect.value = normalizeThemeChoice(
-                    user.preferred_theme || localStorage.getItem('bsq_theme') || 'dark'
+                    user.preferred_theme || localStorage.getItem('bsq_theme') || 'light'
                 );
             }
 
@@ -76,14 +110,15 @@ window.initSecurityTab = function (userId) {
                 marketingEmailToggle.checked = apiValue ?? stored ?? false;
             }
 
-            window.BSQ.applyPreferences?.({
-                language: normalizeLanguageChoice(languageSelect?.value || user.preferred_language || 'ko'),
-                theme: normalizeThemeChoice(themeSelect?.value || user.preferred_theme || 'dark'),
-            });
+            applyThemePreference(
+                normalizeThemeChoice(themeSelect?.value || user.preferred_theme || 'light'),
+                normalizeLanguageChoice(languageSelect?.value || user.preferred_language || 'ko'),
+                { persistStorage: false },
+            );
         } catch (error) {
             console.warn('[tab_security] state load failed:', error);
             if (languageSelect) languageSelect.value = normalizeLanguageChoice(localStorage.getItem('bsq_language') || 'ko');
-            if (themeSelect) themeSelect.value = normalizeThemeChoice(localStorage.getItem('bsq_theme') || 'dark');
+            if (themeSelect) themeSelect.value = normalizeThemeChoice(localStorage.getItem('bsq_theme') || 'light');
             if (marketingSmsToggle) marketingSmsToggle.checked = normalizeConsentChoice(localStorage.getItem('bsq_marketing_sms_consent')) ?? false;
             if (marketingEmailToggle) marketingEmailToggle.checked = normalizeConsentChoice(localStorage.getItem('bsq_marketing_email_consent')) ?? false;
         }
@@ -170,7 +205,7 @@ window.initSecurityTab = function (userId) {
             updates.preferred_theme ||
             themeSelect?.value ||
             localStorage.getItem('bsq_theme') ||
-            'dark'
+            'light'
         );
 
         if (updates.preferred_language || savedPreferences?.preferred_language) localStorage.setItem('bsq_language', nextLanguage);
@@ -183,10 +218,7 @@ window.initSecurityTab = function (userId) {
             });
         }
 
-        window.BSQ.applyPreferences?.({
-            language: nextLanguage,
-            theme: nextTheme,
-        });
+        applyThemePreference(nextTheme, nextLanguage, { persistStorage: false });
     }
 
     async function persistMarketingConsent(payload) {
@@ -227,7 +259,7 @@ window.initSecurityTab = function (userId) {
     });
 
     themeSelect?.addEventListener('change', async () => {
-        const previousTheme = normalizeThemeChoice(localStorage.getItem('bsq_theme') || 'dark');
+        const previousTheme = normalizeThemeChoice(localStorage.getItem('bsq_theme') || 'light');
         try {
             await persistPreferences({ preferred_theme: themeSelect.value });
             showMypageNotice?.('success', '테마 저장 완료', '테마가 저장되었습니다.');

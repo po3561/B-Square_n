@@ -32,11 +32,41 @@
     <script src="/i18n.js?v=20260331_01" defer></script>
 </head>
 
-<body class="class-view-page">
+<body class="class-view-page class-view-loading" data-shell-page="class-view-detail" data-shell-bottom-nav="hidden">
     <!-- header.js가 헤더/푸터/Drawer/BottomNav를 동적으로 삽입 -->
 
     <main class="view-container">
         <!-- 상단 히어로: 이미지 슬라이더 + 클래스 요약 패널 -->
+        <div id="classViewStatus" class="class-view-status-layer" aria-live="polite" aria-label="클래스 상세 상태">
+            <section class="class-view-status-card class-view-status-skeleton" data-state="loading" aria-busy="true">
+                <div class="class-view-status-copy">
+                    <span class="class-view-status-eyebrow">불러오는 중</span>
+                    <strong class="class-view-status-title">클래스 정보를 준비하고 있습니다.</strong>
+                    <p class="class-view-status-text">세션, 수강권, 후기, 공지 데이터를 한 번에 정리하는 중입니다.</p>
+                </div>
+                <div class="class-view-skeleton-hero" aria-hidden="true">
+                    <div class="class-view-skeleton-block class-view-skeleton-media"></div>
+                    <div class="class-view-skeleton-copy">
+                        <span class="class-view-skeleton-line class-view-skeleton-line-short"></span>
+                        <span class="class-view-skeleton-line class-view-skeleton-line-lg"></span>
+                        <span class="class-view-skeleton-line class-view-skeleton-line-md"></span>
+                        <span class="class-view-skeleton-line class-view-skeleton-line-sm"></span>
+                    </div>
+                </div>
+                <div class="class-view-skeleton-metric-row" aria-hidden="true">
+                    <span class="class-view-skeleton-pill"></span>
+                    <span class="class-view-skeleton-pill"></span>
+                    <span class="class-view-skeleton-pill"></span>
+                </div>
+                <div class="class-view-skeleton-grid" aria-hidden="true">
+                    <span class="class-view-skeleton-card"></span>
+                    <span class="class-view-skeleton-card"></span>
+                    <span class="class-view-skeleton-card"></span>
+                    <span class="class-view-skeleton-card"></span>
+                </div>
+            </section>
+        </div>
+
         <section class="premium-hero">
             <div class="hero-bg-wrapper">
                 <div class="hero-overlay"></div>
@@ -72,7 +102,7 @@
                     <div class="hero-info-copy">
                         <p class="hero-info-kicker" id="heroCategoryTop">카테고리</p>
                         <h1 class="hero-info-title" id="heroTitleTop">클래스 제목</h1>
-                        <p class="hero-info-summary" id="heroSummaryTop">클래스의 핵심 장점과 수강 포인트를 한눈에 보여줍니다.</p>
+                        <p class="hero-info-summary" id="heroSummaryTop">핵심 정보만 짧게 보여줍니다.</p>
                     </div>
                     <div class="hero-info-stats">
                         <div class="hero-info-stat">
@@ -438,7 +468,7 @@
                     <div class="sidebar-cta-area">
                         <div class="cta-primary-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                             <button class="btn-cta-secondary btn-bookmark-class" id="btnBookmarkClass" type="button"
-                                aria-pressed="false" aria-label="찜하기" style="display:none;">
+                                aria-pressed="false" aria-label="찜하기">
                                 <i class="fa-regular fa-heart" aria-hidden="true"></i>
                             </button>
                             <button class="btn-cta-start" id="btnGoToClassSide" type="button"
@@ -447,8 +477,7 @@
                                 style="padding: 0.8rem;">장바구니 담기</button>
                         </div>
                         <button class="btn-cta-start" id="btnEnroll" type="button"
-                            style="margin-top: 10px; background: #222; border: 1px solid #444; box-shadow: none;">지금 바로
-                            시작하기</button>
+                            style="margin-top: 10px; background: #222; border: 1px solid #444; box-shadow: none;">수강하기</button>
                     </div>
 
                     <div class="hero-trust-row" aria-label="수강 안내"

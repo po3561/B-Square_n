@@ -4,7 +4,7 @@
   const THEME_KEY = 'bsq_theme';
   const LANGUAGE_KEY = 'bsq_language';
   const USER_KEY = 'bsq_user';
-  const DEFAULT_THEME = 'dark';
+  const DEFAULT_THEME = 'light';
   const DEFAULT_LANGUAGE = 'ko';
   const LANGUAGE_ALIASES = new Map([
     ['zh', 'zh-CN'],
@@ -49,52 +49,136 @@
     return DEFAULT_LANGUAGE;
   }
 
-  function resolveInitialTheme() {
-    const user = readJson(USER_KEY);
-    return normalizeTheme(
-      user?.preferred_theme
-      || localStorage.getItem(THEME_KEY)
-      || document.documentElement.getAttribute('data-theme')
-      || DEFAULT_THEME
-    );
+  function snapshotPreferenceState(theme, language) {
+    const previous = resolvePreferenceSnapshot();
+    const nextTheme = normalizeTheme(theme === undefined || theme === null || theme === '' ? previous.theme : theme);
+    const nextLanguage = normalizeLanguage(language === undefined || language === null || language === '' ? previous.language : language);
+
+    return {
+      theme: nextTheme,
+      resolvedTheme: nextTheme,
+      language: nextLanguage,
+      updatedAt: Date.now(),
+    };
   }
 
-  function resolveInitialLanguage() {
+  function resolvePreferenceSnapshot() {
     const user = readJson(USER_KEY);
-    return normalizeLanguage(
-      user?.preferred_language
-      || localStorage.getItem(LANGUAGE_KEY)
-      || document.documentElement.getAttribute('lang')
-      || navigator.language
-      || DEFAULT_LANGUAGE
-    );
-  }
-
-  function applyToRoot(theme, language) {
     const root = document.documentElement;
-    root.dataset.theme = theme;
-    root.dataset.language = language;
-    root.lang = language;
+    const body = document.body;
+    const bootstrapSnapshot = window.__BSQ_PREFERENCES__ || window.__BSQ_BOOTSTRAP__ || null;
 
-    if (document.body) {
-      document.body.dataset.theme = theme;
-      document.body.dataset.language = language;
-    } else {
-      window.addEventListener('DOMContentLoaded', () => {
-        if (document.body) {
-          document.body.dataset.theme = theme;
-          document.body.dataset.language = language;
-        }
-      }, { once: true });
-    }
+    const themeSource =
+      bootstrapSnapshot?.resolvedTheme
+      || bootstrapSnapshot?.theme
+      || user?.preferred_theme
+      || localStorage.getItem(THEME_KEY)
+      || root.getAttribute('data-theme')
+      || body?.getAttribute('data-theme')
+      || DEFAULT_THEME;
+
+    const languageSource =
+      bootstrapSnapshot?.language
+      || user?.preferred_language
+      || localStorage.getItem(LANGUAGE_KEY)
+      || root.getAttribute('lang')
+      || body?.getAttribute('lang')
+      || navigator.language
+      || DEFAULT_LANGUAGE;
+
+    return {
+      theme: normalizeTheme(themeSource),
+      language: normalizeLanguage(languageSource),
+    };
   }
 
-  const theme = resolveInitialTheme();
-  const language = resolveInitialLanguage();
-  applyToRoot(theme, language);
+  function syncBodyFromRoot() {
+    if (!document.body) return false;
+    document.body.dataset.theme = document.documentElement.dataset.theme || DEFAULT_THEME;
+    document.body.dataset.language = document.documentElement.dataset.language || DEFAULT_LANGUAGE;
+    return true;
+  }
 
-  window.__BSQ_BOOTSTRAP__ = {
-    theme,
-    language,
+  function ensureBodySyncOnReady() {
+    if (document.body || ensureBodySyncOnReady.bound) return;
+    ensureBodySyncOnReady.bound = true;
+    window.addEventListener('DOMContentLoaded', () => {
+      syncBodyFromRoot();
+    }, { once: true });
+  }
+
+  function applyPreferenceState(theme, language, { persistStorage = true } = {}) {
+    const root = document.documentElement;
+    const snapshot = snapshotPreferenceState(theme, language);
+    const nextTheme = snapshot.theme;
+    const nextLanguage = snapshot.language;
+
+    root.dataset.theme = nextTheme;
+    root.dataset.language = nextLanguage;
+    root.lang = nextLanguage;
+
+    if (!syncBodyFromRoot()) {
+      ensureBodySyncOnReady();
+    }
+
+    if (persistStorage) {
+      localStorage.setItem(THEME_KEY, nextTheme);
+      localStorage.setItem(LANGUAGE_KEY, nextLanguage);
+    }
+
+    window.__BSQ_BOOTSTRAP__ = snapshot;
+    window.__BSQ_PREFERENCES__ = snapshot;
+    return snapshot;
+  }
+
+  function broadcastPreferenceState(detail) {
+    if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return null;
+    const snapshot = detail && typeof detail === 'object'
+      ? detail
+      : (window.__BSQ_PREFERENCES__ || resolvePreferenceSnapshot());
+
+    window.dispatchEvent(new CustomEvent('bsq_preferences', {
+      detail: snapshot,
+    }));
+
+    return snapshot;
+  }
+
+  function applyAndBroadcastPreferenceState(theme, language, options = {}) {
+    const snapshot = applyPreferenceState(theme, language, options);
+    broadcastPreferenceState(snapshot);
+    return snapshot;
+  }
+
+  function syncFromPreferenceEvent(event) {
+    const detail = event?.detail || {};
+    const snapshot = resolvePreferenceSnapshot();
+    applyPreferenceState(
+      detail.resolvedTheme || detail.theme || snapshot.theme,
+      detail.language || snapshot.language,
+      { persistStorage: true },
+    );
+  }
+
+  function syncFromStorageEvent(event) {
+    if (!event || ![THEME_KEY, LANGUAGE_KEY, USER_KEY].includes(event.key)) return;
+    const snapshot = resolvePreferenceSnapshot();
+    applyPreferenceState(snapshot.theme, snapshot.language, { persistStorage: false });
+  }
+
+  const initialSnapshot = resolvePreferenceSnapshot();
+  applyPreferenceState(initialSnapshot.theme, initialSnapshot.language, { persistStorage: true });
+
+  window.__BSQ_THEME_SYNC__ = {
+    normalizeTheme,
+    normalizeLanguage,
+    resolvePreferenceSnapshot,
+    snapshotPreferenceState,
+    applyPreferenceState,
+    applyAndBroadcastPreferenceState,
+    broadcastPreferenceState,
   };
+
+  window.addEventListener('bsq_preferences', syncFromPreferenceEvent);
+  window.addEventListener('storage', syncFromStorageEvent);
 })();

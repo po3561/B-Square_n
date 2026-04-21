@@ -1,11 +1,11 @@
 .curriculum-header-row {
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .curriculum-container {
     display: grid;
-    gap: 1rem;
+    gap: 0.85rem;
 }
 
 .curriculum-chapter {
@@ -22,11 +22,11 @@
 .chapter-header {
     width: 100%;
     border: 0;
-    padding: 1.5rem 1.75rem;
+    padding: 1.35rem 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 0.9rem;
     text-align: left;
     cursor: pointer;
     background: transparent;
@@ -129,7 +129,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 1rem;
-    padding: 1rem 1.75rem;
+    padding: 0.9rem 1.5rem;
     background: rgba(255, 255, 255, 0.01);
     border-top: 1px solid var(--border-color);
 }
@@ -206,7 +206,7 @@
 .lesson-empty-state {
     display: grid;
     gap: 0.35rem;
-    padding: 1.15rem 1.75rem 1.3rem;
+    padding: 1rem 1.5rem 1.1rem;
     color: var(--text-secondary);
 }
 
@@ -235,7 +235,7 @@
     border: 1px dashed var(--border-color);
     border-radius: 24px;
     background: var(--bg-card);
-    padding-block: 1.4rem;
+    padding-block: 1.15rem;
 }
 
 html[data-theme="light"] body.class-view-page .curriculum-chapter {

@@ -1,9 +1,9 @@
-------formdata-undici-087401157360
+------formdata-undici-005694541930
 Content-Disposition: form-data; name="metadata"
 
-{"main_module":"functionsWorker-0.4042972352259788.js"}
-------formdata-undici-087401157360
-Content-Disposition: form-data; name="functionsWorker-0.4042972352259788.js"; filename="functionsWorker-0.4042972352259788.js"
+{"main_module":"functionsWorker-0.0351315996176792.js"}
+------formdata-undici-005694541930
+Content-Disposition: form-data; name="functionsWorker-0.0351315996176792.js"; filename="functionsWorker-0.0351315996176792.js"
 Content-Type: application/javascript+module
 
 var __defProp = Object.defineProperty;
@@ -33216,6 +33216,79 @@ function buildBirthDate2(user) {
   return parts.length ? parts.join("-") : "";
 }
 __name(buildBirthDate2, "buildBirthDate");
+function buildVirtualMemberDetail(user) {
+  const safeUser = user && typeof user === "object" ? { ...user } : {};
+  return {
+    user: {
+      ...safeUser,
+      nickname: safeUser.username || "",
+      birthdate: buildBirthDate2(safeUser),
+      signup_date: safeUser.created_at || "",
+      is_blacklisted: normalizeBoolean5(safeUser.is_blacklisted),
+      blacklisted_at: normalizeDate(safeUser.blacklisted_at)
+    },
+    summary: {
+      subscribed_class_count: 0,
+      ongoing_class_count: 0,
+      paid_order_count: 0,
+      total_paid_amount: 0,
+      pass_total_count: 0,
+      pass_remaining_count: 0,
+      refund_count: 0,
+      refund_total_amount: 0,
+      instructor_class_count: 0
+    },
+    subscribed_classes: [],
+    ongoing_classes: [],
+    payments: [],
+    passes: [],
+    refund_logs: [],
+    blacklist_logs: [],
+    instructor_classes: [],
+    class_participants: []
+  };
+}
+__name(buildVirtualMemberDetail, "buildVirtualMemberDetail");
+function applyGhostUserPatch(user, body = {}) {
+  const next = { ...user && typeof user === "object" ? user : {} };
+  const stringFields = [
+    "name",
+    "phone",
+    "profile_image_url",
+    "sns_link",
+    "referrer_code",
+    "birth_year",
+    "birth_month",
+    "birth_day",
+    "gender",
+    "nationality"
+  ];
+  for (const field of stringFields) {
+    if (body[field] === void 0) continue;
+    const value = typeof body[field] === "string" ? body[field].trim() : body[field];
+    next[field] = value === "" ? null : value;
+  }
+  if (body.preferred_category !== void 0) {
+    next.preferred_category = String(body.preferred_category || "").trim();
+  }
+  if (body.preferred_language !== void 0) {
+    next.preferred_language = normalizeLanguagePreference(body.preferred_language);
+  }
+  if (body.preferred_theme !== void 0) {
+    next.preferred_theme = normalizeThemePreference(body.preferred_theme);
+  }
+  if (body.mfa_active !== void 0) {
+    next.mfa_active = normalizeBoolean5(body.mfa_active) ? 1 : 0;
+  }
+  if (body.marketing_sms_consent !== void 0) {
+    next.marketing_sms_consent = normalizeBoolean5(body.marketing_sms_consent) ? 1 : 0;
+  }
+  if (body.marketing_email_consent !== void 0) {
+    next.marketing_email_consent = normalizeBoolean5(body.marketing_email_consent) ? 1 : 0;
+  }
+  return next;
+}
+__name(applyGhostUserPatch, "applyGhostUserPatch");
 function normalizeBoolean5(value) {
   if (typeof value === "boolean") return value;
   if (typeof value === "number") return value === 1;
@@ -33617,6 +33690,9 @@ async function onRequestGet21(context) {
     if (!detailedAccess) {
       return json(request, env, { success: false, error: "\uC870\uD68C \uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4." }, { status: 403 });
     }
+    if (auth.user.id === "OPERATOR_GHOST" && userId === auth.user.id) {
+      return json(request, env, { success: true, data: buildVirtualMemberDetail(auth.user) });
+    }
     const detail = await loadMemberDetail(env.DB, userId);
     if (!detail) {
       return json(request, env, { success: false, error: "\uC0AC\uC6A9\uC790\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4." }, { status: 404 });
@@ -33637,6 +33713,10 @@ async function onRequestPut2(context) {
   await ensureOperationsSchema(env.DB);
   try {
     const body = await request.json();
+    if (auth.user.id === "OPERATOR_GHOST" && userId === auth.user.id) {
+      const patchedUser = applyGhostUserPatch(auth.user, body);
+      return json(request, env, { success: true, data: buildVirtualMemberDetail(patchedUser) });
+    }
     const currentUser = applyMasterAdminOverride(await safeQueryOne(env.DB, `
       SELECT id, role, is_blacklisted
       FROM users
@@ -33903,6 +33983,26 @@ function normalizeChatMessage(row) {
   return normalized;
 }
 __name(normalizeChatMessage, "normalizeChatMessage");
+async function refreshClassRoomPreview(env, classId, messageId, previewText) {
+  const normalizedClassId = trimText3(classId);
+  const normalizedMessageId = trimText3(messageId);
+  if (!normalizedClassId || !normalizedMessageId) return;
+  const latest = await env.DB.prepare(`
+    SELECT id
+    FROM chat_messages
+    WHERE class_id = ?
+    ORDER BY datetime(created_at) DESC, id DESC
+    LIMIT 1
+  `).bind(normalizedClassId).first().catch(() => null);
+  if (!latest || String(latest.id) !== normalizedMessageId) return;
+  const nextPreview = trimText3(previewText || "").substring(0, 100) || "attachment";
+  await env.DB.prepare(`
+    UPDATE user_chats
+    SET last_message = ?
+    WHERE room_id = ? AND type = 'class'
+  `).bind(nextPreview, normalizedClassId).run().catch(() => null);
+}
+__name(refreshClassRoomPreview, "refreshClassRoomPreview");
 async function onRequest18(context) {
   const { request, env, params } = context;
   if (request.method === "OPTIONS") {
@@ -33939,6 +34039,7 @@ async function onRequest18(context) {
       }
       const responseData = normalizeChatMessage(updated);
       if (body.client_id) responseData.client_id = String(body.client_id);
+      await refreshClassRoomPreview(env, updated.class_id, messageId, content);
       return json(request, env, { success: true, data: responseData });
     }
     if (request.method === "DELETE") {
@@ -33952,6 +34053,7 @@ async function onRequest18(context) {
         WHERE id = ?
       `).bind(deletedText, deletedText, messageId).run();
       const updated = await env.DB.prepare(`SELECT ${CHAT_MESSAGE_COLUMNS} FROM chat_messages WHERE id = ?`).bind(messageId).first();
+      await refreshClassRoomPreview(env, message.class_id, messageId, deletedText);
       return json(request, env, { success: true, data: updated ? normalizeChatMessage(updated) : null });
     }
     return json(request, env, { success: false, error: "method not allowed" }, { status: 405 });
@@ -34179,6 +34281,27 @@ function normalizeMessage(row) {
   };
 }
 __name(normalizeMessage, "normalizeMessage");
+async function refreshRoomPreviewIfLatest(env, roomId, roomType, messageId, previewText) {
+  const normalizedRoomId = trimText4(roomId);
+  const normalizedRoomType = trimText4(roomType || "dm").toLowerCase() || "dm";
+  const normalizedMessageId = trimText4(messageId);
+  if (!normalizedRoomId || !normalizedMessageId) return;
+  const latest = await env.DB.prepare(`
+    SELECT id
+    FROM dm_messages
+    WHERE room_id = ? AND room_type = ?
+    ORDER BY datetime(created_at) DESC, id DESC
+    LIMIT 1
+  `).bind(normalizedRoomId, normalizedRoomType).first().catch(() => null);
+  if (!latest || String(latest.id) !== normalizedMessageId) return;
+  const nextPreview = trimText4(previewText || "").substring(0, 100) || "attachment";
+  await env.DB.prepare(`
+    UPDATE user_chats
+    SET last_message = ?
+    WHERE room_id = ? AND type = ?
+  `).bind(nextPreview, normalizedRoomId, normalizedRoomType).run().catch(() => null);
+}
+__name(refreshRoomPreviewIfLatest, "refreshRoomPreviewIfLatest");
 function buildSinceClause(since) {
   if (!since) {
     return { sql: "", bind: null, orderSql: "ORDER BY created_at ASC, id ASC" };
@@ -34507,6 +34630,9 @@ async function onRequest20(context) {
       if (!updated) {
         return json(request, env, { success: false, error: "message not found" }, { status: 404 });
       }
+      if (hasContent) {
+        await refreshRoomPreviewIfLatest(env, roomId, access.roomType, subResource, content);
+      }
       return json(request, env, { success: true, data: normalizeMessage(updated) });
     }
     if (request.method === "DELETE" && subResource) {
@@ -34539,6 +34665,7 @@ async function onRequest20(context) {
         FROM dm_messages
         WHERE id = ? AND room_id = ? AND room_type = ?
       `).bind(subResource, roomId, access.roomType).first();
+      await refreshRoomPreviewIfLatest(env, roomId, access.roomType, subResource, deletedText);
       return json(request, env, { success: true, data: updated ? normalizeMessage(updated) : null });
     }
     return json(request, env, { success: false, error: "Method not allowed" }, { status: 405 });
@@ -39575,7 +39702,7 @@ async function onRequest31(context) {
 }
 __name(onRequest31, "onRequest");
 
-// ../.wrangler/tmp/pages-0lYP1v/functionsRoutes-0.6030149442071007.mjs
+// ../.wrangler/tmp/pages-ScEccr/functionsRoutes-0.9929491863418298.mjs
 var routes = [
   {
     routePath: "/api/auth/social/context",
@@ -40923,7 +41050,7 @@ var routes = [
   }
 ];
 
-// C:/Users/Deokgyo/AppData/Local/npm-cache/_npx/32026684e21afda6/node_modules/path-to-regexp/dist.es2015/index.js
+// ../../../../../../AppData/Local/npm-cache/_npx/32026684e21afda6/node_modules/path-to-regexp/dist.es2015/index.js
 function lexer(str) {
   var tokens = [];
   var i = 0;
@@ -41249,7 +41376,7 @@ function pathToRegexp(path, keys2, options2) {
 }
 __name(pathToRegexp, "pathToRegexp");
 
-// C:/Users/Deokgyo/AppData/Local/npm-cache/_npx/32026684e21afda6/node_modules/wrangler/templates/pages-template-worker.ts
+// ../../../../../../AppData/Local/npm-cache/_npx/32026684e21afda6/node_modules/wrangler/templates/pages-template-worker.ts
 var escapeRegex = /[.+?^${}()|[\]\\]/g;
 function* executeRequest(request) {
   const requestPath = new URL(request.url).pathname;
@@ -41380,4 +41507,4 @@ xlsx/xlsx.mjs:
   (*! sheetjs (C) 2013-present SheetJS -- http://sheetjs.com *)
 */
 
-------formdata-undici-087401157360--
+------formdata-undici-005694541930--
