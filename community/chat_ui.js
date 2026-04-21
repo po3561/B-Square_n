@@ -1319,11 +1319,11 @@ window.CommunityModules.ChatUI = (function () {
         // 답장 인용구
         if (msgData.type === 'deleted') {
             const deletedText = msgData.content || msgData.message || '메시지가 삭제되었습니다.';
-            contentHtml += `<div class="msg-bubble msg-deleted">${escapeHtml(deletedText)}</div>`;
+            contentHtml += `<div class="msg-bubble msg-deleted">${escapeHtmlWithBreaks(deletedText)}</div>`;
         } else if (msgData.reply_to && msgData.reply_text) {
             contentHtml += `<div class="msg-reply-quote" onclick="document.getElementById('msg-${msgData.reply_to}')?.scrollIntoView({behavior:'smooth', block:'center'})">
                 <span class="reply-quote-user">${msgData.reply_user || '이전 메시지'}</span>
-                <span class="reply-quote-content">${escapeHtml(msgData.reply_text)}</span>
+                <span class="reply-quote-content">${escapeHtmlWithBreaks(msgData.reply_text)}</span>
             </div>`;
         }
 
@@ -1342,7 +1342,7 @@ window.CommunityModules.ChatUI = (function () {
         } else if (msgData.type === 'gathering_card') {
             contentHtml += renderGatheringCardHtml(msgId, msgData);
         } else {
-            contentHtml += `<div class="msg-bubble">${escapeHtml(msgData.content || '')}</div>`;
+            contentHtml += `<div class="msg-bubble">${escapeHtmlWithBreaks(msgData.content || '')}</div>`;
         }
 
         // 리액션 (간소화)
@@ -2004,6 +2004,9 @@ window.CommunityModules.ChatUI = (function () {
     }
 
     function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function escapeHtmlWithBreaks(s) {
+        return escapeHtml(String(s ?? '')).replace(/\r\n|\r|\n/g, '<br>');
+    }
     function escapeAttr(value) {
         return String(value ?? '')
             .replace(/&/g, '&amp;')

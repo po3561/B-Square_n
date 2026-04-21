@@ -1176,11 +1176,20 @@ body[data-layout="popup"]::-webkit-scrollbar {
     min-height: 44px;
     max-height: 120px;
     resize: none;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     border: 0;
     outline: none;
     color: var(--comm-text);
     background: transparent;
     line-height: 1.55;
+}
+
+.input-pill-wrapper textarea::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
 }
 
 .btn-input-icon-pill {
