@@ -556,6 +556,12 @@ html[data-theme="light"] .comm-info-panel {
   border-color: rgba(15, 23, 42, 0.10) !important;
 }
 
+html[data-theme="light"] body[data-layout="community"] .info-panel-header {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+  color: var(--bsq-text) !important;
+}
+
 html[data-theme="light"] .class-search-input,
 html[data-theme="light"] .sort-select,
 html[data-theme="light"] .settings-select,
@@ -2403,6 +2409,8 @@ body.home-page #homeMainBannerStage[data-banner-variant="album"] .home-banner-ca
   display: grid;
   gap: 12px;
   color: var(--bsq-text) !important;
+  width: 100%;
+  min-width: 0;
 }
 
 :where(body[data-layout="community"], body[data-layout="popup"], body.class-view-page) .class-info-loading,
@@ -2425,6 +2433,18 @@ body.home-page #homeMainBannerStage[data-banner-variant="album"] .home-banner-ca
   border-radius: 24px !important;
   background: color-mix(in srgb, var(--bsq-surface) 94%, transparent) !important;
   box-shadow: var(--bsq-shadow-soft) !important;
+  width: 100%;
+  min-width: 0;
+}
+
+:where(body[data-layout="community"], body[data-layout="popup"], body.class-view-page) .class-member-row,
+:where(body[data-layout="community"], body[data-layout="popup"], body.class-view-page) .class-gathering-card {
+  width: 100%;
+  min-width: 0;
+}
+
+:where(body[data-layout="community"], body[data-layout="popup"], body.class-view-page) .class-member-meta-list {
+  min-width: 0;
 }
 
 :where(body[data-layout="community"], body[data-layout="popup"], body.class-view-page) .class-info-roster {
