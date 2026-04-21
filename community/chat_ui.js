@@ -852,12 +852,14 @@ window.CommunityModules.ChatUI = (function () {
             const scrollTop = container.scrollTop;
             const scrollHeight = container.scrollHeight;
             const clientHeight = container.clientHeight;
-            const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+            const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+            const isNearBottom = distanceFromBottom <= 80;
+            const hasOverflow = scrollHeight > clientHeight + 8;
 
             if (isNearBottom) {
                 btnScroll.classList.remove('active'); unreadCount = 0;
                 if (badge) badge.style.display = 'none';
-            } else if (scrollTop < scrollHeight - clientHeight - 300) {
+            } else if (hasOverflow) {
                 btnScroll.classList.add('active');
             }
 
@@ -871,7 +873,7 @@ window.CommunityModules.ChatUI = (function () {
         });
 
         btnScroll.addEventListener('click', () => {
-            scrollToBottom(true); unreadCount = 0;
+            scrollToBottom(); unreadCount = 0;
             if (badge) badge.style.display = 'none';
             btnScroll.classList.remove('active');
         });
