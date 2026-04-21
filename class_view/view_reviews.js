@@ -5,6 +5,97 @@ window.BSquareModules.initReviews = function (_, classId, userId, __, hasAccess,
     setupReviewForm(classId, userId, hasAccess, isInstructor);
 };
 
+let reviewLoadToken = 0;
+
+function devLog(level, ...args) {
+    if (typeof window.__BSQ_DEV_LOG__ === 'function') {
+        window.__BSQ_DEV_LOG__(level, ...args);
+        return;
+    }
+
+    const fn = typeof console?.[level] === 'function' ? console[level].bind(console) : console.log.bind(console);
+    fn(...args);
+}
+
+function renderReviewLoadingState(reviewList, photoGrid) {
+    if (photoGrid) {
+        photoGrid.innerHTML = `
+            <div class="section-skeleton-list" aria-hidden="true">
+                <div class="section-skeleton-item" style="min-height: 112px;">
+                    <div class="section-skeleton-row">
+                        <span class="section-skeleton-chip" style="width:72px;"></span>
+                        <span class="section-skeleton-line" style="width:48%; height:18px;"></span>
+                        <span class="section-skeleton-line" style="width:82%;"></span>
+                    </div>
+                </div>
+                <div class="section-skeleton-item" style="min-height: 112px;">
+                    <div class="section-skeleton-row">
+                        <span class="section-skeleton-chip" style="width:64px;"></span>
+                        <span class="section-skeleton-line" style="width:58%; height:18px;"></span>
+                        <span class="section-skeleton-line" style="width:76%;"></span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    if (reviewList) {
+        reviewList.innerHTML = `
+            <div class="section-skeleton-list" aria-hidden="true">
+                ${Array.from({ length: 3 }).map(() => `
+                    <div class="section-skeleton-item">
+                        <div class="section-skeleton-row">
+                            <span class="section-skeleton-chip" style="width:84px;"></span>
+                            <span class="section-skeleton-line" style="width:54%; height:18px;"></span>
+                            <span class="section-skeleton-line" style="width:90%;"></span>
+                            <span class="section-skeleton-line" style="width:76%;"></span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+}
+
+function renderReviewStateCard({ eyebrow = '', title = '', message = '', actionLabel = '', actionAction = '', detail = '' } = {}) {
+    return `
+        <div class="section-state-card" data-tone="soft">
+            <div class="section-state-copy">
+                ${eyebrow ? `<p class="section-state-eyebrow">${eyebrow}</p>` : ''}
+                <strong class="section-state-title">${title}</strong>
+                <p class="section-state-text">${message}</p>
+                ${detail ? `<p class="class-view-status-detail" style="margin-top:0.15rem;">${detail}</p>` : ''}
+            </div>
+            ${actionLabel ? `
+                <div class="section-state-actions">
+                    <button type="button" class="section-state-btn primary" data-action="${actionAction}">${actionLabel}</button>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function renderReviewEmptyState(reviewList) {
+    if (!reviewList) return;
+    reviewList.innerHTML = renderReviewStateCard({
+        eyebrow: '후기',
+        title: '아직 작성된 후기가 없습니다.',
+        message: '첫 후기를 남겨주면 다른 수강생에게도 도움이 됩니다.',
+    });
+}
+
+function renderReviewErrorState(reviewList, error) {
+    if (!reviewList) return;
+    reviewList.innerHTML = renderReviewStateCard({
+        eyebrow: '후기',
+        title: '후기를 불러오지 못했습니다.',
+        message: String(error?.error || error?.message || '잠시 후 다시 시도해 주세요.').trim(),
+        actionLabel: '다시 불러오기',
+        actionAction: 'retry-review-load',
+        detail: String(error?.detail || error?.message || '').trim(),
+    });
+}
+
 async function loadReviews(classId, isInstructor) {
     const reviewList = document.getElementById('reviewsList');
     const photoGrid = document.getElementById('photoReviewGrid');
@@ -16,12 +107,16 @@ async function loadReviews(classId, isInstructor) {
     const sideAvgRating = document.getElementById('sideAvgRating');
     const sideReviewCount = document.getElementById('sideReviewCount');
 
+    const requestToken = ++reviewLoadToken;
+    renderReviewLoadingState(reviewList, photoGrid);
+
     try {
         const result = await window.BSQ.api(`/api/reviews?class_id=${classId}`);
+        if (requestToken !== reviewLoadToken) return;
         const items = result?.success && Array.isArray(result.data) ? result.data : [];
 
         if (!items.length) {
-            if (reviewList) reviewList.innerHTML = '<p class="empty-state">아직 작성된 후기가 없습니다.</p>';
+            renderReviewEmptyState(reviewList);
             if (photoGrid) photoGrid.innerHTML = '';
             if (heroAvgRating) heroAvgRating.textContent = '0.0';
             if (heroReviewCount) heroReviewCount.textContent = '0';
@@ -83,8 +178,17 @@ async function loadReviews(classId, isInstructor) {
             }).join('');
         }
     } catch (err) {
-        console.error('Reviews Loading Error:', err);
-        if (reviewList) reviewList.innerHTML = '<p class="empty-state">후기를 불러오지 못했습니다.</p>';
+        if (requestToken !== reviewLoadToken) return;
+        devLog('warn', '[class_view] reviews load error:', err);
+        renderReviewErrorState(reviewList, err);
+        if (photoGrid) photoGrid.innerHTML = '';
+        if (heroAvgRating) heroAvgRating.textContent = '0.0';
+        if (heroReviewCount) heroReviewCount.textContent = '0';
+        if (avgRatingVal) avgRatingVal.textContent = '0.0';
+        if (reviewTotalCount) reviewTotalCount.textContent = '0';
+        if (avgStarsLarge) avgStarsLarge.textContent = '☆☆☆☆☆';
+        if (sideAvgRating) sideAvgRating.textContent = '0.0';
+        if (sideReviewCount) sideReviewCount.textContent = '0';
     }
 }
 
@@ -136,6 +240,12 @@ function setupReviewForm(classId, userId, hasAccess, isInstructor) {
     });
     setRating(ratingInput?.value || 0);
 
+    document.getElementById('reviewsList')?.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-action="retry-review-load"]');
+        if (!button) return;
+        void loadReviews(classId, isInstructor);
+    });
+
     newBtnSubmit.addEventListener('click', async () => {
         if (!userId) return showToast('info', '로그인이 필요합니다', '후기를 작성하려면 먼저 로그인해 주세요.');
         if (!hasAccess) return showToast('info', '수강 후 작성 가능', '수강을 완료한 뒤 후기를 남길 수 있습니다.');
@@ -172,7 +282,7 @@ function setupReviewForm(classId, userId, hasAccess, isInstructor) {
                 showToast('error', '등록에 실패했습니다', result?.error || '잠시 후 다시 시도해 주세요.');
             }
         } catch (err) {
-            console.error(err);
+            devLog('warn', '[class_view] review submit error:', err);
             showToast('error', '등록에 실패했습니다', '서버와의 통신 중 오류가 발생했습니다.');
         } finally {
             newBtnSubmit.disabled = false;

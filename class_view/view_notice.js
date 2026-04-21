@@ -48,6 +48,7 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
     let currentNotice = null;
     let quill = null;
     let pendingNoticeId = String(options?.noticeId || '').trim();
+    let noticeLoadToken = 0;
 
     function escapeHtml(value = '') {
         return String(value)
@@ -56,6 +57,79 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
             .replace(/>/g, '&gt;')
             .replace(/\"/g, '&quot;')
             .replace(/'/g, '&#39;');
+    }
+
+    function devLog(level, ...args) {
+        if (typeof window.__BSQ_DEV_LOG__ === 'function') {
+            window.__BSQ_DEV_LOG__(level, ...args);
+            return;
+        }
+
+        const fn = typeof console?.[level] === 'function' ? console[level].bind(console) : console.log.bind(console);
+        fn(...args);
+    }
+
+    function renderNoticeLoadingState() {
+        if (!listContainer) return;
+
+        listContainer.innerHTML = `
+            <div class="section-skeleton-list" aria-hidden="true">
+                ${Array.from({ length: 3 }).map(() => `
+                    <div class="section-skeleton-item">
+                        <div class="section-skeleton-row">
+                            <span class="section-skeleton-chip" style="width:74px;"></span>
+                            <span class="section-skeleton-line" style="width:56%; height:18px;"></span>
+                            <span class="section-skeleton-line" style="width:88%;"></span>
+                            <span class="section-skeleton-line" style="width:68%;"></span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function renderNoticeStateCard({ tone = 'soft', eyebrow = '', title = '', message = '', detail = '', actionLabel = '', actionAction = '' } = {}) {
+        return `
+            <div class="section-state-card" data-tone="${escapeHtml(tone)}">
+                <div class="section-state-copy">
+                    ${eyebrow ? `<p class="section-state-eyebrow">${escapeHtml(eyebrow)}</p>` : ''}
+                    <strong class="section-state-title">${escapeHtml(title)}</strong>
+                    <p class="section-state-text">${escapeHtml(message)}</p>
+                    ${detail ? `<p class="class-view-status-detail" style="margin-top:0.15rem;">${escapeHtml(detail)}</p>` : ''}
+                </div>
+                ${actionLabel ? `
+                    <div class="section-state-actions">
+                        <button type="button" class="section-state-btn primary" data-action="${escapeHtml(actionAction)}">${escapeHtml(actionLabel)}</button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    function renderNoticeErrorState(error) {
+        if (!listContainer) return;
+        const message = String(error?.error || error?.message || '네트워크 상태를 확인한 뒤 다시 시도해 주세요.').trim();
+        const detail = String(error?.detail || '').trim();
+        listContainer.innerHTML = renderNoticeStateCard({
+            eyebrow: '공지사항',
+            title: '공지사항을 불러오지 못했습니다.',
+            message,
+            detail,
+            actionLabel: '다시 불러오기',
+            actionAction: 'retry-notice-load',
+        });
+    }
+
+    function renderNoticeEmptyState() {
+        if (!listContainer) return;
+        const canCreate = !!canWriteNotice;
+        listContainer.innerHTML = renderNoticeStateCard({
+            eyebrow: '공지사항',
+            title: '아직 등록된 공지사항이 없습니다.',
+            message: canCreate ? '첫 공지를 올리면 수강생에게 바로 노출됩니다.' : '새 공지가 등록되면 이곳에 표시됩니다.',
+            actionLabel: canCreate ? '공지 작성' : '',
+            actionAction: 'open-notice-editor',
+        });
     }
 
     function stripHtml(value = '') {
@@ -188,15 +262,22 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
     async function loadClassNotices() {
         if (!classId || !listContainer) return;
 
+        const requestToken = ++noticeLoadToken;
+        renderNoticeLoadingState();
+
         try {
             const res = await window.BSQ.api(`/api/class-notices?class_id=${encodeURIComponent(classId)}`);
+            if (requestToken !== noticeLoadToken) return;
             notices = res?.success && Array.isArray(res.data) ? res.data : [];
-            renderNoticeList();
-        } catch (error) {
-            console.error('Notice load error:', error);
-            if (listContainer) {
-                listContainer.innerHTML = '<div class="empty-state" style="padding: 2rem 1rem; text-align: center; color: var(--comm-text2);">공지사항을 불러오지 못했습니다.</div>';
+            if (res?.success) {
+                renderNoticeList();
+            } else {
+                renderNoticeErrorState(res);
             }
+        } catch (error) {
+            if (requestToken !== noticeLoadToken) return;
+            devLog('warn', '[class_view] notice load error:', error);
+            renderNoticeErrorState(error);
         }
     }
 
@@ -204,7 +285,7 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
         if (!listContainer) return;
 
         if (!notices.length) {
-            listContainer.innerHTML = '<div class="empty-state" style="padding: 2rem 1rem; text-align: center; color: var(--comm-text2);">아직 등록된 공지사항이 없습니다.</div>';
+            renderNoticeEmptyState();
             return;
         }
 
@@ -308,7 +389,7 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
             await loadClassNotices();
             showToast('success', '공지사항이 등록되었습니다', '수강생들에게 바로 노출됩니다.');
         } catch (error) {
-            console.error('Class notice save failed:', error);
+            devLog('warn', '[class_view] notice save failed:', error);
             showToast('error', '저장에 실패했습니다', error.message || '잠시 후 다시 시도해 주세요.');
         } finally {
             if (btn) {
@@ -322,6 +403,18 @@ window.BSquareModules.initNotice = function (_, classId, userId, __, hasAccess, 
         btnCreate.style.display = canWriteNotice ? 'inline-flex' : 'none';
         btnCreate.addEventListener('click', () => openEditor(null));
     }
+
+    listContainer?.addEventListener('click', (event) => {
+        const action = event.target.closest('[data-action]');
+        if (!action) return;
+        const nextAction = String(action.dataset.action || '');
+        if (nextAction === 'retry-notice-load') {
+            void loadClassNotices();
+        }
+        if (nextAction === 'open-notice-editor') {
+            openEditor(null);
+        }
+    });
 
     btnCeClose?.addEventListener('click', closeEditor);
     btnCeCancel?.addEventListener('click', closeEditor);

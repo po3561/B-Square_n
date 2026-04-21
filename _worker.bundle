@@ -1,9 +1,9 @@
-------formdata-undici-005694541930
+------formdata-undici-017661779729
 Content-Disposition: form-data; name="metadata"
 
-{"main_module":"functionsWorker-0.0351315996176792.js"}
-------formdata-undici-005694541930
-Content-Disposition: form-data; name="functionsWorker-0.0351315996176792.js"; filename="functionsWorker-0.0351315996176792.js"
+{"main_module":"functionsWorker-0.9457826627253559.js"}
+------formdata-undici-017661779729
+Content-Disposition: form-data; name="functionsWorker-0.9457826627253559.js"; filename="functionsWorker-0.9457826627253559.js"
 Content-Type: application/javascript+module
 
 var __defProp = Object.defineProperty;
@@ -1964,7 +1964,7 @@ function normalizeLanguagePreference(value, fallback = "ko") {
   return fallback;
 }
 __name(normalizeLanguagePreference, "normalizeLanguagePreference");
-function normalizeThemePreference(value, fallback = "dark") {
+function normalizeThemePreference(value, fallback = "light") {
   const theme = String(value || "").trim().toLowerCase();
   if (theme === "light" || theme === "dark") return theme;
   if (theme === "system") return fallback;
@@ -2168,7 +2168,7 @@ async function getCurrentUser(context) {
       operator_seq: 1,
       membership_level: "Admin",
       preferred_language: normalizeLanguagePreference("ko"),
-      preferred_theme: normalizeThemePreference("dark"),
+      preferred_theme: normalizeThemePreference("light"),
       mfa_active: 0,
       marketing_sms_consent: 0,
       marketing_email_consent: 0,
@@ -39272,6 +39272,22 @@ function isTruthyFlag4(value) {
   return text === "1" || text === "true" || text === "yes";
 }
 __name(isTruthyFlag4, "isTruthyFlag");
+function toBase64Url2(bytes) {
+  const input = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  let binary = "";
+  input.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+__name(toBase64Url2, "toBase64Url");
+function fromBase64Url2(value) {
+  const normalized = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
+  const padding = normalized.length % 4 ? "=".repeat(4 - normalized.length % 4) : "";
+  const binary = atob(normalized + padding);
+  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+}
+__name(fromBase64Url2, "fromBase64Url");
 function parseSortSpec(rawSort, rawOrder) {
   const sortInput = String(rawSort ?? "").trim().toLowerCase();
   const orderInput = String(rawOrder ?? "").trim().toLowerCase();
@@ -39319,17 +39335,8 @@ __name(buildOrderByClause, "buildOrderByClause");
 function parseCursorToken(value) {
   const token = trimText9(value);
   if (!token) return { cursor: null, error: null };
-  let decoded = "";
   try {
-    decoded = Buffer.from(token, "base64url").toString("utf8");
-  } catch {
-    try {
-      decoded = Buffer.from(token, "base64").toString("utf8");
-    } catch {
-      return { cursor: null, error: "Invalid cursor encoding" };
-    }
-  }
-  try {
+    const decoded = new TextDecoder().decode(fromBase64Url2(token));
     const payload = JSON.parse(decoded);
     const createdAt = trimText9(payload?.created_at);
     const id = trimText9(payload?.id);
@@ -39338,7 +39345,7 @@ function parseCursorToken(value) {
     }
     return { cursor: { createdAt, id }, error: null };
   } catch {
-    return { cursor: null, error: "Invalid cursor payload" };
+    return { cursor: null, error: "Invalid cursor encoding" };
   }
 }
 __name(parseCursorToken, "parseCursorToken");
@@ -39346,7 +39353,7 @@ function makeCursorToken(row) {
   const createdAt = trimText9(row?.created_at);
   const id = trimText9(row?.id);
   if (!createdAt || !id) return null;
-  return Buffer.from(JSON.stringify({ created_at: createdAt, id }), "utf8").toString("base64url");
+  return toBase64Url2(new TextEncoder().encode(JSON.stringify({ created_at: createdAt, id })));
 }
 __name(makeCursorToken, "makeCursorToken");
 function normalizeClassRow(row) {
@@ -39702,7 +39709,7 @@ async function onRequest31(context) {
 }
 __name(onRequest31, "onRequest");
 
-// ../.wrangler/tmp/pages-ScEccr/functionsRoutes-0.9929491863418298.mjs
+// ../.wrangler/tmp/pages-yWjBpP/functionsRoutes-0.9526809542842659.mjs
 var routes = [
   {
     routePath: "/api/auth/social/context",
@@ -41050,7 +41057,7 @@ var routes = [
   }
 ];
 
-// ../../../../../../AppData/Local/npm-cache/_npx/32026684e21afda6/node_modules/path-to-regexp/dist.es2015/index.js
+// ../../../../../../AppData/Local/Temp/codex-npm-cache-build/_npx/32026684e21afda6/node_modules/path-to-regexp/dist.es2015/index.js
 function lexer(str) {
   var tokens = [];
   var i = 0;
@@ -41376,7 +41383,7 @@ function pathToRegexp(path, keys2, options2) {
 }
 __name(pathToRegexp, "pathToRegexp");
 
-// ../../../../../../AppData/Local/npm-cache/_npx/32026684e21afda6/node_modules/wrangler/templates/pages-template-worker.ts
+// ../../../../../../AppData/Local/Temp/codex-npm-cache-build/_npx/32026684e21afda6/node_modules/wrangler/templates/pages-template-worker.ts
 var escapeRegex = /[.+?^${}()|[\]\\]/g;
 function* executeRequest(request) {
   const requestPath = new URL(request.url).pathname;
@@ -41507,4 +41514,4 @@ xlsx/xlsx.mjs:
   (*! sheetjs (C) 2013-present SheetJS -- http://sheetjs.com *)
 */
 
-------formdata-undici-005694541930--
+------formdata-undici-017661779729--

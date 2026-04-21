@@ -630,12 +630,15 @@ async function bootstrapClassViewPage() {
         syncMobileClassViewChrome();
     } catch (error) {
         const message = String(error?.message || error || '클래스 정보를 불러오지 못했습니다.');
+        const userMessage = /class not found/i.test(message)
+            ? '클래스를 찾을 수 없습니다.'
+            : message.includes('Failed to fetch')
+                ? '네트워크 상태를 확인한 뒤 다시 시도해 주세요.'
+                : message;
         devLog('warn', '[class_view] bootstrap failed:', error);
         setClassViewPageState('error', {
             title: '클래스 정보를 불러오지 못했습니다.',
-            message: message.includes('Failed to fetch')
-                ? '네트워크 상태를 확인한 뒤 다시 시도해 주세요.'
-                : message,
+            message: userMessage,
             detail: error?.detail || '',
             actionLabel: '다시 불러오기',
         });

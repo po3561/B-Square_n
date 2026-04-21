@@ -68,6 +68,16 @@
     return `../class_view/class_view.html?id=${encodeURIComponent(id)}`;
   }
 
+  function devLog(level, ...args) {
+    if (typeof window.__BSQ_DEV_LOG__ === 'function') {
+      window.__BSQ_DEV_LOG__(level, ...args);
+      return;
+    }
+
+    const fn = typeof console?.[level] === 'function' ? console[level].bind(console) : console.log.bind(console);
+    fn(...args);
+  }
+
   function stripHtml(value = '') {
     return String(value).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   }
@@ -299,7 +309,7 @@
       const res = await window.BSQ.api('/api/site-settings');
       state.siteSettings = res?.success ? (res.data || null) : null;
     } catch (error) {
-      console.warn('[class_list] banner load failed:', error);
+      devLog('warn', '[class_list] banner load failed:', error);
       state.siteSettings = null;
     }
 
@@ -321,7 +331,7 @@
         return;
       }
     } catch (error) {
-      console.warn('[class_list] category load failed:', error);
+      devLog('warn', '[class_list] category load failed:', error);
     }
 
     state.categories = FALLBACK_CATEGORIES.slice();
@@ -377,7 +387,7 @@
         : [];
       folders = source.map((item) => normalizeRecommendationFolder(item)).filter((item) => item.id || item.items.length);
     } catch (error) {
-      console.warn('[class_list] recommendation load failed:', error);
+      devLog('warn', '[class_list] recommendation load failed:', error);
     }
 
     if (!folders.length) {
@@ -389,7 +399,7 @@
         const classes = rows.map((item) => normalizeClassCard(item)).filter((item) => item.id);
         folders = buildRecommendationFallbackFolders(classes);
       } catch (error) {
-        console.warn('[class_list] fallback recommendation load failed:', error);
+        devLog('warn', '[class_list] fallback recommendation load failed:', error);
         folders = [];
       }
     }
@@ -426,6 +436,62 @@
         <button type="button" class="btn-bookmark${bookmarked ? ' is-bookmarked' : ''}" data-action="bookmark-class" data-class-id="${esc(item.id)}" data-bookmarked="${bookmarked ? '1' : '0'}" data-like-count="${count}" aria-pressed="${bookmarked ? 'true' : 'false'}" aria-label="${bookmarked ? '북마크 해제' : '북마크 추가'}">${bookmarkIcon(bookmarked)}</button>
       </article>
     `;
+  }
+
+  function renderCardSkeleton(index = 0) {
+    return `
+      <article class="class-card class-card-skeleton" aria-hidden="true" style="animation-delay:${index * 0.04}s">
+        <div class="class-card-link">
+          <div class="card-thumbnail class-card-skeleton-thumb"></div>
+          <div class="card-info">
+            <span class="class-card-skeleton-pill" style="width: 58%;"></span>
+            <span class="class-card-skeleton-line class-card-skeleton-line-lg"></span>
+            <span class="class-card-skeleton-line class-card-skeleton-line-md"></span>
+          </div>
+        </div>
+        <div class="btn-bookmark class-card-skeleton-bookmark" aria-hidden="true"></div>
+      </article>
+    `;
+  }
+
+  function renderBannerLoadingState() {
+    if (!refs.bannerTrack) return;
+
+    refs.bannerTrack.innerHTML = `
+      <article class="class-list-banner-slide is-active class-list-banner-skeleton" aria-hidden="true">
+        <div class="class-list-banner-link class-list-banner-skeleton-media"></div>
+      </article>
+    `;
+    if (refs.bannerDots) refs.bannerDots.hidden = true;
+  }
+
+  function renderRecommendationLoadingState() {
+    if (!refs.recommendSection || !refs.recommendFolderGrid) return;
+
+    refs.recommendSection.hidden = false;
+    refs.recommendFolderGrid.innerHTML = Array.from({ length: 2 }).map((_, index) => `
+      <article class="recommend-folder-card recommend-folder-skeleton" aria-hidden="true" style="animation-delay:${index * 0.05}s">
+        <div class="recommend-folder-body">
+          <div>
+            <span class="recommend-skeleton-pill" style="width: 92px;"></span>
+            <span class="recommend-skeleton-line" style="width: 76%;"></span>
+            <span class="recommend-skeleton-line" style="width: 52%;"></span>
+          </div>
+          <div class="recommend-folder-list">
+            ${Array.from({ length: 2 }).map(() => `
+              <div class="recommend-item recommend-item-skeleton">
+                <span class="recommend-num"></span>
+                <div class="recommend-thumb recommend-thumb-skeleton"></div>
+                <div class="recommend-info">
+                  <span class="recommend-skeleton-line" style="width: 78%;"></span>
+                  <span class="recommend-skeleton-line" style="width: 48%;"></span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </article>
+    `).join('');
   }
 
   function renderGridState(kind, title, body, actionLabel = '', actionName = '') {
@@ -569,11 +635,14 @@
     void loadMore({ reset: true });
   }
 
-  function renderGridLoadingMessage(message) {
+  function renderGridLoadingMessage(message, reset = false) {
     setNotice(message, 'loading');
     if (refs.allClassGrid) {
       refs.allClassGrid.dataset.loading = 'true';
       refs.allClassGrid.setAttribute('aria-busy', 'true');
+      if (reset) {
+        refs.allClassGrid.innerHTML = Array.from({ length: isMobileClassListLayout() ? 6 : 8 }).map((_, index) => renderCardSkeleton(index)).join('');
+      }
     }
   }
 
@@ -597,7 +666,7 @@
     }
 
     setLoading(true);
-    renderGridLoadingMessage(reset ? '클래스 목록을 불러오는 중입니다.' : '추가 클래스를 불러오는 중입니다.');
+    renderGridLoadingMessage(reset ? '클래스 목록을 불러오는 중입니다.' : '추가 클래스를 불러오는 중입니다.', reset);
 
     try {
       const params = new URLSearchParams();
@@ -646,7 +715,7 @@
       if (state.hasMore) ensureViewportFilled();
     } catch (error) {
       if (token !== state.requestToken) return;
-      console.error('[class_list] load error:', error);
+      devLog('warn', '[class_list] load error:', error);
       state.hasMore = false;
       const message = error?.message || '클래스를 불러오지 못했습니다.';
       setNotice(message, 'error', '다시 불러오기');
@@ -857,9 +926,9 @@
   }
 
   function renderLoadingState() {
-    if (!refs.allClassGrid) return;
-    refs.allClassGrid.dataset.loading = 'true';
-    refs.allClassGrid.setAttribute('aria-busy', 'true');
+    renderBannerLoadingState();
+    renderRecommendationLoadingState();
+    renderGridLoadingMessage('클래스 목록을 불러오는 중입니다.', true);
   }
 
   async function bootstrap() {
@@ -872,6 +941,7 @@
     renderCategoryMenu();
     updateHeader();
     updateCount(0);
+    renderLoadingState();
 
     await Promise.all([loadBanner(), loadCategories()]);
     renderCategoryMenu();
@@ -885,7 +955,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     void bootstrap().catch((error) => {
-      console.error('[class_list] bootstrap failed:', error);
+      devLog('warn', '[class_list] bootstrap failed:', error);
       setNotice(error?.message || '클래스 목록을 초기화하지 못했습니다.', 'error');
     });
   });

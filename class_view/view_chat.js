@@ -1,7 +1,7 @@
 ﻿// view_chat.js - Class Channel with Lock/Unlock + D1 API 기반 정보 패널
 window.BSquareModules = window.BSquareModules || {};
 window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAccess, isInstructor) {
-    console.log("💬 Chat Module Initializing... | Access:", hasAccess, "| Instructor:", isInstructor);
+    devLog('log', '[class_view] chat module init:', { hasAccess, isInstructor });
 
     if (window.__BSQ_DEV_MODE__) hasAccess = true;
     // Treat instructors/admins as access-holders even if the caller only checked enrollment.
@@ -62,6 +62,18 @@ window.BSquareModules.initChat = function (db, classId, userId, supabase, hasAcc
     }
 };
 
+let infoPanelLoadToken = 0;
+
+function devLog(level, ...args) {
+    if (typeof window.__BSQ_DEV_LOG__ === 'function') {
+        window.__BSQ_DEV_LOG__(level, ...args);
+        return;
+    }
+
+    const fn = typeof console?.[level] === 'function' ? console[level].bind(console) : console.log.bind(console);
+    fn(...args);
+}
+
 // =======================================
 // 정보 패널 렌더링 (D1 API + 강사/수강생 뷰)
 // =======================================
@@ -82,19 +94,43 @@ function setupInfoPanel(classId, isInstructor) {
     if (btnClose) {
         btnClose.onclick = () => panel?.classList.remove('visible');
     }
+
+    panel?.querySelector('#infoPanelBody')?.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-action="retry-info-panel-load"]');
+        if (!button) return;
+        void renderClassInfoPanel(classId, isInstructor);
+    });
 }
 
 async function renderClassInfoPanel(classId, isInstructor) {
     const panelBody = document.getElementById('infoPanelBody');
     if (!panelBody) return;
 
-    panelBody.innerHTML = '<div style="padding:20px; text-align:center; color:#888;"><div class="loading-spinner"></div>데이터 로딩 중...</div>';
+    const requestToken = ++infoPanelLoadToken;
+    panelBody.innerHTML = `
+        <div class="section-skeleton-list" aria-hidden="true">
+            <div class="section-skeleton-item" style="min-height: 118px;">
+                <div class="section-skeleton-row">
+                    <span class="section-skeleton-chip" style="width:92px;"></span>
+                    <span class="section-skeleton-line" style="width:58%; height:18px;"></span>
+                    <span class="section-skeleton-line" style="width:82%;"></span>
+                </div>
+            </div>
+            <div class="section-skeleton-item" style="min-height: 86px;">
+                <div class="section-skeleton-row">
+                    <span class="section-skeleton-line" style="width:46%; height:16px;"></span>
+                    <span class="section-skeleton-line" style="width:74%;"></span>
+                </div>
+            </div>
+        </div>
+    `;
 
     const view = (isInstructor || window.__BSQ_DEV_MODE__) ? 'instructor' : 'student';
 
     try {
         // 1. 멤버 목록 + 통계
         const memberRes = await window.BSQ.api(`/api/classes/members?class_id=${classId}&view=${view}`);
+        if (requestToken !== infoPanelLoadToken) return;
         
         // 2. 모임 정보
         let gatheringsHtml = '';
@@ -106,7 +142,21 @@ async function renderClassInfoPanel(classId, isInstructor) {
         } catch (e) { /* 모임 API 없으면 스킵 */ }
 
         if (!memberRes?.success) {
-            panelBody.innerHTML = '<div style="padding:20px; color:#ff4d4d;">멤버 정보를 불러올 수 없습니다.</div>';
+            const memberMessage = String(memberRes?.error || '네트워크 상태를 확인한 뒤 다시 시도해 주세요.').trim();
+            const memberDetail = String(memberRes?.detail || '').trim();
+            panelBody.innerHTML = `
+                <div class="section-state-card" data-tone="soft">
+                    <div class="section-state-copy">
+                        <p class="section-state-eyebrow">채팅 정보</p>
+                        <strong class="section-state-title">멤버 정보를 불러올 수 없습니다.</strong>
+                        <p class="section-state-text">${memberMessage}</p>
+                        ${memberDetail ? `<p class="class-view-status-detail" style="margin-top:0.15rem;">${memberDetail}</p>` : ''}
+                    </div>
+                    <div class="section-state-actions">
+                        <button type="button" class="section-state-btn primary" data-action="retry-info-panel-load">다시 불러오기</button>
+                    </div>
+                </div>
+            `;
             return;
         }
 
@@ -219,7 +269,21 @@ async function renderClassInfoPanel(classId, isInstructor) {
         });
 
     } catch (err) {
-        panelBody.innerHTML = `<div style="padding:20px; color:#ff4d4d;">오류 발생: ${err.message}</div>`;
+        if (requestToken !== infoPanelLoadToken) return;
+        devLog('warn', '[class_view] chat info panel load error:', err);
+        const errorMessage = String(err?.message || '잠시 후 다시 시도해 주세요.').trim();
+        panelBody.innerHTML = `
+            <div class="section-state-card" data-tone="soft">
+                <div class="section-state-copy">
+                    <p class="section-state-eyebrow">채팅 정보</p>
+                    <strong class="section-state-title">정보 패널을 불러오지 못했습니다.</strong>
+                    <p class="section-state-text">${errorMessage}</p>
+                </div>
+                <div class="section-state-actions">
+                    <button type="button" class="section-state-btn primary" data-action="retry-info-panel-load">다시 불러오기</button>
+                </div>
+            </div>
+        `;
     }
 }
 
@@ -301,7 +365,7 @@ async function updateParticipantBadgeD1(classId) {
                 badge.textContent = count;
             }
         }
-    } catch (e) { console.warn("Badge update error:", e); }
+    } catch (e) { devLog('warn', '[class_view] badge update error:', e); }
 }
 
 // 핀 메시지 (D1에서는 비활성)

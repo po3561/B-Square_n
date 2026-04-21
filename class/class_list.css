@@ -863,6 +863,142 @@ body.class-list-page .empty-state {
   grid-column: 1 / -1;
 }
 
+body.class-list-page .class-card-skeleton,
+body.class-list-page .class-list-banner-skeleton,
+body.class-list-page .recommend-folder-skeleton,
+body.class-list-page .recommend-item-skeleton,
+body.class-list-page .class-card-skeleton-thumb,
+body.class-list-page .class-card-skeleton-pill,
+body.class-list-page .class-card-skeleton-line,
+body.class-list-page .recommend-skeleton-pill,
+body.class-list-page .recommend-skeleton-line,
+body.class-list-page .recommend-thumb-skeleton,
+body.class-list-page .class-list-banner-skeleton-media {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+body.class-list-page .class-card-skeleton,
+body.class-list-page .recommend-folder-skeleton {
+  pointer-events: none;
+}
+
+body.class-list-page .class-card-skeleton .class-card-link,
+body.class-list-page .class-card-skeleton .btn-bookmark {
+  pointer-events: none;
+}
+
+body.class-list-page .class-card-skeleton .card-thumbnail,
+body.class-list-page .class-card-skeleton .card-info {
+  position: relative;
+}
+
+body.class-list-page .class-card-skeleton-thumb,
+body.class-list-page .class-list-banner-skeleton-media,
+body.class-list-page .recommend-thumb-skeleton {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.class-list-page .class-card-skeleton-thumb::after,
+body.class-list-page .class-card-skeleton-pill::after,
+body.class-list-page .class-card-skeleton-line::after,
+body.class-list-page .class-card-skeleton-bookmark::after,
+body.class-list-page .recommend-skeleton-pill::after,
+body.class-list-page .recommend-skeleton-line::after,
+body.class-list-page .recommend-thumb-skeleton::after,
+body.class-list-page .class-list-banner-skeleton-media::after,
+body.class-list-page .recommend-folder-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  animation: classListSkeletonWave 1.35s ease-in-out infinite;
+}
+
+body.class-list-page .class-card-skeleton-thumb {
+  min-height: 118px;
+  border-radius: 18px;
+}
+
+body.class-list-page .class-card-skeleton-pill,
+body.class-list-page .class-card-skeleton-line {
+  display: block;
+  min-height: 12px;
+  border-radius: 999px;
+}
+
+body.class-list-page .class-card-skeleton-line-lg {
+  min-height: 18px;
+}
+
+body.class-list-page .class-card-skeleton-line-md {
+  width: 74%;
+}
+
+body.class-list-page .class-card-skeleton-bookmark {
+  width: 42px;
+  height: 42px;
+  margin: 0 0 0.75rem auto;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.class-list-page .class-list-banner-skeleton-media {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  border-radius: inherit;
+}
+
+body.class-list-page .class-list-banner-skeleton {
+  min-height: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+body.class-list-page .class-list-banner-skeleton .class-list-banner-link {
+  height: 100%;
+}
+
+body.class-list-page .recommend-folder-skeleton {
+  min-height: 220px;
+}
+
+body.class-list-page .recommend-skeleton-pill,
+body.class-list-page .recommend-skeleton-line {
+  display: block;
+  min-height: 12px;
+  border-radius: 999px;
+}
+
+body.class-list-page .recommend-thumb-skeleton {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+}
+
+@keyframes classListSkeletonWave {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+html[data-theme="light"] body.class-list-page .class-card-skeleton,
+html[data-theme="light"] body.class-list-page .class-list-banner-skeleton,
+html[data-theme="light"] body.class-list-page .recommend-folder-skeleton,
+html[data-theme="light"] body.class-list-page .recommend-item-skeleton,
+html[data-theme="light"] body.class-list-page .class-card-skeleton-thumb,
+html[data-theme="light"] body.class-list-page .class-card-skeleton-pill,
+html[data-theme="light"] body.class-list-page .class-card-skeleton-line,
+html[data-theme="light"] body.class-list-page .recommend-skeleton-pill,
+html[data-theme="light"] body.class-list-page .recommend-skeleton-line,
+html[data-theme="light"] body.class-list-page .recommend-thumb-skeleton,
+html[data-theme="light"] body.class-list-page .class-list-banner-skeleton-media {
+  background: rgba(15, 23, 42, 0.05);
+}
+
 @media (max-width: 1280px) {
   body.class-list-page .class-list-app .class-page-overrides .card-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
