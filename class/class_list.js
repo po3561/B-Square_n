@@ -2,7 +2,23 @@
   'use strict';
 
   const PAGE_SIZE = 8;
-  const CATEGORY_VISIBLE_LIMIT = 8;
+
+  const FALLBACK_CATEGORIES = [
+    { name: '드로잉', emoji: '✏️', class_count: 0 },
+    { name: '음악', emoji: '🎵', class_count: 0 },
+    { name: '비즈니스', emoji: '💼', class_count: 0 },
+    { name: '요리', emoji: '🍳', class_count: 0 },
+    { name: '기술', emoji: '💻', class_count: 0 },
+    { name: '운동', emoji: '🏃', class_count: 0 },
+  ];
+
+  const SORT_LABELS = {
+    newest: '최신순',
+    popular: '인기순',
+    'price-low': '가격 낮은순',
+    'price-high': '가격 높은순',
+  };
+
   const state = {
     categories: [],
     recommendationFolders: [],
@@ -19,29 +35,12 @@
     siteSettings: null,
     bannerIndex: 0,
     bannerTimer: null,
-    categoryPanelOpen: false,
   };
 
   const refs = {};
   let searchDebounce = null;
   let infiniteObserver = null;
   let bookmarkProbeDisabled = false;
-
-  const FALLBACK_CATEGORIES = [
-    { name: '운동', emoji: '운' },
-    { name: '미술', emoji: '미' },
-    { name: '비즈니스', emoji: '비' },
-    { name: '요리', emoji: '요' },
-    { name: '기술', emoji: '기' },
-    { name: '음악', emoji: '음' },
-  ];
-
-  const SORT_LABELS = {
-    newest: '최신순',
-    popular: '인기순',
-    'price-low': '가격 낮은 순',
-    'price-high': '가격 높은 순',
-  };
 
   function $(id) {
     return document.getElementById(id);
@@ -69,6 +68,62 @@
     return `../class_view/class_view.html?id=${encodeURIComponent(id)}`;
   }
 
+  function stripHtml(value = '') {
+    return String(value).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function parseDateValue(value) {
+    if (!value) return null;
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+    if (typeof value === 'string' || typeof value === 'number') {
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+    if (typeof value === 'object' && typeof value.seconds === 'number') {
+      const date = new Date(value.seconds * 1000);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+    return null;
+  }
+
+  function isUltraCompactViewport() {
+    try {
+      return window.matchMedia?.('(max-width: 280px)')?.matches;
+    } catch {
+      return false;
+    }
+  }
+
+  function formatCountLabel(value, suffix = '개') {
+    const count = Number(value || 0);
+    const base = count.toLocaleString();
+    if (isUltraCompactViewport()) return base;
+    return suffix ? `${base}${suffix}` : base;
+  }
+
+  function getSummary(item = {}) {
+    const raw = stripHtml(item.summary || item.short_description || item.description || item.intro || item.content || '');
+    if (!raw) return '';
+    return raw.length > 92 ? `${raw.slice(0, 89).trimEnd()}...` : raw;
+  }
+
+  function formatMode(item = {}) {
+    const raw = text(item.class_type || item.type || item.mode || item.onlineOffline || '').toUpperCase();
+    if (raw === 'ONLINE') return '온라인';
+    if (raw === 'OFFLINE') return '오프라인';
+    if (raw === 'VOD') return 'VOD';
+    if (raw === 'ONEDAY') return '원데이';
+    if (raw === 'WEEKLY') return '주간';
+    if (raw === 'MONTHLY') return '월간';
+    return raw ? raw.charAt(0) + raw.slice(1).toLowerCase() : '';
+  }
+
+  function formatPriceLabel(item = {}) {
+    const price = Number(item?.price ?? item?.salePrice ?? item?.sale_price ?? item?.discountPrice ?? item?.discount_price ?? 0);
+    if (!Number.isFinite(price) || price <= 0) return '무료';
+    return `${price.toLocaleString()}원`;
+  }
+
   function normalizeBannerItem(item = {}, fallbackLabel = '배너', index = 0) {
     const imageUrl = text(item.mobileImage || item.desktopImage || item.imageUrl || item.imgUrl || item.image || item.src || '');
     const linkUrl = text(item.url || item.href || item.link || item.linkUrl || '');
@@ -82,6 +137,7 @@
     const reviewCount = Number(item.reviewCount ?? item.review_count ?? 0);
     const likeCount = Number(item.likeCount ?? item.like_count ?? item.bookmark_count ?? 0);
     const price = Number(item.salePrice ?? item.sale_price ?? item.discountPrice ?? item.discount_price ?? item.price ?? 0);
+
     return {
       id: text(item.id || item.classId || item.class_id || item.slug || ''),
       title: text(item.title || item.name || '제목 없음'),
@@ -113,130 +169,29 @@
     };
   }
 
-  function mergePopularClasses(primaryItems = [], fallbackItems = [], limit = 10) {
-    const seen = new Set();
-    const merged = [];
+  function buildRecommendationFallbackFolders(classes = []) {
+    const buckets = new Map();
 
-    const append = (item) => {
-      const id = text(item?.id || '');
-      if (!id || seen.has(id)) return false;
-      seen.add(id);
-      merged.push(item);
-      return merged.length >= limit;
-    };
-
-    for (const item of Array.isArray(primaryItems) ? primaryItems : []) {
-      if (append(item)) return merged;
+    for (const item of Array.isArray(classes) ? classes : []) {
+      const key = text(item.category || 'General') || 'General';
+      if (!buckets.has(key)) buckets.set(key, []);
+      if (buckets.get(key).length < 3) buckets.get(key).push(item);
     }
 
-    for (const item of Array.isArray(fallbackItems) ? fallbackItems : []) {
-      if (append(item)) return merged;
-    }
-
-    if (!merged.length) return merged;
-    if (merged.length >= limit) return merged.slice(0, limit);
-
-    const padded = merged.slice();
-    for (let index = 0; padded.length < limit; index += 1) {
-      padded.push(merged[index % merged.length]);
-    }
-    return padded.slice(0, limit);
-  }
-
-  function parseDateValue(value) {
-    if (!value) return null;
-    if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
-    if (typeof value === 'string' || typeof value === 'number') {
-      const date = new Date(value);
-      return Number.isNaN(date.getTime()) ? null : date;
-    }
-    if (typeof value === 'object' && typeof value.seconds === 'number') {
-      const date = new Date(value.seconds * 1000);
-      return Number.isNaN(date.getTime()) ? null : date;
-    }
-    return null;
-  }
-
-  function stripHtml(value = '') {
-    return String(value).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-  }
-
-  function getSummary(item = {}) {
-    const raw = stripHtml(item.summary || item.short_description || item.description || item.intro || item.content || '');
-    if (!raw) return '';
-    return raw.length > 100 ? `${raw.slice(0, 97).trimEnd()}...` : raw;
-  }
-
-  function formatMode(item = {}) {
-    const raw = text(item.class_type || item.type || item.mode || item.onlineOffline || '').toUpperCase();
-    if (raw === 'ONLINE') return '온라인';
-    if (raw === 'OFFLINE') return '오프라인';
-    if (raw === 'VOD') return 'VOD';
-    if (raw === 'ONEDAY') return '1일';
-    if (raw === 'WEEKLY') return '주간';
-    if (raw === 'MONTHLY') return '월간';
-    return raw ? raw.charAt(0) + raw.slice(1).toLowerCase() : '';
-  }
-
-  function formatPriceLabel(item = {}) {
-    const price = Number(item?.price ?? item?.salePrice ?? item?.sale_price ?? item?.discountPrice ?? item?.discount_price ?? 0);
-    if (!Number.isFinite(price) || price <= 0) return '무료';
-    return `${price.toLocaleString()}원`;
-  }
-
-  function cacheRefs() {
-    refs.categoryFilter = $('categoryFilter');
-    refs.notice = $('classListNotice');
-    refs.allClassGrid = $('allClassGrid');
-    refs.searchInput = $('classSearchInput');
-    refs.sortSelect = $('sortSelect');
-    refs.totalClassCount = $('totalClassCount');
-    refs.bannerTrack = $('classListBannerTrack');
-    refs.bannerPrev = $('classListBannerPrev');
-    refs.bannerNext = $('classListBannerNext');
-    refs.bannerDots = $('classListBannerDots');
-    refs.recommendSection = $('recommendSection');
-    refs.recommendFolderGrid = $('recommendFolderGrid');
-    refs.scrollSentinel = $('classListSentinel');
-    refs.heroLoaded = $('classListStatLoaded');
-    refs.heroCategories = $('classListStatCategories');
-    refs.heroSort = $('classListStatSort');
-    refs.sectionTitle = $('classListSectionTitle');
-    refs.sectionCopy = $('classListSectionCopy');
-  }
-
-  function readUrlState() {
-    const params = new URLSearchParams(window.location.search);
-    state.currentCategory = text(params.get('category') || 'all') || 'all';
-    state.currentSort = text(params.get('sort') || 'newest') || 'newest';
-    state.searchQuery = text(params.get('q') || '');
-    if (!SORT_LABELS[state.currentSort]) state.currentSort = 'newest';
-    if (refs.sortSelect) refs.sortSelect.value = state.currentSort;
-    if (refs.searchInput) refs.searchInput.value = state.searchQuery;
-  }
-
-  function syncUrl({ replace = false } = {}) {
-    const params = new URLSearchParams();
-    if (state.currentCategory !== 'all') params.set('category', state.currentCategory);
-    if (state.currentSort !== 'newest') params.set('sort', state.currentSort);
-    if (state.searchQuery) params.set('q', state.searchQuery);
-    const next = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
-    if (replace) window.history.replaceState(null, '', next);
-    else window.history.pushState(null, '', next);
-  }
-
-  function setNotice(message = '', tone = '') {
-    if (!refs.notice) return;
-    if (!message) {
-      refs.notice.innerHTML = '';
-      return;
-    }
-    refs.notice.innerHTML = `<div class="notice-chip ${esc(tone)}">${esc(message)}</div>`;
+    return Array.from(buckets.entries()).slice(0, 3).map(([name, items], index) => ({
+      id: `fallback-${index}`,
+      title: text(name || '추천 클래스'),
+      description: '기준에 맞는 추천 묶음입니다.',
+      imageUrl: items[0]?.imageUrl || '',
+      items,
+      type: '추천',
+    }));
   }
 
   function categoryItems() {
     const base = state.categories.length ? state.categories : FALLBACK_CATEGORIES;
     const seen = new Set();
+
     return base
       .map((item) => ({
         name: text(item.name),
@@ -255,94 +210,39 @@
 
   function renderCategoryButton(item, active = false, all = false) {
     const label = all ? '전체' : item.name;
+    const count = Number(item.class_count || 0);
+
     return `
       <button type="button" class="class-category-tile${active ? ' is-active' : ''}" data-cat="${esc(all ? 'all' : item.name)}" aria-pressed="${active ? 'true' : 'false'}">
         ${all ? '<span class="class-category-icon">+</span>' : renderCategoryMedia(item)}
         <span class="class-category-label">${esc(label)}</span>
+        <span class="class-category-count">${esc(formatCountLabel(count))}</span>
       </button>
     `;
   }
 
   function renderCategoryMenu() {
-    return renderCategoryMenuV2();
-    if (!refs.categoryFilter) return;
-    const items = categoryItems();
-    const visible = items.slice(0, CATEGORY_VISIBLE_LIMIT);
-    const extra = items.slice(CATEGORY_VISIBLE_LIMIT);
-    const hasMore = extra.length > 0;
-    const selectedItem = state.currentCategory === 'all'
-      ? { name: '전체', class_count: state.totalCount || items.length }
-      : (items.find((item) => item.name === state.currentCategory) || { name: state.currentCategory, class_count: 0 });
-    const selectedCount = Number(selectedItem.class_count || 0);
-    const summaryCount = state.currentCategory === 'all' ? Number(state.totalCount || items.length) : selectedCount;
-    const summaryLabel = state.currentCategory === 'all' ? '전체 카테고리' : selectedItem.name;
-
-    refs.categoryFilter.innerHTML = `
-      <div class="class-category-accordion-head">
-        <button type="button" class="class-category-accordion-toggle${state.categoryPanelOpen ? ' is-open' : ''}" data-action="toggle-category-panel" aria-expanded="${state.categoryPanelOpen ? 'true' : 'false'}" aria-controls="classCategoryAccordionPanel">
-          <span class="banner-eyebrow">카테고리</span>
-          <span class="class-category-accordion-title">${esc(summaryLabel)}</span>
-          <span class="class-category-accordion-meta">${esc(`${summaryCount.toLocaleString()}개`)}</span>
-          <span class="class-category-accordion-state">${state.categoryPanelOpen ? '접기' : '더보기'}</span>
-        </button>
-      </div>
-      <div class="class-category-accordion-strip">
-        <div class="class-category-strip">
-          ${renderCategoryButton({ name: '전체', class_count: state.totalCount }, state.currentCategory === 'all', true)}
-          ${visible.map((item) => renderCategoryButton(item, state.currentCategory === item.name)).join('')}
-        </div>
-      </div>
-      ${hasMore ? `
-        <div class="class-category-accordion-panel${state.categoryPanelOpen ? ' is-open' : ''}" id="classCategoryAccordionPanel" aria-hidden="${state.categoryPanelOpen ? 'false' : 'true'}">
-          <div class="class-category-panel-head">
-            <strong>더 많은 카테고리</strong>
-            <span>${extra.length.toLocaleString()}개</span>
-          </div>
-          <div class="class-category-strip class-category-strip--expanded">
-            ${extra.map((item) => renderCategoryButton(item, state.currentCategory === item.name)).join('')}
-          </div>
-        </div>
-      ` : ''}
-    `;
-  }
-
-  function getCategoryHeroBanner() {
-    const banners = Array.isArray(state.siteSettings?.bottom_banners) ? state.siteSettings.bottom_banners : [];
-    const first = banners.find((item) => text(item?.imgUrl || item?.image || item?.src || '').trim());
-    if (!first) return null;
-    return normalizeBannerItem(first, '?대옒??배너', 0);
-  }
-
-  function renderCategoryMenuV2() {
     if (!refs.categoryFilter) return;
 
     const items = categoryItems();
-    const selectedItem = state.currentCategory === 'all'
-      ? { name: '?꾩껜', class_count: state.totalCount || items.length }
+    const activeItem = state.currentCategory === 'all'
+      ? { name: '전체 카테고리', class_count: state.totalCount || items.length }
       : (items.find((item) => item.name === state.currentCategory) || { name: state.currentCategory, class_count: 0 });
-    const selectedCount = Number(selectedItem.class_count || 0);
-    const summaryCount = state.currentCategory === 'all' ? Number(state.totalCount || items.length) : selectedCount;
-    const summaryLabel = state.currentCategory === 'all' ? '?꾩껜 移댄뀒怨좊━' : selectedItem.name;
-    const heroBanner = getCategoryHeroBanner();
-    const heroStyle = heroBanner?.imageUrl ? ` style="background-image:url('${esc(heroBanner.imageUrl)}')"` : '';
+    const summaryCount = state.currentCategory === 'all' ? Number(state.totalCount || items.length) : Number(activeItem.class_count || 0);
+    const summaryLabel = state.currentCategory === 'all' ? '전체 카테고리' : activeItem.name;
 
     refs.categoryFilter.innerHTML = `
       <section class="class-category-surface">
-        <div class="class-category-hero-band${heroBanner?.imageUrl ? ' has-image' : ''}"${heroStyle}>
-          <div class="class-category-hero-overlay"></div>
-          <div class="class-category-hero-copy">
-            <span class="banner-eyebrow">移댄뀒怨좊━</span>
-            <strong class="class-category-hero-title">${esc(summaryLabel)}</strong>
-            <span class="class-category-hero-count">${esc(`${summaryCount.toLocaleString()}개`)}</span>
-          </div>
-          ${heroBanner?.linkUrl ? `<a class="class-category-hero-link" href="${esc(heroBanner.linkUrl)}" aria-label="${esc(heroBanner.alt || '추천 배너')}"></a>` : ''}
-        </div>
         <div class="class-category-panel-head">
-          <strong class="class-category-panel-title">전체 카테고리</strong>
-          <span class="class-category-panel-meta">${esc(`${items.length.toLocaleString()}개`)}</span>
+          <div class="class-category-panel-copy">
+            <span class="banner-eyebrow">카테고리</span>
+            <strong class="class-category-panel-title">${esc(summaryLabel)}</strong>
+            <span class="class-category-panel-copy-text">짧게 눌러 범위를 좁혀보세요.</span>
+          </div>
+          <span class="class-category-panel-meta">${esc(formatCountLabel(summaryCount))}</span>
         </div>
-        <div class="class-category-grid">
-          ${renderCategoryButton({ name: '?꾩껜', class_count: state.totalCount || items.length }, state.currentCategory === 'all', true)}
+        <div class="class-category-grid class-category-rail">
+          ${renderCategoryButton({ name: '전체', class_count: state.totalCount || items.length }, state.currentCategory === 'all', true)}
           ${items.map((item) => renderCategoryButton(item, state.currentCategory === item.name)).join('')}
         </div>
       </section>
@@ -351,15 +251,11 @@
 
   function renderBanner(slides) {
     if (!refs.bannerTrack) return;
-    const list = (Array.isArray(slides) ? slides : [])
-      .map((item, index) => normalizeBannerItem(item, '클래스 배너', index))
-      .filter((item) => item.imageUrl);
 
-    const fallback = list.length ? list : [{
-      imageUrl: '',
-      linkUrl: '',
-      alt: '클래스 배너',
-    }];
+    const list = (Array.isArray(slides) ? slides : [])
+      .map((item, index) => normalizeBannerItem(item, '배너', index))
+      .filter((item) => item.imageUrl);
+    const fallback = list.length ? list : [{ imageUrl: '', linkUrl: '', alt: '배너' }];
 
     state.bannerIndex = Math.min(state.bannerIndex, fallback.length - 1);
 
@@ -367,12 +263,8 @@
       <article class="class-list-banner-slide${index === state.bannerIndex ? ' is-active' : ''}">
         ${slide.imageUrl
           ? slide.linkUrl
-            ? `<a class="class-list-banner-link" href="${esc(slide.linkUrl)}" aria-label="${esc(slide.alt)}">
-                <img src="${esc(slide.imageUrl)}" alt="${esc(slide.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}">
-              </a>`
-            : `<div class="class-list-banner-link">
-                <img src="${esc(slide.imageUrl)}" alt="${esc(slide.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}">
-              </div>`
+            ? `<a class="class-list-banner-link" href="${esc(slide.linkUrl)}" aria-label="${esc(slide.alt)}"><img src="${esc(slide.imageUrl)}" alt="${esc(slide.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}"></a>`
+            : `<div class="class-list-banner-link"><img src="${esc(slide.imageUrl)}" alt="${esc(slide.alt)}" loading="${index === 0 ? 'eager' : 'lazy'}"></div>`
           : `<div class="class-list-banner-link is-fallback class-list-banner-empty" aria-hidden="true"></div>`
         }
       </article>
@@ -394,6 +286,7 @@
   function setActiveBanner(nextIndex) {
     const slides = refs.bannerTrack?.querySelectorAll('.class-list-banner-slide') || [];
     if (!slides.length) return;
+
     state.bannerIndex = (nextIndex + slides.length) % slides.length;
     slides.forEach((slide, index) => slide.classList.toggle('is-active', index === state.bannerIndex));
     refs.bannerDots?.querySelectorAll('[data-banner-dot]').forEach((dot, index) => {
@@ -409,6 +302,7 @@
       console.warn('[class_list] banner load failed:', error);
       state.siteSettings = null;
     }
+
     if (refs.bannerTrack && refs.bannerTrack.offsetParent !== null) {
       renderBanner(state.siteSettings?.bottom_banners || []);
     }
@@ -429,19 +323,14 @@
     } catch (error) {
       console.warn('[class_list] category load failed:', error);
     }
-    state.categories = FALLBACK_CATEGORIES.slice();
-  }
 
-  function renderRecommendations() {
-    if (!refs.recommendSection || !refs.recommendFolderGrid) return;
-    const items = Array.isArray(state.recommendationFolders) ? state.recommendationFolders : [];
-    refs.recommendSection.hidden = !items.length;
-    refs.recommendFolderGrid.innerHTML = items.map((item) => renderRecommendationFolder(item)).join('');
+    state.categories = FALLBACK_CATEGORIES.slice();
   }
 
   function renderRecommendationFolder(folder = {}) {
     const items = Array.isArray(folder.items) ? folder.items : [];
-    const visibleItems = items.slice(0, 3);
+    const visibleItems = items.slice(0, isMobileClassListLayout() ? 2 : 3);
+
     return `
       <article class="recommend-folder-card">
         <div class="recommend-folder-body">
@@ -457,9 +346,7 @@
                 <div class="recommend-info">
                   <h4>${esc(item.title)}</h4>
                   <div class="recommend-meta">
-                    <span>${esc(item.category)}</span>
                     <span>${esc(item.mode || '온라인')}</span>
-                    <span>${Number(item.reviewCount || 0).toLocaleString()}개 후기</span>
                     <span class="recommend-price">${esc(formatPriceLabel(item))}</span>
                   </div>
                 </div>
@@ -469,6 +356,13 @@
         </div>
       </article>
     `;
+  }
+
+  function renderRecommendations() {
+    if (!refs.recommendSection || !refs.recommendFolderGrid) return;
+    const items = Array.isArray(state.recommendationFolders) ? state.recommendationFolders : [];
+    refs.recommendSection.hidden = !items.length;
+    refs.recommendFolderGrid.innerHTML = items.map((item) => renderRecommendationFolder(item)).join('');
   }
 
   async function loadRecommendations() {
@@ -504,24 +398,6 @@
     renderRecommendations();
   }
 
-  function buildRecommendationFallbackFolders(classes = []) {
-    const buckets = new Map();
-    for (const item of Array.isArray(classes) ? classes : []) {
-      const key = text(item.category || 'General') || 'General';
-      if (!buckets.has(key)) buckets.set(key, []);
-      if (buckets.get(key).length < 3) buckets.get(key).push(item);
-    }
-
-    return Array.from(buckets.entries()).slice(0, 3).map(([name, items], index) => ({
-      id: `fallback-${index}`,
-      title: text(name || '추천 클래스'),
-      description: '현재 클래스 데이터를 기준으로 자동 구성된 추천 클래스 묶음입니다.',
-      imageUrl: items[0]?.imageUrl || '',
-      items,
-      type: '추천',
-    }));
-  }
-
   function renderCard(item, index) {
     const cached = state.bookmarkMap.get(item.id);
     const bookmarked = !!cached?.bookmarked;
@@ -537,66 +413,97 @@
             </div>
           </div>
           <div class="card-info">
+            <div class="card-topline">
+              <span class="card-category">${esc(item.category)}</span>
+            </div>
             <h4 class="title">${esc(item.title)}</h4>
             <div class="card-meta">
-              <span class="card-meta-item card-meta-category">${esc(item.category)}</span>
-              <span class="card-meta-item card-meta-mode">${esc(item.mode || '온라인/오프라인')}</span>
-              <span class="card-meta-item card-meta-review">후기 ${Number(item.reviewCount || 0).toLocaleString()}</span>
+              <span class="card-meta-item card-meta-mode">${esc(item.mode || '온라인')}</span>
               <span class="card-meta-item card-meta-price">${esc(formatPriceLabel(item))}</span>
             </div>
           </div>
         </a>
-        <button type="button" class="btn-bookmark${bookmarked ? ' is-bookmarked' : ''}" data-action="bookmark-class" data-class-id="${esc(item.id)}" data-bookmarked="${bookmarked ? '1' : '0'}" data-like-count="${count}" aria-pressed="${bookmarked ? 'true' : 'false'}" aria-label="${bookmarked ? '찜 해제' : '찜하기'}">${bookmarkIcon(bookmarked)}</button>
+        <button type="button" class="btn-bookmark${bookmarked ? ' is-bookmarked' : ''}" data-action="bookmark-class" data-class-id="${esc(item.id)}" data-bookmarked="${bookmarked ? '1' : '0'}" data-like-count="${count}" aria-pressed="${bookmarked ? 'true' : 'false'}" aria-label="${bookmarked ? '북마크 해제' : '북마크 추가'}">${bookmarkIcon(bookmarked)}</button>
       </article>
     `;
   }
 
-  function isMobileClassListLayout() {
-    try {
-      return window.matchMedia?.('(max-width: 768px)')?.matches || document.body?.dataset?.mobileShellMode === 'discover';
-    } catch {
-      return false;
-    }
+  function renderGridState(kind, title, body, actionLabel = '', actionName = '') {
+    if (!refs.allClassGrid) return;
+    refs.allClassGrid.innerHTML = `
+      <div class="class-list-state-card ${esc(kind)}">
+        <strong>${esc(title)}</strong>
+        <p>${esc(body)}</p>
+        ${actionLabel ? `<button type="button" class="class-list-state-action" data-action="${esc(actionName || 'retry-load')}">${esc(actionLabel)}</button>` : ''}
+      </div>
+    `;
   }
 
-  function getClassListSummaryText() {
-    const categoryLabel = state.currentCategory === 'all' ? '전체 카테고리' : state.currentCategory;
-    const sortLabel = SORT_LABELS[state.currentSort] || '최신순';
-    if (state.searchQuery) {
-      return `"${state.searchQuery}" 검색 · ${categoryLabel} · ${sortLabel}`;
+  function setNotice(message = '', tone = '', actionLabel = '') {
+    if (!refs.notice) return;
+    if (!message) {
+      refs.notice.innerHTML = '';
+      return;
     }
-    return `${categoryLabel} · ${sortLabel}`;
+
+    refs.notice.innerHTML = `
+      <div class="notice-chip ${esc(tone)}">
+        <span>${esc(message)}</span>
+        ${actionLabel ? `<button type="button" class="notice-chip-action" data-action="retry-load">${esc(actionLabel)}</button>` : ''}
+      </div>
+    `;
+  }
+
+  function updateCount(value) {
+    if (refs.totalClassCount) {
+      refs.totalClassCount.textContent = formatCountLabel(value, '개 클래스');
+    }
   }
 
   function updateHeader() {
     const mobileLayout = isMobileClassListLayout();
-    const currentTitle = state.currentCategory === 'all' ? '전체 클래스' : `${state.currentCategory} 클래스`;
+    const currentTitle = mobileLayout
+      ? (state.currentCategory === 'all' ? '전체' : state.currentCategory)
+      : (state.currentCategory === 'all' ? '전체 클래스' : `${state.currentCategory} 클래스`);
+    const sortLabel = SORT_LABELS[state.currentSort] || '최신순';
     const desktopCopy = state.searchQuery
-      ? `"${state.searchQuery}" 검색 결과입니다. (${SORT_LABELS[state.currentSort] || '최신순' })`
-      : '정렬과 검색으로 클래스를 확인합니다.';
+      ? `"${state.searchQuery}" 검색 결과입니다. (${sortLabel})`
+      : '정렬과 검색으로 원하는 클래스를 빠르게 좁혀보세요.';
+    const compactCopy = state.searchQuery
+      ? `${state.searchQuery} 결과`
+      : sortLabel;
 
     if (refs.sectionTitle) {
       refs.sectionTitle.textContent = currentTitle;
     }
 
     if (refs.sectionCopy) {
-      refs.sectionCopy.textContent = mobileLayout ? `전체 클래스 - ${SORT_LABELS[state.currentSort] || '최신순'}` : desktopCopy;
+      refs.sectionCopy.textContent = mobileLayout ? compactCopy : desktopCopy;
     }
 
-    if (refs.heroSort) refs.heroSort.textContent = SORT_LABELS[state.currentSort] || '최신순';
+    if (refs.heroSort) refs.heroSort.textContent = sortLabel;
     if (refs.heroCategories) refs.heroCategories.textContent = String(state.categories.length || 0);
     if (refs.heroLoaded) refs.heroLoaded.textContent = String(state.classResults.length || 0);
   }
 
-  function updateCount(value) {
-    if (refs.totalClassCount) {
-      refs.totalClassCount.textContent = `${Number(value || 0).toLocaleString()}개 클래스`;
-    }
+  function syncCardGridColumns() {
+    if (!refs.allClassGrid) return;
+    const columns = isMobileClassListLayout()
+      ? 'repeat(2, minmax(0, 1fr))'
+      : 'repeat(4, minmax(0, 1fr))';
+    refs.allClassGrid.style.setProperty('grid-template-columns', columns, 'important');
+
+    const bannerMinHeight = isMobileClassListLayout() ? '132px' : '184px';
+    if (refs.bannerCard) refs.bannerCard.style.setProperty('min-height', bannerMinHeight, 'important');
+    if (refs.bannerInner) refs.bannerInner.style.setProperty('min-height', bannerMinHeight, 'important');
   }
 
   function setLoading(flag) {
     state.loading = !!flag;
-    if (refs.allClassGrid) refs.allClassGrid.dataset.loading = flag ? 'true' : 'false';
+    if (refs.allClassGrid) {
+      refs.allClassGrid.dataset.loading = flag ? 'true' : 'false';
+      refs.allClassGrid.setAttribute('aria-busy', flag ? 'true' : 'false');
+    }
   }
 
   function sortQuery(sortValue) {
@@ -606,9 +513,74 @@
     return { sort: 'newest' };
   }
 
+  function readUrlState() {
+    const params = new URLSearchParams(window.location.search);
+    state.currentCategory = text(params.get('category') || 'all') || 'all';
+    state.currentSort = text(params.get('sort') || 'newest') || 'newest';
+    state.searchQuery = text(params.get('q') || '');
+    if (!SORT_LABELS[state.currentSort]) state.currentSort = 'newest';
+    if (refs.sortSelect) refs.sortSelect.value = state.currentSort;
+    if (refs.searchInput) refs.searchInput.value = state.searchQuery;
+  }
+
+  function syncUrl({ replace = false } = {}) {
+    const params = new URLSearchParams();
+    if (state.currentCategory !== 'all') params.set('category', state.currentCategory);
+    if (state.currentSort !== 'newest') params.set('sort', state.currentSort);
+    if (state.searchQuery) params.set('q', state.searchQuery);
+    const next = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+    if (replace) window.history.replaceState(null, '', next);
+    else window.history.pushState(null, '', next);
+  }
+
+  function resetFilters() {
+    state.currentCategory = 'all';
+    state.currentSort = 'newest';
+    state.searchQuery = '';
+    if (refs.sortSelect) refs.sortSelect.value = 'newest';
+    if (refs.searchInput) refs.searchInput.value = '';
+    syncUrl({ replace: true });
+    renderCategoryMenu();
+    updateHeader();
+    void loadMore({ reset: true });
+  }
+
+  function selectCategory(nextCategory) {
+    state.currentCategory = text(nextCategory || 'all') || 'all';
+    syncUrl({ replace: true });
+    renderCategoryMenu();
+    updateHeader();
+    void loadMore({ reset: true });
+  }
+
+  function applySort(nextSort) {
+    state.currentSort = SORT_LABELS[nextSort] ? nextSort : 'newest';
+    if (refs.sortSelect) refs.sortSelect.value = state.currentSort;
+    syncUrl({ replace: true });
+    updateHeader();
+    void loadMore({ reset: true });
+  }
+
+  function applySearch(nextQuery) {
+    state.searchQuery = text(nextQuery || '');
+    if (refs.searchInput) refs.searchInput.value = state.searchQuery;
+    syncUrl({ replace: true });
+    updateHeader();
+    void loadMore({ reset: true });
+  }
+
+  function renderGridLoadingMessage(message) {
+    setNotice(message, 'loading');
+    if (refs.allClassGrid) {
+      refs.allClassGrid.dataset.loading = 'true';
+      refs.allClassGrid.setAttribute('aria-busy', 'true');
+    }
+  }
+
   async function loadMore({ reset = false } = {}) {
     if (state.loading) return;
     if (!reset && !state.hasMore) return;
+
     const token = ++state.requestToken;
 
     if (reset) {
@@ -616,12 +588,16 @@
       state.hasMore = true;
       state.totalCount = 0;
       state.classResults = [];
-      refs.allClassGrid.innerHTML = '<div class="empty-state">클래스를 불러오는 중입니다...</div>';
+      if (refs.allClassGrid) {
+        refs.allClassGrid.innerHTML = '';
+        refs.allClassGrid.dataset.loading = 'true';
+        refs.allClassGrid.setAttribute('aria-busy', 'true');
+      }
       updateCount(0);
     }
 
     setLoading(true);
-    setNotice(reset ? '클래스 목록을 불러오는 중입니다.' : '클래스를 더 불러오는 중입니다.', 'loading');
+    renderGridLoadingMessage(reset ? '클래스 목록을 불러오는 중입니다.' : '추가 클래스를 불러오는 중입니다.');
 
     try {
       const params = new URLSearchParams();
@@ -636,21 +612,27 @@
       if (token !== state.requestToken) return;
       if (!res?.success) throw new Error(text(res?.error || '클래스를 불러오지 못했습니다.'));
 
-      const rows = res?.success
-        ? (Array.isArray(res.data?.classes) ? res.data.classes : (Array.isArray(res.data) ? res.data : []))
-        : [];
+      const rows = Array.isArray(res.data?.classes) ? res.data.classes : (Array.isArray(res.data) ? res.data : []);
       const normalized = rows.map((item) => normalizeClassCard(item)).filter((item) => item.id);
       const meta = res?.meta || {};
 
       if (reset) state.classResults = normalized.slice();
       else state.classResults.push(...normalized);
 
-      if (reset) refs.allClassGrid.innerHTML = '';
+      if (reset && refs.allClassGrid) refs.allClassGrid.innerHTML = '';
+
       if (normalized.length) {
         refs.allClassGrid.insertAdjacentHTML('beforeend', normalized.map((item, index) => renderCard(item, state.offset + index)).join(''));
         void hydrateBookmarkStates(normalized);
       } else if (reset) {
-        refs.allClassGrid.innerHTML = '<div class="empty-state">선택한 조건에 맞는 클래스가 없습니다.</div>';
+        const hasFilters = state.currentCategory !== 'all' || state.searchQuery || state.currentSort !== 'newest';
+        renderGridState(
+          'empty',
+          '조건에 맞는 클래스가 없습니다.',
+          hasFilters ? '검색어나 카테고리를 바꿔 보세요.' : '아직 등록된 클래스가 없습니다.',
+          hasFilters ? '필터 초기화' : '',
+          hasFilters ? 'reset-filters' : ''
+        );
       }
 
       state.offset += normalized.length;
@@ -660,12 +642,17 @@
       updateHeader();
       renderCategoryMenu();
       setNotice('');
+
       if (state.hasMore) ensureViewportFilled();
     } catch (error) {
       if (token !== state.requestToken) return;
       console.error('[class_list] load error:', error);
-      setNotice(error?.message || '클래스를 불러오지 못했습니다.', 'error');
-      if (reset) refs.allClassGrid.innerHTML = '<div class="empty-state">클래스를 불러오지 못했습니다.</div>';
+      state.hasMore = false;
+      const message = error?.message || '클래스를 불러오지 못했습니다.';
+      setNotice(message, 'error', '다시 불러오기');
+      if (reset) {
+        renderGridState('error', '클래스를 불러오지 못했습니다.', '네트워크 상태를 확인한 뒤 다시 시도해 주세요.', '다시 불러오기', 'retry-load');
+      }
     } finally {
       if (token === state.requestToken) setLoading(false);
     }
@@ -677,13 +664,14 @@
     button.dataset.likeCount = String(Number(count || 0));
     button.classList.toggle('is-bookmarked', !!bookmarked);
     button.setAttribute('aria-pressed', bookmarked ? 'true' : 'false');
-    button.setAttribute('aria-label', bookmarked ? '찜 해제' : '찜하기');
+    button.setAttribute('aria-label', bookmarked ? '북마크 해제' : '북마크 추가');
     button.innerHTML = bookmarkIcon(bookmarked);
   }
 
   function syncBookmarkUi(classId, bookmarked, count) {
     const id = text(classId);
     if (!id) return;
+
     const nextCount = Number(count || 0);
     state.bookmarkMap.set(id, { bookmarked: !!bookmarked, count: nextCount, synced: true });
     document.querySelectorAll(`.class-card[data-class-id="${cssEsc(id)}"]`).forEach((card) => {
@@ -709,7 +697,7 @@
       const cached = state.bookmarkMap.get(id);
       if (cached?.synced) return;
       const res = await window.BSQ.api(`/api/class-bookmarks?class_id=${encodeURIComponent(id)}`);
-      if (!res?.success || !res.data) throw new Error(res?.error || '찜 상태를 불러오지 못했습니다.');
+      if (!res?.success || !res.data) throw new Error(res?.error || '북마크 상태를 불러오지 못했습니다.');
       syncBookmarkUi(id, !!res.data.bookmarked, Number(res.data.count || 0));
     }));
 
@@ -731,7 +719,7 @@
       try { await window.BSQ.ready; } catch {}
     }
     if (!window.BSQ?.isLoggedIn) {
-      setNotice('Log in to use bookmarks.', 'error');
+      setNotice('북마크를 사용하려면 로그인하세요.', 'error');
       return;
     }
 
@@ -742,39 +730,22 @@
 
     try {
       const res = await window.BSQ.api('/api/class-bookmarks', 'POST', { class_id: id });
-      if (!res?.success) throw new Error(res?.error || '찜을 업데이트하지 못했습니다.');
+      if (!res?.success) throw new Error(res?.error || '북마크를 업데이트하지 못했습니다.');
       syncBookmarkUi(id, !!res.data?.bookmarked, Number(res.data?.count || 0));
-      setNotice(res.data?.bookmarked ? 'Class saved.' : 'Bookmark removed.', 'success');
+      setNotice(res.data?.bookmarked ? '클래스를 저장했습니다.' : '북마크를 해제했습니다.', 'success');
     } catch (error) {
       syncBookmarkUi(id, previous.bookmarked, previous.count);
-      setNotice(error?.message || '찜을 업데이트하지 못했습니다.', 'error');
+      setNotice(error?.message || '북마크를 업데이트하지 못했습니다.', 'error');
     } finally {
       button.dataset.pending = '0';
       button.disabled = false;
     }
   }
 
-  function selectCategory(nextCategory) {
-    state.currentCategory = text(nextCategory || 'all') || 'all';
-    syncUrl({ replace: true });
-    updateHeader();
-    void loadMore({ reset: true });
-  }
-
-  function applySort(nextSort) {
-    state.currentSort = SORT_LABELS[nextSort] ? nextSort : 'newest';
-    if (refs.sortSelect) refs.sortSelect.value = state.currentSort;
-    syncUrl({ replace: true });
-    updateHeader();
-    void loadMore({ reset: true });
-  }
-
-  function applySearch(nextQuery) {
-    state.searchQuery = text(nextQuery || '');
-    if (refs.searchInput) refs.searchInput.value = state.searchQuery;
-    syncUrl({ replace: true });
-    updateHeader();
-    void loadMore({ reset: true });
+  function bookmarkIcon(bookmarked = false) {
+    const outline = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>';
+    const filled = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"></path>';
+    return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="bsq-icon">${bookmarked ? filled : outline}</svg>`;
   }
 
   function bindEvents() {
@@ -793,19 +764,29 @@
     refs.sortSelect?.addEventListener('change', (event) => applySort(event.target.value));
 
     document.addEventListener('click', (event) => {
+      const actionButton = event.target.closest('[data-action]');
+      const action = actionButton?.dataset.action;
+      if (action === 'retry-load') {
+        event.preventDefault();
+        if (state.classResults.length > 0) {
+          state.hasMore = true;
+          void loadMore({ reset: false });
+        } else {
+          void loadMore({ reset: true });
+        }
+        return;
+      }
+      if (action === 'reset-filters') {
+        event.preventDefault();
+        resetFilters();
+        return;
+      }
+
       const bookmarkBtn = event.target.closest('[data-action="bookmark-class"]');
       if (bookmarkBtn) {
         event.preventDefault();
         event.stopPropagation();
         void toggleBookmark(bookmarkBtn.dataset.classId, bookmarkBtn);
-        return;
-      }
-
-      const action = event.target.closest('[data-action]')?.dataset.action;
-      if (action === 'toggle-category-panel') {
-        event.preventDefault();
-        state.categoryPanelOpen = !state.categoryPanelOpen;
-        renderCategoryMenu();
         return;
       }
 
@@ -828,11 +809,13 @@
   function setupInfiniteScroll() {
     if (infiniteObserver) infiniteObserver.disconnect();
     if (!refs.scrollSentinel || !('IntersectionObserver' in window)) return;
+
     infiniteObserver = new IntersectionObserver((entries) => {
       if (entries.some((entry) => entry.isIntersecting)) {
         void loadMore();
       }
     }, { rootMargin: '320px 0px' });
+
     infiniteObserver.observe(refs.scrollSentinel);
   }
 
@@ -842,27 +825,59 @@
     if (rect.bottom < window.innerHeight * 0.95) void loadMore();
   }
 
-  function bookmarkIcon(bookmarked = false) {
-    const outline = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>';
-    const filled = '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor"></path>';
-    return `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="bsq-icon">${bookmarked ? filled : outline}</svg>`;
+  function cacheRefs() {
+    refs.bannerCard = document.querySelector('.class-list-banner-card');
+    refs.bannerInner = document.querySelector('.class-list-banner-inner');
+    refs.bannerTrack = $('classListBannerTrack');
+    refs.bannerPrev = $('classListBannerPrev');
+    refs.bannerNext = $('classListBannerNext');
+    refs.bannerDots = $('classListBannerDots');
+    refs.categoryFilter = $('categoryFilter');
+    refs.notice = $('classListNotice');
+    refs.allClassGrid = $('allClassGrid');
+    refs.searchInput = $('classSearchInput');
+    refs.sortSelect = $('sortSelect');
+    refs.totalClassCount = $('totalClassCount');
+    refs.recommendSection = $('recommendSection');
+    refs.recommendFolderGrid = $('recommendFolderGrid');
+    refs.scrollSentinel = $('classListSentinel');
+    refs.heroLoaded = $('classListStatLoaded');
+    refs.heroCategories = $('classListStatCategories');
+    refs.heroSort = $('classListStatSort');
+    refs.sectionTitle = $('classListSectionTitle');
+    refs.sectionCopy = $('classListSectionCopy');
+  }
+
+  function isMobileClassListLayout() {
+    try {
+      return window.matchMedia?.('(max-width: 768px)')?.matches;
+    } catch {
+      return false;
+    }
+  }
+
+  function renderLoadingState() {
+    if (!refs.allClassGrid) return;
+    refs.allClassGrid.dataset.loading = 'true';
+    refs.allClassGrid.setAttribute('aria-busy', 'true');
   }
 
   async function bootstrap() {
     await window.BSQ?.ready;
     cacheRefs();
     readUrlState();
-    state.categoryPanelOpen = !isMobileClassListLayout();
     bindEvents();
+    syncCardGridColumns();
+    window.addEventListener('resize', syncCardGridColumns, { passive: true });
     renderCategoryMenu();
     updateHeader();
     updateCount(0);
 
-    await Promise.all([loadBanner(), loadRecommendations()]);
+    await Promise.all([loadBanner(), loadCategories()]);
     renderCategoryMenu();
     updateHeader();
 
-    await Promise.all([loadMore({ reset: true })]);
+    await Promise.all([loadRecommendations(), loadMore({ reset: true })]);
     setupInfiniteScroll();
     ensureViewportFilled();
     syncUrl({ replace: true });
@@ -871,7 +886,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     void bootstrap().catch((error) => {
       console.error('[class_list] bootstrap failed:', error);
-      setNotice(error?.message || 'Failed to initialize class explorer.', 'error');
+      setNotice(error?.message || '클래스 목록을 초기화하지 못했습니다.', 'error');
     });
   });
 })();

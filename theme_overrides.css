@@ -1694,7 +1694,7 @@ html[data-theme="light"] body.recommend-page .btn-bookmark.is-bookmarked {
 
 /* Class list final layout corrections */
 body.class-list-page .class-list-banner-overlay {
-  display: none !important;
+  display: flex !important;
 }
 
 body.class-list-page .class-list-banner-inner {

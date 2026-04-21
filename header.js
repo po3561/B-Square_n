@@ -9,8 +9,9 @@
   const scriptDir = scriptTag ? scriptTag.src.substring(0, scriptTag.src.lastIndexOf('/') + 1) : '';
   
   // Use scriptDir for absolute-like relative paths for CSS dynamic injection
-  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260411_03';
-  const mobileAppCSSPath = scriptDir + 'mobile_app.css?v=20260419_01';
+  const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260421_02';
+  const mobileAppCSSPath = scriptDir + 'mobile_app.css?v=20260421_03';
+  const CUSTOM_MOBILE_APP_PATHS = ['/class_view/', '/community/', '/notice/'];
 
   const homePrefix = currentPath.split('/').length > 2 ? '../' : './';
   const prefix = homePrefix;
@@ -138,6 +139,26 @@
 
   const mobileShellTitle = mobileShellTitleMap[mobileShellMode] || 'B-Square';
 
+  function normalizeBottomNavMode(value) {
+    const mode = String(value || '').trim().toLowerCase();
+    if (['hidden', 'hide', 'off', 'none', 'false', '0'].includes(mode)) return 'hidden';
+    if (['compact', 'condensed', 'dense', 'small'].includes(mode)) return 'compact';
+    return 'default';
+  }
+
+  function getBottomNavMode() {
+    const explicitMode = [
+      document.body?.dataset?.shellBottomNav,
+      document.body?.dataset?.bottomNavMode,
+      document.documentElement?.dataset?.shellBottomNav,
+      document.documentElement?.dataset?.bottomNavMode,
+    ].find((value) => String(value || '').trim());
+
+    if (explicitMode) return normalizeBottomNavMode(explicitMode);
+    if (['detail', 'community', 'compose', 'notice', 'contact', 'auth'].includes(mobileShellMode)) return 'hidden';
+    return 'default';
+  }
+
   function normalizeRole(role) {
     const value = String(role || '').trim().toLowerCase();
     if (['super-admin', 'superadmin', 'root', 'owner'].includes(value)) return 'super_admin';
@@ -201,7 +222,18 @@
   }
 
   function getThemeName() {
-    const theme = String(document.documentElement?.dataset?.theme || document.body?.dataset?.theme || localStorage.getItem('bsq_theme') || 'dark').trim().toLowerCase();
+    const themeSnapshot = window.__BSQ_PREFERENCES__
+      || window.__BSQ_BOOTSTRAP__
+      || window.__BSQ_THEME_SYNC__?.resolvePreferenceSnapshot?.()
+      || null;
+    const theme = String(
+      themeSnapshot?.resolvedTheme
+      || themeSnapshot?.theme
+      || document.documentElement?.dataset?.theme
+      || document.body?.dataset?.theme
+      || localStorage.getItem('bsq_theme')
+      || 'light'
+    ).trim().toLowerCase();
     return theme === 'light' ? 'light' : 'dark';
   }
 
@@ -707,22 +739,12 @@
   }
 
   function buildBottomNavHTML() {
-    return `
-      <nav class="bottom-nav mobile-only" id="bsqBottomNav" aria-label="하단 메뉴">
-        ${BOTTOM_NAV_ITEMS.map((item) => `
-          <a href="${item.href}" class="nav-item${item.tone === 'accent' ? ' nav-item-accent' : ''}${activeNav === item.id ? ' active' : ''}"${activeNav === item.id ? ' aria-current="page"' : ''}>
-            <span class="icon" aria-hidden="true">${item.icon}</span>
-            <span class="label">${item.label}</span>
-          </a>
-        `).join('')}
-      </nav>`;
-  }
-
-  function buildBottomNavHTML() {
+    const bottomNavMode = getBottomNavMode();
+    if (bottomNavMode === 'hidden') return '';
     const navItems = BOTTOM_NAV_ITEMS.filter((item) => item.id !== 'create');
     const createItem = BOTTOM_NAV_ITEMS.find((item) => item.id === 'create') || null;
     return `
-      <nav class="bottom-nav mobile-only" id="bsqBottomNav" aria-label="모바일 하단 내비게이션">
+      <nav class="bottom-nav mobile-only${bottomNavMode === 'compact' ? ' bottom-nav-compact' : ''}" id="bsqBottomNav" data-shell-bottom-nav="${bottomNavMode}" aria-label="모바일 하단 내비게이션">
         <div class="bottom-nav-rail">
           ${navItems.slice(0, 2).map((item) => `
             <a href="${item.href}" class="nav-item${activeNav === item.id ? ' active' : ''}"${activeNav === item.id ? ' aria-current="page"' : ''}>
@@ -884,20 +906,33 @@
   }
 
   function injectUI() {
+    const firstStylesheet = document.head.querySelector('link[rel="stylesheet"], style');
+    const insertStyleLink = (link) => {
+      if (firstStylesheet && firstStylesheet.parentNode === document.head) {
+        document.head.insertBefore(link, firstStylesheet);
+      } else {
+        document.head.appendChild(link);
+      }
+    };
+
+    const currentPath = String(window.location.pathname || '').toLowerCase();
+    const hasCustomMobileAppShell = CUSTOM_MOBILE_APP_PATHS.some((part) => currentPath.includes(part));
+    document.body.dataset.shellMobileApp = hasCustomMobileAppShell ? '0' : '1';
+
     if (!document.getElementById('bsqShellOverridesCSS')) {
       const shellCSS = document.createElement('link');
       shellCSS.id = 'bsqShellOverridesCSS';
       shellCSS.rel = 'stylesheet';
       shellCSS.href = shellCSSPath;
-      document.head.appendChild(shellCSS);
+      insertStyleLink(shellCSS);
     }
 
-    if (!document.getElementById('bsqMobileAppCSS')) {
+    if (!hasCustomMobileAppShell && !document.getElementById('bsqMobileAppCSS')) {
       const mobileAppCSS = document.createElement('link');
       mobileAppCSS.id = 'bsqMobileAppCSS';
       mobileAppCSS.rel = 'stylesheet';
       mobileAppCSS.href = mobileAppCSSPath;
-      document.head.appendChild(mobileAppCSS);
+      insertStyleLink(mobileAppCSS);
     }
 
     document.querySelector('header.site-header')?.remove();
@@ -905,6 +940,8 @@
     document.querySelectorAll('.drawer-overlay, .drawer-menu').forEach((el) => el.remove());
     document.querySelector('nav.bottom-nav')?.remove();
     document.body.dataset.mobileShellMode = mobileShellMode;
+    const bottomNavMode = getBottomNavMode();
+    document.body.dataset.shellBottomNav = bottomNavMode;
 
     document.body.insertAdjacentHTML('afterbegin', buildDrawerHTML());
     const drawer = document.getElementById('drawerMenu');
@@ -913,7 +950,10 @@
 
     document.body.insertAdjacentHTML('beforeend', buildFooterHTML());
     const footer = document.getElementById('bsqFooter');
-    if (footer) footer.insertAdjacentHTML('beforebegin', buildBottomNavHTML());
+    if (footer) {
+      const bottomNavHTML = buildBottomNavHTML();
+      if (bottomNavHTML) footer.insertAdjacentHTML('beforebegin', bottomNavHTML);
+    }
   }
 
   function syncMobileAppSurface() {
