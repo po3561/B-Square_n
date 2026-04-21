@@ -750,11 +750,20 @@ window.CommunityModules.ChatUI = (function () {
 
         const btn = document.getElementById('btnChatInfo');
         const panel = document.getElementById('commInfoPanel');
+        const btnClose = document.getElementById('btnClosePanel');
         if (btn) {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 toggleInfoPanel();
+            });
+        }
+
+        if (btnClose) {
+            btnClose.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setInfoPanelVisibility(false);
             });
         }
 
