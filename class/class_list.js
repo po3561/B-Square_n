@@ -427,6 +427,7 @@
               <span class="card-category">${esc(item.category)}</span>
             </div>
             <h4 class="title">${esc(item.title)}</h4>
+            ${item.summary ? `<p class="card-summary">${esc(item.summary)}</p>` : ''}
             <div class="card-meta">
               <span class="card-meta-item card-meta-mode">${esc(item.mode || '온라인')}</span>
               <span class="card-meta-item card-meta-price">${esc(formatPriceLabel(item))}</span>
@@ -555,8 +556,8 @@
   function syncCardGridColumns() {
     if (!refs.allClassGrid) return;
     const columns = isMobileClassListLayout()
-      ? 'repeat(2, minmax(0, 1fr))'
-      : 'repeat(4, minmax(0, 1fr))';
+      ? 'repeat(1, minmax(0, 1fr))'
+      : 'repeat(5, minmax(0, 1fr))';
     refs.allClassGrid.style.setProperty('grid-template-columns', columns, 'important');
 
     const bannerMinHeight = isMobileClassListLayout() ? '132px' : '184px';
@@ -641,7 +642,7 @@
       refs.allClassGrid.dataset.loading = 'true';
       refs.allClassGrid.setAttribute('aria-busy', 'true');
       if (reset) {
-        refs.allClassGrid.innerHTML = Array.from({ length: isMobileClassListLayout() ? 6 : 8 }).map((_, index) => renderCardSkeleton(index)).join('');
+        refs.allClassGrid.innerHTML = Array.from({ length: isMobileClassListLayout() ? 6 : 10 }).map((_, index) => renderCardSkeleton(index)).join('');
       }
     }
   }

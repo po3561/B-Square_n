@@ -1305,10 +1305,6 @@ html[data-theme="dark"] body.class-view-page.class-view-mobile-app #paymentBotto
     gap: 0.38rem;
   }
 
-  body.class-view-page.class-view-mobile-app #btnClassViewCart {
-    display: none !important;
-  }
-
   body.class-view-page.class-view-mobile-app .class-view-toolbar-btn {
     width: 38px;
     height: 38px;

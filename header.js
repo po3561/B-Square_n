@@ -354,6 +354,42 @@
     `;
   }
 
+  function buildMobileSearchOverlayHTML() {
+    return `
+      <div class="mobile-search-overlay" id="mobileSearchOverlay" hidden>
+        <div class="mobile-search-overlay-backdrop" data-mobile-search-close></div>
+        <section class="mobile-search-overlay-sheet" role="dialog" aria-modal="true" aria-labelledby="mobileSearchOverlayTitle">
+          <div class="mobile-search-overlay-head">
+            <div class="mobile-search-overlay-copy">
+              <span class="mobile-search-overlay-eyebrow">검색</span>
+              <strong id="mobileSearchOverlayTitle">원하는 클래스를 찾아보세요</strong>
+            </div>
+            <button type="button" class="mobile-search-overlay-close" data-mobile-search-close aria-label="검색 닫기">
+              ${navIconSvg('back')}
+            </button>
+          </div>
+
+          <form class="mobile-search-shell mobile-only-flex" id="mobileSearchForm" action="${prefix}class/class_list.html" method="get" role="search">
+            <label class="mobile-search-field" for="mobileShellSearchInput">
+              <span class="mobile-search-icon" aria-hidden="true">${navIconSvg('search')}</span>
+              <input
+                type="search"
+                id="mobileShellSearchInput"
+                name="q"
+                placeholder="통합 검색"
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="통합 검색"
+              >
+            </label>
+            <button type="submit" class="mobile-search-submit" id="mobileSearchSubmit">검색</button>
+          </form>
+
+          <div id="mobileSearchPanel" class="bsq-search-panel bsq-mobile-search-panel" aria-live="polite"></div>
+        </section>
+      </div>`;
+  }
+
   function buildHeaderHTML() {
     return `
       <header class="site-header" id="bsqHeader">
@@ -408,6 +444,17 @@
             </label>
             <button type="submit" class="mobile-search-submit">검색</button>
           </form>
+
+          <div class="mobile-shell mobile-shell-compact mobile-only-flex" aria-label="모바일 상단바">
+            <button class="mobile-shell-action mobile-shell-search-trigger" id="btnMobileSearch" type="button" aria-label="검색 열기">
+              ${navIconSvg('search')}
+            </button>
+            <a class="mobile-shell-action" href="${prefix}notice/notice.html" aria-label="알림">
+              ${navIconSvg('bell')}
+            </a>
+          </div>
+
+          ${buildMobileSearchOverlayHTML()}
 
           <div class="header-top">
             <div class="header-top-left">
@@ -711,6 +758,250 @@
     window.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && open) {
         setPanelOpen(false);
+      }
+    });
+
+    setPanelOpen(false);
+  }
+
+  function setupMobileSearchOverlay() {
+    const openButton = document.getElementById('btnMobileSearch');
+    const overlay = document.getElementById('mobileSearchOverlay');
+    const form = document.getElementById('mobileSearchForm');
+    const input = document.getElementById('mobileShellSearchInput');
+    const submit = document.getElementById('mobileSearchSubmit');
+    const panel = document.getElementById('mobileSearchPanel');
+
+    if (!openButton || !overlay || !form || !input || !submit || !panel || overlay.dataset.bsqSearchReady === '1') return;
+    overlay.dataset.bsqSearchReady = '1';
+
+    let isOpen = false;
+    let requestToken = 0;
+    let debounceTimer = null;
+    let lastFocusTarget = null;
+
+    const getContext = () => 'mobile';
+
+    const setPanelOpen = (value) => {
+      isOpen = !!value;
+      overlay.hidden = !isOpen;
+      overlay.classList.toggle('is-open', isOpen);
+      document.body.classList.toggle('search-overlay-open', isOpen);
+      openButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+      if (isOpen) {
+        lastFocusTarget = document.activeElement;
+        window.requestAnimationFrame(() => {
+          input.focus({ preventScroll: true });
+          input.select?.();
+        });
+      } else if (lastFocusTarget && lastFocusTarget.isConnected) {
+        window.requestAnimationFrame(() => lastFocusTarget.focus?.({ preventScroll: true }));
+      }
+    };
+
+    const normalizeQuery = (value) => String(value || '').trim();
+
+    const buildRequestUrl = (query) => {
+      const params = new URLSearchParams();
+      if (query) params.set('q', query);
+      params.set('scope', getContext());
+      params.set('limit', String(SEARCH_LIMIT));
+      params.set('history_limit', '6');
+      params.set('include_history', '1');
+      return `/api/search?${params.toString()}`;
+    };
+
+    const wireResultClicks = (normalizedQuery) => {
+      panel.querySelectorAll('.bsq-search-result').forEach((item) => {
+        item.addEventListener('click', async () => {
+          const result = {
+            kind: item.dataset.kind || '',
+            id: item.dataset.id || '',
+            title: item.dataset.title || '',
+            url: item.dataset.url || '',
+          };
+          const targetUrl = String(result.url || '').trim();
+          if (!targetUrl) return;
+
+          const selectedQuery = normalizeQuery(item.dataset.query || normalizedQuery);
+          if (selectedQuery && window.BSQ?.api) {
+            void window.BSQ.api('/api/search', {
+              method: 'POST',
+              keepalive: true,
+              body: JSON.stringify({
+                action: 'record',
+                query: selectedQuery,
+                context: getContext(),
+                result_type: result.kind || '',
+                result_id: result.id || '',
+                result_title: result.title || '',
+                result_url: targetUrl,
+                source_page: currentPath || '',
+              }),
+            });
+          }
+
+          window.location.href = targetUrl;
+        });
+      });
+    };
+
+    const renderPayload = (data, query) => {
+      const normalizedQuery = normalizeQuery(query);
+      const results = data?.results || {};
+      const history = Array.isArray(data?.history) ? data.history : [];
+      const sections = [];
+
+      if (normalizedQuery) {
+        sections.push(
+          buildSearchSection(SEARCH_SECTION_TITLES.categories, results.categories, normalizedQuery),
+          buildSearchSection(SEARCH_SECTION_TITLES.classes, results.classes, normalizedQuery),
+          buildSearchSection(SEARCH_SECTION_TITLES.notices, results.notices, normalizedQuery),
+          buildSearchSection(SEARCH_SECTION_TITLES.class_notices, results.class_notices, normalizedQuery),
+          buildSearchSection(SEARCH_SECTION_TITLES.faqs, results.faqs, normalizedQuery),
+          buildSearchSection(SEARCH_SECTION_TITLES.inquiries, results.inquiries, normalizedQuery),
+        );
+      } else {
+        if (history.length) {
+          sections.push(buildSearchSection(SEARCH_SECTION_TITLES.history, history, normalizedQuery));
+        }
+        sections.push(buildSearchQuickLinks());
+      }
+
+      panel.innerHTML = sections.filter(Boolean).join('') || buildSearchEmptyState(normalizedQuery);
+      wireResultClicks(normalizedQuery);
+    };
+
+    const fetchAndRender = async (query) => {
+      const normalizedQuery = normalizeQuery(query);
+      searchState.query = normalizedQuery;
+      const token = ++requestToken;
+
+      try {
+        const res = await window.BSQ.api(buildRequestUrl(normalizedQuery));
+        if (token !== requestToken) return;
+        const data = res?.success ? (res.data || null) : null;
+        searchState.results = data;
+        searchState.history = Array.isArray(data?.history) ? data.history : [];
+        renderPayload(data, normalizedQuery);
+      } catch (error) {
+        if (token !== requestToken) return;
+        panel.innerHTML = buildSearchEmptyState(normalizedQuery);
+        console.warn('[BSQ] mobile search load failed:', error);
+      }
+    };
+
+    const navigateToBestResult = async () => {
+      const query = normalizeQuery(input.value || '');
+      if (!query) {
+        setPanelOpen(true);
+        await fetchAndRender('');
+        return;
+      }
+
+      const res = await window.BSQ.api(buildRequestUrl(query));
+      const data = res?.success ? (res.data || null) : null;
+      searchState.results = data;
+      searchState.history = Array.isArray(data?.history) ? data.history : [];
+      renderPayload(data, query);
+
+      const best = selectBestSearchTarget(data);
+      if (!best?.url) return;
+
+      if (window.BSQ?.api) {
+        void window.BSQ.api('/api/search', {
+          method: 'POST',
+          keepalive: true,
+          body: JSON.stringify({
+            action: 'record',
+            query,
+            context: getContext(),
+            result_type: best.kind || '',
+            result_id: best.id || '',
+            result_title: best.title || '',
+            result_url: best.url || '',
+            source_page: currentPath || '',
+          }),
+        });
+      }
+
+      window.location.href = best.url;
+    };
+
+    const scheduleFetch = (query) => {
+      window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(() => {
+        void fetchAndRender(query);
+      }, SEARCH_DEBOUNCE_MS);
+    };
+
+    const closeOverlay = () => {
+      if (!isOpen) return;
+      window.clearTimeout(debounceTimer);
+      requestToken += 1;
+      setPanelOpen(false);
+    };
+
+    openButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      if (isOpen) {
+        closeOverlay();
+        return;
+      }
+      setPanelOpen(true);
+      void fetchAndRender(input.value || '');
+    });
+
+    overlay.querySelectorAll('[data-mobile-search-close]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        closeOverlay();
+      });
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      void navigateToBestResult();
+    });
+
+    input.addEventListener('input', (event) => {
+      const nextQuery = normalizeQuery(event.target.value || '');
+      searchState.query = nextQuery;
+      setPanelOpen(true);
+      scheduleFetch(nextQuery);
+    });
+
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeOverlay();
+        return;
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        void navigateToBestResult();
+      }
+    });
+
+    submit.addEventListener('click', (event) => {
+      event.preventDefault();
+      void navigateToBestResult();
+    });
+
+    panel.addEventListener('mousedown', (event) => {
+      event.stopPropagation();
+    });
+
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) {
+        closeOverlay();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && isOpen) {
+        closeOverlay();
       }
     });
 
@@ -1438,6 +1729,7 @@
     setupMobileShellNavigation();
     setupCategoryMenu();
     setupGlobalSearch();
+    setupMobileSearchOverlay();
     initAuth();
     syncTransientShellState();
 

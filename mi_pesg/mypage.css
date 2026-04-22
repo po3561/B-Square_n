@@ -2368,6 +2368,333 @@ body[data-page="mypage"] .dashboard-accordion-card[data-accordion="friend"] {
     grid-column: 1 / -1;
 }
 
+@media (max-width: 768px) {
+    body.mypage-page,
+    body[data-page="mypage"] {
+        --mp-bg: #f4f7fb;
+        --mp-text: #0f172a;
+        --mp-text-muted: #64748b;
+        --mp-text-dim: #94a3b8;
+        --mp-surface: #ffffff;
+        --mp-surface-soft: #f8fafc;
+        --mp-surface-strong: rgba(79, 124, 255, 0.08);
+        --mp-border: rgba(15, 23, 42, 0.08);
+        --mp-border-strong: rgba(15, 23, 42, 0.12);
+        --mp-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+        --mp-shadow-soft: 0 12px 26px rgba(15, 23, 42, 0.08);
+        background:
+            radial-gradient(circle at top right, rgba(79, 124, 255, 0.11), transparent 28%),
+            linear-gradient(180deg, #f8fbff 0%, #eff4fb 55%, #f4f7fb 100%) !important;
+        color: var(--mp-text) !important;
+    }
+
+    body.mypage-page .mypage-shell,
+    body[data-page="mypage"] .mypage-shell {
+        width: 100% !important;
+        padding: 0 0 calc(8.75rem + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    body.mypage-page .mypage-layout,
+    body[data-page="mypage"] .mypage-layout {
+        width: calc(100vw - 1rem) !important;
+        margin: 0.35rem auto 0 !important;
+        grid-template-columns: 1fr !important;
+        gap: 0.72rem !important;
+    }
+
+    body.mypage-page .mypage-sidebar,
+    body[data-page="mypage"] .mypage-sidebar {
+        position: static !important;
+        top: auto !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    body.mypage-page .profile-summary,
+    body[data-page="mypage"] .profile-summary {
+        margin-bottom: 0 !important;
+        padding: 1rem !important;
+        border: 0 !important;
+        border-radius: 28px !important;
+        background:
+            radial-gradient(circle at top right, rgba(147, 197, 253, 0.22), transparent 28%),
+            linear-gradient(160deg, #0c7a43 0%, #0e6f49 48%, #0c4a36 100%) !important;
+        box-shadow: 0 18px 36px rgba(12, 122, 67, 0.26) !important;
+        color: #fff !important;
+    }
+
+    body.mypage-page .profile-summary-top,
+    body[data-page="mypage"] .profile-summary-top {
+        gap: 0.78rem !important;
+        align-items: center !important;
+    }
+
+    body.mypage-page .profile-summary-copy,
+    body[data-page="mypage"] .profile-summary-copy,
+    body.mypage-page .profile-summary h3,
+    body[data-page="mypage"] .profile-summary h3,
+    body.mypage-page .profile-summary p,
+    body[data-page="mypage"] .profile-summary p {
+        color: #fff !important;
+    }
+
+    body.mypage-page .profile-summary-eyebrow,
+    body[data-page="mypage"] .profile-summary-eyebrow {
+        color: rgba(255, 255, 255, 0.72) !important;
+    }
+
+    body.mypage-page .profile-summary-email,
+    body[data-page="mypage"] .profile-summary-email,
+    body.mypage-page .profile-summary-meta,
+    body[data-page="mypage"] .profile-summary-meta,
+    body.mypage-page .profile-summary-referrer,
+    body[data-page="mypage"] .profile-summary-referrer {
+        color: rgba(255, 255, 255, 0.72) !important;
+    }
+
+    body.mypage-page .profile-img-placeholder,
+    body[data-page="mypage"] .profile-img-placeholder {
+        width: 68px !important;
+        height: 68px !important;
+        border-radius: 20px !important;
+        background: rgba(255, 255, 255, 0.14) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        color: #fff !important;
+    }
+
+    body.mypage-page .profile-actions-stack,
+    body[data-page="mypage"] .profile-actions-stack {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0.45rem !important;
+        margin-top: 0.7rem !important;
+    }
+
+    body.mypage-page .profile-mini-btn,
+    body[data-page="mypage"] .profile-mini-btn {
+        min-height: 38px !important;
+        padding: 0.52rem 0.55rem !important;
+        border-radius: 16px !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        background: rgba(255, 255, 255, 0.12) !important;
+        color: #fff !important;
+        box-shadow: none !important;
+    }
+
+    body.mypage-page .mypage-nav,
+    body[data-page="mypage"] .mypage-nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.5rem !important;
+        margin-top: 0.72rem !important;
+    }
+
+    body.mypage-page .nav-btn,
+    body[data-page="mypage"] .nav-btn {
+        min-height: 46px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.55rem !important;
+        padding: 0.68rem 0.8rem !important;
+        border-radius: 18px !important;
+        border: 1px solid var(--mp-border) !important;
+        background: rgba(255, 255, 255, 0.96) !important;
+        color: var(--mp-text-muted) !important;
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05) !important;
+    }
+
+    body.mypage-page .nav-btn.active,
+    body[data-page="mypage"] .nav-btn.active {
+        background: linear-gradient(135deg, rgba(79, 111, 255, 0.12), rgba(59, 109, 245, 0.20)) !important;
+        border-color: rgba(79, 111, 255, 0.22) !important;
+        color: #2448d8 !important;
+    }
+
+    body.mypage-page .nav-btn .nav-label,
+    body[data-page="mypage"] .nav-btn .nav-label {
+        font-size: 0.82rem !important;
+        font-weight: 800 !important;
+    }
+
+    body.mypage-page .mypage-content,
+    body[data-page="mypage"] .mypage-content {
+        gap: 0.72rem !important;
+    }
+
+    body.mypage-page .guest-gate,
+    body[data-page="mypage"] .guest-gate,
+    body.mypage-page .tab-header-row,
+    body[data-page="mypage"] .tab-header-row,
+    body.mypage-page .dashboard-commerce-shell,
+    body[data-page="mypage"] .dashboard-commerce-shell,
+    body.mypage-page .mypage-panel-card,
+    body[data-page="mypage"] .mypage-panel-card,
+    body.mypage-page .dashboard-stat-card,
+    body[data-page="mypage"] .dashboard-stat-card,
+    body.mypage-page .mypage-hero,
+    body[data-page="mypage"] .mypage-hero {
+        border-radius: 24px !important;
+        border: 1px solid var(--mp-border) !important;
+        background: rgba(255, 255, 255, 0.98) !important;
+        box-shadow: var(--mp-shadow-soft) !important;
+    }
+
+    body.mypage-page .guest-gate,
+    body[data-page="mypage"] .guest-gate {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem !important;
+    }
+
+    body.mypage-page .tab-header-row,
+    body[data-page="mypage"] .tab-header-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0.75rem !important;
+        padding: 0.9rem 0.95rem !important;
+    }
+
+    body.mypage-page .tab-title,
+    body[data-page="mypage"] .tab-title {
+        font-size: clamp(1.08rem, 4.8vw, 1.44rem) !important;
+        line-height: 1.12 !important;
+        letter-spacing: -0.04em !important;
+    }
+
+    body.mypage-page .tab-header-cta,
+    body[data-page="mypage"] .tab-header-cta,
+    body.mypage-page .hero-action-btn,
+    body[data-page="mypage"] .hero-action-btn,
+    body.mypage-page .btn-chat-link,
+    body[data-page="mypage"] .btn-chat-link,
+    body.mypage-page .btn-primary,
+    body[data-page="mypage"] .btn-primary {
+        min-height: 42px !important;
+        border-radius: 14px !important;
+    }
+
+    body.mypage-page .dashboard-summary-grid,
+    body[data-page="mypage"] .dashboard-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.55rem !important;
+    }
+
+    body.mypage-page .dashboard-profile-card,
+    body[data-page="mypage"] .dashboard-profile-card {
+        grid-column: 1 / -1 !important;
+        background: linear-gradient(160deg, rgba(12, 122, 67, 0.95), rgba(10, 111, 73, 0.92)) !important;
+        color: #fff !important;
+    }
+
+    body.mypage-page .dashboard-profile-card .dashboard-profile-eyebrow,
+    body[data-page="mypage"] .dashboard-profile-card .dashboard-profile-eyebrow,
+    body.mypage-page .dashboard-profile-card .dashboard-profile-name,
+    body[data-page="mypage"] .dashboard-profile-card .dashboard-profile-name,
+    body.mypage-page .dashboard-profile-card .dashboard-profile-username,
+    body[data-page="mypage"] .dashboard-profile-card .dashboard-profile-username,
+    body.mypage-page .dashboard-profile-card .dashboard-profile-row span,
+    body[data-page="mypage"] .dashboard-profile-card .dashboard-profile-row span,
+    body.mypage-page .dashboard-profile-card .dashboard-profile-row strong,
+    body[data-page="mypage"] .dashboard-profile-card .dashboard-profile-row strong {
+        color: #fff !important;
+    }
+
+    body.mypage-page .dashboard-profile-card .dashboard-profile-row,
+    body[data-page="mypage"] .dashboard-profile-card .dashboard-profile-row {
+        background: rgba(255, 255, 255, 0.10) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    body.mypage-page .dashboard-profile-avatar,
+    body[data-page="mypage"] .dashboard-profile-avatar {
+        width: 52px !important;
+        height: 52px !important;
+        border-radius: 16px !important;
+        background: rgba(255, 255, 255, 0.16) !important;
+        border-color: rgba(255, 255, 255, 0.16) !important;
+    }
+
+    body.mypage-page .dashboard-stat-card,
+    body[data-page="mypage"] .dashboard-stat-card {
+        min-height: auto !important;
+        padding: 0.82rem !important;
+    }
+
+    body.mypage-page .dashboard-stat-icon,
+    body[data-page="mypage"] .dashboard-stat-icon {
+        width: 1.85rem !important;
+        height: 1.85rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    body.mypage-page .dashboard-stat-value,
+    body[data-page="mypage"] .dashboard-stat-value {
+        white-space: normal !important;
+        font-size: clamp(1.05rem, 4.7vw, 1.4rem) !important;
+    }
+
+    body.mypage-page .dashboard-accordion-body,
+    body[data-page="mypage"] .dashboard-accordion-body {
+        padding-top: 0.8rem !important;
+    }
+
+    body.mypage-page .dashboard-commerce-grid,
+    body[data-page="mypage"] .dashboard-commerce-grid,
+    body.mypage-page .mypage-panel-grid,
+    body[data-page="mypage"] .mypage-panel-grid,
+    body.mypage-page .commerce-split-grid,
+    body[data-page="mypage"] .commerce-split-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.72rem !important;
+    }
+
+    body.mypage-page .dashboard-commerce-shell,
+    body[data-page="mypage"] .dashboard-commerce-shell {
+        padding: 0.9rem !important;
+    }
+
+    body.mypage-page .dashboard-summary-item,
+    body[data-page="mypage"] .dashboard-summary-item,
+    body.mypage-page .payment-summary-row,
+    body[data-page="mypage"] .payment-summary-row {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    body.mypage-page .my-class-card,
+    body[data-page="mypage"] .my-class-card {
+        grid-template-columns: 92px minmax(0, 1fr) !important;
+        gap: 0.75rem !important;
+        padding: 0.72rem !important;
+        border-radius: 18px !important;
+        background: rgba(248, 250, 252, 0.98) !important;
+        border: 1px solid var(--mp-border) !important;
+    }
+
+    body.mypage-page .class-thumb,
+    body[data-page="mypage"] .class-thumb {
+        height: 88px !important;
+        border-radius: 14px !important;
+    }
+
+    body.mypage-page .profile-mini-btn.subtle,
+    body[data-page="mypage"] .profile-mini-btn.subtle {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: rgba(255, 255, 255, 0.82) !important;
+    }
+
+    body.mypage-page .empty-state,
+    body[data-page="mypage"] .empty-state,
+    body.mypage-page .empty-state.compact,
+    body[data-page="mypage"] .empty-state.compact {
+        background: rgba(248, 250, 252, 0.98) !important;
+        border-color: var(--mp-border) !important;
+        color: var(--mp-text-muted) !important;
+    }
+}
+
 body[data-page="mypage"].modal-open {
     overflow: hidden;
 }

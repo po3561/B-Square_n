@@ -598,7 +598,13 @@ async function bootstrapClassViewPage() {
         document.getElementById('btnEnroll')?.addEventListener('click', openPaymentBottomSheet);
         document.getElementById('btnAddToCartSide')?.addEventListener('click', saveCurrentClassToCart);
         document.getElementById('btnSheetClose')?.addEventListener('click', closePaymentBottomSheet);
-        document.getElementById('btnClassViewShare')?.addEventListener('click', shareClassViewPage);
+        document.getElementById('btnClassViewBack')?.addEventListener('click', () => {
+            if (window.history.length > 1) {
+                window.history.back();
+                return;
+            }
+            window.location.href = '../class/class_list.html';
+        });
         document.getElementById('btnClassViewCart')?.addEventListener('click', saveCurrentClassToCart);
         document.getElementById('btnBookmarkClass')?.addEventListener('click', toggleClassViewBookmark);
         document.getElementById('btnGoToClassSide')?.addEventListener('click', () => {

@@ -420,6 +420,33 @@ function buildHomeMobileCommunityPanel() {
     `;
 }
 
+function buildHomeMobileQuickActions() {
+    return `
+        <section class="home-mobile-shortcuts" aria-label="빠른 이동">
+            <a class="home-mobile-shortcut shortcut-classes" href="class/class_list.html">
+                <span class="home-mobile-shortcut-icon">${svgIcon('grid')}</span>
+                <strong>전체 클래스</strong>
+                <span>한 번에 보기</span>
+            </a>
+            <a class="home-mobile-shortcut shortcut-popular" href="class/class_list.html?sort=popular">
+                <span class="home-mobile-shortcut-icon">${svgIcon('spark')}</span>
+                <strong>인기 클래스</strong>
+                <span>지금 뜨는 강의</span>
+            </a>
+            <a class="home-mobile-shortcut shortcut-community" href="community/community.html">
+                <span class="home-mobile-shortcut-icon">${svgIcon('chat')}</span>
+                <strong>커뮤니티</strong>
+                <span>질문과 이야기</span>
+            </a>
+            <a class="home-mobile-shortcut shortcut-mypage" href="mi_pesg/mypage.html">
+                <span class="home-mobile-shortcut-icon">${svgIcon('user')}</span>
+                <strong>마이페이지</strong>
+                <span>결제와 설정</span>
+            </a>
+        </section>
+    `;
+}
+
 function renderHomeMobileShell() {
     const shell = document.getElementById('homeMobileShell');
     if (!shell || !isHomeMobileLayout()) return;
@@ -439,6 +466,7 @@ function renderHomeMobileShell() {
         <div class="home-mobile-panels">
             <section class="home-mobile-panel" data-home-panel="recommend" role="tabpanel">
                 ${buildHomeMobileBannerCard()}
+                ${buildHomeMobileQuickActions()}
 
                 <section class="home-mobile-section">
                     <div class="home-mobile-section-head">
@@ -820,6 +848,10 @@ async function toggleHomeBookmark(classId, button) {
 function svgIcon(kind) {
     const icons = {
         spark: '<path d="M12 2l1.7 6.3L20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7z"></path>',
+        grid: '<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"></path>',
+        chat: '<path d="M5 6h14v8H9.2L5.5 17V6Z"></path>',
+        user: '<circle cx="12" cy="8.5" r="3.2"></circle><path d="M5 19.5a7 7 0 0 1 14 0"></path>',
+        bell: '<path d="M14.5 17.5a2.5 2.5 0 0 1-5 0"></path><path d="M6.5 17.5h11a1 1 0 0 0 .95-1.32L17 13.25V10a5 5 0 0 0-10 0v3.25l-1.45 3.0A1 1 0 0 0 6.5 17.5Z"></path>',
         'chevron-down': '<path d="M6 9l6 6 6-6"></path>',
         'chevron-up': '<path d="M6 15l6-6 6 6"></path>',
         heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>',
