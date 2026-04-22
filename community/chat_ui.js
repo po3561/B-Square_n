@@ -22,6 +22,26 @@ window.CommunityModules.ChatUI = (function () {
     let roomOpenSeq = 0;
     const MESSAGE_CURSOR_OVERLAP_MS = 1000;
     const CHAT_TIME_ZONE = 'Asia/Seoul';
+    const ATTACHMENT_RULES = {
+        maxFilesPerSelection: 3,
+        maxImageSize: 3 * 1024 * 1024,
+        maxDocumentSize: 5 * 1024 * 1024,
+        imageTypes: new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif']),
+        imageExtensions: new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif']),
+        documentTypes: new Set([
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'text/plain',
+            'text/csv',
+        ]),
+        documentExtensions: new Set(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'hwp', 'hwpx']),
+        accept: '.jpg,.jpeg,.png,.gif,.webp,.avif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.hwp,.hwpx',
+    };
     let deletePrompt = { id: null, at: 0 };
     let gatherClosePrompt = { id: null, at: 0 };
 
@@ -133,6 +153,41 @@ window.CommunityModules.ChatUI = (function () {
         document.body.appendChild(anchor);
         anchor.click();
         anchor.remove();
+    }
+
+    function getAttachmentExtension(fileName) {
+        const normalized = String(fileName || '').trim().toLowerCase();
+        if (!normalized) return '';
+        const index = normalized.lastIndexOf('.');
+        return index >= 0 ? normalized.slice(index + 1) : '';
+    }
+
+    function validateAttachment(file) {
+        const name = String(file?.name || '').trim() || '파일';
+        const ext = getAttachmentExtension(name);
+        const mime = String(file?.type || '').trim().toLowerCase();
+        const size = Number(file?.size || 0);
+        const isImage = ATTACHMENT_RULES.imageTypes.has(mime) || ATTACHMENT_RULES.imageExtensions.has(ext);
+        const isDocument = ATTACHMENT_RULES.documentTypes.has(mime) || ATTACHMENT_RULES.documentExtensions.has(ext);
+
+        if (!isImage && !isDocument) {
+            return { ok: false, message: `${name}은(는) 허용되지 않는 파일 형식입니다.` };
+        }
+
+        if (size <= 0) {
+            return { ok: false, message: `${name}은(는) 빈 파일이라 업로드할 수 없습니다.` };
+        }
+
+        const maxSize = isImage ? ATTACHMENT_RULES.maxImageSize : ATTACHMENT_RULES.maxDocumentSize;
+        if (size > maxSize) {
+            const category = isImage ? '이미지' : '문서';
+            return {
+                ok: false,
+                message: `${name}은(는) ${category} ${formatFileSize(maxSize)} 이하만 업로드할 수 있습니다.`,
+            };
+        }
+
+        return { ok: true, isImage };
     }
 
     function normalizeProfileData(profile) {
@@ -1738,8 +1793,12 @@ window.CommunityModules.ChatUI = (function () {
         const btn = document.getElementById('btnAttach');
         const fileInput = document.getElementById('fileInput');
         if (!btn || !fileInput) return;
+        fileInput.accept = ATTACHMENT_RULES.accept;
         btn.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files));
+        fileInput.addEventListener('change', (e) => {
+            handleFileSelect(e.target.files);
+            e.target.value = '';
+        });
 
         const main = document.getElementById('commMain');
         const overlay = document.getElementById('fileDropOverlay');
@@ -1751,8 +1810,24 @@ window.CommunityModules.ChatUI = (function () {
 
     function handleFileSelect(files) {
         if (!files || !currentRoomId) return;
-        Array.from(files).forEach(file => {
-            const isImage = file.type.startsWith('image/');
+        const selectedFiles = Array.from(files);
+        let acceptedCount = 0;
+        let overflowCount = 0;
+
+        selectedFiles.forEach(file => {
+            if (acceptedCount >= ATTACHMENT_RULES.maxFilesPerSelection) {
+                overflowCount += 1;
+                return;
+            }
+
+            const validation = validateAttachment(file);
+            if (!validation.ok) {
+                toast(validation.message);
+                return;
+            }
+
+            const isImage = validation.isImage;
+            acceptedCount += 1;
             const tempId = `tmp_file_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
             const previewUrl = isImage ? URL.createObjectURL(file) : '';
 
@@ -1820,6 +1895,10 @@ window.CommunityModules.ChatUI = (function () {
                 reader.readAsDataURL(file);
             });
         });
+
+        if (overflowCount > 0) {
+            toast(`첨부는 한 번에 최대 ${ATTACHMENT_RULES.maxFilesPerSelection}개까지 가능합니다. ${overflowCount}개는 제외됐습니다.`);
+        }
     }
 
     function setupInputAutoResize() {

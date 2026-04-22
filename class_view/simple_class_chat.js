@@ -21,6 +21,26 @@
 
     const EMOJIS = ['😀', '😂', '🥰', '😍', '🤔', '😅', '😎', '🥳', '😢', '😡', '👍', '👎', '❤️', '🔥', '⭐', '🎉', '💯', '🙌', '👏', '🤝', '💪', '🙏', '✨', '💬'];
     const MESSAGE_CURSOR_OVERLAP_MS = 1000;
+    const ATTACHMENT_RULES = {
+        maxFilesPerSelection: 3,
+        maxImageSize: 3 * 1024 * 1024,
+        maxDocumentSize: 5 * 1024 * 1024,
+        imageTypes: new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif']),
+        imageExtensions: new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif']),
+        documentTypes: new Set([
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'text/plain',
+            'text/csv',
+        ]),
+        documentExtensions: new Set(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'hwp', 'hwpx']),
+        accept: '.jpg,.jpeg,.png,.gif,.webp,.avif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.hwp,.hwpx',
+    };
 
     function bridge() { return window.CommunityModules?.SyncBridge || null; }
     function q(id) { return document.getElementById(id); }
@@ -30,6 +50,45 @@
     }
     function escapeHtml(v) { const d = document.createElement('div'); d.textContent = String(v ?? ''); return d.innerHTML; }
     function escapeAttr(v) { return escapeHtml(v).replace(/"/g, '&quot;'); }
+    function formatFileSize(bytes) {
+        if (!bytes) return '';
+        if (bytes < 1024) return `${bytes}B`;
+        if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)}KB`;
+        return `${(bytes / 1048576).toFixed(1)}MB`;
+    }
+    function getAttachmentExtension(fileName) {
+        const normalized = String(fileName || '').trim().toLowerCase();
+        if (!normalized) return '';
+        const index = normalized.lastIndexOf('.');
+        return index >= 0 ? normalized.slice(index + 1) : '';
+    }
+    function validateAttachment(file) {
+        const name = String(file?.name || '').trim() || '파일';
+        const ext = getAttachmentExtension(name);
+        const mime = String(file?.type || '').trim().toLowerCase();
+        const size = Number(file?.size || 0);
+        const isImage = ATTACHMENT_RULES.imageTypes.has(mime) || ATTACHMENT_RULES.imageExtensions.has(ext);
+        const isDocument = ATTACHMENT_RULES.documentTypes.has(mime) || ATTACHMENT_RULES.documentExtensions.has(ext);
+
+        if (!isImage && !isDocument) {
+            return { ok: false, message: `${name}은(는) 허용되지 않는 파일 형식입니다.` };
+        }
+
+        if (size <= 0) {
+            return { ok: false, message: `${name}은(는) 빈 파일이라 업로드할 수 없습니다.` };
+        }
+
+        const maxSize = isImage ? ATTACHMENT_RULES.maxImageSize : ATTACHMENT_RULES.maxDocumentSize;
+        if (size > maxSize) {
+            const category = isImage ? '이미지' : '문서';
+            return {
+                ok: false,
+                message: `${name}은(는) ${category} ${formatFileSize(maxSize)} 이하만 업로드할 수 있습니다.`,
+            };
+        }
+
+        return { ok: true, isImage };
+    }
     function parseJson(v, fallback) { try { return typeof v === 'string' ? JSON.parse(v) : (v || fallback); } catch { return fallback; } }
     function getCurrentUserId() {
         return String(window.__BSQ_DEV_MODE__ ? 'OPERATOR_GHOST' : (state.userId || bridge()?.getUserId?.() || '')).trim();
@@ -868,9 +927,25 @@
 
     function handleFileSelect(files) {
         if (!files || !files.length) return;
-        Array.from(files).forEach((file) => {
+        const selectedFiles = Array.from(files);
+        let acceptedCount = 0;
+        let overflowCount = 0;
+
+        selectedFiles.forEach((file) => {
+            if (acceptedCount >= ATTACHMENT_RULES.maxFilesPerSelection) {
+                overflowCount += 1;
+                return;
+            }
+
+            const validation = validateAttachment(file);
+            if (!validation.ok) {
+                notify('info', '첨부 제한', validation.message);
+                return;
+            }
+
+            const isImage = validation.isImage;
+            acceptedCount += 1;
             const tempId = `tmp_file_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-            const isImage = file.type.startsWith('image/');
             const previewUrl = isImage ? URL.createObjectURL(file) : '';
             const profile = state.userProfile || { name: 'User', profile_image_url: '' };
 
@@ -926,6 +1001,10 @@
             };
             reader.readAsDataURL(file);
         });
+
+        if (overflowCount > 0) {
+            notify('info', '첨부 제한', `첨부는 한 번에 최대 ${ATTACHMENT_RULES.maxFilesPerSelection}개까지 가능합니다. ${overflowCount}개는 제외됐습니다.`);
+        }
     }
 
     async function sendGatheringCard(title, minCap, maxCap, time, place) {
@@ -1215,8 +1294,13 @@
         btnEmoji?.addEventListener('click', (e) => { e.stopPropagation(); if (picker) picker.style.display = picker.style.display === 'none' ? 'block' : 'none'; });
         document.addEventListener('click', (e) => { if (picker && picker.style.display === 'block' && !picker.contains(e.target) && e.target !== btnEmoji) picker.style.display = 'none'; });
 
-        q('btnAttach')?.addEventListener('click', () => q('fileInput')?.click());
-        q('fileInput')?.addEventListener('change', (e) => handleFileSelect(e.target.files));
+        const fileInput = q('fileInput');
+        if (fileInput) fileInput.accept = ATTACHMENT_RULES.accept;
+        q('btnAttach')?.addEventListener('click', () => fileInput?.click());
+        fileInput?.addEventListener('change', (e) => {
+            handleFileSelect(e.target.files);
+            e.target.value = '';
+        });
 
         const commMain = q('commMain');
         const overlay = q('fileDropOverlay');
