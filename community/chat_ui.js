@@ -46,6 +46,7 @@ window.CommunityModules.ChatUI = (function () {
         documentExtensions: new Set(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'hwp', 'hwpx']),
         accept: '.jpg,.jpeg,.png,.gif,.webp,.avif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.hwp,.hwpx',
     };
+    const MOBILE_LAYOUT_BREAKPOINT = 768;
     let deletePrompt = { id: null, at: 0 };
     let gatherClosePrompt = { id: null, at: 0 };
 
@@ -619,6 +620,7 @@ window.CommunityModules.ChatUI = (function () {
         setupGatheringUI();
         setupScrollUX();
         setupReadSyncLifecycle();
+        setupResponsiveViewportSync();
         setupLightbox();
         console.log("🎨 ChatUI initialized (D1 API version)");
     }
@@ -774,7 +776,7 @@ window.CommunityModules.ChatUI = (function () {
     function setMobileViewMode(mode = '') {
         const shell = document.querySelector('.community-shell');
         const sidebar = document.getElementById('commSidebar');
-        const isMobile = window.innerWidth <= 1024;
+        const isMobile = window.innerWidth <= MOBILE_LAYOUT_BREAKPOINT;
 
         if (shell) {
             shell.dataset.mobileView = isMobile ? String(mode || '') : '';
@@ -789,6 +791,25 @@ window.CommunityModules.ChatUI = (function () {
         }
 
         return mode;
+    }
+
+    function syncResponsiveViewMode() {
+        const activeArea = document.getElementById('chatActiveArea');
+        const hasActiveRoom = !!currentRoomId && (!activeArea || activeArea.style.display !== 'none');
+        const nextMode = window.innerWidth <= MOBILE_LAYOUT_BREAKPOINT
+            ? (hasActiveRoom ? 'chat' : 'list')
+            : '';
+        setMobileViewMode(nextMode);
+    }
+
+    function setupResponsiveViewportSync() {
+        if (window.__BSQ_CHAT_VIEWPORT_BOUND__) return;
+        window.__BSQ_CHAT_VIEWPORT_BOUND__ = true;
+
+        const syncViewport = () => syncResponsiveViewMode();
+        window.addEventListener('resize', syncViewport, { passive: true });
+        window.addEventListener('orientationchange', syncViewport, { passive: true });
+        window.setTimeout(syncViewport, 0);
     }
 
     function toggleInfoPanel() {
@@ -1089,14 +1110,21 @@ window.CommunityModules.ChatUI = (function () {
     function applyRoomHeader(roomId, roomType, roomInfo) {
         const name = roomInfo?.target_name || roomInfo?.class_name || roomInfo?.group_name || '채팅방';
         const headerName = document.getElementById('chatHeaderName');
-        if (headerName) headerName.textContent = name;
+        if (headerName) {
+            headerName.textContent = name;
+            headerName.title = name;
+        }
 
         const statusEl = document.getElementById('chatHeaderStatus');
         const btnGathering = document.getElementById('btnGathering');
         const btnGoToClass = document.getElementById('btnGoToClass');
 
         if (roomType === 'class') {
-            if (statusEl) { statusEl.textContent = '클래스 채팅'; statusEl.className = 'chat-header-status'; }
+            if (statusEl) {
+                statusEl.textContent = '클래스 채팅';
+                statusEl.className = 'chat-header-status';
+                statusEl.title = statusEl.textContent;
+            }
             if (btnGathering) {
                 btnGathering.hidden = !(window.__BSQ_DEV_MODE__ || roomInfo?.is_instructor);
             }
@@ -1105,11 +1133,19 @@ window.CommunityModules.ChatUI = (function () {
                 btnGoToClass.href = `../class_view/class_view.html?id=${encodeURIComponent(roomId)}`;
             }
         } else if (roomType === 'dm') {
-            if (statusEl) { statusEl.textContent = '1:1 채팅'; statusEl.className = 'chat-header-status'; }
+            if (statusEl) {
+                statusEl.textContent = '1:1 채팅';
+                statusEl.className = 'chat-header-status';
+                statusEl.title = statusEl.textContent;
+            }
             if (btnGathering) btnGathering.hidden = true;
             if (btnGoToClass) btnGoToClass.style.display = 'none';
         } else if (roomType === 'group') {
-            if (statusEl) { statusEl.textContent = '그룹 채팅'; statusEl.className = 'chat-header-status'; }
+            if (statusEl) {
+                statusEl.textContent = '그룹 채팅';
+                statusEl.className = 'chat-header-status';
+                statusEl.title = statusEl.textContent;
+            }
             if (btnGathering) btnGathering.hidden = true;
             if (btnGoToClass) btnGoToClass.style.display = 'none';
         }

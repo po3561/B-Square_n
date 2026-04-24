@@ -30,8 +30,8 @@
     --comm-surface-3: #edf1f7;
     --comm-border: rgba(20, 25, 35, 0.08);
     --comm-text: #111827;
-    --comm-text-2: rgba(17, 24, 39, 0.6);
-    --comm-muted: rgba(17, 24, 39, 0.05);
+    --comm-text-2: rgba(17, 24, 39, 0.74);
+    --comm-muted: rgba(17, 24, 39, 0.08);
     --comm-accent: #4169ff;
     --comm-accent-2: #5ba7ff;
     --comm-danger: #d9304f;
@@ -404,15 +404,33 @@ body[data-layout="popup"]::-webkit-scrollbar {
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+    min-width: 0;
 }
 
 .room-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    flex: 1 1 auto;
+    font-weight: 700;
+    color: var(--comm-text);
+}
+
+.room-name-text {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.room-name-tags {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     min-width: 0;
-    font-weight: 700;
-    color: var(--comm-text);
+    flex: 0 1 auto;
 }
 
 .room-type-badge,
@@ -425,6 +443,13 @@ body[data-layout="popup"]::-webkit-scrollbar {
     background: var(--comm-muted);
     color: var(--comm-text-2);
     white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+.room-folder-tag {
+    max-width: 12ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .room-badge {
@@ -445,6 +470,11 @@ body[data-layout="popup"]::-webkit-scrollbar {
 .room-time {
     color: var(--comm-text-2);
     font-size: .82rem;
+}
+
+.room-time {
+    flex: 0 0 auto;
+    white-space: nowrap;
 }
 
 .room-preview {
@@ -701,16 +731,25 @@ body[data-layout="popup"]::-webkit-scrollbar {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    flex: 1 1 auto;
 }
 
 .chat-header-name {
     font-weight: 800;
     color: var(--comm-text);
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .chat-header-status {
     color: var(--comm-text-2);
     font-size: .84rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .chat-header-actions {
@@ -1988,7 +2027,9 @@ body[data-comm-motion="reduce"] * {
 [data-theme="light"] .msg-reactions .reaction-pill,
 [data-theme="light"] .quick-emoji,
 [data-theme="light"] .room-type-badge,
-[data-theme="light"] .room-folder-tag {
+[data-theme="light"] .room-folder-tag,
+[data-theme="light"] .room-pin-icon,
+[data-theme="light"] .room-mute-icon {
     background: rgba(65, 105, 255, 0.08) !important;
     color: var(--comm-text) !important;
 }

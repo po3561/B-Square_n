@@ -231,6 +231,7 @@ export async function ensureAuthSchema(db) {
   await addColumnIfMissing(db, 'users', 'gender TEXT');
   await addColumnIfMissing(db, 'users', "nationality TEXT DEFAULT 'local'");
   await addColumnIfMissing(db, 'users', 'signup_path TEXT');
+  await addColumnIfMissing(db, 'users', 'chat_folders_json TEXT');
   await addColumnIfMissing(db, 'users', "role TEXT DEFAULT 'user'");
   await addColumnIfMissing(db, 'users', "membership_level TEXT DEFAULT 'Free'");
   await addColumnIfMissing(db, 'users', 'operator_seq INTEGER');
@@ -713,6 +714,9 @@ export async function ensureUserChatsSchema(db) {
   await addColumnIfMissing(db, 'user_chats', 'unread_count INTEGER DEFAULT 0');
   await addColumnIfMissing(db, 'user_chats', 'last_message TEXT');
   await addColumnIfMissing(db, 'user_chats', 'last_message_at DATETIME');
+  await addColumnIfMissing(db, 'user_chats', 'is_pinned INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'user_chats', 'is_muted INTEGER DEFAULT 0');
+  await addColumnIfMissing(db, 'user_chats', 'folder_name TEXT');
 
   userChatsSchemaReady = true;
 }

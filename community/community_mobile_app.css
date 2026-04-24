@@ -6,8 +6,8 @@
     --comm-surface-3: #edf1f7 !important;
     --comm-border: rgba(15, 23, 42, 0.08) !important;
     --comm-text: #111827 !important;
-    --comm-text-2: rgba(17, 24, 39, 0.6) !important;
-    --comm-muted: rgba(17, 24, 39, 0.05) !important;
+    --comm-text-2: rgba(17, 24, 39, 0.74) !important;
+    --comm-muted: rgba(17, 24, 39, 0.08) !important;
     --comm-accent: #4169ff !important;
     --comm-accent-2: #5ba7ff !important;
     --comm-danger: #d9304f !important;
@@ -1844,5 +1844,66 @@
     min-height: 38px !important;
     padding: 0 10px !important;
     font-size: 0.74rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  html[data-theme="light"] body[data-layout="community"] {
+    --comm-text-2: rgba(17, 24, 39, 0.74) !important;
+    --comm-muted: rgba(17, 24, 39, 0.08) !important;
+  }
+
+  body[data-layout="community"] .room-name-row {
+    min-width: 0 !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+  }
+
+  body[data-layout="community"] .room-name {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    flex-wrap: nowrap !important;
+  }
+
+  body[data-layout="community"] .room-name-text {
+    min-width: 0 !important;
+  }
+
+  body[data-layout="community"] .room-name-tags {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.3rem !important;
+    min-width: 0 !important;
+    flex: 0 1 auto !important;
+    max-width: min(44vw, 170px) !important;
+    overflow: hidden !important;
+  }
+
+  body[data-layout="community"] .room-type-badge,
+  body[data-layout="community"] .room-folder-tag,
+  body[data-layout="community"] .room-pin-icon,
+  body[data-layout="community"] .room-mute-icon,
+  body[data-layout="community"] .room-time {
+    flex: 0 0 auto !important;
+  }
+
+  body[data-layout="community"] .room-folder-tag {
+    max-width: 84px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  body[data-layout="community"] .chat-header-info {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  body[data-layout="community"] .chat-header-name,
+  body[data-layout="community"] .chat-header-status {
+    display: block !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
   }
 }

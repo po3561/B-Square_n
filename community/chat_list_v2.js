@@ -5,6 +5,7 @@ window.CommunityModules.ChatList = (() => {
     const bridge = () => window.CommunityModules.SyncBridge;
     const SETTINGS_KEY = 'bsq_chat_settings';
     const REFRESH_MS = 5000;
+    const MOBILE_LAYOUT_BREAKPOINT = 768;
 
     let currentFilter = 'all';
     let currentFolder = null;
@@ -23,17 +24,61 @@ window.CommunityModules.ChatList = (() => {
         canRetry: false,
     };
     const CHAT_TIME_ZONE = 'Asia/Seoul';
+    let chatSettings = null;
+    let settingsSyncQueue = Promise.resolve();
+    let lastLegacyMigrationSignature = '';
+
+    function normalizeSettingList(value) {
+        if (!Array.isArray(value)) return [];
+        return Array.from(new Set(
+            value
+                .map((item) => String(item || '').trim())
+                .filter(Boolean)
+        ));
+    }
+
+    function normalizeRoomFolders(value) {
+        if (!value || typeof value !== 'object') return {};
+        return Object.fromEntries(
+            Object.entries(value)
+                .map(([roomId, folderName]) => [String(roomId || '').trim(), String(folderName || '').trim()])
+                .filter(([roomId, folderName]) => roomId && folderName)
+        );
+    }
+
+    function normalizeSettings(raw = {}) {
+        const roomFolders = normalizeRoomFolders(raw.roomFolders);
+        const folders = normalizeSettingList([...(raw.folders || []), ...Object.values(roomFolders)]);
+        return {
+            pinned: normalizeSettingList(raw.pinned),
+            muted: normalizeSettingList(raw.muted),
+            folders,
+            roomFolders,
+        };
+    }
+
+    function hasSettingsContent(settings = {}) {
+        const normalized = normalizeSettings(settings);
+        return normalized.pinned.length > 0
+            || normalized.muted.length > 0
+            || normalized.folders.length > 0
+            || Object.keys(normalized.roomFolders).length > 0;
+    }
 
     function getSettings() {
+        if (chatSettings) return chatSettings;
         try {
-            return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') || {};
+            chatSettings = normalizeSettings(JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') || {});
         } catch {
-            return {};
+            chatSettings = normalizeSettings({});
         }
+        return chatSettings;
     }
 
     function saveSettings(next) {
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
+        chatSettings = normalizeSettings(next);
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(chatSettings));
+        return chatSettings;
     }
 
     function getPinned() { return getSettings().pinned || []; }
@@ -41,6 +86,87 @@ window.CommunityModules.ChatList = (() => {
     function getFolders() { return getSettings().folders || []; }
     function getRoomFolders() { return getSettings().roomFolders || {}; }
     const AUTO_CLASS_FOLDER = '클래스';
+
+    function buildServerSettings(rows = [], chatPreferences = {}) {
+        const pinned = [];
+        const muted = [];
+        const roomFolders = {};
+
+        (Array.isArray(rows) ? rows : []).forEach((row) => {
+            const roomId = String(row?.room_id || row?.roomId || '').trim();
+            if (!roomId) return;
+            if (row?.is_pinned === 1 || row?.is_pinned === true) pinned.push(roomId);
+            if (row?.is_muted === 1 || row?.is_muted === true) muted.push(roomId);
+
+            const folderName = String(row?.folder_name || row?.folderName || '').trim();
+            if (folderName) roomFolders[roomId] = folderName;
+        });
+
+        return normalizeSettings({
+            pinned,
+            muted,
+            roomFolders,
+            folders: chatPreferences?.folders || [],
+        });
+    }
+
+    function hydrateSettings(rows = [], meta = {}) {
+        const localSettings = getSettings();
+        const serverSettings = buildServerSettings(rows, meta?.chat_preferences || {});
+        const shouldMigrateLegacy = !hasSettingsContent(serverSettings) && hasSettingsContent(localSettings);
+        const nextSettings = shouldMigrateLegacy ? localSettings : serverSettings;
+        saveSettings(nextSettings);
+        return { nextSettings, shouldMigrateLegacy };
+    }
+
+    async function patchChatSettings(payload = {}) {
+        const userId = bridge()?.getUserId?.();
+        if (!userId || userId === 'OPERATOR_GHOST') return null;
+
+        const res = await window.BSQ.api('/api/user-chats', {
+            method: 'PATCH',
+            body: JSON.stringify({
+                user_id: userId,
+                ...payload,
+            }),
+        });
+
+        if (!res?.success) {
+            throw new Error(res?.error || '채팅 설정 저장에 실패했습니다.');
+        }
+
+        return res;
+    }
+
+    function queueSettingsSync(task) {
+        settingsSyncQueue = settingsSyncQueue
+            .catch(() => null)
+            .then(() => task?.())
+            .catch((error) => {
+                console.warn('Chat settings sync error:', error);
+                return null;
+            });
+
+        return settingsSyncQueue;
+    }
+
+    async function syncAllSettingsToServer(settings, roomIds = []) {
+        const normalized = normalizeSettings(settings);
+        const targetRoomIds = Array.from(new Set([
+            ...normalizeSettingList(roomIds),
+            ...normalized.pinned,
+            ...normalized.muted,
+            ...Object.keys(normalized.roomFolders),
+        ]));
+
+        await patchChatSettings({ folders: normalized.folders });
+        await Promise.all(targetRoomIds.map((roomId) => patchChatSettings({
+            room_id: roomId,
+            is_pinned: normalized.pinned.includes(roomId),
+            is_muted: normalized.muted.includes(roomId),
+            folder_name: normalized.roomFolders[roomId] || '',
+        }).catch(() => null)));
+    }
 
     function parseChatDate(value) {
         if (value == null || value === '') return null;
@@ -117,66 +243,116 @@ window.CommunityModules.ChatList = (() => {
         return currentFilter;
     }
 
-    function ensureAutoClassFolder(room) {
+    function ensureAutoClassFolder(room, { persist = true } = {}) {
         if (!room || room.type !== 'class' || !room.is_instructor || !room.roomId) return false;
 
         const settings = getSettings();
-        settings.folders = settings.folders || [];
-        settings.roomFolders = settings.roomFolders || {};
+        const nextFolders = normalizeSettingList([...(settings.folders || []), AUTO_CLASS_FOLDER]);
+        const nextRoomFolders = { ...(settings.roomFolders || {}) };
+        let changed = false;
 
-        if (!settings.folders.includes(AUTO_CLASS_FOLDER)) {
-            settings.folders.push(AUTO_CLASS_FOLDER);
+        if (nextFolders.length !== (settings.folders || []).length) {
+            changed = true;
         }
 
-        if (!settings.roomFolders[room.roomId]) {
-            settings.roomFolders[room.roomId] = AUTO_CLASS_FOLDER;
+        if (!nextRoomFolders[room.roomId]) {
+            nextRoomFolders[room.roomId] = AUTO_CLASS_FOLDER;
+            changed = true;
         }
 
-        saveSettings(settings);
+        if (!changed) return false;
+
+        const nextSettings = saveSettings({
+            ...settings,
+            folders: nextFolders,
+            roomFolders: nextRoomFolders,
+        });
+
+        if (persist) {
+            queueSettingsSync(() => patchChatSettings({
+                room_id: room.roomId,
+                folder_name: AUTO_CLASS_FOLDER,
+                folders: nextSettings.folders,
+            }));
+        }
+
         return true;
     }
 
     function togglePin(roomId) {
         const settings = getSettings();
-        settings.pinned = settings.pinned || [];
-        const index = settings.pinned.indexOf(roomId);
-        if (index >= 0) settings.pinned.splice(index, 1);
-        else settings.pinned.push(roomId);
-        saveSettings(settings);
+        const normalizedRoomId = String(roomId || '').trim();
+        if (!normalizedRoomId) return;
+        const isPinned = settings.pinned.includes(normalizedRoomId);
+        const nextSettings = saveSettings({
+            ...settings,
+            pinned: isPinned
+                ? settings.pinned.filter((id) => id !== normalizedRoomId)
+                : [...settings.pinned, normalizedRoomId],
+        });
+        queueSettingsSync(() => patchChatSettings({
+            room_id: normalizedRoomId,
+            is_pinned: !isPinned,
+        }));
         renderRooms(activeSearchQuery);
+        return nextSettings;
     }
 
     function toggleMute(roomId) {
         const settings = getSettings();
-        settings.muted = settings.muted || [];
-        const index = settings.muted.indexOf(roomId);
-        if (index >= 0) settings.muted.splice(index, 1);
-        else settings.muted.push(roomId);
-        saveSettings(settings);
+        const normalizedRoomId = String(roomId || '').trim();
+        if (!normalizedRoomId) return;
+        const isMuted = settings.muted.includes(normalizedRoomId);
+        const nextSettings = saveSettings({
+            ...settings,
+            muted: isMuted
+                ? settings.muted.filter((id) => id !== normalizedRoomId)
+                : [...settings.muted, normalizedRoomId],
+        });
+        queueSettingsSync(() => patchChatSettings({
+            room_id: normalizedRoomId,
+            is_muted: !isMuted,
+        }));
         renderRooms(activeSearchQuery);
+        return nextSettings;
     }
 
     function addFolder(name) {
+        const normalizedName = String(name || '').trim();
+        if (!normalizedName) return;
         const settings = getSettings();
-        settings.folders = settings.folders || [];
-        if (!settings.folders.includes(name)) {
-            settings.folders.push(name);
-            saveSettings(settings);
-        }
+        if (settings.folders.includes(normalizedName)) return;
+        const nextSettings = saveSettings({
+            ...settings,
+            folders: [...settings.folders, normalizedName],
+        });
+        queueSettingsSync(() => patchChatSettings({ folders: nextSettings.folders }));
         renderFolderTabs();
         renderFolderManagerList();
     }
 
     function removeFolder(name) {
         const settings = getSettings();
-        settings.folders = (settings.folders || []).filter(folder => folder !== name);
-        const roomFolders = settings.roomFolders || {};
-        Object.keys(roomFolders).forEach(roomId => {
-            if (roomFolders[roomId] === name) delete roomFolders[roomId];
+        const normalizedName = String(name || '').trim();
+        if (!normalizedName) return;
+        const nextRoomFolders = { ...(settings.roomFolders || {}) };
+        const affectedRoomIds = Object.keys(nextRoomFolders).filter((roomId) => nextRoomFolders[roomId] === normalizedName);
+        affectedRoomIds.forEach((roomId) => {
+            delete nextRoomFolders[roomId];
         });
-        settings.roomFolders = roomFolders;
-        saveSettings(settings);
-        if (currentFolder === name) currentFolder = null;
+        const nextSettings = saveSettings({
+            ...settings,
+            folders: settings.folders.filter((folder) => folder !== normalizedName),
+            roomFolders: nextRoomFolders,
+        });
+        if (currentFolder === normalizedName) currentFolder = null;
+        queueSettingsSync(async () => {
+            await patchChatSettings({ folders: nextSettings.folders });
+            await Promise.all(affectedRoomIds.map((roomId) => patchChatSettings({
+                room_id: roomId,
+                folder_name: '',
+            }).catch(() => null)));
+        });
         renderFolderTabs();
         renderFolderManagerList();
         renderRooms(activeSearchQuery);
@@ -184,12 +360,29 @@ window.CommunityModules.ChatList = (() => {
 
     function assignFolder(roomId, folderName) {
         const settings = getSettings();
-        settings.roomFolders = settings.roomFolders || {};
-        if (folderName) settings.roomFolders[roomId] = folderName;
-        else delete settings.roomFolders[roomId];
-        saveSettings(settings);
+        const normalizedRoomId = String(roomId || '').trim();
+        if (!normalizedRoomId) return;
+        const normalizedFolderName = String(folderName || '').trim();
+        const nextRoomFolders = { ...(settings.roomFolders || {}) };
+        if (normalizedFolderName) nextRoomFolders[normalizedRoomId] = normalizedFolderName;
+        else delete nextRoomFolders[normalizedRoomId];
+
+        const nextSettings = saveSettings({
+            ...settings,
+            roomFolders: nextRoomFolders,
+            folders: normalizedFolderName && !settings.folders.includes(normalizedFolderName)
+                ? [...settings.folders, normalizedFolderName]
+                : settings.folders,
+        });
+
+        queueSettingsSync(() => patchChatSettings({
+            room_id: normalizedRoomId,
+            folder_name: normalizedFolderName,
+            folders: nextSettings.folders,
+        }));
         renderRooms(activeSearchQuery);
         renderFolderManagerList();
+        renderFolderTabs();
     }
 
     function normalizeRoom(row) {
@@ -226,6 +419,9 @@ window.CommunityModules.ChatList = (() => {
             avatar_url: row.avatar_url || row.profile_image || '',
             is_instructor: !!row.is_instructor,
             unread_count: Number(row.unread_count || 0),
+            is_pinned: !!row.is_pinned,
+            is_muted: !!row.is_muted,
+            folder_name: row.folder_name || '',
             last_message: lastMessage,
             last_timestamp: parseChatDate(row.last_message_at)?.getTime() || 0,
             searchText,
@@ -353,13 +549,26 @@ window.CommunityModules.ChatList = (() => {
         try {
             const res = await window.BSQ.api(`/api/user-chats?user_id=${encodeURIComponent(userId)}`);
             const rows = res?.success ? (res.data || []) : [];
+            const { shouldMigrateLegacy } = hydrateSettings(rows, res?.meta || {});
 
             roomsCache = new Map();
             rows.forEach(row => {
                 const room = normalizeRoom(row);
                 roomsCache.set(room.roomId, room);
-                ensureAutoClassFolder(room);
+                ensureAutoClassFolder(room, { persist: !shouldMigrateLegacy });
             });
+
+            if (shouldMigrateLegacy) {
+                const currentSettings = getSettings();
+                const signature = JSON.stringify(currentSettings);
+                if (signature && signature !== lastLegacyMigrationSignature) {
+                    lastLegacyMigrationSignature = signature;
+                    queueSettingsSync(() => syncAllSettingsToServer(
+                        currentSettings,
+                        rows.map((row) => row?.room_id),
+                    ));
+                }
+            }
 
             setRoomsLoadState({ status: 'idle', canRetry: false });
             renderFolderTabs();
@@ -495,7 +704,6 @@ window.CommunityModules.ChatList = (() => {
             const metaParts = [
                 room.class_category,
                 room.type === 'class' ? '클래스' : room.type === 'group' ? '그룹' : room.type === 'dm' ? '1:1' : '',
-                folderName || '',
             ].filter(Boolean);
             const meta = metaParts.slice(0, 2).join(' · ');
             const badge = room.type === 'class'
@@ -513,14 +721,16 @@ window.CommunityModules.ChatList = (() => {
                     </div>
                     <div class="room-info">
                         <div class="room-name-row">
-                            <span class="room-name">
-                                ${shared().escapeHtml(title)}
-                                ${badge}
-                                ${isPinned ? '<span class="room-pin-icon">📌</span>' : ''}
-                                ${isMuted ? '<span class="room-mute-icon">🔕</span>' : ''}
-                                ${folderName ? `<span class="room-folder-tag">${shared().escapeHtml(folderName)}</span>` : ''}
+                            <span class="room-name" title="${shared().escapeAttr(title)}">
+                                <span class="room-name-text">${shared().escapeHtml(title)}</span>
+                                <span class="room-name-tags">
+                                    ${badge}
+                                    ${isPinned ? '<span class="room-pin-icon" aria-label="고정됨">📌</span>' : ''}
+                                    ${isMuted ? '<span class="room-mute-icon" aria-label="알림 꺼짐">🔕</span>' : ''}
+                                    ${folderName ? `<span class="room-folder-tag" title="${shared().escapeAttr(folderName)}">${shared().escapeHtml(folderName)}</span>` : ''}
+                                </span>
                             </span>
-                            <span class="room-time">${time}</span>
+                            <span class="room-time" title="${shared().escapeAttr(time)}">${time}</span>
                         </div>
                         <div class="room-preview">${shared().escapeHtml(preview)}</div>
                         ${meta ? `<div class="room-meta-row">${shared().escapeHtml(meta)}</div>` : ''}
@@ -535,7 +745,7 @@ window.CommunityModules.ChatList = (() => {
                 setActiveRoom(item.dataset.roomId);
                 const room = roomsCache.get(item.dataset.roomId);
                 if (onRoomSelect && room) onRoomSelect(room.roomId, room.type, room);
-                if (window.innerWidth <= 1024) {
+                if (window.innerWidth <= MOBILE_LAYOUT_BREAKPOINT) {
                     window.CommunityModules.ChatUI?.setMobileViewMode?.('chat');
                     document.getElementById('commSidebar')?.classList.add('hidden');
                 }

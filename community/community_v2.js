@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.body.dataset.layout = document.body.dataset.layout || 'community';
 
     shared.applySettings?.();
-    ensureStylesheetLink('community-mobile-app-css', './community_mobile_app.css?v=20260424_02');
+    ensureStylesheetLink('community-mobile-app-css', './community_mobile_app.css?v=20260424_03');
 
 
 
@@ -1092,9 +1092,30 @@ async function loadFriendsPanel(userId, SyncBridge) {
 
 
 
+const MOBILE_COMMUNITY_BREAKPOINT = 768;
+
+function teardownMobileCommunityChrome(ChatUI) {
+    const shell = document.querySelector('.community-shell');
+    if (shell) {
+        delete shell.dataset.mobileChrome;
+        delete shell.dataset.mobileFilter;
+    }
+
+    document.getElementById('communityMobileMenuBtn')?.remove();
+    document.getElementById('communityMobileChips')?.remove();
+    document.getElementById('communityMobileSearchBtn')?.remove();
+    document.getElementById('communityMobileBanner')?.remove();
+    ChatUI?.setMobileViewMode?.('');
+}
+
 function setupMobileCommunityChrome({ shared, ChatList, ChatUI }) {
     if (document.body?.dataset?.layout !== 'community') return;
-    if (window.innerWidth > 768 && !window.matchMedia?.('(max-width: 768px)')?.matches) return;
+    const isMobileViewport = window.innerWidth <= MOBILE_COMMUNITY_BREAKPOINT
+        || !!window.matchMedia?.(`(max-width: ${MOBILE_COMMUNITY_BREAKPOINT}px)`)?.matches;
+    if (!isMobileViewport) {
+        teardownMobileCommunityChrome(ChatUI);
+        return;
+    }
 
     const currentTheme = document.documentElement.getAttribute('data-theme')
         || document.body?.dataset?.theme

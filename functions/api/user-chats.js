@@ -34,6 +34,22 @@ function isTruthyFlag(value) {
   return text === '1' || text === 'true' || text === 'yes';
 }
 
+function parseJsonArray(value) {
+  if (Array.isArray(value)) return value;
+  const text = trimText(value);
+  if (!text) return [];
+  try {
+    const parsed = JSON.parse(text);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function normalizeStringList(value) {
+  return Array.from(new Set(parseJsonArray(value).map((item) => trimText(item)).filter(Boolean)));
+}
+
 function buildPageMeta(limit, offset, count, hasMore) {
   return {
     limit,
@@ -113,6 +129,19 @@ async function attachDmTargetMetadata(db, rows, currentUserId) {
   });
 }
 
+async function loadUserChatPreferences(db, userId) {
+  const user = await db.prepare(`
+    SELECT chat_folders_json
+    FROM users
+    WHERE id = ?
+    LIMIT 1
+  `).bind(userId).first();
+
+  return {
+    folders: normalizeStringList(user?.chat_folders_json),
+  };
+}
+
 const USER_CHAT_COLUMNS = `
   user_id,
   room_id,
@@ -124,6 +153,9 @@ const USER_CHAT_COLUMNS = `
   group_name,
   is_instructor,
   unread_count,
+  is_pinned,
+  is_muted,
+  folder_name,
   last_message,
   last_message_at
 `;
@@ -156,7 +188,10 @@ export async function onRequestGet(context) {
     query += ' ORDER BY last_message_at DESC, room_id DESC LIMIT ? OFFSET ?';
     binds.push(limit + 1, offset);
 
-    const { results } = await env.DB.prepare(query).bind(...binds).all();
+    const [{ results }, chatPreferences] = await Promise.all([
+      env.DB.prepare(query).bind(...binds).all(),
+      loadUserChatPreferences(env.DB, targetUserId),
+    ]);
     const rows = results || [];
     const hasMore = rows.length > limit;
     const slicedRows = hasMore ? rows.slice(0, limit) : rows;
@@ -168,7 +203,10 @@ export async function onRequestGet(context) {
     return json(request, env, {
       success: true,
       data,
-      meta: buildPageMeta(limit, offset, data.length, hasMore),
+      meta: {
+        ...buildPageMeta(limit, offset, data.length, hasMore),
+        chat_preferences: chatPreferences,
+      },
     });
   } catch (error) {
     return json(request, env, { success: false, error: 'Failed to load chats', detail: error.message }, { status: 500 });
@@ -338,41 +376,99 @@ export async function onRequestPatch(context) {
     const roomId = trimText(body?.room_id);
     const type = trimText(body?.type).toLowerCase();
     const hasUnreadCount = Object.prototype.hasOwnProperty.call(body || {}, 'unread_count');
+    const hasPinnedState = Object.prototype.hasOwnProperty.call(body || {}, 'is_pinned');
+    const hasMutedState = Object.prototype.hasOwnProperty.call(body || {}, 'is_muted');
+    const hasFolderName = Object.prototype.hasOwnProperty.call(body || {}, 'folder_name');
+    const hasFolders = Object.prototype.hasOwnProperty.call(body || {}, 'folders');
+    const wantsRoomUpdate = hasUnreadCount || hasPinnedState || hasMutedState || hasFolderName;
 
-    if (!roomId) {
-      return json(request, env, { success: false, error: 'room_id is required' }, { status: 400 });
+    if (!wantsRoomUpdate && !hasFolders) {
+      return json(
+        request,
+        env,
+        { success: false, error: 'unread_count, is_pinned, is_muted, folder_name, or folders is required' },
+        { status: 400 },
+      );
     }
 
-    if (!hasUnreadCount) {
-      return json(request, env, { success: false, error: 'unread_count is required' }, { status: 400 });
+    if (wantsRoomUpdate && !roomId) {
+      return json(request, env, { success: false, error: 'room_id is required' }, { status: 400 });
     }
 
     if (targetUserId !== auth.user.id && !isAtLeastRole(auth.user.role, 'admin')) {
       return json(request, env, { success: false, error: 'Permission denied' }, { status: 403 });
     }
 
-    const unreadCount = Math.max(Number.parseInt(body.unread_count, 10) || 0, 0);
-    let query = 'UPDATE user_chats SET unread_count = ? WHERE user_id = ? AND room_id = ?';
-    const binds = [unreadCount, targetUserId, roomId];
+    const normalizedFolders = hasFolders ? normalizeStringList(body.folders) : null;
+    let chatPreferences = null;
+    if (hasFolders) {
+      const userUpdate = await env.DB.prepare(`
+        UPDATE users
+        SET chat_folders_json = ?
+        WHERE id = ?
+      `).bind(JSON.stringify(normalizedFolders), targetUserId).run();
 
-    if (type) {
-      query += ' AND type = ?';
-      binds.push(type);
+      if ((userUpdate.meta?.changes || 0) === 0 && !wantsRoomUpdate) {
+        return json(request, env, { success: false, error: 'User not found' }, { status: 404 });
+      }
+
+      chatPreferences = { folders: normalizedFolders };
     }
 
-    const result = await env.DB.prepare(query).bind(...binds).run();
-    if ((result.meta?.changes || 0) === 0) {
-      return json(request, env, { success: false, error: 'Chat not found' }, { status: 404 });
+    let updated = null;
+    if (wantsRoomUpdate) {
+      const assignments = [];
+      const binds = [];
+
+      if (hasUnreadCount) {
+        assignments.push('unread_count = ?');
+        binds.push(Math.max(Number.parseInt(body.unread_count, 10) || 0, 0));
+      }
+      if (hasPinnedState) {
+        assignments.push('is_pinned = ?');
+        binds.push(isTruthyFlag(body.is_pinned) ? 1 : 0);
+      }
+      if (hasMutedState) {
+        assignments.push('is_muted = ?');
+        binds.push(isTruthyFlag(body.is_muted) ? 1 : 0);
+      }
+      if (hasFolderName) {
+        assignments.push('folder_name = ?');
+        binds.push(trimText(body.folder_name) || null);
+      }
+
+      let query = `UPDATE user_chats SET ${assignments.join(', ')} WHERE user_id = ? AND room_id = ?`;
+      binds.push(targetUserId, roomId);
+
+      if (type) {
+        query += ' AND type = ?';
+        binds.push(type);
+      }
+
+      const result = await env.DB.prepare(query).bind(...binds).run();
+      if ((result.meta?.changes || 0) === 0) {
+        return json(request, env, { success: false, error: 'Chat not found' }, { status: 404 });
+      }
+
+      updated = await env.DB.prepare(`
+        SELECT ${USER_CHAT_COLUMNS}
+        FROM user_chats
+        WHERE user_id = ? AND room_id = ?
+        LIMIT 1
+      `).bind(targetUserId, roomId).first();
     }
 
-    const updated = await env.DB.prepare(`
-      SELECT ${USER_CHAT_COLUMNS}
-      FROM user_chats
-      WHERE user_id = ? AND room_id = ?
-      LIMIT 1
-    `).bind(targetUserId, roomId).first();
+    if (!chatPreferences) {
+      chatPreferences = await loadUserChatPreferences(env.DB, targetUserId);
+    }
 
-    return json(request, env, { success: true, data: updated || null });
+    return json(request, env, {
+      success: true,
+      data: updated || null,
+      meta: {
+        chat_preferences: chatPreferences,
+      },
+    });
   } catch (error) {
     return json(request, env, { success: false, error: 'Failed to update chat', detail: error.message }, { status: 500 });
   }
