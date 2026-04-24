@@ -44,6 +44,75 @@ function buildPageMeta(limit, offset, count, hasMore) {
   };
 }
 
+function buildSqlPlaceholders(count) {
+  return Array.from({ length: count }, () => '?').join(', ');
+}
+
+async function attachDmTargetMetadata(db, rows, currentUserId) {
+  const normalizedRows = Array.isArray(rows) ? rows : [];
+  const dmRows = normalizedRows.filter((row) => trimText(row?.type).toLowerCase() === 'dm' && trimText(row?.room_id));
+  if (!dmRows.length) return normalizedRows;
+
+  const roomIds = Array.from(new Set(dmRows.map((row) => trimText(row.room_id)).filter(Boolean)));
+  if (!roomIds.length) return normalizedRows;
+
+  const roomPlaceholders = buildSqlPlaceholders(roomIds.length);
+  const peerQuery = `
+    SELECT room_id, user_id AS target_id, class_name AS stored_target_name, class_image AS stored_target_avatar
+    FROM user_chats
+    WHERE type = 'dm'
+      AND room_id IN (${roomPlaceholders})
+      AND user_id != ?
+  `;
+  const { results: peerRows = [] } = await db.prepare(peerQuery).bind(...roomIds, currentUserId).all();
+  const peerByRoomId = new Map((peerRows || []).map((row) => [trimText(row?.room_id), row]));
+
+  const targetIds = Array.from(new Set((peerRows || []).map((row) => trimText(row?.target_id)).filter(Boolean)));
+  let userById = new Map();
+  if (targetIds.length) {
+    const userPlaceholders = buildSqlPlaceholders(targetIds.length);
+    const { results: userRows = [] } = await db.prepare(`
+      SELECT id, email, name, username, profile_image_url
+      FROM users
+      WHERE id IN (${userPlaceholders})
+    `).bind(...targetIds).all();
+    userById = new Map((userRows || []).map((row) => [trimText(row?.id), row]));
+  }
+
+  return normalizedRows.map((row) => {
+    if (trimText(row?.type).toLowerCase() !== 'dm') return row;
+
+    const roomId = trimText(row?.room_id);
+    const peer = peerByRoomId.get(roomId);
+    const targetId = trimText(peer?.target_id);
+    const targetUser = userById.get(targetId);
+    const targetName = trimText(
+      targetUser?.name
+      || targetUser?.username
+      || row?.target_name
+      || row?.class_name
+      || peer?.stored_target_name
+      || 'User'
+    );
+    const targetAvatar = trimText(
+      targetUser?.profile_image_url
+      || row?.target_avatar
+      || row?.class_image
+      || peer?.stored_target_avatar
+      || ''
+    );
+
+    return {
+      ...row,
+      target_id: targetId,
+      target_user_id: targetId,
+      target_email: trimText(targetUser?.email),
+      target_name: targetName,
+      target_avatar: targetAvatar,
+    };
+  });
+}
+
 const USER_CHAT_COLUMNS = `
   user_id,
   room_id,
@@ -90,7 +159,9 @@ export async function onRequestGet(context) {
     const { results } = await env.DB.prepare(query).bind(...binds).all();
     const rows = results || [];
     const hasMore = rows.length > limit;
-    const data = (hasMore ? rows.slice(0, limit) : rows).map((row) => ({
+    const slicedRows = hasMore ? rows.slice(0, limit) : rows;
+    const hydratedRows = await attachDmTargetMetadata(env.DB, slicedRows, targetUserId);
+    const data = hydratedRows.map((row) => ({
       ...row,
       last_message_at: serializeUtcTimestamp(row?.last_message_at),
     }));

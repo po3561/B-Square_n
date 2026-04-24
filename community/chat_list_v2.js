@@ -15,6 +15,13 @@ window.CommunityModules.ChatList = (() => {
     let searchTimer = null;
     let activeSearchQuery = '';
     let syncListenerBound = false;
+    let bridgeListenerBound = false;
+    let roomsLoadState = {
+        status: 'idle',
+        message: '',
+        detail: '',
+        canRetry: false,
+    };
     const CHAT_TIME_ZONE = 'Asia/Seoul';
 
     function getSettings() {
@@ -225,6 +232,42 @@ window.CommunityModules.ChatList = (() => {
         };
     }
 
+    function setRoomsLoadState(next = {}) {
+        roomsLoadState = {
+            status: String(next.status || 'idle'),
+            message: String(next.message || '').trim(),
+            detail: String(next.detail || '').trim(),
+            canRetry: next.canRetry !== false,
+        };
+        renderRoomsStatus();
+    }
+
+    function renderRoomsStatus() {
+        const status = document.getElementById('chatListStatus');
+        if (!status) return;
+
+        if (roomsLoadState.status !== 'error' || !roomsLoadState.message) {
+            status.hidden = true;
+            status.innerHTML = '';
+            return;
+        }
+
+        status.hidden = false;
+        status.innerHTML = `
+            <div class="comm-status-banner warning" role="status">
+                <div class="comm-status-copy">
+                    <strong>${shared().escapeHtml(roomsLoadState.message)}</strong>
+                    ${roomsLoadState.detail ? `<p>${shared().escapeHtml(roomsLoadState.detail)}</p>` : ''}
+                </div>
+                ${roomsLoadState.canRetry ? '<button type="button" class="btn-status-retry" data-action="retry-room-list">다시 시도</button>' : ''}
+            </div>
+        `;
+
+        status.querySelector('[data-action="retry-room-list"]')?.addEventListener('click', () => {
+            loadChatRooms().catch(() => {});
+        });
+    }
+
     function init(selectCallback) {
         onRoomSelect = selectCallback;
         setupFilterTabs();
@@ -232,8 +275,10 @@ window.CommunityModules.ChatList = (() => {
         setupContextMenu();
         setupFolderModal();
         bindSyncListener();
+        bindBridgeEvents();
         renderFolderTabs();
         renderFolderManagerList();
+        renderRoomsStatus();
     }
 
     function bindSyncListener() {
@@ -246,6 +291,33 @@ window.CommunityModules.ChatList = (() => {
             if (['chat', 'chat_room', 'chat_rooms', 'room_updated', 'messages', 'friends'].includes(type)) {
                 loadChatRooms().catch(() => { });
             }
+        });
+    }
+
+    function bindBridgeEvents() {
+        if (bridgeListenerBound) return;
+        const bridgeApi = bridge();
+        if (!bridgeApi?.on) return;
+        bridgeListenerBound = true;
+
+        bridgeApi.on('room_read', ({ roomId }) => {
+            const normalizedRoomId = String(roomId || '');
+            if (!normalizedRoomId) return;
+            const next = roomsCache.get(normalizedRoomId);
+            if (!next || Number(next.unread_count || 0) === 0) return;
+            next.unread_count = 0;
+            roomsCache.set(normalizedRoomId, next);
+            renderRooms(activeSearchQuery);
+        });
+
+        bridgeApi.on('unread_updated', ({ roomId, count }) => {
+            const normalizedRoomId = String(roomId || '');
+            if (!normalizedRoomId) return;
+            const next = roomsCache.get(normalizedRoomId);
+            if (!next) return;
+            next.unread_count = Math.max(Number(count) || 0, 0);
+            roomsCache.set(normalizedRoomId, next);
+            renderRooms(activeSearchQuery);
         });
     }
 
@@ -273,6 +345,7 @@ window.CommunityModules.ChatList = (() => {
         const userId = bridge()?.getUserId?.();
         if (!userId || userId === 'OPERATOR_GHOST') {
             roomsCache = new Map();
+            setRoomsLoadState({ status: 'idle', canRetry: false });
             renderRooms(activeSearchQuery);
             return [];
         }
@@ -288,12 +361,22 @@ window.CommunityModules.ChatList = (() => {
                 ensureAutoClassFolder(room);
             });
 
+            setRoomsLoadState({ status: 'idle', canRetry: false });
             renderFolderTabs();
             renderFolderManagerList();
             renderRooms(activeSearchQuery);
         } catch (error) {
             console.error('Chat rooms load error:', error);
-            roomsCache = new Map();
+            setRoomsLoadState({
+                status: 'error',
+                message: roomsCache.size
+                    ? '대화 목록을 새로 불러오지 못했습니다.'
+                    : '대화 목록을 불러오지 못했습니다.',
+                detail: roomsCache.size
+                    ? '마지막으로 확인된 목록을 계속 표시합니다.'
+                    : '네트워크 상태를 확인한 뒤 다시 시도해 주세요.',
+                canRetry: true,
+            });
             renderRooms(activeSearchQuery);
         } finally {
             clearTimeout(refreshTimer);
@@ -308,6 +391,7 @@ window.CommunityModules.ChatList = (() => {
     function renderRooms(searchQuery = '') {
         const list = document.getElementById('chatRoomList');
         if (!list) return;
+        renderRoomsStatus();
 
         const rooms = Array.from(roomsCache.values());
         const pinned = getPinned();
@@ -340,35 +424,42 @@ window.CommunityModules.ChatList = (() => {
         });
 
         if (filtered.length === 0) {
-            const emptyTitle = query
-                ? '검색 결과가 없습니다'
-                : currentFilter === 'pinned'
-                    ? '고정된 대화가 없습니다'
-                    : currentFilter === 'dm'
-                        ? '1:1 대화가 없습니다'
-                        : currentFilter === 'class'
-                            ? '클래스 대화가 없습니다'
-                            : currentFilter === 'group'
-                                ? '그룹 대화가 없습니다'
-                                : '아직 대화가 없습니다';
-            const emptyCopy = query
-                ? '다른 검색어로 찾아보세요.'
-                : currentFilter === 'pinned'
-                    ? '자주 보는 대화를 고정하면 여기에서 빠르게 다시 볼 수 있습니다.'
-                    : currentFilter === 'dm'
-                        ? '새 대화를 시작하면 1:1 채팅이 여기에 표시됩니다.'
-                        : currentFilter === 'class'
-                            ? '수강 중인 클래스가 생기면 여기에서 바로 이어집니다.'
-                            : currentFilter === 'group'
-                                ? '그룹 채팅을 만들면 이 목록에 정리됩니다.'
-                                : '클래스 수강 또는 친구 추가 후 대화를 시작할 수 있습니다.';
-            const emptyAction = query ? '' : currentFilter === 'pinned'
-                ? `<button class="btn-primary btn-room-empty" id="btnClearRoomFilter">전체 보기</button>`
-                : currentFilter === 'class'
-                    ? `<button class="btn-primary btn-room-empty" id="btnExploreClasses">클래스 탐색하기</button>`
-                    : currentFilter === 'group'
-                        ? `<button class="btn-primary btn-room-empty" id="btnStartGroup">그룹 만들기</button>`
-                        : `<button class="btn-primary btn-room-empty" id="btnStartChat">새 대화 시작</button>`;
+            const showLoadError = roomsLoadState.status === 'error' && rooms.length === 0;
+            const emptyTitle = showLoadError
+                ? '대화 목록을 불러오지 못했습니다'
+                : query
+                    ? '검색 결과가 없습니다'
+                    : currentFilter === 'pinned'
+                        ? '고정된 대화가 없습니다'
+                        : currentFilter === 'dm'
+                            ? '1:1 대화가 없습니다'
+                            : currentFilter === 'class'
+                                ? '클래스 대화가 없습니다'
+                                : currentFilter === 'group'
+                                    ? '그룹 대화가 없습니다'
+                                    : '아직 대화가 없습니다';
+            const emptyCopy = showLoadError
+                ? '잠시 후 다시 시도해 주세요. 문제가 계속되면 새로고침 후 다시 확인하면 됩니다.'
+                : query
+                    ? '다른 검색어로 찾아보세요.'
+                    : currentFilter === 'pinned'
+                        ? '자주 보는 대화를 고정하면 여기에서 빠르게 다시 볼 수 있습니다.'
+                        : currentFilter === 'dm'
+                            ? '새 대화를 시작하면 1:1 채팅이 여기에 표시됩니다.'
+                            : currentFilter === 'class'
+                                ? '수강 중인 클래스가 생기면 여기에서 바로 이어집니다.'
+                                : currentFilter === 'group'
+                                    ? '그룹 채팅을 만들면 이 목록에 정리됩니다.'
+                                    : '클래스 수강 또는 친구 추가 후 대화를 시작할 수 있습니다.';
+            const emptyAction = showLoadError
+                ? `<button class="btn-primary btn-room-empty" id="btnRetryRoomList">다시 시도</button>`
+                : query ? '' : currentFilter === 'pinned'
+                    ? `<button class="btn-primary btn-room-empty" id="btnClearRoomFilter">전체 보기</button>`
+                    : currentFilter === 'class'
+                        ? `<button class="btn-primary btn-room-empty" id="btnExploreClasses">클래스 탐색하기</button>`
+                        : currentFilter === 'group'
+                            ? `<button class="btn-primary btn-room-empty" id="btnStartGroup">그룹 만들기</button>`
+                            : `<button class="btn-primary btn-room-empty" id="btnStartChat">새 대화 시작</button>`;
             list.innerHTML = `
                 <div class="comm-empty-state">
                     <div class="comm-empty-icon"><i class="fa-regular fa-comments"></i></div>
@@ -388,6 +479,9 @@ window.CommunityModules.ChatList = (() => {
             });
             document.getElementById('btnStartGroup')?.addEventListener('click', () => {
                 document.getElementById('hmGroupChat')?.click();
+            });
+            document.getElementById('btnRetryRoomList')?.addEventListener('click', () => {
+                loadChatRooms().catch(() => {});
             });
             return;
         }

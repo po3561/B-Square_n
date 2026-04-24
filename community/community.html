@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="../style_mobile.css?v=20260331_02" media="(max-width: 768px)">
     <link rel="stylesheet" href="/mobile_renew.css?v=20260405_01" media="(max-width: 768px)">
     <link rel="stylesheet" href="../style_pc.css?v=20260331_02" media="(min-width: 769px)">
-    <link rel="stylesheet" href="community_refined.css?v=20260408_05">
+    <link rel="stylesheet" href="community_refined.css?v=20260424_02">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="../bsq_server.js?v=20260402_01" defer></script>
     <link rel="stylesheet" href="/theme_overrides.css?v=20260402_03">
@@ -56,6 +56,7 @@
                     <input type="text" id="chatSearchInput" placeholder="채팅 검색" aria-label="채팅방 검색">
                 </div>
             </div>
+            <div class="chat-list-status" id="chatListStatus" hidden></div>
             <div class="chat-room-list" id="chatRoomList">
                 <div class="chat-list-empty">
                     <i class="fa-regular fa-comments"></i>
@@ -102,6 +103,7 @@
                         <i class="fa-solid fa-bars-staggered"></i>
                     </div>
 
+                    <div class="chat-message-state" id="chatMessageState" hidden></div>
                     <div class="chat-messages-container" id="chatMessagesContainer"></div>
                 </div>
 
@@ -287,13 +289,13 @@
         </div>
     </main>
 
-    <script src="../header.js?v=20260411_03" defer></script>
+    <script src="../header.js?v=20260424_02" defer></script>
     <script src="../dev_mode.js?v=20260331_02" defer></script>
     <script src="community_shared_v2.js?v=20260408_05" defer></script>
     <script src="sync_bridge.js?v=20260401_03" defer></script>
     <script src="dm_private.js?v=20260401_03" defer></script>
-    <script src="chat_list_v2.js?v=20260408_04" defer></script>
-    <script src="chat_ui.js?v=20260408_05" defer></script>
-    <script src="community_v2.js?v=20260411_02" defer></script>
+    <script src="chat_list_v2.js?v=20260424_02" defer></script>
+    <script src="chat_ui.js?v=20260424_02" defer></script>
+    <script src="community_v2.js?v=20260424_02" defer></script>
 </body>
 </html>

@@ -20,6 +20,10 @@ window.CommunityModules.ChatUI = (function () {
     let lastMsgTimestamp = 0;
     let messageFeed = null;
     let roomOpenSeq = 0;
+    let readSyncTimer = null;
+    let readSyncInFlight = false;
+    let lastReadSyncRoomId = '';
+    let lastReadSyncAt = 0;
     const MESSAGE_CURSOR_OVERLAP_MS = 1000;
     const CHAT_TIME_ZONE = 'Asia/Seoul';
     const ATTACHMENT_RULES = {
@@ -614,6 +618,7 @@ window.CommunityModules.ChatUI = (function () {
         window.BSQCommunityShared?.setupGatheringPreviewShell?.();
         setupGatheringUI();
         setupScrollUX();
+        setupReadSyncLifecycle();
         setupLightbox();
         console.log("🎨 ChatUI initialized (D1 API version)");
     }
@@ -914,6 +919,7 @@ window.CommunityModules.ChatUI = (function () {
             if (isNearBottom) {
                 btnScroll.classList.remove('active'); unreadCount = 0;
                 if (badge) badge.style.display = 'none';
+                scheduleRoomReadSync();
             } else if (hasOverflow) {
                 btnScroll.classList.add('active');
             }
@@ -931,6 +937,147 @@ window.CommunityModules.ChatUI = (function () {
             scrollToBottom(); unreadCount = 0;
             if (badge) badge.style.display = 'none';
             btnScroll.classList.remove('active');
+            scheduleRoomReadSync({ force: true });
+        });
+    }
+
+    function getMessageStateElement() {
+        return document.getElementById('chatMessageState');
+    }
+
+    function clearMessageState() {
+        const state = getMessageStateElement();
+        if (!state) return;
+        state.hidden = true;
+        state.dataset.mode = '';
+        state.dataset.layout = '';
+        state.innerHTML = '';
+    }
+
+    function showMessageState({
+        mode = 'loading',
+        layout = 'panel',
+        title = '',
+        description = '',
+        actionLabel = '',
+        onAction = null,
+    } = {}) {
+        const state = getMessageStateElement();
+        if (!state) return;
+
+        const normalizedLayout = layout === 'banner' ? 'banner' : 'panel';
+        const iconClass = mode === 'loading'
+            ? 'fa-solid fa-circle-notch fa-spin'
+            : mode === 'forbidden'
+                ? 'fa-solid fa-lock'
+                : mode === 'warning'
+                    ? 'fa-solid fa-triangle-exclamation'
+                    : mode === 'empty'
+                        ? 'fa-regular fa-comment-dots'
+                        : 'fa-solid fa-circle-exclamation';
+
+        state.hidden = false;
+        state.dataset.mode = String(mode || 'loading');
+        state.dataset.layout = normalizedLayout;
+
+        if (normalizedLayout === 'banner') {
+            state.innerHTML = `
+                <div class="comm-status-banner ${mode === 'warning' ? 'warning' : 'error'}" role="status">
+                    <div class="comm-status-copy">
+                        <strong>${escapeHtml(title || '상태를 확인해 주세요.')}</strong>
+                        ${description ? `<p>${escapeHtml(description)}</p>` : ''}
+                    </div>
+                    ${actionLabel ? `<button type="button" class="btn-status-retry" data-action="message-state-action">${escapeHtml(actionLabel)}</button>` : ''}
+                </div>
+            `;
+        } else {
+            state.innerHTML = `
+                <div class="comm-message-panel ${escapeHtml(mode)}" role="status">
+                    <div class="comm-empty-icon"><i class="${iconClass}"></i></div>
+                    <h4>${escapeHtml(title || '상태를 확인해 주세요.')}</h4>
+                    ${description ? `<p>${escapeHtml(description)}</p>` : ''}
+                    ${actionLabel ? `<button type="button" class="btn-primary btn-room-empty" data-action="message-state-action">${escapeHtml(actionLabel)}</button>` : ''}
+                </div>
+            `;
+        }
+
+        state.querySelector('[data-action="message-state-action"]')?.addEventListener('click', () => {
+            if (typeof onAction === 'function') {
+                onAction();
+            }
+        });
+    }
+
+    function isCurrentRoomVisible() {
+        if (!currentRoomId) return false;
+        if (document.visibilityState === 'hidden') return false;
+        const activeArea = document.getElementById('chatActiveArea');
+        return !activeArea || activeArea.style.display !== 'none';
+    }
+
+    function isTimelineNearBottom({ tolerance = 80 } = {}) {
+        const container = getMessageContainer();
+        if (!container) return false;
+        const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+        return distanceFromBottom <= tolerance;
+    }
+
+    function resetRoomReadSyncState() {
+        clearTimeout(readSyncTimer);
+        readSyncTimer = null;
+        lastReadSyncRoomId = '';
+        lastReadSyncAt = 0;
+    }
+
+    async function syncCurrentRoomReadState({ force = false } = {}) {
+        if (!currentRoomId || readSyncInFlight) return false;
+        if (!force && (!isCurrentRoomVisible() || !isTimelineNearBottom({ tolerance: 120 }))) return false;
+
+        const now = Date.now();
+        if (!force && lastReadSyncRoomId === String(currentRoomId) && now - lastReadSyncAt < 900) {
+            return false;
+        }
+
+        readSyncInFlight = true;
+        try {
+            currentRoomInfo = { ...(currentRoomInfo || {}), unread_count: 0 };
+            await bridge()?.markAsRead?.(currentRoomId, currentRoomType || '');
+            lastReadSyncRoomId = String(currentRoomId || '');
+            lastReadSyncAt = Date.now();
+            return true;
+        } finally {
+            readSyncInFlight = false;
+        }
+    }
+
+    function scheduleRoomReadSync({ force = false, delay = 140 } = {}) {
+        clearTimeout(readSyncTimer);
+        readSyncTimer = null;
+
+        if (!currentRoomId) return;
+
+        if (force) {
+            syncCurrentRoomReadState({ force: true }).catch(() => {});
+            return;
+        }
+
+        readSyncTimer = window.setTimeout(() => {
+            syncCurrentRoomReadState({ force: false }).catch(() => {});
+        }, delay);
+    }
+
+    function setupReadSyncLifecycle() {
+        if (window.__BSQ_CHAT_READ_SYNC_BOUND__) return;
+        window.__BSQ_CHAT_READ_SYNC_BOUND__ = true;
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                scheduleRoomReadSync();
+            }
+        });
+
+        window.addEventListener('focus', () => {
+            scheduleRoomReadSync();
         });
     }
 
@@ -997,10 +1144,17 @@ window.CommunityModules.ChatUI = (function () {
         editingMsgKey = null;
         clearReplyPreview();
         lastMsgTimestamp = 0;
+        resetRoomReadSyncState();
         messageCache = new Map();
         currentPins = [];
         const container = document.getElementById('chatMessagesContainer');
         if (container) container.innerHTML = '';
+        clearMessageState();
+        showMessageState({
+            mode: 'loading',
+            title: '대화를 불러오는 중입니다.',
+            description: '잠시만 기다려 주세요.',
+        });
 
         const noChatSelected = document.getElementById('noChatSelected');
         if (noChatSelected) noChatSelected.style.display = 'none';
@@ -1046,6 +1200,7 @@ window.CommunityModules.ChatUI = (function () {
         loadMessages({ refreshAll: true, roomToken }).then((messages) => {
             if (roomToken !== roomOpenSeq || roomId !== currentRoomId || roomType !== currentRoomType) return;
             startMessageStream(messages || []);
+            scheduleRoomReadSync({ force: true });
         });
         loadPinnedMessages(roomToken);
     }
@@ -1088,11 +1243,25 @@ window.CommunityModules.ChatUI = (function () {
                     badge.style.display = 'block';
                 }
             },
+            onError: (error) => {
+                if (messageCache.size > 0) {
+                    showMessageState({
+                        mode: 'warning',
+                        layout: 'banner',
+                        title: '실시간 메시지 동기화가 잠시 불안정합니다.',
+                        description: error?.message || '잠시 후 다시 연결됩니다.',
+                        actionLabel: '새로고침',
+                        onAction: () => {
+                            refreshVisibleMessages().then(() => clearMessageState()).catch(() => {});
+                        },
+                    });
+                }
+            },
         });
     }
 
     // ==== D1 API 메시지 로드 ====
-        async function loadMessages({ refreshAll = false, roomToken = roomOpenSeq } = {}) {
+    async function loadMessages({ refreshAll = false, roomToken = roomOpenSeq } = {}) {
         if (!currentRoomId) return;
         try {
             const roomId = currentRoomId;
@@ -1103,8 +1272,11 @@ window.CommunityModules.ChatUI = (function () {
             });
             const res = await window.BSQ.api(endpoint);
             if (roomToken !== roomOpenSeq || roomId !== currentRoomId || roomType !== currentRoomType) return [];
+            if (!res?.success) {
+                throw new Error(res?.error || '메시지를 불러오지 못했습니다.');
+            }
 
-            if (res?.success && res.data) {
+            if (res.data) {
                 const currentUserId = window.__BSQ_DEV_MODE__ ? 'OPERATOR_GHOST' : (bridge()?.getUserId?.() || '');
                 let messages = (Array.isArray(res.data) ? res.data : (res.data.messages || []))
                     .map(normalizeIncomingMessage)
@@ -1136,6 +1308,8 @@ window.CommunityModules.ChatUI = (function () {
                     return profile ? mergeMessageProfile(msg, profile) : msg;
                 });
 
+                clearMessageState();
+
                 messages.forEach(msg => {
                     const msgId = msg.id || msg.key;
                     const ts = messageCursor(msg);
@@ -1144,10 +1318,45 @@ window.CommunityModules.ChatUI = (function () {
                     renderMessage(msgId, msg, true);
                 });
 
+                if (refreshAll && messages.length === 0) {
+                    showMessageState({
+                        mode: 'empty',
+                        title: '아직 메시지가 없습니다.',
+                        description: '첫 메시지를 보내 대화를 시작해 보세요.',
+                    });
+                }
+
                 return messages;
             }
         } catch (e) {
             console.warn('Message poll error:', e.message);
+            const hasSnapshot = messageCache.size > 0;
+            const isForbidden = Number(e?.status || 0) === 403;
+
+            if (refreshAll || !hasSnapshot) {
+                showMessageState({
+                    mode: isForbidden ? 'forbidden' : 'error',
+                    title: isForbidden ? '이 대화에 접근할 수 없습니다.' : '메시지를 불러오지 못했습니다.',
+                    description: isForbidden
+                        ? '권한을 확인한 뒤 다시 시도해 주세요.'
+                        : (e?.message || '잠시 후 다시 시도해 주세요.'),
+                    actionLabel: isForbidden ? '' : '다시 시도',
+                    onAction: isForbidden ? null : () => {
+                        loadMessages({ refreshAll: true, roomToken: roomOpenSeq }).catch(() => {});
+                    },
+                });
+            } else {
+                showMessageState({
+                    mode: 'warning',
+                    layout: 'banner',
+                    title: '새 메시지를 확인하지 못했습니다.',
+                    description: e?.message || '잠시 후 다시 시도해 주세요.',
+                    actionLabel: '다시 시도',
+                    onAction: () => {
+                        refreshVisibleMessages().then(() => clearMessageState()).catch(() => {});
+                    },
+                });
+            }
         }
 
         return [];
@@ -1222,6 +1431,7 @@ window.CommunityModules.ChatUI = (function () {
 
         const container = getMessageContainer();
         if (!container) return;
+        clearMessageState();
 
         let currentUserId = bridge()?.getUserId?.() || '';
         if (window.__BSQ_DEV_MODE__) currentUserId = 'OPERATOR_GHOST';
@@ -1342,6 +1552,7 @@ window.CommunityModules.ChatUI = (function () {
                 const btnScroll = document.getElementById('btnScrollBottom');
                 if (badge) badge.style.display = 'none';
                 if (btnScroll) btnScroll.classList.remove('active');
+                if (!isMine) scheduleRoomReadSync();
             }
             return;
         }
@@ -1357,6 +1568,7 @@ window.CommunityModules.ChatUI = (function () {
             const btnScroll = document.getElementById('btnScrollBottom');
             if (badge) badge.style.display = 'none';
             if (btnScroll) btnScroll.classList.remove('active');
+            if (!isMine) scheduleRoomReadSync();
         }
         else {
             unreadCount++;

@@ -1676,6 +1676,8 @@
 
   function ensureHelperLoaded() {
     if (window.matchMedia?.('(max-width: 768px)').matches) return;
+    const layout = String(document.body?.dataset?.layout || '').trim().toLowerCase();
+    if (layout === 'community' || layout === 'popup' || window.location.pathname.includes('/community/')) return;
     if (window.__BSQ_HELPER_READY__) return;
     if (document.getElementById('bsqHelperLauncher') || document.getElementById('bsqHelperPanel')) return;
     if (document.querySelector('script[data-bsq-helper="1"]')) return;
