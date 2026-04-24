@@ -160,6 +160,32 @@ function buildSinceClause(since) {
   };
 }
 
+function buildDmMessageSelect(whereSql = '', orderSql = '', limitSql = '') {
+  return `
+    SELECT ${DM_MESSAGE_COLUMNS}
+    FROM dm_messages
+    WHERE room_id = ?
+      AND room_type = ?${whereSql}
+    ${orderSql}
+    ${limitSql}
+  `;
+}
+
+function buildLatestDmMessageSelect(limitSql = '') {
+  return `
+    SELECT ${DM_MESSAGE_COLUMNS}
+    FROM (
+      SELECT ${DM_MESSAGE_COLUMNS}
+      FROM dm_messages
+      WHERE room_id = ?
+        AND room_type = ?
+      ORDER BY created_at DESC, id DESC
+      ${limitSql}
+    ) AS latest_messages
+    ORDER BY created_at ASC, id ASC
+  `;
+}
+
 const DM_MESSAGE_COLUMNS = `
   id,
   room_id,
@@ -301,25 +327,18 @@ export async function onRequest(context) {
       const since = url.searchParams.get('since') || '';
       const limit = Math.min(parseInt(url.searchParams.get('limit'), 10) || 50, 100);
       const sinceClause = buildSinceClause(since);
-      let query = `
-        SELECT ${DM_MESSAGE_COLUMNS}
-        FROM dm_messages
-        WHERE room_id = ?
-          AND room_type = ?
-      `;
       const binds = [roomId, roomType];
-
-      if (sinceClause.sql) {
-        query += sinceClause.sql;
-        binds.push(sinceClause.bind);
-      }
+      let query = '';
 
       if (pinnedOnly) {
-        query += ' AND is_pinned = 1';
-        query += ' ORDER BY updated_at DESC, id DESC LIMIT ?';
+        query = buildDmMessageSelect(' AND is_pinned = 1', 'ORDER BY updated_at DESC, id DESC', 'LIMIT ?');
+      } else if (sinceClause.sql) {
+        query = buildDmMessageSelect(sinceClause.sql, sinceClause.orderSql, 'LIMIT ?');
+        binds.push(sinceClause.bind);
       } else {
-        query += ` ${sinceClause.orderSql} LIMIT ?`;
+        query = buildLatestDmMessageSelect('LIMIT ?');
       }
+
       binds.push(limit + 1);
 
       const { results } = await env.DB.prepare(query).bind(...binds).all();

@@ -453,6 +453,19 @@
     }
   }
 
+  function sanitizeReturnTarget(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+
+    try {
+      const target = new URL(raw, window.location.href);
+      if (target.origin !== window.location.origin) return '';
+      return target.toString();
+    } catch {
+      return '';
+    }
+  }
+
   function buildStartUrl(provider, context, returnTo) {
     const url = new URL(provider.startPath, getBaseOrigin());
     url.searchParams.set('flow', normalizeContext(context));
@@ -583,8 +596,10 @@
 
   function resolveContextAndReturnTo(root) {
     const context = normalizeContext(root.dataset.socialContext || root.dataset.context || 'login');
-    const explicitReturn = String(root.dataset.socialReturn || root.dataset.returnTo || '').trim();
-    const returnTo = ensureRecoveryHash(explicitReturn || getDefaultReturnPath(context), context);
+    const query = new URL(window.location.href).searchParams;
+    const queryReturn = sanitizeReturnTarget(query.get('return_to') || query.get('redirect') || '');
+    const explicitReturn = sanitizeReturnTarget(root.dataset.socialReturn || root.dataset.returnTo || '');
+    const returnTo = ensureRecoveryHash(queryReturn || explicitReturn || getDefaultReturnPath(context), context);
     return { context, returnTo };
   }
 

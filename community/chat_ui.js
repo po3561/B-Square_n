@@ -1048,7 +1048,6 @@ window.CommunityModules.ChatUI = (function () {
             startMessageStream(messages || []);
         });
         loadPinnedMessages(roomToken);
-        setTimeout(() => renderInfoPanel(roomId, roomType, roomInfo, { open: true, mode: currentInfoPanelMode }), 0);
     }
 
     function startMessageStream(seedMessages = []) {

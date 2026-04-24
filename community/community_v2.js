@@ -306,6 +306,7 @@ async function registerClassChatsOptimized(userId) {
 
 
 function renderLoginPrompt() {
+    const loginUrl = buildCommunityLoginUrl();
 
     const main = document.querySelector('.community-shell')
         || document.querySelector('.comm-container')
@@ -323,7 +324,7 @@ function renderLoginPrompt() {
 
                     <p>커뮤니티를 이용하려면 먼저 로그인해 주세요.</p>
 
-                    <button class="btn-primary" onclick="location.href='../login/login.html'">로그인하기</button>
+                    <button class="btn-primary" type="button">로그인하기</button>
 
                 </div>
 
@@ -331,8 +332,18 @@ function renderLoginPrompt() {
 
         `;
 
+        main.querySelector('.btn-primary')?.addEventListener('click', () => {
+            location.href = loginUrl;
+        });
+
     }
 
+}
+
+function buildCommunityLoginUrl() {
+    const loginUrl = new URL('../login/login.html', location.href);
+    loginUrl.searchParams.set('return_to', location.href);
+    return loginUrl.toString();
 }
 
 

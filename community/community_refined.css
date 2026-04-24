@@ -3888,6 +3888,20 @@ body[data-layout="community"] .chat-room-list {
     flex-direction: column;
 }
 
+body[data-layout="community"],
+body[data-layout="popup"] {
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+}
+
+body[data-layout="community"] .site-footer,
+body[data-layout="community"] #bsqFooter,
+body[data-layout="popup"] .site-footer,
+body[data-layout="popup"] #bsqFooter {
+    display: none !important;
+}
+
 body[data-layout="community"] .gathering-card,
 body[data-layout="popup"] .gathering-card {
     cursor: pointer;

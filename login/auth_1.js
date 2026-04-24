@@ -2,6 +2,12 @@
   'use strict';
 
   document.addEventListener('DOMContentLoaded', async () => {
+    const returnTo = resolveReturnTarget();
+    const socialAuthRoot = document.getElementById('socialAuthLogin');
+    if (socialAuthRoot && returnTo) {
+      socialAuthRoot.dataset.socialReturn = returnTo;
+    }
+
     try {
       if (window.BSQSocialAuth?.init) {
         await window.BSQSocialAuth.init({ root: '#socialAuthLogin' });
@@ -10,10 +16,10 @@
       console.warn('[Login] social auth init failed:', error);
     }
 
-    initLoginPage();
+    initLoginPage(returnTo);
   });
 
-  function initLoginPage() {
+  function initLoginPage(returnTo = '') {
     const loginForm = document.getElementById('loginForm');
     const emailInput = document.getElementById('loginEmail');
     const passwordInput = document.getElementById('loginPassword');
@@ -108,7 +114,7 @@
           throw new Error(result?.error || '로그인에 실패했습니다.');
         }
 
-        window.location.replace('../index.html');
+        window.location.replace(returnTo || '../index.html');
       } catch (error) {
         console.error('[Login] email login failed:', error);
         setBanner(mapLoginError(error), 'error');
@@ -132,6 +138,24 @@
     }
 
     return message;
+  }
+
+  function resolveReturnTarget() {
+    const query = new URL(window.location.href).searchParams;
+    return sanitizeReturnTarget(query.get('return_to') || query.get('redirect') || '');
+  }
+
+  function sanitizeReturnTarget(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+
+    try {
+      const target = new URL(raw, window.location.href);
+      if (target.origin !== window.location.origin) return '';
+      return target.toString();
+    } catch {
+      return '';
+    }
   }
 
   async function apiPost(path, body) {
