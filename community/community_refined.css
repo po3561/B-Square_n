@@ -1797,6 +1797,14 @@ body[data-comm-motion="reduce"] * {
     border-color: rgba(65, 105, 255, 0.22) !important;
 }
 
+[data-theme="light"] .room-name,
+[data-theme="light"] .room-preview,
+[data-theme="light"] .room-time {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
 [data-theme="light"] .room-preview,
 [data-theme="light"] .room-time,
 [data-theme="light"] .info-id,
