@@ -3888,7 +3888,14 @@ body[data-layout="community"] .chat-room-list {
     flex-direction: column;
 }
 
-body[data-layout="community"],
+body[data-layout="community"] {
+    height: auto;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 body[data-layout="popup"] {
     height: 100dvh;
     min-height: 100dvh;
