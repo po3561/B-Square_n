@@ -72,13 +72,13 @@
 
   body.notice-page .header-actions {
     width: 100% !important;
-    display: flex !important;
-    flex-wrap: wrap !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
     gap: 0.55rem !important;
   }
 
   body.notice-page .search-input {
-    flex: 1 1 100% !important;
+    width: 100% !important;
     min-width: 0 !important;
     min-height: 46px !important;
     padding: 0.8rem 0.95rem !important;
@@ -90,9 +90,14 @@
 
   body.notice-page .btn-search,
   body.notice-page .btn-admin {
-    flex: 1 1 calc(50% - 0.275rem) !important;
+    width: 100% !important;
     min-height: 44px !important;
     border-radius: 16px !important;
+    border: 1px solid rgba(65, 105, 255, 0.18) !important;
+    background: linear-gradient(135deg, var(--comm-accent), var(--comm-accent-2)) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    box-shadow: 0 12px 26px rgba(65, 105, 255, 0.22) !important;
   }
 
   body.notice-page .notice-list-header {

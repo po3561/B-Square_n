@@ -11,7 +11,7 @@
   // Use scriptDir for absolute-like relative paths for CSS dynamic injection
   const shellCSSPath = scriptDir + 'shell_overrides.css?v=20260421_02';
   const mobileAppCSSPath = scriptDir + 'mobile_app.css?v=20260421_03';
-  const CUSTOM_MOBILE_APP_PATHS = ['/class_view/', '/community/', '/notice/'];
+  const CUSTOM_MOBILE_APP_PATHS = ['/class_view/', '/community/'];
 
   const homePrefix = currentPath.split('/').length > 2 ? '../' : './';
   const prefix = homePrefix;

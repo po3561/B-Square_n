@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.body.dataset.layout = document.body.dataset.layout || 'community';
 
     shared.applySettings?.();
-    ensureStylesheetLink('community-mobile-app-css', './community_mobile_app.css?v=20260419_01');
+    ensureStylesheetLink('community-mobile-app-css', './community_mobile_app.css?v=20260426_01');
 
 
 

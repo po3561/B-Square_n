@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.BSQ?.sessionBootstrapPromise?.then) authBootstrapTasks.push(window.BSQ.sessionBootstrapPromise.catch(() => null));
     if (authBootstrapTasks.length) await Promise.all(authBootstrapTasks);
 
-    ensureStylesheetLink('notice-mobile-app-css', './notice_mobile_app.css?v=20260419_01');
+    ensureStylesheetLink('notice-mobile-app-css', './notice_mobile_app.css?v=20260426_01');
 
     let currentUser = null;
     const session = window.BSQ?.session;
