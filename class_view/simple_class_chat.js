@@ -201,6 +201,9 @@
         });
     }
     function getDocumentTheme() {
+        if (document.body?.classList.contains('class-view-mobile-app')) {
+            return 'light';
+        }
         return document.documentElement.getAttribute('data-theme')
             || document.body?.getAttribute('data-theme')
             || localStorage.getItem('bsq_theme')
