@@ -1,9 +1,9 @@
-------formdata-undici-017661779729
+------formdata-undici-003605258047
 Content-Disposition: form-data; name="metadata"
 
-{"main_module":"functionsWorker-0.9457826627253559.js"}
-------formdata-undici-017661779729
-Content-Disposition: form-data; name="functionsWorker-0.9457826627253559.js"; filename="functionsWorker-0.9457826627253559.js"
+{"main_module":"functionsWorker-0.7634467233486554.js"}
+------formdata-undici-003605258047
+Content-Disposition: form-data; name="functionsWorker-0.7634467233486554.js"; filename="functionsWorker-0.7634467233486554.js"
 Content-Type: application/javascript+module
 
 var __defProp = Object.defineProperty;
@@ -34321,6 +34321,32 @@ function buildSinceClause(since) {
   };
 }
 __name(buildSinceClause, "buildSinceClause");
+function buildDmMessageSelect(whereSql = "", orderSql = "", limitSql = "") {
+  return `
+    SELECT ${DM_MESSAGE_COLUMNS}
+    FROM dm_messages
+    WHERE room_id = ?
+      AND room_type = ?${whereSql}
+    ${orderSql}
+    ${limitSql}
+  `;
+}
+__name(buildDmMessageSelect, "buildDmMessageSelect");
+function buildLatestDmMessageSelect(limitSql = "") {
+  return `
+    SELECT ${DM_MESSAGE_COLUMNS}
+    FROM (
+      SELECT ${DM_MESSAGE_COLUMNS}
+      FROM dm_messages
+      WHERE room_id = ?
+        AND room_type = ?
+      ORDER BY created_at DESC, id DESC
+      ${limitSql}
+    ) AS latest_messages
+    ORDER BY created_at ASC, id ASC
+  `;
+}
+__name(buildLatestDmMessageSelect, "buildLatestDmMessageSelect");
 var DM_MESSAGE_COLUMNS = `
   id,
   room_id,
@@ -34456,22 +34482,15 @@ async function onRequest20(context) {
       const since = url.searchParams.get("since") || "";
       const limit = Math.min(parseInt(url.searchParams.get("limit"), 10) || 50, 100);
       const sinceClause = buildSinceClause(since);
-      let query = `
-        SELECT ${DM_MESSAGE_COLUMNS}
-        FROM dm_messages
-        WHERE room_id = ?
-          AND room_type = ?
-      `;
       const binds = [roomId, roomType];
-      if (sinceClause.sql) {
-        query += sinceClause.sql;
-        binds.push(sinceClause.bind);
-      }
+      let query = "";
       if (pinnedOnly) {
-        query += " AND is_pinned = 1";
-        query += " ORDER BY updated_at DESC, id DESC LIMIT ?";
+        query = buildDmMessageSelect(" AND is_pinned = 1", "ORDER BY updated_at DESC, id DESC", "LIMIT ?");
+      } else if (sinceClause.sql) {
+        query = buildDmMessageSelect(sinceClause.sql, sinceClause.orderSql, "LIMIT ?");
+        binds.push(sinceClause.bind);
       } else {
-        query += ` ${sinceClause.orderSql} LIMIT ?`;
+        query = buildLatestDmMessageSelect("LIMIT ?");
       }
       binds.push(limit + 1);
       const { results } = await env.DB.prepare(query).bind(...binds).all();
@@ -39709,7 +39728,7 @@ async function onRequest31(context) {
 }
 __name(onRequest31, "onRequest");
 
-// ../.wrangler/tmp/pages-yWjBpP/functionsRoutes-0.9526809542842659.mjs
+// ../.wrangler/tmp/pages-VqtjUB/functionsRoutes-0.7528086248852475.mjs
 var routes = [
   {
     routePath: "/api/auth/social/context",
@@ -41057,7 +41076,7 @@ var routes = [
   }
 ];
 
-// ../../../../../../AppData/Local/Temp/codex-npm-cache-build/_npx/32026684e21afda6/node_modules/path-to-regexp/dist.es2015/index.js
+// C:/Users/admin/AppData/Local/npm-cache/_npx/32026684e21afda6/node_modules/path-to-regexp/dist.es2015/index.js
 function lexer(str) {
   var tokens = [];
   var i = 0;
@@ -41383,7 +41402,7 @@ function pathToRegexp(path, keys2, options2) {
 }
 __name(pathToRegexp, "pathToRegexp");
 
-// ../../../../../../AppData/Local/Temp/codex-npm-cache-build/_npx/32026684e21afda6/node_modules/wrangler/templates/pages-template-worker.ts
+// C:/Users/admin/AppData/Local/npm-cache/_npx/32026684e21afda6/node_modules/wrangler/templates/pages-template-worker.ts
 var escapeRegex = /[.+?^${}()|[\]\\]/g;
 function* executeRequest(request) {
   const requestPath = new URL(request.url).pathname;
@@ -41514,4 +41533,4 @@ xlsx/xlsx.mjs:
   (*! sheetjs (C) 2013-present SheetJS -- http://sheetjs.com *)
 */
 
-------formdata-undici-017661779729--
+------formdata-undici-003605258047--

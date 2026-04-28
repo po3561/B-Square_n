@@ -1,0 +1,18 @@
+{
+  "innerWidth": 1440,
+  "innerHeight": 1100,
+  "bodyScrollHeight": 1877,
+  "bodyClientHeight": 1877,
+  "shellRect": {
+    "x": 8,
+    "y": 137.59375,
+    "width": 1424,
+    "height": 1076,
+    "top": 137.59375,
+    "right": 1432,
+    "bottom": 1213.59375,
+    "left": 8
+  },
+  "hasFooter": true,
+  "activeModal": true
+}
