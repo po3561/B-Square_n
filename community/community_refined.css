@@ -2077,17 +2077,17 @@ body[data-layout="popup"] * {
     font-size: 0.95rem;
 }
 
+/* Sidebar density override */
 .chat-room-list {
     padding: 12px;
     gap: 10px;
 }
 
 .chat-room-item {
-    height: 100%;
     padding: 12px 14px;
+    min-height: 76px;
     border-radius: 18px;
     border: 1px solid transparent;
-    background: color-mix(in srgb, var(--comm-surface-2) 94%, transparent);
 }
 
 .chat-room-item:hover {
@@ -2390,7 +2390,6 @@ body[data-layout="popup"] * {
 
     .chat-room-item {
         padding: 12px;
-        min-height: 70px;
     }
 
     .no-chat-inner {
