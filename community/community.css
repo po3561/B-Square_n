@@ -273,7 +273,7 @@
 
 .chat-room-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     padding: 10px 12px;
     border-radius: 12px;
@@ -312,23 +312,28 @@
 
 .room-info {
     flex: 1;
+    min-width: 0;
     overflow: hidden;
 }
 
 .room-name-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 3px;
+    gap: 8px;
 }
 
 .room-name {
+    display: block;
+    min-width: 0;
     font-weight: 700;
     font-size: 0.92rem;
+    line-height: 1.32;
     color: var(--comm-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
     user-select: text;
     -webkit-user-select: text;
 }

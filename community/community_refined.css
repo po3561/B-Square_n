@@ -347,7 +347,7 @@ body[data-layout="popup"]::-webkit-scrollbar {
 
 .chat-room-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     padding: 12px;
     border-radius: 18px;
@@ -401,18 +401,20 @@ body[data-layout="popup"]::-webkit-scrollbar {
 
 .room-name-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
 }
 
 .room-name {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    display: block;
     min-width: 0;
     font-weight: 700;
+    line-height: 1.32;
     color: var(--comm-text);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .room-type-badge,
