@@ -360,6 +360,8 @@ body[data-layout="popup"]::-webkit-scrollbar {
     width: 100%;
     max-width: 100%;
     height: auto;
+    position: relative;
+    overflow: visible;
 }
 
 .chat-room-item:hover {
@@ -402,6 +404,9 @@ body[data-layout="popup"]::-webkit-scrollbar {
 .room-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.22rem;
     overflow: visible;
 }
 
@@ -3229,8 +3234,14 @@ body[data-layout="community"] .chat-top-header {
 }
 
 body[data-layout="community"] .chat-room-item {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
     min-height: 82px;
     padding: 14px 16px;
+    position: relative;
+    overflow: visible;
 }
 
 body[data-layout="community"] .chat-search-bar {
