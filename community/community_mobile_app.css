@@ -296,10 +296,9 @@
     background:
       linear-gradient(180deg, #ffffff, #fbfcff) !important;
     box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05) !important;
-    align-self: flex-start !important;
-    width: fit-content !important;
+    width: 100% !important;
     max-width: 100% !important;
-    height: fit-content !important;
+    height: auto !important;
   }
 
   body[data-layout="community"] .chat-room-item.active {

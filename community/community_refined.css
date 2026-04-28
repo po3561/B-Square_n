@@ -356,10 +356,9 @@ body[data-layout="popup"]::-webkit-scrollbar {
     cursor: pointer;
     transition: background .16s ease, transform .16s ease, border-color .16s ease;
     margin-bottom: 8px;
-    align-self: flex-start;
-    width: fit-content;
+    width: 100%;
     max-width: 100%;
-    height: fit-content;
+    height: auto;
 }
 
 .chat-room-item:hover {
