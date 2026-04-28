@@ -401,6 +401,7 @@ body[data-layout="popup"]::-webkit-scrollbar {
 .room-info {
     flex: 1;
     min-width: 0;
+    overflow: visible;
 }
 
 .room-name-row {
@@ -454,9 +455,12 @@ body[data-layout="popup"]::-webkit-scrollbar {
 }
 
 .room-preview {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.45;
     margin-top: 2px;
 }
 
