@@ -4,7 +4,7 @@ window.CommunityModules.ChatList = (() => {
     const shared = () => window.BSQCommunityShared || {};
     const bridge = () => window.CommunityModules.SyncBridge;
     const SETTINGS_KEY = 'bsq_chat_settings';
-    const REFRESH_MS = 5000;
+    const REFRESH_MS = 10000000000000;
 
     let currentFilter = 'all';
     let currentFolder = null;
