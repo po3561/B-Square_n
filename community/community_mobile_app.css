@@ -269,6 +269,7 @@
   body[data-layout="community"] .chat-room-list {
     display: flex !important;
     flex-direction: column !important;
+    align-items: flex-start !important;
     gap: 0.75rem !important;
     flex: 1 1 auto !important;
     overflow: auto !important;
@@ -295,6 +296,10 @@
     background:
       linear-gradient(180deg, #ffffff, #fbfcff) !important;
     box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05) !important;
+    align-self: flex-start !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+    height: fit-content !important;
   }
 
   body[data-layout="community"] .chat-room-item.active {
