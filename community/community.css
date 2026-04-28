@@ -313,7 +313,7 @@
 .room-info {
     flex: 1;
     min-width: 0;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .room-name-row {
@@ -322,10 +322,12 @@
     align-items: flex-start;
     margin-bottom: 3px;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .room-name {
     display: block;
+    flex: 1 1 auto;
     min-width: 0;
     font-weight: 700;
     font-size: 0.92rem;
@@ -347,9 +349,13 @@
 .room-preview {
     font-size: 0.8rem;
     color: var(--comm-text2);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.45;
+    margin-top: 2px;
     user-select: text;
     -webkit-user-select: text;
 }

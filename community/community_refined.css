@@ -410,10 +410,12 @@ body[data-layout="popup"]::-webkit-scrollbar {
     align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .room-name {
     display: block;
+    flex: 1 1 auto;
     min-width: 0;
     font-weight: 700;
     line-height: 1.32;
